@@ -1,0 +1,56 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 675" role="img" aria-label="devspace-microservices cover">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#0b1120" />
+      <stop offset="1" stop-color="#1e293b" />
+    </linearGradient>
+    <radialGradient id="glow" cx="0.8" cy="0.1" r="0.7">
+      <stop offset="0" stop-color="#38bdf8" stop-opacity="0.6" />
+      <stop offset="1" stop-color="#38bdf8" stop-opacity="0" />
+    </radialGradient>
+    <pattern id="dots" width="24" height="24" patternUnits="userSpaceOnUse">
+      <circle cx="2" cy="2" r="1.2" fill="#334155" />
+    </pattern>
+  </defs>
+  <rect width="1200" height="675" fill="url(#bg)" />
+  <rect width="1200" height="675" fill="url(#glow)" />
+  <rect width="1200" height="675" fill="url(#dots)" opacity="0.35" />
+
+  <g opacity="0.5" stroke="#38bdf8" stroke-width="2" fill="none">
+    <path d="M140 520 C280 420, 420 600, 560 500" />
+    <path d="M560 500 C720 400, 880 580, 1040 430" />
+  </g>
+
+  <g fill="#0f172a" stroke="#38bdf8" stroke-width="2" opacity="0.9">
+    <rect x="120" y="180" width="180" height="110" rx="16" />
+    <rect x="360" y="140" width="180" height="110" rx="16" />
+    <rect x="600" y="190" width="180" height="110" rx="16" />
+    <rect x="840" y="150" width="180" height="110" rx="16" />
+  </g>
+  <g fill="#38bdf8">
+    <circle cx="210" cy="235" r="6" />
+    <circle cx="450" cy="195" r="6" />
+    <circle cx="690" cy="245" r="6" />
+    <circle cx="930" cy="205" r="6" />
+  </g>
+  <g stroke="#94a3b8" stroke-width="1.5" opacity="0.6">
+    <path d="M210 241 V330" />
+    <path d="M450 201 V330" />
+    <path d="M690 251 V330" />
+    <path d="M930 211 V330" />
+    <rect x="200" y="330" width="760" height="120" rx="18" fill="none" />
+  </g>
+
+  <rect x="90" y="60" width="560" height="92" rx="20" fill="rgba(15, 23, 42, 0.8)" stroke="#38bdf8" stroke-width="2" />
+  <text x="120" y="112" fill="#e2e8f0" font-family="JetBrains Mono, Menlo, monospace" font-size="32" font-weight="600">
+    devspace-microservices
+  </text>
+  <text x="120" y="148" fill="#94a3b8" font-family="JetBrains Mono, Menlo, monospace" font-size="18">
+    k8s orchestration + devspace workflows
+  </text>
+
+  <rect x="860" y="520" width="260" height="56" rx="16" fill="rgba(56, 189, 248, 0.12)" stroke="#38bdf8" />
+  <text x="884" y="555" fill="#e2e8f0" font-family="JetBrains Mono, Menlo, monospace" font-size="16">
+    helm / ci-cd / dev
+  </text>
+</svg>
