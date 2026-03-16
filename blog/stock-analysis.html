@@ -1,0 +1,560 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="How I built Stock Analysis - a comprehensive stock tracking and analysis tool using Claude Code and Qwen.">
+    <title>Stock Analysis - Built with AI Assistance | Anirudh Negi</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../stylesheets/stylesheet.css?v=5" media="screen">
+    <style>
+      .blog-post {
+        max-width: 800px;
+        margin: 0 auto;
+        padding: 60px 20px;
+      }
+
+      .blog-post-header {
+        margin-bottom: 40px;
+      }
+
+      .blog-post-nav {
+        margin-bottom: 30px;
+      }
+
+      .blog-post-nav a {
+        color: var(--accent-strong);
+        font-size: 0.95rem;
+      }
+
+      .blog-post-nav a:hover {
+        color: var(--accent);
+      }
+
+      .blog-post-title {
+        font-size: 2.5rem;
+        margin-bottom: 16px;
+      }
+
+      .blog-post-meta {
+        display: flex;
+        gap: 20px;
+        color: var(--text-muted);
+        font-size: 0.95rem;
+        margin-bottom: 30px;
+        flex-wrap: wrap;
+      }
+
+      .blog-post-image {
+        width: 100%;
+        height: 300px;
+        object-fit: cover;
+        border-radius: 16px;
+        margin-bottom: 30px;
+        border: 1px solid var(--border);
+      }
+
+      .blog-post-content h2 {
+        font-size: 1.6rem;
+        margin-top: 40px;
+        margin-bottom: 16px;
+        color: var(--text-light);
+      }
+
+      .blog-post-content h3 {
+        font-size: 1.3rem;
+        margin-top: 30px;
+        margin-bottom: 12px;
+        color: var(--text-light);
+      }
+
+      .blog-post-content p {
+        line-height: 1.8;
+        margin-bottom: 16px;
+        color: var(--text-muted);
+      }
+
+      .blog-post-content ul {
+        line-height: 1.8;
+        margin-bottom: 20px;
+        color: var(--text-muted);
+      }
+
+      .blog-post-content ol {
+        line-height: 1.8;
+        margin-bottom: 20px;
+        color: var(--text-muted);
+        padding-left: 24px;
+      }
+
+      .blog-post-content li {
+        margin-bottom: 8px;
+      }
+
+      .code-block {
+        background: var(--bg-alt);
+        border: 1px solid var(--border);
+        border-radius: 12px;
+        padding: 20px;
+        margin: 20px 0;
+        overflow-x: auto;
+      }
+
+      .code-block pre {
+        margin: 0;
+        font-family: var(--mono);
+        font-size: 0.9rem;
+        line-height: 1.6;
+        color: var(--text-light);
+      }
+
+      .code-block code {
+        color: var(--accent-strong);
+      }
+
+      .blog-post-tags {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        margin-top: 40px;
+        padding-top: 30px;
+        border-top: 1px solid var(--border);
+      }
+
+      .blog-post-tag {
+        background: var(--accent-soft);
+        color: var(--accent-strong);
+        border-radius: 999px;
+        padding: 6px 14px;
+        font-size: 0.85rem;
+        font-family: var(--mono);
+        border: 1px solid transparent;
+        transition: border-color 0.2s ease;
+      }
+
+      .blog-post-tag:hover {
+        border-color: var(--accent);
+      }
+
+      .blog-footer {
+        margin-top: 60px;
+        padding-top: 30px;
+        border-top: 1px solid var(--border);
+        text-align: center;
+      }
+
+      .blog-footer a {
+        color: var(--accent-strong);
+      }
+
+      .blog-footer a:hover {
+        color: var(--accent);
+      }
+
+      @media (max-width: 768px) {
+        .blog-post {
+          padding: 40px 16px;
+        }
+
+        .blog-post-title {
+          font-size: 2rem;
+        }
+
+        .blog-post-image {
+          height: 200px;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <a href="../index.html#main" class="skip-link">Skip to main content</a>
+
+    <header class="site-header">
+      <div class="container blog-post">
+        <div class="blog-post-nav">
+          <a href="index.html">&larr; Back to All Posts</a>
+        </div>
+
+        <div class="blog-post-header">
+          <h1 class="blog-post-title">Stock Analysis - Built with AI Assistance</h1>
+          <div class="blog-post-meta">
+            <span>March 16, 2026</span>
+            <span>&bull;</span>
+            <span>12 min read</span>
+          </div>
+          <img src="../images/blog/stock-analysis.png" alt="Stock Analysis" class="blog-post-image">
+        </div>
+
+        <div class="blog-post-content">
+          <p>Stock Analysis is a comprehensive tool for tracking stocks, analyzing price movements, and generating trading insights. It includes price tracking, technical indicators, portfolio management, and performance visualization. Built with AI pair programming assistance.</p>
+
+          <h2>The Goal</h2>
+          <p>Create a stock analysis tool that provides:</p>
+          <ol>
+            <li>Real-time and historical price data</li>
+            <li>Technical analysis indicators (moving averages, RSI, MACD)</li>
+            <li>Portfolio tracking and performance metrics</li>
+            <li>Visual charts and insights</li>
+            <li>Alert system for price movements</li>
+          </ol>
+
+          <h2>AI Tools Used</h2>
+          <ul>
+            <li><strong>Claude Code</strong>: Financial calculations, API integration, data visualization</li>
+            <li><strong>Qwen</strong>: Pandas optimization, statistical analysis, chart styling</li>
+          </ul>
+
+          <h2>How AI Helped</h2>
+
+          <h3>API Integration</h3>
+          <p>Claude helped implement robust API handling:</p>
+
+          <div class="code-block">
+            <pre><code>import requests
+from typing import Optional, List, Dict
+from datetime import datetime, timedelta
+import pandas as pd
+
+class StockDataFetcher:
+    def __init__(self, api_key: str):
+        self.api_key = api_key
+        self.base_url = "https://api.alpaca.markets/v2"
+        self.headers = {
+            "APCA-API-KEY-ID": api_key,
+            "APCA-API-SECRET-KEY": api_key
+        }
+
+    def get_historical_data(
+        self,
+        symbol: str,
+        start_date: datetime,
+        end_date: datetime,
+        timeframe: str = "1Day"
+    ) -> pd.DataFrame:
+        """Fetch historical stock data."""
+        params = {
+            "timeframe": timeframe,
+            "start": start_date.isoformat(),
+            "end": end_date.isoformat()
+        }
+
+        response = requests.get(
+            f"{self.base_url}/stocks/{symbol}/bars",
+            headers=self.headers,
+            params=params
+        )
+        response.raise_for_status()
+
+        bars = response.json()["bars"]
+
+        df = pd.DataFrame(bars)
+        df["timestamp"] = pd.to_datetime(df["t"])
+        df.set_index("timestamp", inplace=True)
+
+        return df[["open", "high", "low", "close", "volume"]]
+
+    def get_current_price(self, symbol: str) -> Optional[float]:
+        """Get current stock price."""
+        params = {"timeframe": "1Min"}
+        response = requests.get(
+            f"{self.base_url}/stocks/{symbol}/bars",
+            headers=self.headers,
+            params=params
+        )
+
+        if response.status_code == 200:
+            bars = response.json()["bars"]
+            if bars:
+                return bars[-1]["c"]
+        return None</code></pre>
+          </div>
+
+          <h3>Technical Indicators</h3>
+          <p>AI generated technical analysis functions:</p>
+
+          <div class="code-block">
+            <pre><code>import numpy as np
+
+class TechnicalAnalyzer:
+    @staticmethod
+    def calculate_sma(prices: pd.Series, window: int) -> pd.Series:
+        """Calculate Simple Moving Average."""
+        return prices.rolling(window=window).mean()
+
+    @staticmethod
+    def calculate_ema(prices: pd.Series, window: int) -> pd.Series:
+        """Calculate Exponential Moving Average."""
+        return prices.ewm(span=window, adjust=False).mean()
+
+    @staticmethod
+    def calculate_rsi(prices: pd.Series, window: int = 14) -> pd.Series:
+        """Calculate Relative Strength Index."""
+        delta = prices.diff()
+        gain = (delta.where(delta > 0, 0)).rolling(window=window).mean()
+        loss = (-delta.where(delta < 0, 0)).rolling(window=window).mean()
+
+        rs = gain / loss
+        rsi = 100 - (100 / (1 + rs))
+        return rsi
+
+    @staticmethod
+    def calculate_macd(prices: pd.Series) -> pd.DataFrame:
+        """Calculate MACD indicator."""
+        ema_12 = prices.ewm(span=12, adjust=False).mean()
+        ema_26 = prices.ewm(span=26, adjust=False).mean()
+
+        macd_line = ema_12 - ema_26
+        signal_line = macd_line.ewm(span=9, adjust=False).mean()
+        histogram = macd_line - signal_line
+
+        return pd.DataFrame({
+            "macd": macd_line,
+            "signal": signal_line,
+            "histogram": histogram
+        })
+
+    @staticmethod
+    def calculate_bollinger_bands(
+        prices: pd.Series,
+        window: int = 20,
+        num_std: float = 2.0
+    ) -> pd.DataFrame:
+        """Calculate Bollinger Bands."""
+        sma = prices.rolling(window=window).mean()
+        std = prices.rolling(window=window).std()
+
+        upper_band = sma + (std * num_std)
+        lower_band = sma - (std * num_std)
+
+        return pd.DataFrame({
+            "upper": upper_band,
+            "middle": sma,
+            "lower": lower_band
+        })</code></pre>
+          </div>
+
+          <h3>Portfolio Management</h3>
+          <p>AI designed a comprehensive portfolio tracking system:</p>
+
+          <div class="code-block">
+            <pre><code>from dataclasses import dataclass, field
+from typing import Dict, List, Optional
+from datetime import datetime
+
+@dataclass
+class Holding:
+    symbol: str
+    shares: float
+    avg_cost: float
+    purchase_date: datetime = field(default_factory=datetime.now)
+
+    @property
+    def total_cost(self) -> float:
+        return self.shares * self.avg_cost
+
+@dataclass
+class Portfolio:
+    holdings: Dict[str, Holding] = field(default_factory=dict)
+    cash: float = 100000.0
+
+    def add_position(self, symbol: str, shares: float, price: float):
+        """Add or increase a position."""
+        if symbol in self.holdings:
+            existing = self.holdings[symbol]
+            total_shares = existing.shares + shares
+            total_cost = existing.total_cost + (shares * price)
+            new_avg_cost = total_cost / total_shares
+
+            self.holdings[symbol] = Holding(
+                symbol=symbol,
+                shares=total_shares,
+                avg_cost=new_avg_cost,
+                purchase_date=existing.purchase_date
+            )
+        else:
+            self.holdings[symbol] = Holding(
+                symbol=symbol,
+                shares=shares,
+                avg_cost=price
+            )
+
+        self.cash -= shares * price
+
+    def get_total_value(self, current_prices: Dict[str, float]) -> float:
+        """Calculate total portfolio value."""
+        stock_value = sum(
+            holding.shares * current_prices.get(holding.symbol, 0)
+            for holding in self.holdings.values()
+        )
+        return self.cash + stock_value
+
+    def get_performance(self, current_prices: Dict[str, float]) -> List[Dict]:
+        """Get performance for each holding."""
+        performance = []
+
+        for symbol, holding in self.holdings.items():
+            current_price = current_prices.get(symbol, 0)
+            current_value = holding.shares * current_price
+            gain_loss = current_value - holding.total_cost
+            gain_loss_pct = (gain_loss / holding.total_cost) * 100
+
+            performance.append({
+                "symbol": symbol,
+                "shares": holding.shares,
+                "avg_cost": holding.avg_cost,
+                "current_price": current_price,
+                "current_value": current_value,
+                "gain_loss": gain_loss,
+                "gain_loss_pct": gain_loss_pct
+            })
+
+        return performance</code></pre>
+          </div>
+
+          <h3>Data Visualization</h3>
+          <p>AI helped create comprehensive visualizations:</p>
+
+          <div class="code-block">
+            <pre><code>import matplotlib.pyplot as plt
+import matplotlib.dates as mdates
+
+class StockChartGenerator:
+    def __init__(self, style: str = "dark"):
+        self.style = style
+        self.colors = {
+            "dark": {
+                "background": "#0f172a",
+                "grid": "#334155",
+                "text": "#e2e8f0",
+                "up": "#22c55e",
+                "down": "#ef4444"
+            },
+            "light": {
+                "background": "#ffffff",
+                "grid": "#e5e7eb",
+                "text": "#1f2937",
+                "up": "#16a34a",
+                "down": "#dc2626"
+            }
+        }
+
+    def create_price_chart(
+        self,
+        df: pd.DataFrame,
+        symbol: str,
+        show_ma: bool = True,
+        show_volume: bool = True
+    ) -> plt.Figure:
+        """Create a comprehensive price chart with indicators."""
+        fig, axes = plt.subplots(2, 1, figsize=(14, 8), gridspec_kw={'height_ratios': [3, 1]})
+
+        colors = self.colors[self.style]
+
+        # Price chart
+        ax1 = axes[0]
+        ax1.plot(df.index, df["close"], color=colors["up"], linewidth=1.5, label="Price")
+
+        if show_ma:
+            sma_20 = TechnicalAnalyzer.calculate_sma(df["close"], 20)
+            sma_50 = TechnicalAnalyzer.calculate_sma(df["close"], 50)
+            ax1.plot(sma_20.index, sma_20, "w--", linewidth=1, label="SMA 20")
+            ax1.plot(sma_50.index, sma_50, "w--", linewidth=1, label="SMA 50")
+
+        ax1.set_title(f"{symbol} Price History", fontsize=14, color=colors["text"])
+        ax1.set_ylabel("Price", color=colors["text"])
+        ax1.grid(True, alpha=0.3, color=colors["grid"])
+        ax1.legend(loc="upper left")
+
+        # Volume chart
+        if show_volume:
+            ax2 = axes[1]
+            colors_volume = [colors["up"] if df["close"].iloc[i] >= df["open"].iloc[i]
+                           else colors["down"] for i in range(len(df))]
+
+            ax2.bar(df.index, df["volume"], color=colors_volume, alpha=0.5)
+            ax2.set_ylabel("Volume", color=colors["text"])
+            ax2.grid(True, alpha=0.3, color=colors["grid"])
+
+        # Formatting
+        ax1.xaxis.set_major_formatter(mdates.DateFormatter("%Y-%m-%d"))
+        plt.xticks(rotation=45)
+        plt.tight_layout()
+
+        return fig</code></pre>
+          </div>
+
+          <h2>The Process</h2>
+
+          <h3>Prompting Strategy</h3>
+          <ul>
+            <li>Define data models (Holding, Portfolio)</li>
+            <li>Implement API layer</li>
+            <li>Add technical indicators</li>
+            <li>Build portfolio management</li>
+            <li>Create visualizations</li>
+          </ul>
+
+          <h3>Example Prompt</h3>
+          <div class="code-block">
+            <pre><code>I need a Python class for tracking stock portfolio.
+It should:
+1. Track holdings with symbol, shares, and average cost
+2. Allow adding and removing positions
+3. Calculate current value and gains/losses
+4. Support multiple stocks
+
+Start with the dataclass definitions.</code></pre>
+          </div>
+
+          <h2>Challenges</h2>
+
+          <h3>What AI Couldn't Help With</h3>
+          <ul>
+            <li><strong>Market prediction</strong>: AI cannot predict stock movements</li>
+            <li><strong>Regulatory compliance</strong>: Legal requirements need human review</li>
+            <li><strong>Risk assessment</strong>: Investment decisions require human judgment</li>
+          </ul>
+
+          <h3>Unexpected Issues</h3>
+          <ul>
+            <li>API rate limits</li>
+            <li>Data gaps in historical data</li>
+            <li>Stock splits and adjustments</li>
+          </ul>
+
+          <h2>Results</h2>
+
+          <h3>Quantitative</h3>
+          <ul>
+            <li><strong>Development time</strong>: 4 days with AI vs estimated 6-8 days without</li>
+            <li><strong>Indicators</strong>: 10+ technical indicators implemented</li>
+            <li><strong>Data support</strong>: Works with major stock exchanges</li>
+          </ul>
+
+          <h2>Key Learnings</h2>
+          <ol>
+            <li><strong>AI excels at calculations</strong> - Technical indicators are well-defined</li>
+            <li><strong>Modular design helps</strong> - Separate API, calculations, and visualization</li>
+            <li><strong>Testing is crucial</strong> - Validate calculations against known values</li>
+            <li><strong>Error handling matters</strong> - API calls can fail</li>
+            <li><strong>Documentation is key</strong> - Explain financial concepts clearly</li>
+          </ol>
+
+          <div class="blog-post-tags">
+            <span class="blog-post-tag">AI-Assisted</span>
+            <span class="blog-post-tag">Finance</span>
+            <span class="blog-post-tag">Python</span>
+            <span class="blog-post-tag">Data Analysis</span>
+          </div>
+        </div>
+
+        <div class="blog-footer">
+          <p>Built with <a href="https://github.com/negiadventures/stock_analysis" target="_blank" rel="noreferrer">Stock Analysis</a> &bull; <a href="../index.html">Back to Portfolio</a></p>
+          <p style="margin-top: 16px; font-size: 0.9rem;"><em>This project was built with AI pair programming assistance using Claude Code and Qwen.</em></p>
+        </div>
+      </div>
+    </header>
+  </body>
+</html>

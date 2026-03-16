@@ -1,0 +1,457 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="How I built Mortgage Atlas - a comprehensive mortgage cost calculator using Claude Code and Qwen.">
+    <title>Mortgage Atlas - Built with AI Assistance | Anirudh Negi</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../stylesheets/stylesheet.css?v=5" media="screen">
+    <style>
+      .blog-post {
+        max-width: 800px;
+        margin: 0 auto;
+        padding: 60px 20px;
+      }
+
+      .blog-post-header {
+        margin-bottom: 40px;
+      }
+
+      .blog-post-nav {
+        margin-bottom: 30px;
+      }
+
+      .blog-post-nav a {
+        color: var(--accent-strong);
+        font-size: 0.95rem;
+      }
+
+      .blog-post-nav a:hover {
+        color: var(--accent);
+      }
+
+      .blog-post-title {
+        font-size: 2.5rem;
+        margin-bottom: 16px;
+      }
+
+      .blog-post-meta {
+        display: flex;
+        gap: 20px;
+        color: var(--text-muted);
+        font-size: 0.95rem;
+        margin-bottom: 30px;
+        flex-wrap: wrap;
+      }
+
+      .blog-post-image {
+        width: 100%;
+        height: 300px;
+        object-fit: cover;
+        border-radius: 16px;
+        margin-bottom: 30px;
+        border: 1px solid var(--border);
+      }
+
+      .blog-post-content h2 {
+        font-size: 1.6rem;
+        margin-top: 40px;
+        margin-bottom: 16px;
+        color: var(--text-light);
+      }
+
+      .blog-post-content h3 {
+        font-size: 1.3rem;
+        margin-top: 30px;
+        margin-bottom: 12px;
+        color: var(--text-light);
+      }
+
+      .blog-post-content p {
+        line-height: 1.8;
+        margin-bottom: 16px;
+        color: var(--text-muted);
+      }
+
+      .blog-post-content ul {
+        line-height: 1.8;
+        margin-bottom: 20px;
+        color: var(--text-muted);
+      }
+
+      .blog-post-content ol {
+        line-height: 1.8;
+        margin-bottom: 20px;
+        color: var(--text-muted);
+        padding-left: 24px;
+      }
+
+      .blog-post-content li {
+        margin-bottom: 8px;
+      }
+
+      .code-block {
+        background: var(--bg-alt);
+        border: 1px solid var(--border);
+        border-radius: 12px;
+        padding: 20px;
+        margin: 20px 0;
+        overflow-x: auto;
+      }
+
+      .code-block pre {
+        margin: 0;
+        font-family: var(--mono);
+        font-size: 0.9rem;
+        line-height: 1.6;
+        color: var(--text-light);
+      }
+
+      .code-block code {
+        color: var(--accent-strong);
+      }
+
+      .blog-post-tags {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        margin-top: 40px;
+        padding-top: 30px;
+        border-top: 1px solid var(--border);
+      }
+
+      .blog-post-tag {
+        background: var(--accent-soft);
+        color: var(--accent-strong);
+        border-radius: 999px;
+        padding: 6px 14px;
+        font-size: 0.85rem;
+        font-family: var(--mono);
+        border: 1px solid transparent;
+        transition: border-color 0.2s ease;
+      }
+
+      .blog-post-tag:hover {
+        border-color: var(--accent);
+      }
+
+      .blog-footer {
+        margin-top: 60px;
+        padding-top: 30px;
+        border-top: 1px solid var(--border);
+        text-align: center;
+      }
+
+      .blog-footer a {
+        color: var(--accent-strong);
+      }
+
+      .blog-footer a:hover {
+        color: var(--accent);
+      }
+
+      @media (max-width: 768px) {
+        .blog-post {
+          padding: 40px 16px;
+        }
+
+        .blog-post-title {
+          font-size: 2rem;
+        }
+
+        .blog-post-image {
+          height: 200px;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <a href="../index.html#main" class="skip-link">Skip to main content</a>
+
+    <header class="site-header">
+      <div class="container blog-post">
+        <div class="blog-post-nav">
+          <a href="index.html">&larr; Back to All Posts</a>
+        </div>
+
+        <div class="blog-post-header">
+          <h1 class="blog-post-title">Mortgage Atlas - Built with AI Assistance</h1>
+          <div class="blog-post-meta">
+            <span>March 16, 2026</span>
+            <span>&bull;</span>
+            <span>10 min read</span>
+          </div>
+          <img src="../images/blog/mortgage-atlas.png" alt="Mortgage Atlas" class="blog-post-image">
+        </div>
+
+        <div class="blog-post-content">
+          <p>Mortgage Atlas is a comprehensive homeownership cost estimator that goes beyond basic mortgage calculators. It models the true cost of homeownership including mortgage payments, property taxes, insurance, maintenance, and opportunity costs. Built with AI pair programming assistance.</p>
+
+          <h2>The Goal</h2>
+          <p>Create a mortgage calculator that answers the question: "What does homeownership REALLY cost?" Most calculators only show monthly payments, but the true cost includes many hidden factors.</p>
+
+          <h2>AI Tools Used</h2>
+          <ul>
+            <li><strong>Claude Code</strong>: Financial formulas, Chart.js integration, state management</li>
+            <li><strong>Qwen</strong>: TypeScript type definitions, validation logic, edge case handling</li>
+          </ul>
+
+          <h2>How AI Helped</h2>
+
+          <h3>Financial Formulas</h3>
+          <p>Claude helped implement the standard mortgage formula with precision:</p>
+
+          <div class="code-block">
+            <pre><code>function calculateMortgagePayment(
+  principal: number,
+  annualRate: number,
+  years: number
+): number {
+  const monthlyRate = annualRate / 12;
+  const numberOfPayments = years * 12;
+
+  if (monthlyRate === 0) return principal / numberOfPayments;
+
+  return (
+    (principal * monthlyRate * Math.pow(1 + monthlyRate, numberOfPayments)) /
+    (Math.pow(1 + monthlyRate, numberOfPayments) - 1)
+  );
+}</code></pre>
+          </div>
+
+          <h3>Amortization Schedule</h3>
+          <p>AI generated a complete amortization schedule generator:</p>
+
+          <div class="code-block">
+            <pre><code>interface AmortizationRow {
+  month: number;
+  payment: number;
+  principal: number;
+  interest: number;
+  balance: number;
+  year: number;
+}
+
+function generateAmortizationSchedule(
+  principal: number,
+  annualRate: number,
+  years: number
+): AmortizationRow[] {
+  const monthlyRate = annualRate / 12;
+  const totalPayments = years * 12;
+  const monthlyPayment = calculateMortgagePayment(principal, annualRate, years);
+
+  const schedule: AmortizationRow[] = [];
+  let balance = principal;
+
+  for (let month = 1; month <= totalPayments; month++) {
+    const interest = balance * monthlyRate;
+    const principalPayment = monthlyPayment - interest;
+    balance -= principalPayment;
+
+    schedule.push({
+      month,
+      payment: monthlyPayment,
+      principal: principalPayment,
+      interest,
+      balance: Math.max(0, balance),
+      year: Math.ceil(month / 12)
+    });
+  }
+
+  return schedule;
+}</code></pre>
+          </div>
+
+          <h3>Chart.js Integration</h3>
+          <p>AI helped set up interactive charts for amortization:</p>
+
+          <div class="code-block">
+            <pre><code>function createAmortizationChart(
+  ctx: CanvasRenderingContext2D,
+  schedule: AmortizationRow[]
+) {
+  const labels = schedule.map(row => `Year ${row.year}`);
+  const principalData = schedule
+    .reduce((acc, row, i) => {
+      if (i === 0 || i % 12 === 0) {
+        acc.push(row.balance);
+      }
+      return acc;
+    }, [] as number[]);
+
+  new Chart(ctx, {
+    type: 'line',
+    data: {
+      labels,
+      datasets: [{
+        label: 'Remaining Balance',
+        data: principalData,
+        borderColor: '#6366f1',
+        backgroundColor: 'rgba(99, 102, 241, 0.1)',
+        fill: true,
+        tension: 0.4
+      }]
+    },
+    options: {
+      responsive: true,
+      plugins: {
+        legend: { display: true },
+        tooltip: {
+          callbacks: {
+            label: (context) =>
+              `$${context.parsed.y.toLocaleString('en-US', {
+                maximumFractionDigits: 0
+              })}`
+          }
+        }
+      },
+      scales: {
+        y: {
+          beginAtZero: true,
+          ticks: {
+            callback: (value) =>
+              `$${(value / 1000).toFixed(0)}k`
+          }
+        }
+      }
+    }
+  });
+}</code></pre>
+          </div>
+
+          <h3>State Management</h3>
+          <p>AI created a robust state management system:</p>
+
+          <div class="code-block">
+            <pre><code>interface MortgageInputs {
+  homePrice: number;
+  downPayment: number;
+  interestRate: number;
+  loanTerm: number;
+  propertyTaxRate: number;
+  homeInsurance: number;
+  hoaFees: number;
+  maintenanceRate: number;
+}
+
+class MortgageCalculator {
+  private inputs: MortgageInputs;
+  private errors: Record<string, string> = {};
+
+  constructor(defaults: Partial<MortgageInputs> = {}) {
+    this.inputs = {
+      homePrice: 500000,
+      downPayment: 100000,
+      interestRate: 6.5,
+      loanTerm: 30,
+      propertyTaxRate: 1.2,
+      homeInsurance: 1200,
+      hoaFees: 0,
+      maintenanceRate: 0.5,
+      ...defaults
+    };
+  }
+
+  validate(): boolean {
+    this.errors = {};
+
+    if (this.inputs.downPayment > this.inputs.homePrice) {
+      this.errors.downPayment = 'Down payment cannot exceed home price';
+    }
+
+    if (this.inputs.interestRate < 0 || this.inputs.interestRate > 20) {
+      this.errors.interestRate = 'Interest rate must be between 0% and 20%';
+    }
+
+    return Object.keys(this.errors).length === 0;
+  }
+
+  getTotalMonthlyCost(): number {
+    const principalAndInterest = this.calculatePrincipalAndInterest();
+    const propertyTax = this.inputs.homePrice * (this.inputs.propertyTaxRate / 100) / 12;
+    const homeInsurance = this.inputs.homeInsurance / 12;
+    const hoa = this.inputs.hoaFees;
+    const maintenance = this.inputs.homePrice * (this.inputs.maintenanceRate / 100) / 12;
+
+    return principalAndInterest + propertyTax + homeInsurance + hoa + maintenance;
+  }
+}</code></pre>
+          </div>
+
+          <h2>The Process</h2>
+
+          <h3>Prompting Strategy</h3>
+          <ul>
+            <li>Define the data model first with AI</li>
+            <li>Generate validation logic</li>
+            <li>Implement calculation functions</li>
+            <li>Build the UI components</li>
+            <li>Add visualization</li>
+          </ul>
+
+          <h3>Example Prompt</h3>
+          <div class="code-block">
+            <pre><code>I need a TypeScript class for a mortgage calculator.
+It should:
+1. Accept inputs: home price, down payment, interest rate, loan term
+2. Calculate monthly payment using standard formula
+3. Generate amortization schedule
+4. Include property tax, insurance, HOA, maintenance
+
+Start with the TypeScript interfaces, then we'll implement the class.</code></pre>
+          </div>
+
+          <h2>Challenges</h2>
+
+          <h3>What AI Couldn't Help With</h3>
+          <ul>
+            <li><strong>Local variations</strong>: Property tax rates vary wildly by location</li>
+            <li><strong>Market predictions</strong>: AI couldn't predict interest rate trends</li>
+            <li><strong>User education</strong>: Need to explain complex financial concepts</li>
+          </ul>
+
+          <h3>Unexpected Issues</h3>
+          <ul>
+            <li>Floating point precision in financial calculations</li>
+            <li>Edge cases with very short/long loan terms</li>
+            <li>Handling zero interest rate scenarios</li>
+          </ul>
+
+          <h2>Results</h2>
+
+          <h3>Quantitative</h3>
+          <ul>
+            <li><strong>Development time</strong>: 2 days with AI vs estimated 4-5 days without</li>
+            <li><strong>Code coverage</strong>: AI helped write tests for edge cases</li>
+            <li><strong>Accuracy</strong>: Validated against multiple online calculators</li>
+          </ul>
+
+          <h2>Key Learnings</h2>
+          <ol>
+            <li><strong>AI is great at formulas</strong> - Financial calculations are well-documented</li>
+            <li><strong>TypeScript + AI = fewer bugs</strong> - Type errors caught early</li>
+            <li><strong>Edge cases matter</strong> - AI helps identify scenarios you might miss</li>
+            <li><strong>Documentation is key</strong> - AI-generated docs help explain complex logic</li>
+            <li><strong>Validation is crucial</strong> - Always validate financial calculations</li>
+          </ol>
+
+          <div class="blog-post-tags">
+            <span class="blog-post-tag">AI-Assisted</span>
+            <span class="blog-post-tag">Finance</span>
+            <span class="blog-post-tag">TypeScript</span>
+            <span class="blog-post-tag">Data Viz</span>
+          </div>
+        </div>
+
+        <div class="blog-footer">
+          <p>Built with <a href="https://github.com/negiadventures/mortgage-atlas" target="_blank" rel="noreferrer">Mortgage Atlas</a> &bull; <a href="../index.html">Back to Portfolio</a></p>
+          <p style="margin-top: 16px; font-size: 0.9rem;"><em>This project was built with AI pair programming assistance using Claude Code and Qwen.</em></p>
+        </div>
+      </div>
+    </header>
+  </body>
+</html>

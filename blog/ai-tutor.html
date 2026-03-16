@@ -1,0 +1,406 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="How I built AI Tutor - an AI-powered document-to-quiz generator using Claude Code and Qwen.">
+    <title>AI Tutor - Built with AI Assistance | Anirudh Negi</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../stylesheets/stylesheet.css?v=5" media="screen">
+    <style>
+      .blog-post {
+        max-width: 800px;
+        margin: 0 auto;
+        padding: 60px 20px;
+      }
+
+      .blog-post-header {
+        margin-bottom: 40px;
+      }
+
+      .blog-post-nav {
+        margin-bottom: 30px;
+      }
+
+      .blog-post-nav a {
+        color: var(--accent-strong);
+        font-size: 0.95rem;
+      }
+
+      .blog-post-nav a:hover {
+        color: var(--accent);
+      }
+
+      .blog-post-title {
+        font-size: 2.5rem;
+        margin-bottom: 16px;
+      }
+
+      .blog-post-meta {
+        display: flex;
+        gap: 20px;
+        color: var(--text-muted);
+        font-size: 0.95rem;
+        margin-bottom: 30px;
+        flex-wrap: wrap;
+      }
+
+      .blog-post-image {
+        width: 100%;
+        height: 300px;
+        object-fit: cover;
+        border-radius: 16px;
+        margin-bottom: 30px;
+        border: 1px solid var(--border);
+      }
+
+      .blog-post-content h2 {
+        font-size: 1.6rem;
+        margin-top: 40px;
+        margin-bottom: 16px;
+        color: var(--text-light);
+      }
+
+      .blog-post-content h3 {
+        font-size: 1.3rem;
+        margin-top: 30px;
+        margin-bottom: 12px;
+        color: var(--text-light);
+      }
+
+      .blog-post-content p {
+        line-height: 1.8;
+        margin-bottom: 16px;
+        color: var(--text-muted);
+      }
+
+      .blog-post-content ul {
+        line-height: 1.8;
+        margin-bottom: 20px;
+        color: var(--text-muted);
+      }
+
+      .blog-post-content ol {
+        line-height: 1.8;
+        margin-bottom: 20px;
+        color: var(--text-muted);
+        padding-left: 24px;
+      }
+
+      .blog-post-content li {
+        margin-bottom: 8px;
+      }
+
+      .code-block {
+        background: var(--bg-alt);
+        border: 1px solid var(--border);
+        border-radius: 12px;
+        padding: 20px;
+        margin: 20px 0;
+        overflow-x: auto;
+      }
+
+      .code-block pre {
+        margin: 0;
+        font-family: var(--mono);
+        font-size: 0.9rem;
+        line-height: 1.6;
+        color: var(--text-light);
+      }
+
+      .code-block code {
+        color: var(--accent-strong);
+      }
+
+      .blog-post-tags {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        margin-top: 40px;
+        padding-top: 30px;
+        border-top: 1px solid var(--border);
+      }
+
+      .blog-post-tag {
+        background: var(--accent-soft);
+        color: var(--accent-strong);
+        border-radius: 999px;
+        padding: 6px 14px;
+        font-size: 0.85rem;
+        font-family: var(--mono);
+        border: 1px solid transparent;
+        transition: border-color 0.2s ease;
+      }
+
+      .blog-post-tag:hover {
+        border-color: var(--accent);
+      }
+
+      .blog-footer {
+        margin-top: 60px;
+        padding-top: 30px;
+        border-top: 1px solid var(--border);
+        text-align: center;
+      }
+
+      .blog-footer a {
+        color: var(--accent-strong);
+      }
+
+      .blog-footer a:hover {
+        color: var(--accent);
+      }
+
+      @media (max-width: 768px) {
+        .blog-post {
+          padding: 40px 16px;
+        }
+
+        .blog-post-title {
+          font-size: 2rem;
+        }
+
+        .blog-post-image {
+          height: 200px;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <a href="../index.html#main" class="skip-link">Skip to main content</a>
+
+    <header class="site-header">
+      <div class="container blog-post">
+        <div class="blog-post-nav">
+          <a href="index.html">&larr; Back to All Posts</a>
+        </div>
+
+        <div class="blog-post-header">
+          <h1 class="blog-post-title">AI Tutor - Built with AI Assistance</h1>
+          <div class="blog-post-meta">
+            <span>March 16, 2026</span>
+            <span>&bull;</span>
+            <span>12 min read</span>
+          </div>
+          <img src="../images/blog/ai-tutor.png" alt="AI Tutor" class="blog-post-image">
+        </div>
+
+        <div class="blog-post-content">
+          <p>AI Tutor is an intelligent study tool that converts documents (PDFs, textbooks, lecture notes) into chapter-level quizzes with adaptive difficulty. The system uses AI to extract key concepts and generate relevant questions, helping students learn more effectively.</p>
+
+          <h2>The Goal</h2>
+          <p>Create a tool that:</p>
+          <ol>
+            <li>Reads educational documents</li>
+            <li>Extracts key concepts and facts</li>
+            <li>Generates quiz questions at different difficulty levels</li>
+            <li>Provides explanations for answers</li>
+            <li>Tracks progress over time</li>
+          </ol>
+
+          <h2>AI Tools Used</h2>
+          <ul>
+            <li><strong>Claude Code</strong>: Document parsing, question generation logic, quiz engine</li>
+            <li><strong>Qwen</strong>: NLP concepts, embedding strategies, answer validation</li>
+          </ul>
+
+          <h2>How AI Helped</h2>
+
+          <h3>Document Parsing</h3>
+          <p>Claude helped implement robust PDF parsing with PyMuPDF:</p>
+
+          <div class="code-block">
+            <pre><code>import fitz  # PyMuPDF
+from typing import List, Dict
+
+class DocumentParser:
+    def __init__(self, filepath: str):
+        self.doc = fitz.open(filepath)
+        self.text_blocks: List[Dict] = []
+
+    def extract_text(self) -> str:
+        full_text = []
+        for page_num in range(len(self.doc)):
+            page = self.doc[page_num]
+            blocks = page.get_text("dict")["blocks"]
+
+            for block in blocks:
+                if "lines" in block:
+                    for line in block["lines"]:
+                        for span in line["spans"]:
+                            full_text.append(span["text"])
+        return " ".join(full_text)</code></pre>
+          </div>
+
+          <h3>Chapter Extraction</h3>
+          <p>AI designed a flexible chapter detection system:</p>
+
+          <div class="code-block">
+            <pre><code>def extract_chapters(self) -> List[Dict]:
+    """Extract chapter boundaries and content."""
+    chapters = []
+    current_chapter = {
+        "title": "Introduction",
+        "content": "",
+        "start_page": 0
+    }
+
+    for page_num, page in enumerate(self.doc):
+        text = page.get_text()
+        lines = text.split("\n")
+
+        for line in lines:
+            # Detect chapter headings (uppercase, short lines)
+            if self._is_chapter_heading(line):
+                if current_chapter["content"].strip():
+                    chapters.append(current_chapter)
+                current_chapter = {
+                    "title": line.strip(),
+                    "content": "",
+                    "start_page": page_num
+                }
+            else:
+                current_chapter["content"] += line + "\n"
+
+    if current_chapter["content"].strip():
+        chapters.append(current_chapter)
+
+    return chapters</code></pre>
+          </div>
+
+          <h3>Quiz Generator Class</h3>
+          <p>AI designed a flexible quiz generation system with dataclasses:</p>
+
+          <div class="code-block">
+            <pre><code>from enum import Enum
+from dataclasses import dataclass
+from typing import List, Optional
+
+class Difficulty(Enum):
+    EASY = "easy"
+    MEDIUM = "medium"
+    HARD = "hard"
+
+@dataclass
+class Question:
+    text: str
+    options: List[str]
+    correct_answer: int
+    explanation: str
+    difficulty: Difficulty
+    topic: str
+
+@dataclass
+class Quiz:
+    title: str
+    questions: List[Question]
+    total_score: int = 0</code></pre>
+          </div>
+
+          <h3>Quiz Runner</h3>
+          <p>AI helped build the quiz execution engine:</p>
+
+          <div class="code-block">
+            <pre><code>class QuizRunner:
+    def __init__(self, quiz: Quiz):
+        self.quiz = quiz
+        self.current_question = 0
+        self.score = 0
+        self.answers: List[Tuple[int, int, float]] = []
+        self.start_time = datetime.now()
+
+    def get_current_question(self) -> Question:
+        return self.quiz.questions[self.current_question]
+
+    def submit_answer(self, answer_idx: int) -> bool:
+        question = self.quiz.questions[self.current_question]
+        is_correct = answer_idx == question.correct_answer
+
+        if is_correct:
+            self.score += self._calculate_points(question)
+
+        self.answers.append((
+            self.current_question,
+            answer_idx,
+            (datetime.now() - self.start_time).total_seconds()
+        ))
+
+        self.current_question += 1
+        return is_correct</code></pre>
+          </div>
+
+          <h2>The Process</h2>
+
+          <h3>Prompting Strategy</h3>
+          <ul>
+            <li>Define data models first (Question, Quiz, Difficulty)</li>
+            <li>Build parsing layer</li>
+            <li>Implement question generation</li>
+            <li>Create quiz runner</li>
+            <li>Add results tracking</li>
+          </ul>
+
+          <h3>Example Prompt</h3>
+          <div class="code-block">
+            <pre><code>I need a Python class structure for a quiz system.
+It should have:
+1. Question dataclass with text, options, correct_answer, explanation
+2. Quiz class that contains multiple questions
+3. Difficulty enum (easy, medium, hard)
+4. Methods to calculate score based on difficulty
+
+Start with the dataclasses and enums.</code></pre>
+          </div>
+
+          <h2>Challenges</h2>
+
+          <h3>What AI Couldn't Help With</h3>
+          <ul>
+            <li><strong>Semantic understanding</strong>: AI couldn't truly understand document content</li>
+            <li><strong>Question quality</strong>: Human review needed for accurate questions</li>
+            <li><strong>Educational value</strong>: Pedagogical decisions required human expertise</li>
+          </ul>
+
+          <h3>Unexpected Issues</h3>
+          <ul>
+            <li>PDF formatting varies widely across documents</li>
+            <li>Some documents have poor OCR quality</li>
+            <li>Handling images and formulas in PDFs</li>
+          </ul>
+
+          <h2>Results</h2>
+
+          <h3>Quantitative</h3>
+          <ul>
+            <li><strong>Development time</strong>: 3 days with AI vs estimated 5-7 days without</li>
+            <li><strong>Document support</strong>: Works with various PDF formats</li>
+            <li><strong>Question generation</strong>: Can generate 50+ questions per document</li>
+          </ul>
+
+          <h2>Key Learnings</h2>
+          <ol>
+            <li><strong>AI helps with structure</strong> - Data models and class design</li>
+            <li><strong>Human oversight needed</strong> - Question accuracy requires review</li>
+            <li><strong>Modular design is key</strong> - Separate parsing, generation, and execution</li>
+            <li><strong>Type hints help</strong> - Catch errors early with static analysis</li>
+            <li><strong>Testing is crucial</strong> - Validate with real documents</li>
+          </ol>
+
+          <div class="blog-post-tags">
+            <span class="blog-post-tag">AI-Assisted</span>
+            <span class="blog-post-tag">Education</span>
+            <span class="blog-post-tag">Python</span>
+            <span class="blog-post-tag">NLP</span>
+          </div>
+        </div>
+
+        <div class="blog-footer">
+          <p>Built with <a href="https://github.com/negiadventures/ai-tutor" target="_blank" rel="noreferrer">AI Tutor</a> &bull; <a href="../index.html">Back to Portfolio</a></p>
+          <p style="margin-top: 16px; font-size: 0.9rem;"><em>This project was built with AI pair programming assistance using Claude Code and Qwen.</em></p>
+        </div>
+      </div>
+    </header>
+  </body>
+</html>

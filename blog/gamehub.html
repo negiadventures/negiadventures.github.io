@@ -1,0 +1,350 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="How I built GameHub - a collection of 6 browser games using Claude Code and Qwen for AI pair programming.">
+    <title>GameHub - Built with AI Assistance | Anirudh Negi</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../stylesheets/stylesheet.css?v=5" media="screen">
+    <style>
+      .blog-post {
+        max-width: 800px;
+        margin: 0 auto;
+        padding: 60px 20px;
+      }
+
+      .blog-post-header {
+        margin-bottom: 40px;
+      }
+
+      .blog-post-nav {
+        margin-bottom: 30px;
+      }
+
+      .blog-post-nav a {
+        color: var(--accent-strong);
+        font-size: 0.95rem;
+      }
+
+      .blog-post-nav a:hover {
+        color: var(--accent);
+      }
+
+      .blog-post-title {
+        font-size: 2.5rem;
+        margin-bottom: 16px;
+      }
+
+      .blog-post-meta {
+        display: flex;
+        gap: 20px;
+        color: var(--text-muted);
+        font-size: 0.95rem;
+        margin-bottom: 30px;
+        flex-wrap: wrap;
+      }
+
+      .blog-post-image {
+        width: 100%;
+        height: 300px;
+        object-fit: cover;
+        border-radius: 16px;
+        margin-bottom: 30px;
+        border: 1px solid var(--border);
+      }
+
+      .blog-post-content h2 {
+        font-size: 1.6rem;
+        margin-top: 40px;
+        margin-bottom: 16px;
+        color: var(--text-light);
+      }
+
+      .blog-post-content h3 {
+        font-size: 1.3rem;
+        margin-top: 30px;
+        margin-bottom: 12px;
+        color: var(--text-light);
+      }
+
+      .blog-post-content p {
+        line-height: 1.8;
+        margin-bottom: 16px;
+        color: var(--text-muted);
+      }
+
+      .blog-post-content ul {
+        line-height: 1.8;
+        margin-bottom: 20px;
+        color: var(--text-muted);
+      }
+
+      .blog-post-content li {
+        margin-bottom: 8px;
+      }
+
+      .code-block {
+        background: var(--bg-alt);
+        border: 1px solid var(--border);
+        border-radius: 12px;
+        padding: 20px;
+        margin: 20px 0;
+        overflow-x: auto;
+      }
+
+      .code-block pre {
+        margin: 0;
+        font-family: var(--mono);
+        font-size: 0.9rem;
+        line-height: 1.6;
+        color: var(--text-light);
+      }
+
+      .code-block code {
+        color: var(--accent-strong);
+      }
+
+      .blog-post-tags {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        margin-top: 40px;
+        padding-top: 30px;
+        border-top: 1px solid var(--border);
+      }
+
+      .blog-post-tag {
+        background: var(--accent-soft);
+        color: var(--accent-strong);
+        border-radius: 999px;
+        padding: 6px 14px;
+        font-size: 0.85rem;
+        font-family: var(--mono);
+        border: 1px solid transparent;
+        transition: border-color 0.2s ease;
+      }
+
+      .blog-post-tag:hover {
+        border-color: var(--accent);
+      }
+
+      .blog-footer {
+        margin-top: 60px;
+        padding-top: 30px;
+        border-top: 1px solid var(--border);
+        text-align: center;
+      }
+
+      .blog-footer a {
+        color: var(--accent-strong);
+      }
+
+      .blog-footer a:hover {
+        color: var(--accent);
+      }
+
+      @media (max-width: 768px) {
+        .blog-post {
+          padding: 40px 16px;
+        }
+
+        .blog-post-title {
+          font-size: 2rem;
+        }
+
+        .blog-post-image {
+          height: 200px;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <a href="../index.html#main" class="skip-link">Skip to main content</a>
+
+    <header class="site-header">
+      <div class="container blog-post">
+        <div class="blog-post-nav">
+          <a href="index.html">&larr; Back to All Posts</a>
+        </div>
+
+        <div class="blog-post-header">
+          <h1 class="blog-post-title">GameHub - Built with AI Assistance</h1>
+          <div class="blog-post-meta">
+            <span>March 16, 2026</span>
+            <span>&bull;</span>
+            <span>10 min read</span>
+          </div>
+          <img src="../images/blog/gamehub.png" alt="GameHub" class="blog-post-image">
+        </div>
+
+        <div class="blog-post-content">
+          <p>GameHub is a collection of 6 classic browser games (Snake, Pong, Tic Tac Toe, Memory, Breakout, and Flappy) built entirely with AI pair programming assistance using Claude Code and Qwen. This project explores how AI can accelerate game development while maintaining code quality and learning value.</p>
+
+          <h2>The Goal</h2>
+          <p>I wanted to create a portfolio piece that demonstrates:</p>
+          <ul>
+            <li>Classic game development fundamentals</li>
+            <li>AI pair programming capabilities</li>
+            <li>Clean, maintainable vanilla JavaScript code</li>
+            <li>Fun, interactive projects that showcase technical skills</li>
+          </ul>
+
+          <h2>AI Tools Used</h2>
+          <ul>
+            <li><strong>Claude Code</strong>: Primary game logic, collision detection, game loop architecture</li>
+            <li><strong>Qwen</strong>: Canvas rendering optimization, physics calculations, UI responsiveness</li>
+          </ul>
+
+          <h2>How AI Helped</h2>
+
+          <h3>Code Generation</h3>
+          <p>Claude helped me create a clean, reusable game loop pattern:</p>
+
+          <div class="code-block">
+            <pre><code>class Game {
+  constructor(canvas, ctx) {
+    this.canvas = canvas;
+    this.ctx = ctx;
+    this.running = false;
+    this.lastTime = 0;
+  }
+
+  start() {
+    this.running = true;
+    this.lastTime = performance.now();
+    this.loop();
+  }
+
+  loop(timestamp = 0) {
+    if (!this.running) return;
+
+    const deltaTime = (timestamp - this.lastTime) / 1000;
+    this.lastTime = timestamp;
+
+    this.update(deltaTime);
+    this.draw();
+
+    requestAnimationFrame((t) => this.loop(t));
+  }
+}</code></pre>
+          </div>
+
+          <h3>Collision Detection</h3>
+          <p>AI generated robust collision detection for multiple game types:</p>
+
+          <div class="code-block">
+            <pre><code>// AABB collision detection - works for all games
+checkCollision(rect1, rect2) {
+  return (
+    rect1.x < rect2.x + rect2.width &&
+    rect1.x + rect1.width > rect2.x &&
+    rect1.y < rect2.y + rect2.height &&
+    rect1.y + rect1.height > rect2.y
+  );
+}</code></pre>
+          </div>
+
+          <h3>AI Opponent for Pong</h3>
+          <p>Claude helped implement a minimax-based AI opponent with adjustable difficulty:</p>
+
+          <div class="code-block">
+            <pre><code>class PongAI {
+  constructor(difficulty = 'medium') {
+    this.difficulty = difficulty;
+    this.speed = this.getSpeed();
+  }
+
+  getSpeed() {
+    const speeds = {
+      easy: 0.05,
+      medium: 0.1,
+      hard: 0.15
+    };
+    return speeds[this.difficulty] || 0.1;
+  }
+
+  move(ballY, playerY, paddleHeight) {
+    const center = playerY + paddleHeight / 2;
+    if (Math.abs(ballY - center) > 10) {
+      return ballY > center
+        ? playerY + this.speed
+        : playerY - this.speed;
+    }
+    return playerY;
+  }
+}</code></pre>
+          </div>
+
+          <h2>The Process</h2>
+
+          <h3>Prompting Strategy</h3>
+          <p><strong>What worked well:</strong></p>
+          <ul>
+            <li>Start with high-level architecture, then iterate on details</li>
+            <li>Ask AI to explain concepts before generating code</li>
+            <li>Request multiple implementations to compare approaches</li>
+            <li>Use AI as a code reviewer, not just a generator</li>
+          </ul>
+
+          <h3>Human Decisions</h3>
+          <p>AI couldn't decide:</p>
+          <ul>
+            <li>Game balance (difficulty curves, scoring)</li>
+            <li>Visual design choices (colors, styling)</li>
+            <li>Which features to prioritize</li>
+            <li>When to stop iterating and ship</li>
+          </ul>
+
+          <h2>Challenges</h2>
+
+          <h3>What AI Couldn't Help With</h3>
+          <ul>
+            <li><strong>Visual design</strong>: I had to create all game sprites and styling</li>
+            <li><strong>Game feel</strong>: Tuning the "juice" (screen shake, particles) required human intuition</li>
+            <li><strong>Accessibility</strong>: Keyboard navigation improvements needed manual testing</li>
+          </ul>
+
+          <h2>Results</h2>
+
+          <h3>Quantitative</h3>
+          <ul>
+            <li><strong>Development time saved</strong>: ~40% compared to traditional development</li>
+            <li><strong>Number of iterations</strong>: 15-20 per game on average</li>
+            <li><strong>AI-generated code</strong>: ~60% of total codebase</li>
+          </ul>
+
+          <h3>Qualitative</h3>
+          <ul>
+            <li>Clean, well-structured code with AI guidance</li>
+            <li>Learned new patterns for game development</li>
+            <li>Discovered AI's strengths (boilerplate, algorithms) and weaknesses (design, UX)</li>
+          </ul>
+
+          <h2>Key Learnings</h2>
+          <ol>
+            <li><strong>AI excels at algorithms</strong> - Minimax, collision detection, pathfinding</li>
+            <li><strong>Human needed for design</strong> - Visuals, feel, user experience</li>
+            <li><strong>Iterative prompting works best</strong> - Start broad, refine details</li>
+            <li><strong>AI as pair programmer, not replacement</strong> - Review and understand all code</li>
+            <li><strong>Documentation matters</strong> - AI helps write docs, but you need to know what to ask for</li>
+          </ol>
+
+          <div class="blog-post-tags">
+            <span class="blog-post-tag">AI-Assisted</span>
+            <span class="blog-post-tag">Games</span>
+            <span class="blog-post-tag">JavaScript</span>
+            <span class="blog-post-tag">HTML5</span>
+          </div>
+        </div>
+
+        <div class="blog-footer">
+          <p>Built with <a href="https://github.com/negiadventures/gamehub" target="_blank" rel="noreferrer">GameHub</a> &bull; <a href="../index.html">Back to Portfolio</a></p>
+          <p style="margin-top: 16px; font-size: 0.9rem;"><em>This project was built with AI pair programming assistance using Claude Code and Qwen.</em></p>
+        </div>
+      </div>
+    </header>
+  </body>
+</html>
