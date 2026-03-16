@@ -64,6 +64,20 @@ const repoLanguage = document.getElementById('repo-language');
 let allRepos = [];
 let featuredRepos = [];
 let otherRepos = [];
+let isLoading = false;
+
+// Debounce utility for search input
+function debounce(func, wait) {
+  let timeout;
+  return function executedFunction(...args) {
+    const later = () => {
+      clearTimeout(timeout);
+      func(...args);
+    };
+    clearTimeout(timeout);
+    timeout = setTimeout(later, wait);
+  };
+}
 
 function isInteresting(repo) {
   if (repo.fork || repo.archived) {
@@ -235,13 +249,16 @@ function renderFeatured() {
     return;
   }
 
-  featuredGrid.innerHTML = '';
+  // Show loading state
+  featuredGrid.innerHTML = '<span class="loading-spinner"></span> Loading featured repositories...';
 
   if (!featuredRepos.length) {
+    featuredGrid.innerHTML = '';
     featuredStatus.textContent = 'No featured repositories yet.';
     return;
   }
 
+  featuredGrid.innerHTML = '';
   featuredStatus.textContent = `${featuredRepos.length} featured repositories.`;
   featuredRepos.forEach((repo) => {
     featuredGrid.appendChild(createRepoCard(repo));
@@ -252,6 +269,9 @@ function renderRepos() {
   if (!repoGrid || !repoStatus) {
     return;
   }
+
+  // Show loading state
+  repoStatus.innerHTML = '<span class="loading-spinner"></span> Filtering repositories...';
 
   const searchTerm = repoSearch ? repoSearch.value.trim().toLowerCase() : '';
   const language = repoLanguage ? repoLanguage.value : 'all';
@@ -281,8 +301,15 @@ function renderRepos() {
 }
 
 async function loadRepos() {
-  if (!repoStatus || !repoGrid) {
+  if (!repoStatus || !repoGrid || isLoading) {
     return;
+  }
+
+  isLoading = true;
+
+  // Show loading state
+  if (repoStatus) {
+    repoStatus.innerHTML = '<span class="loading-spinner"></span> Loading repositories from GitHub...';
   }
 
   try {
@@ -293,6 +320,9 @@ async function loadRepos() {
     });
 
     if (!response.ok) {
+      if (response.status === 403) {
+        throw new Error('GitHub API rate limit exceeded. Please try again later.');
+      }
       throw new Error(`GitHub request failed: ${response.status}`);
     }
 
@@ -307,17 +337,30 @@ async function loadRepos() {
     renderFeatured();
     renderRepos();
   } catch (error) {
-    repoStatus.textContent = 'Unable to load repositories right now. Please check back later.';
+    console.error('Error loading repos:', error);
+    repoStatus.innerHTML = `
+      <div class="error-message">
+        <strong>Unable to load repositories.</strong> ${error.message}
+        <button class="btn retry" onclick="retryLoadRepos()">Retry</button>
+      </div>
+    `;
     repoGrid.innerHTML = '';
     if (featuredStatus && featuredGrid) {
       featuredStatus.textContent = '';
       featuredGrid.innerHTML = '';
     }
+  } finally {
+    isLoading = false;
   }
 }
 
+// Make retry function available globally
+window.retryLoadRepos = function() {
+  loadRepos();
+};
+
 if (repoSearch) {
-  repoSearch.addEventListener('input', renderRepos);
+  repoSearch.addEventListener('input', debounce(renderRepos, 300));
 }
 
 if (repoSort) {
