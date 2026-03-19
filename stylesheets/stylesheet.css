@@ -17,6 +17,7 @@
   --sans: "Space Grotesk", "Avenir Next", "Segoe UI", sans-serif;
   --gradient-hero: linear-gradient(135deg, #6366f1 0%, #a855f7 50%, #ec4899 100%);
   --gradient-card: linear-gradient(135deg, rgba(99, 102, 241, 0.12) 0%, rgba(168, 85, 247, 0.08) 100%);
+  --nav-bg: rgba(10, 14, 26, 0.85);
 }
 
 * {
@@ -431,7 +432,7 @@ main .section:first-of-type {
 }
 
 .section-subtitle {
-  color: var(--muted);
+  color: var(--text-muted);
   margin: 0;
 }
 
@@ -572,7 +573,8 @@ main .section:first-of-type {
   padding: 10px 12px;
   border-radius: 12px;
   border: 1px solid var(--border);
-  background: #fff;
+  background: var(--bg-alt);
+  color: var(--text);
   font-family: var(--sans);
   min-width: 180px;
 }
@@ -860,7 +862,7 @@ main .section:first-of-type {
 }
 
 .btn.retry:hover {
-  background: var(--muted);
+  background: var(--text-muted);
 }
 
 .hero-text,
@@ -936,4 +938,191 @@ main .section:first-of-type {
   body .orb {
     animation: none;
   }
+}
+
+/* ── Sticky navigation bar ────────────────────────────────── */
+.site-nav {
+  position: sticky;
+  top: 0;
+  z-index: 50;
+  background: var(--nav-bg);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border-bottom: 1px solid var(--border);
+  padding: 0;
+}
+
+.nav-inner {
+  width: min(1100px, 90vw);
+  margin: 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 52px;
+  gap: 8px;
+}
+
+.nav-brand {
+  font-family: var(--mono);
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--accent-strong);
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.nav-brand span {
+  color: var(--text-muted);
+}
+
+.nav-links {
+  display: flex;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  gap: 4px;
+  flex-wrap: nowrap;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+
+.nav-links::-webkit-scrollbar {
+  display: none;
+}
+
+.nav-links a {
+  display: block;
+  padding: 6px 12px;
+  font-size: 0.85rem;
+  font-weight: 500;
+  color: var(--text-muted);
+  border-radius: 8px;
+  transition: color 0.2s ease, background 0.2s ease;
+  white-space: nowrap;
+}
+
+.nav-links a:hover,
+.nav-links a.active {
+  color: var(--text);
+  background: var(--accent-soft);
+}
+
+.nav-links a.active {
+  color: var(--accent-strong);
+}
+
+@media (max-width: 640px) {
+  .nav-brand {
+    display: none;
+  }
+
+  .nav-links {
+    gap: 0;
+  }
+
+  .nav-links a {
+    padding: 6px 8px;
+    font-size: 0.78rem;
+  }
+}
+
+/* ── Scroll-reveal animations ─────────────────────────────── */
+.reveal {
+  opacity: 0;
+  transform: translateY(22px);
+  transition: opacity 0.6s ease, transform 0.6s ease;
+}
+
+.reveal.visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.reveal-delay-1 { transition-delay: 0.1s; }
+.reveal-delay-2 { transition-delay: 0.2s; }
+.reveal-delay-3 { transition-delay: 0.3s; }
+
+/* ── Skill chips ──────────────────────────────────────────── */
+.skill-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.skill-chips .tech-chip {
+  display: inline-block;
+  padding: 4px 12px;
+  border-radius: 999px;
+  font-family: var(--mono);
+  font-size: 0.8rem;
+  background: var(--accent-soft);
+  color: var(--accent-strong);
+  border: 1px solid rgba(99, 102, 241, 0.25);
+  transition: background 0.2s ease, border-color 0.2s ease, transform 0.15s ease;
+}
+
+.skill-chips .tech-chip:hover {
+  background: rgba(99, 102, 241, 0.25);
+  border-color: var(--accent);
+  transform: translateY(-1px);
+}
+
+/* ── Section header accent line ──────────────────────────── */
+.section-header h2 {
+  font-size: 2rem;
+  margin: 0;
+  display: inline-flex;
+  flex-direction: column;
+}
+
+.section-header h2::after {
+  content: "";
+  display: block;
+  height: 3px;
+  width: 48px;
+  margin-top: 8px;
+  background: var(--gradient-hero);
+  border-radius: 999px;
+}
+
+/* ── Contact-list icons ───────────────────────────────────── */
+.contact-list .cl-icon {
+  margin-right: 5px;
+  opacity: 0.75;
+  font-style: normal;
+}
+
+/* ── Footer improvements ─────────────────────────────────── */
+.footer-inner {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.footer-links {
+  display: flex;
+  gap: 16px;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  font-size: 0.9rem;
+}
+
+.footer-links a {
+  color: var(--text-muted);
+  transition: color 0.2s ease;
+}
+
+.footer-links a:hover {
+  color: var(--accent-strong);
+}
+
+/* ── Education card spacing ──────────────────────────────── */
+.education-card + .education-card {
+  margin-top: 16px;
 }
