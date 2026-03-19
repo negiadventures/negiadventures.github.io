@@ -75,6 +75,22 @@
     <div class="orb orb-3" aria-hidden="true"></div>
     <div class="grid-overlay" aria-hidden="true"></div>
 
+    <!-- Sticky navigation -->
+    <nav class="site-nav" aria-label="Site navigation">
+      <div class="nav-inner">
+        <span class="nav-brand">anirudh<span>.</span>negi</span>
+        <ul class="nav-links" role="list">
+          <li><a href="#about">About</a></li>
+          <li><a href="#impact">Impact</a></li>
+          <li><a href="#experience">Experience</a></li>
+          <li><a href="#projects">Projects</a></li>
+          <li><a href="#skills">Skills</a></li>
+          <li><a href="#education">Education</a></li>
+          <li><a href="#contact">Contact</a></li>
+        </ul>
+      </div>
+    </nav>
+
     <header class="site-header">
       <div class="container hero">
         <div class="hero-text">
@@ -93,9 +109,9 @@
             <a class="btn ghost" href="https://www.linkedin.com/in/anirudhnegi/" target="_blank" rel="noreferrer">LinkedIn</a>
           </div>
           <ul class="contact-list">
-            <li>Somerset, NJ, USA</li>
-            <li><a href="mailto:anirudh0993@gmail.com">anirudh0993@gmail.com</a></li>
-            <li><a href="tel:+17744322276">+1 774 432 2276</a></li>
+            <li><i class="cl-icon" aria-hidden="true">📍</i>Somerset, NJ, USA</li>
+            <li><i class="cl-icon" aria-hidden="true">✉️</i><a href="mailto:anirudh0993@gmail.com">anirudh0993@gmail.com</a></li>
+            <li><i class="cl-icon" aria-hidden="true">📞</i><a href="tel:+17744322276">+1 774 432 2276</a></li>
           </ul>
         </div>
         <div class="hero-panel">
@@ -139,14 +155,14 @@
     <main id="main">
       <section id="about" class="section">
         <div class="container">
-          <div class="section-header">
+          <div class="section-header reveal">
             <h2>About</h2>
             <p class="section-subtitle">Systems-focused engineer who turns complex workflows into reliable platforms.</p>
           </div>
-          <p>
+          <p class="reveal reveal-delay-1">
             For over eight years, I've been designing event-driven systems, data integration pipelines, and cloud infrastructure across companies like GoFundMe, Genentech, and SymphonyAI. My work centers on platform reliability, automation, and scalable data foundations that power AI/LLM workflows while improving developer velocity.
           </p>
-          <p>
+          <p class="reveal reveal-delay-2">
             I'm particularly interested in how AI can amplify human creativity rather than replace it. When I'm not deep in code, I'm experimenting with AI pair programming tools, writing about my learnings, and building projects that explore the intersection of traditional backend engineering and modern AI capabilities.
           </p>
         </div>
@@ -154,40 +170,40 @@
 
       <section id="impact" class="section alt">
         <div class="container">
-          <div class="section-header">
+          <div class="section-header reveal">
             <h2>Impact highlights</h2>
             <p class="section-subtitle">Stories from the trenches of building at scale.</p>
           </div>
           <div class="impact-grid">
-            <div class="impact-card">
+            <div class="impact-card reveal">
               <div class="impact-title">The Salesforce sync challenge</div>
               <p>At GoFundMe, we needed to sync millions of donor records in real-time without breaking the bank. Built event-driven integrations that cut costs by fifteen percent while improving data access speed by thirty-five percent.</p>
             </div>
-            <div class="impact-card">
+            <div class="impact-card reveal reveal-delay-1">
               <div class="impact-title">From hours to minutes</div>
               <p>A legacy ETL pipeline at SymphonyAI was taking over four hours to process data. Redesigned the workflow to complete in under ten minutes, freeing up resources and enabling faster decision-making.</p>
             </div>
-            <div class="impact-card">
+            <div class="impact-card reveal reveal-delay-2">
               <div class="impact-title">Daily deployments, not weekly</div>
               <p>Moved our team from weekly to daily deployments by streamlining Bitbucket and AWS CodePipeline workflows. Less friction means more shipping.</p>
             </div>
-            <div class="impact-card">
+            <div class="impact-card reveal reveal-delay-3">
               <div class="impact-title">Enterprise data migration</div>
               <p>Built a large-scale migration framework at Genentech moving data from Salesforce to enterprise systems. Improved data integrity by thirty-five percent along the way.</p>
             </div>
-            <div class="impact-card">
+            <div class="impact-card reveal">
               <div class="impact-title">Search that actually works</div>
               <p>Tuned Elasticsearch analyzers at SymphonyAI to improve query performance by eighty percent and reduce response time by twenty-five percent. Users notice when search gets faster.</p>
             </div>
-            <div class="impact-card">
+            <div class="impact-card reveal reveal-delay-1">
               <div class="impact-title">GraphQL that scales</div>
               <p>Optimized Kotlin GraphQL services at GoFundMe, raising query performance while making life easier for frontend developers.</p>
             </div>
-            <div class="impact-card">
+            <div class="impact-card reveal reveal-delay-2">
               <div class="impact-title">Faster batch processing</div>
               <p>Boosted Spring Batch throughput by thirty percent at Genentech, cutting runtime from ten to seven hours per run. Small improvements compound.</p>
             </div>
-            <div class="impact-card">
+            <div class="impact-card reveal reveal-delay-3">
               <div class="impact-title">Real-time data that actually works</div>
               <p>Improved real-time data accessibility by thirty-five percent with event-driven Salesforce integrations. Event-driven done right means systems talk to each other without breaking.</p>
             </div>
@@ -197,11 +213,11 @@
 
       <section id="experience" class="section">
         <div class="container">
-          <div class="section-header">
+          <div class="section-header reveal">
             <h2>Experience</h2>
             <p class="section-subtitle">Building systems that scale and teams that ship.</p>
           </div>
-          <div class="leadership-card">
+          <div class="leadership-card reveal">
             <h3>Leadership and scope</h3>
             <ul>
               <li>Own end-to-end platform initiatives spanning backend services, infrastructure, and data pipelines.</li>
@@ -211,7 +227,7 @@
             </ul>
           </div>
           <div class="timeline">
-            <div class="timeline-item">
+            <div class="timeline-item reveal">
               <div class="timeline-role">Software Engineer III, GoFundMe</div>
               <div class="timeline-meta">Mar 2023 - Present | Remote, NJ</div>
               <ul>
@@ -220,7 +236,7 @@
                 <li>Recognized with a SPOT Award for system-level impact.</li>
               </ul>
             </div>
-            <div class="timeline-item">
+            <div class="timeline-item reveal reveal-delay-1">
               <div class="timeline-role">Senior Java Developer, Genentech</div>
               <div class="timeline-meta">May 2022 - Mar 2023 | Remote, NJ</div>
               <ul>
@@ -228,14 +244,14 @@
                 <li>Optimized Spring Batch workflows, cutting execution time from ten to seven hours per run.</li>
               </ul>
             </div>
-            <div class="timeline-item">
+            <div class="timeline-item reveal reveal-delay-2">
               <div class="timeline-role">Student Programmer, Rutgers University</div>
               <div class="timeline-meta">Sep 2021 - May 2022 | New Brunswick, NJ</div>
               <ul>
                 <li>Developed the Metra traffic analytics app for automated signal violation detection.</li>
               </ul>
             </div>
-            <div class="timeline-item">
+            <div class="timeline-item reveal reveal-delay-3">
               <div class="timeline-role">Software Developer, SymphonyAI</div>
               <div class="timeline-meta">Feb 2019 - Jul 2021 | Bengaluru, India</div>
               <ul>
@@ -249,7 +265,7 @@
 
       <section id="projects" class="section alt">
         <div class="container">
-          <div class="section-header">
+          <div class="section-header reveal">
             <h2>Projects</h2>
             <p class="section-subtitle">Live data pulled from GitHub. Filter by language or search.</p>
           </div>
@@ -293,17 +309,17 @@
 
       <section id="ai-projects" class="section alt">
         <div class="container">
-          <div class="section-header">
+          <div class="section-header reveal">
             <h2>AI-Assisted Development</h2>
             <p class="section-subtitle">Projects built with AI pair programming using Claude Code, Qwen, and LangChain.</p>
           </div>
-          <p style="margin-bottom: 32px; color: var(--text-muted); line-height: 1.8;">
+          <p class="reveal" style="margin-bottom: 32px; color: var(--text-muted); line-height: 1.8;">
             I've been experimenting with AI pair programming to explore how AI can amplify human creativity.
             These projects aren't just about what's possible with AI—they're about how AI changes the way we think about building software.
             I write about my learnings, the patterns that work, and the challenges that still require human judgment.
           </p>
           <div class="case-grid">
-            <article class="case-card">
+            <article class="case-card reveal">
               <div class="case-cover">
                 <img src="images/blog/gamehub.png" alt="GameHub" loading="lazy">
               </div>
@@ -322,7 +338,7 @@
               </div>
             </article>
 
-            <article class="case-card">
+            <article class="case-card reveal reveal-delay-1">
               <div class="case-cover">
                 <img src="images/blog/mortgage-atlas.png" alt="Mortgage Atlas" loading="lazy">
               </div>
@@ -341,7 +357,7 @@
               </div>
             </article>
 
-            <article class="case-card">
+            <article class="case-card reveal reveal-delay-2">
               <div class="case-cover">
                 <img src="images/blog/ai-tutor.png" alt="AI Tutor" loading="lazy">
               </div>
@@ -360,7 +376,7 @@
               </div>
             </article>
 
-            <article class="case-card">
+            <article class="case-card reveal reveal-delay-3">
               <div class="case-cover">
                 <img src="images/blog/stock-analysis.png" alt="Stock Analysis" loading="lazy">
               </div>
@@ -387,12 +403,12 @@
 
       <section id="case-studies" class="section">
         <div class="container">
-          <div class="section-header">
+          <div class="section-header reveal">
             <h2>Case studies</h2>
             <p class="section-subtitle">Deep dives into how I approach systems, data, and AI workflows.</p>
           </div>
           <div class="case-grid">
-            <article class="case-card">
+            <article class="case-card reveal">
               <div class="case-cover">
                 <img src="images/covers/devspace-microservices.svg" alt="Cover art for devspace-microservices" loading="lazy">
               </div>
@@ -405,7 +421,7 @@
               </div>
             </article>
 
-            <article class="case-card">
+            <article class="case-card reveal reveal-delay-1">
               <div class="case-cover">
                 <img src="images/covers/slackbot_bedrock.svg" alt="Cover art for slackbot_bedrock" loading="lazy">
               </div>
@@ -418,7 +434,7 @@
               </div>
             </article>
 
-            <article class="case-card">
+            <article class="case-card reveal reveal-delay-2">
               <div class="case-cover">
                 <img src="images/covers/pubmed_analysis.svg" alt="Cover art for pubmed_analysis" loading="lazy">
               </div>
@@ -436,34 +452,87 @@
 
       <section id="skills" class="section">
         <div class="container">
-          <div class="section-header">
+          <div class="section-header reveal">
             <h2>Skills</h2>
             <p class="section-subtitle">Things I enjoy working with.</p>
           </div>
           <div class="skills-grid">
-            <div class="skill-card">
+            <div class="skill-card reveal">
               <h3>Languages</h3>
-              <p>Kotlin, TypeScript, JavaScript, Python, Java, SQL, C/C++, Shell</p>
+              <ul class="skill-chips">
+                <li class="tech-chip">Kotlin</li>
+                <li class="tech-chip">TypeScript</li>
+                <li class="tech-chip">JavaScript</li>
+                <li class="tech-chip">Python</li>
+                <li class="tech-chip">Java</li>
+                <li class="tech-chip">SQL</li>
+                <li class="tech-chip">C/C++</li>
+                <li class="tech-chip">Shell</li>
+              </ul>
             </div>
-            <div class="skill-card">
+            <div class="skill-card reveal reveal-delay-1">
               <h3>Frameworks</h3>
-              <p>Spring Boot, NestJS, Node.js, FastAPI, React.js, Redux, jOOQ, Talend, LangChain</p>
+              <ul class="skill-chips">
+                <li class="tech-chip">Spring Boot</li>
+                <li class="tech-chip">NestJS</li>
+                <li class="tech-chip">Node.js</li>
+                <li class="tech-chip">FastAPI</li>
+                <li class="tech-chip">React.js</li>
+                <li class="tech-chip">Redux</li>
+                <li class="tech-chip">jOOQ</li>
+                <li class="tech-chip">Talend</li>
+                <li class="tech-chip">LangChain</li>
+              </ul>
             </div>
-            <div class="skill-card">
+            <div class="skill-card reveal reveal-delay-2">
               <h3>Cloud and DevOps</h3>
-              <p>AWS, Terraform, Kubernetes, Helm, Docker, Jenkins, Bitbucket CI/CD</p>
+              <ul class="skill-chips">
+                <li class="tech-chip">AWS</li>
+                <li class="tech-chip">Terraform</li>
+                <li class="tech-chip">Kubernetes</li>
+                <li class="tech-chip">Helm</li>
+                <li class="tech-chip">Docker</li>
+                <li class="tech-chip">Jenkins</li>
+                <li class="tech-chip">Bitbucket CI/CD</li>
+              </ul>
             </div>
-            <div class="skill-card">
+            <div class="skill-card reveal reveal-delay-1">
               <h3>Data and ML</h3>
-              <p>MySQL, PostgreSQL, Oracle, Elasticsearch, Redis, Greenplum, MLflow, Great Expectations, Tableau, Power BI</p>
+              <ul class="skill-chips">
+                <li class="tech-chip">MySQL</li>
+                <li class="tech-chip">PostgreSQL</li>
+                <li class="tech-chip">Oracle</li>
+                <li class="tech-chip">Elasticsearch</li>
+                <li class="tech-chip">Redis</li>
+                <li class="tech-chip">Greenplum</li>
+                <li class="tech-chip">MLflow</li>
+                <li class="tech-chip">Great Expectations</li>
+                <li class="tech-chip">Tableau</li>
+                <li class="tech-chip">Power BI</li>
+              </ul>
             </div>
-            <div class="skill-card">
+            <div class="skill-card reveal reveal-delay-2">
               <h3>Architecture</h3>
-              <p>Event-driven systems, microservices, GraphQL APIs, ETL pipelines, RAG, LLM integrations, REST services</p>
+              <ul class="skill-chips">
+                <li class="tech-chip">Event-driven systems</li>
+                <li class="tech-chip">Microservices</li>
+                <li class="tech-chip">GraphQL APIs</li>
+                <li class="tech-chip">ETL pipelines</li>
+                <li class="tech-chip">RAG</li>
+                <li class="tech-chip">LLM integrations</li>
+                <li class="tech-chip">REST services</li>
+              </ul>
             </div>
-            <div class="skill-card">
+            <div class="skill-card reveal reveal-delay-3">
               <h3>Tools</h3>
-              <p>Git, JIRA, DevSpace, Postman, Linux/Unix, Confluence</p>
+              <ul class="skill-chips">
+                <li class="tech-chip">Git</li>
+                <li class="tech-chip">JIRA</li>
+                <li class="tech-chip">DevSpace</li>
+                <li class="tech-chip">Postman</li>
+                <li class="tech-chip">Linux/Unix</li>
+                <li class="tech-chip">Confluence</li>
+              </ul>
             </div>
           </div>
         </div>
@@ -471,15 +540,15 @@
 
       <section id="education" class="section alt">
         <div class="container">
-          <div class="section-header">
+          <div class="section-header reveal">
             <h2>Education</h2>
             <p class="section-subtitle">Continuous learning in tech and beyond.</p>
           </div>
-          <div class="education-card">
+          <div class="education-card reveal">
             <h3>Harrisburg University of Science and Engineering</h3>
             <p>Master of Science, Project Management (Nov 2025 - Present)</p>
           </div>
-          <div class="education-card" style="margin-top: 16px;">
+          <div class="education-card reveal reveal-delay-1">
             <h3>Rutgers, The State University of New Jersey - New Brunswick</h3>
             <p>Master of Science, Computer Science (Jan 2021 - Dec 2022)</p>
             <p>Award: Academic Excellence (CGPA: 4)</p>
@@ -489,7 +558,7 @@
 
       <section id="contact" class="section">
         <div class="container">
-          <div class="contact-card">
+          <div class="contact-card reveal">
             <div>
               <h2>Let's build something resilient.</h2>
               <p>Open to backend, platform, and data infrastructure roles.</p>
@@ -509,11 +578,18 @@
     </main>
 
     <footer class="site-footer">
-      <div class="container">
-        <p>Designed and built with a systems mindset. Powered by GitHub Pages.</p>
+      <div class="container footer-inner">
+        <p>Designed and built with a systems mindset. Powered by GitHub Pages. &copy; <span id="footer-year"></span> Anirudh Negi.</p>
+        <ul class="footer-links" aria-label="Footer navigation">
+          <li><a href="https://github.com/negiadventures" target="_blank" rel="noreferrer">GitHub</a></li>
+          <li><a href="https://www.linkedin.com/in/anirudhnegi/" target="_blank" rel="noreferrer">LinkedIn</a></li>
+          <li><a href="mailto:anirudh0993@gmail.com">Email</a></li>
+          <li><a href="blog/index.html">Blog</a></li>
+        </ul>
       </div>
     </footer>
 
     <script src="javascripts/main.js?v=4"></script>
+    <script src="javascripts/ui.js?v=1"></script>
   </body>
 </html>
