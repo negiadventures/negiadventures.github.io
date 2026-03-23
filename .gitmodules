@@ -1,0 +1,3 @@
+[submodule "gamehub"]
+    path = gamehub
+    url = https://github.com/negiadventures/gamehub.git
