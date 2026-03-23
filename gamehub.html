@@ -1,0 +1,452 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Game Hub - Anirudh Negi</title>
+  <link rel="stylesheet" href="stylesheets/stylesheet.css" />
+  <style>
+    /* Override body for gamehub page */
+    body {
+      font-family: 'JetBrains Mono', 'Space Grotesk', -apple-system, BlinkMacSystemFont, sans-serif;
+      background: linear-gradient(135deg, #0d1117 0%, #161b22 50%, #0d1117 100%);
+      min-height: 100vh;
+      padding: 40px 20px;
+      display: block;
+      justify-content: unset;
+      align-items: unset;
+    }
+
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+
+    header {
+      text-align: center;
+      margin-bottom: 50px;
+    }
+
+    h1 {
+      color: #58a6ff;
+      font-size: 2.8rem;
+      margin-bottom: 10px;
+      text-shadow: 0 0 20px rgba(88, 166, 255, 0.4);
+    }
+
+    .subtitle {
+      color: #8b949e;
+      font-size: 1.2rem;
+    }
+
+    .games-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 24px;
+      padding: 10px 0;
+    }
+
+    .game-card {
+      background: rgba(110, 118, 129, 0.08);
+      border: 1px solid rgba(240, 246, 252, 0.1);
+      border-radius: 12px;
+      overflow: hidden;
+      transition: transform 0.2s, box-shadow 0.2s, border-color 0.2s;
+    }
+
+    .game-card:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 12px 24px rgba(0, 0, 0, 0.4);
+      border-color: rgba(88, 166, 255, 0.3);
+    }
+
+    .game-preview {
+      height: 160px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .game-preview::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(to bottom, transparent 0%, rgba(0,0,0,0.6) 100%);
+    }
+
+    .game-icon {
+      font-size: 3.5rem;
+      z-index: 1;
+    }
+
+    /* Per-game preview backgrounds */
+    .game-preview.twenty48 { background: linear-gradient(135deg, #24292f 0%, #1f6feb 100%); }
+    .game-preview.snake { background: linear-gradient(135deg, #24292f 0%, #3fb950 100%); }
+    .game-preview.copter { background: linear-gradient(135deg, #24292f 0%, #58a6ff 100%); }
+    .game-preview.pong { background: linear-gradient(135deg, #24292f 0%, #f85149 100%); }
+    .game-preview.breakout { background: linear-gradient(135deg, #24292f 0%, #58a6ff 100%); }
+    .game-preview.flappy { background: linear-gradient(135deg, #24292f 0%, #d29922 100%); }
+    .game-preview.spaceinvaders { background: linear-gradient(135deg, #24292f 0%, #a371f7 100%); }
+    .game-preview.tictactoe { background: linear-gradient(135deg, #24292f 0%, #3fb950 100%); }
+    .game-preview.memory { background: linear-gradient(135deg, #24292f 0%, #f85149 100%); }
+    .game-preview.sudoku { background: linear-gradient(135deg, #24292f 0%, #3fb950 100%); }
+    .game-preview.pacman { background: linear-gradient(135deg, #24292f 0%, #d29922 100%); }
+    .game-preview.tetris { background: linear-gradient(135deg, #24292f 0%, #a371f7 100%); }
+    .game-preview.minesweeper { background: linear-gradient(135deg, #24292f 0%, #f85149 100%); }
+    .game-preview.connect4 { background: linear-gradient(135deg, #24292f 0%, #d29922 100%); }
+
+    .game-info {
+      padding: 20px;
+      text-align: center;
+    }
+
+    .game-info h2 {
+      color: #c9d1d9;
+      font-size: 1.3rem;
+      margin-bottom: 8px;
+      font-family: 'Space Grotesk', -apple-system, sans-serif;
+    }
+
+    .game-info p {
+      color: #8b949e;
+      font-size: 0.9rem;
+      margin-bottom: 12px;
+      line-height: 1.5;
+    }
+
+    /* Online multiplayer badge */
+    .online-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      background: rgba(56, 139, 253, 0.15);
+      border: 1px solid rgba(56, 139, 253, 0.4);
+      color: #58a6ff;
+      border-radius: 50px;
+      padding: 2px 10px;
+      font-size: 0.7rem;
+      font-weight: 700;
+      letter-spacing: 0.4px;
+      text-transform: uppercase;
+      margin-bottom: 10px;
+    }
+    .online-badge::before { content: '●'; font-size: 0.45rem; }
+
+    /* Button row inside cards */
+    .card-btn-row {
+      display: flex;
+      gap: 8px;
+      justify-content: center;
+      flex-wrap: wrap;
+    }
+
+    /* Play button */
+    .play-btn, .online-btn {
+      display: inline-flex;
+      align-items: center;
+      padding: 8px 20px;
+      border-radius: 6px;
+      font-weight: 600;
+      transition: transform 0.15s, box-shadow 0.15s;
+      border: none;
+      cursor: pointer;
+      font-size: 0.85rem;
+      text-decoration: none;
+    }
+
+    .play-btn {
+      background: #238636;
+      color: #ffffff;
+    }
+    .play-btn:hover {
+      transform: scale(1.03);
+      box-shadow: 0 4px 12px rgba(46, 160, 46, 0.4);
+    }
+
+    .online-btn {
+      background: transparent;
+      color: #58a6ff;
+      border: 1px solid #58a6ff;
+    }
+    .online-btn:hover {
+      background: rgba(88, 166, 255, 0.15);
+      transform: scale(1.03);
+    }
+
+    /* Per-game play button colors */
+    .game-card.twenty48 .play-btn { background: #1f6feb; color: #fff; }
+    .game-card.snake .play-btn { background: #3fb950; color: #fff; }
+    .game-card.copter .play-btn { background: #58a6ff; color: #fff; }
+    .game-card.pong .play-btn { background: #f85149; color: #fff; }
+    .game-card.breakout .play-btn { background: #58a6ff; color: #fff; }
+    .game-card.flappy .play-btn { background: #d29922; color: #fff; }
+    .game-card.spaceinvaders .play-btn { background: #a371f7; color: #fff; }
+    .game-card.tictactoe .play-btn { background: #3fb950; color: #fff; }
+    .game-card.memory .play-btn { background: #f85149; color: #fff; }
+    .game-card.sudoku .play-btn { background: #3fb950; color: #fff; }
+    .game-card.pacman .play-btn { background: #d29922; color: #fff; }
+    .game-card.tetris .play-btn { background: #a371f7; color: #fff; }
+    .game-card.minesweeper .play-btn { background: #f85149; color: #fff; }
+    .game-card.connect4 .play-btn { background: #d29922; color: #fff; }
+
+    /* Features bar */
+    .features {
+      display: flex;
+      justify-content: center;
+      gap: 30px;
+      margin-top: 40px;
+      flex-wrap: wrap;
+      padding-top: 30px;
+      border-top: 1px solid rgba(240, 246, 252, 0.1);
+    }
+
+    .feature {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      color: #8b949e;
+      font-size: 0.9rem;
+    }
+
+    .feature span { font-size: 1.1rem; }
+
+    /* Back button */
+    .back-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      color: #58a6ff;
+      text-decoration: none;
+      font-size: 0.95rem;
+      margin-bottom: 20px;
+      transition: color 0.15s;
+    }
+    .back-btn:hover { color: #79c0ff; }
+
+    footer {
+      text-align: center;
+      margin-top: 50px;
+      padding-top: 20px;
+      border-top: 1px solid rgba(240, 246, 252, 0.1);
+      color: #8b949e;
+      font-size: 0.9rem;
+    }
+
+    @media (max-width: 600px) {
+      h1 { font-size: 2rem; }
+      .games-grid { grid-template-columns: 1fr; }
+      .features { gap: 20px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <a href="index.html" class="back-btn">&larr; Back to Portfolio</a>
+
+    <header>
+      <h1>🎮 Game Hub</h1>
+      <p class="subtitle">14 games built with AI pair programming — play solo or challenge friends online!</p>
+    </header>
+
+    <div class="games-grid">
+      <!-- 2048 -->
+      <div class="game-card twenty48">
+        <div class="game-preview twenty48">
+          <div class="game-icon">2048</div>
+        </div>
+        <div class="game-info">
+          <h2>2048</h2>
+          <p>Join the tiles to get the 2048 tile! Use arrow keys or swipe to move tiles and combine matching numbers.</p>
+          <a href="gamehub/game2048.html" class="play-btn">Play Now</a>
+        </div>
+      </div>
+
+      <!-- Snake -->
+      <div class="game-card snake">
+        <div class="game-preview snake">
+          <div class="game-icon">蛇</div>
+        </div>
+        <div class="game-info">
+          <h2>Snake Game</h2>
+          <p>Classic snake game! Use arrow keys or WASD to guide the snake and eat food. Don't hit the walls or yourself!</p>
+          <a href="gamehub/snake.html" class="play-btn">Play Now</a>
+        </div>
+      </div>
+
+      <!-- Copter -->
+      <div class="game-card copter">
+        <div class="game-preview copter">
+          <div class="game-icon"></div>
+        </div>
+        <div class="game-info">
+          <h2>Copter Game</h2>
+          <p>Click and hold to fly up, release to fall! Navigate through the obstacles and score as high as you can!</p>
+          <a href="gamehub/copter.html" class="play-btn">Play Now</a>
+        </div>
+      </div>
+
+      <!-- Pong -->
+      <div class="game-card pong">
+        <div class="game-preview pong">
+          <div class="game-icon">🏓</div>
+        </div>
+        <div class="game-info">
+          <h2>Pong</h2>
+          <p>Classic table tennis! Play vs AI locally or challenge a friend online!</p>
+          <div class="online-badge">Multiplayer</div>
+          <div class="card-btn-row">
+            <a href="gamehub/pong.html" class="play-btn">vs AI</a>
+            <a href="gamehub/lobby.html?game=pong" class="online-btn">🌐 Online</a>
+          </div>
+        </div>
+      </div>
+
+      <!-- Breakout -->
+      <div class="game-card breakout">
+        <div class="game-preview breakout">
+          <div class="game-icon">🧱</div>
+        </div>
+        <div class="game-info">
+          <h2>Breakout</h2>
+          <p>Break all the bricks! Use mouse or arrow keys to move the paddle. Bounce the ball and score!</p>
+          <a href="gamehub/breakout.html" class="play-btn">Play Now</a>
+        </div>
+      </div>
+
+      <!-- Flappy Bird -->
+      <div class="game-card flappy">
+        <div class="game-preview flappy">
+          <div class="game-icon">🐦</div>
+        </div>
+        <div class="game-info">
+          <h2>Flappy Bird</h2>
+          <p>Tap to flap and fly! Navigate through the pipes and see how far you can go!</p>
+          <a href="gamehub/flappy.html" class="play-btn">Play Now</a>
+        </div>
+      </div>
+
+      <!-- Space Invaders -->
+      <div class="game-card spaceinvaders">
+        <div class="game-preview spaceinvaders">
+          <div class="game-icon">👾</div>
+        </div>
+        <div class="game-info">
+          <h2>Space Invaders</h2>
+          <p>Defend Earth from alien invaders! Use arrow keys to move and space to shoot!</p>
+          <a href="gamehub/spaceinvaders.html" class="play-btn">Play Now</a>
+        </div>
+      </div>
+
+      <!-- Tic-Tac-Toe -->
+      <div class="game-card tictactoe">
+        <div class="game-preview tictactoe">
+          <div class="game-icon">❌⭕</div>
+        </div>
+        <div class="game-info">
+          <h2>Tic-Tac-Toe</h2>
+          <p>Classic X and O game! Play against AI or challenge a friend online!</p>
+          <div class="online-badge">Multiplayer</div>
+          <div class="card-btn-row">
+            <a href="gamehub/tictactoe.html" class="play-btn">vs AI</a>
+            <a href="gamehub/lobby.html?game=tictactoe" class="online-btn">🌐 Online</a>
+          </div>
+        </div>
+      </div>
+
+      <!-- Memory Game -->
+      <div class="game-card memory">
+        <div class="game-preview memory">
+          <div class="game-icon">🎴</div>
+        </div>
+        <div class="game-info">
+          <h2>Memory Game</h2>
+          <p>Test your memory! Flip cards to find matching pairs. Race a friend online!</p>
+          <div class="online-badge">Multiplayer</div>
+          <div class="card-btn-row">
+            <a href="gamehub/memory.html" class="play-btn">Solo</a>
+            <a href="gamehub/lobby.html?game=memory" class="online-btn">🌐 Online</a>
+          </div>
+        </div>
+      </div>
+
+      <!-- Sudoku -->
+      <div class="game-card sudoku">
+        <div class="game-preview sudoku">
+          <div class="game-icon">🔢</div>
+        </div>
+        <div class="game-info">
+          <h2>Sudoku</h2>
+          <p>Classic number puzzle! Fill the grid so each row, column, and 3x3 box contains digits 1-9.</p>
+          <a href="gamehub/gamesudoku.html" class="play-btn">Play Now</a>
+        </div>
+      </div>
+
+      <!-- Pac-Man -->
+      <div class="game-card pacman">
+        <div class="game-preview pacman">
+          <div class="game-icon">😋</div>
+        </div>
+        <div class="game-info">
+          <h2>Pac-Man</h2>
+          <p>Eat all the dots while avoiding the ghosts! Use arrow keys to navigate. Good luck!</p>
+          <a href="gamehub/pacman.html" class="play-btn">Play Now</a>
+        </div>
+      </div>
+
+      <!-- Tetris -->
+      <div class="game-card tetris">
+        <div class="game-preview tetris">
+          <div class="game-icon">🧱</div>
+        </div>
+        <div class="game-info">
+          <h2>Tetris</h2>
+          <p>Stack the blocks and clear lines! Use arrow keys to move and rotate. How high can you go?</p>
+          <a href="gamehub/tetris.html" class="play-btn">Play Now</a>
+        </div>
+      </div>
+
+      <!-- Minesweeper -->
+      <div class="game-card minesweeper">
+        <div class="game-preview minesweeper">
+          <div class="game-icon">💣</div>
+        </div>
+        <div class="game-info">
+          <h2>Minesweeper</h2>
+          <p>Find all the safe cells! Left-click to reveal, right-click to flag mines. Can you beat the clock?</p>
+          <a href="gamehub/minesweeper.html" class="play-btn">Play Now</a>
+        </div>
+      </div>
+
+      <!-- Connect 4 -->
+      <div class="game-card connect4">
+        <div class="game-preview connect4">
+          <div class="game-icon">🔴</div>
+        </div>
+        <div class="game-info">
+          <h2>Connect 4</h2>
+          <p>Drop pieces and connect 4 in a row! Play vs AI or challenge a friend online!</p>
+          <div class="online-badge">Multiplayer</div>
+          <div class="card-btn-row">
+            <a href="gamehub/connect4.html" class="play-btn">vs AI</a>
+            <a href="gamehub/lobby.html?game=connect4" class="online-btn">🌐 Online</a>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="features">
+      <div class="feature"><span>🎮</span> 14 Games</div>
+      <div class="feature"><span>🌐</span> Online Multiplayer</div>
+      <div class="feature"><span>🏆</span> High Score Tracking</div>
+      <div class="feature"><span>✨</span> Smooth Animations</div>
+      <div class="feature"><span>💻</span> Built with AI</div>
+    </div>
+
+    <footer>
+      <p>All games built with AI pair programming using Claude Code and Qwen.</p>
+    </footer>
+  </div>
+</body>
+</html>
