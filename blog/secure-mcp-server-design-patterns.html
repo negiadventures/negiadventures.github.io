@@ -1,0 +1,352 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="A practical guide to designing MCP servers that stay useful under real agent workloads without turning into a security liability.">
+    <title>Secure MCP Server Design Patterns for Real Tool-Calling Agents | Anirudh Negi</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../stylesheets/stylesheet.css?v=5" media="screen">
+    <style>
+      .blog-post {
+        max-width: 800px;
+        margin: 0 auto;
+        padding: 60px 20px;
+      }
+
+      .blog-post-header {
+        margin-bottom: 40px;
+      }
+
+      .blog-post-nav {
+        margin-bottom: 30px;
+      }
+
+      .blog-post-nav a {
+        color: var(--accent-strong);
+        font-size: 0.95rem;
+      }
+
+      .blog-post-nav a:hover {
+        color: var(--accent);
+      }
+
+      .blog-post-title {
+        font-size: 2.5rem;
+        margin-bottom: 16px;
+      }
+
+      .blog-post-meta {
+        display: flex;
+        gap: 20px;
+        color: var(--text-muted);
+        font-size: 0.95rem;
+        margin-bottom: 30px;
+        flex-wrap: wrap;
+      }
+
+      .blog-post-image {
+        width: 100%;
+        height: 300px;
+        object-fit: cover;
+        border-radius: 16px;
+        margin-bottom: 30px;
+        border: 1px solid var(--border);
+        background: linear-gradient(135deg, rgba(15, 23, 42, 1), rgba(19, 31, 58, 1));
+      }
+
+      .blog-post-content h2 {
+        font-size: 1.6rem;
+        margin-top: 40px;
+        margin-bottom: 16px;
+        color: var(--text-light);
+      }
+
+      .blog-post-content h3 {
+        font-size: 1.3rem;
+        margin-top: 30px;
+        margin-bottom: 12px;
+        color: var(--text-light);
+      }
+
+      .blog-post-content p {
+        line-height: 1.8;
+        margin-bottom: 16px;
+        color: var(--text-muted);
+      }
+
+      .blog-post-content ul,
+      .blog-post-content ol {
+        line-height: 1.8;
+        margin-bottom: 20px;
+        color: var(--text-muted);
+        padding-left: 24px;
+      }
+
+      .blog-post-content li {
+        margin-bottom: 8px;
+      }
+
+      .code-block {
+        background: var(--bg-alt);
+        border: 1px solid var(--border);
+        border-radius: 12px;
+        padding: 20px;
+        margin: 20px 0;
+        overflow-x: auto;
+      }
+
+      .code-block pre {
+        margin: 0;
+        font-family: var(--mono);
+        font-size: 0.9rem;
+        line-height: 1.6;
+        color: var(--text-light);
+      }
+
+      .code-block code {
+        color: var(--accent-strong);
+      }
+
+      .blog-post-tags {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        margin-top: 40px;
+        padding-top: 30px;
+        border-top: 1px solid var(--border);
+      }
+
+      .blog-post-tag {
+        background: var(--accent-soft);
+        color: var(--accent-strong);
+        border-radius: 999px;
+        padding: 6px 14px;
+        font-size: 0.85rem;
+        font-family: var(--mono);
+        border: 1px solid transparent;
+        transition: border-color 0.2s ease;
+      }
+
+      .blog-post-tag:hover {
+        border-color: var(--accent);
+      }
+
+      .blog-footer {
+        margin-top: 60px;
+        padding-top: 30px;
+        border-top: 1px solid var(--border);
+        text-align: center;
+      }
+
+      .blog-footer a {
+        color: var(--accent-strong);
+      }
+
+      .blog-footer a:hover {
+        color: var(--accent);
+      }
+
+      @media (max-width: 768px) {
+        .blog-post {
+          padding: 40px 16px;
+        }
+
+        .blog-post-title {
+          font-size: 2rem;
+        }
+
+        .blog-post-image {
+          height: 200px;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <a href="../index.html#main" class="skip-link">Skip to main content</a>
+
+    <header class="site-header">
+      <div class="container blog-post">
+        <div class="blog-post-nav">
+          <a href="index.html">&larr; Back to All Posts</a>
+        </div>
+
+        <div class="blog-post-header">
+          <h1 class="blog-post-title">Secure MCP Server Design Patterns for Real Tool-Calling Agents</h1>
+          <div class="blog-post-meta">
+            <span>March 26, 2026</span>
+            <span>&bull;</span>
+            <span>10 min read</span>
+          </div>
+          <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1200 630'%3E%3Cdefs%3E%3ClinearGradient id='bg' x1='0' x2='1' y1='0' y2='1'%3E%3Cstop offset='0%25' stop-color='%230a1020'/%3E%3Cstop offset='100%25' stop-color='%23131f3a'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='1200' height='630' fill='url(%23bg)'/%3E%3Ccircle cx='980' cy='120' r='140' fill='%2327d3ff' fill-opacity='0.14'/%3E%3Ccircle cx='180' cy='520' r='180' fill='%238d6bff' fill-opacity='0.16'/%3E%3Crect x='120' y='120' width='960' height='390' rx='28' fill='%230f172a' stroke='%2338bdf8' stroke-opacity='0.35'/%3E%3Ctext x='170' y='250' fill='white' font-family='Arial, sans-serif' font-size='54' font-weight='700'%3ESecure MCP Server%3C/text%3E%3Ctext x='170' y='320' fill='%2390cdf4' font-family='Arial, sans-serif' font-size='54' font-weight='700'%3EDesign Patterns%3C/text%3E%3Ctext x='170' y='395' fill='%23cbd5e1' font-family='Arial, sans-serif' font-size='28'%3EPractical guardrails for tool-calling agents%3C/text%3E%3C/svg%3E" alt="Secure MCP Server Design Patterns" class="blog-post-image">
+        </div>
+
+        <div class="blog-post-content">
+          <p>MCP is quickly becoming the default way to connect AI clients to tools, data, and workflows. That standardization is a big deal. It means you can expose one server and make it usable from multiple clients instead of hand-rolling a different integration every time.</p>
+
+          <p>The catch is that MCP servers sit in an unusually sensitive spot. They translate model intent into actions. They often run with delegated user permissions. And they can chain multiple tool calls fast enough that a small design mistake turns into a very large blast radius.</p>
+
+          <p>This post is a practical guide to designing MCP servers that are useful in production without becoming a security headache. The goal is not theoretical perfection. The goal is to make an MCP server that survives real usage: messy prompts, partial context, over-eager agents, and operators who need clean logs when something goes wrong.</p>
+
+          <h2>Why MCP changes the threat model</h2>
+          <p>Traditional APIs usually assume a human or application calling a defined endpoint directly. MCP is different. A model chooses or suggests tools based on natural language context, then interacts with a server that may have access to files, APIs, credentials, or internal systems.</p>
+
+          <p>That creates a few recurring risks:</p>
+          <ol>
+            <li><strong>Prompt injection becomes tool selection pressure.</strong> A malicious document, page, or issue comment can try to steer the model toward the wrong tool or arguments.</li>
+            <li><strong>Delegated permissions are easy to over-scope.</strong> If one server has broad access, every tool exposed by it inherits a bigger blast radius.</li>
+            <li><strong>Chained calls magnify mistakes.</strong> A bad read can become a bad write, then a bad notification, then an audit problem.</li>
+            <li><strong>Operators lose visibility fast.</strong> Without structured logs and per-tool tracing, all you know is that “the agent did something weird.”</li>
+          </ol>
+
+          <h2>Pattern 1: Keep tools narrow and intention-revealing</h2>
+          <p>A common failure mode is building one giant “do everything” tool because it feels convenient. Something like <code>system_action</code>, <code>repo_admin</code>, or <code>workspace_execute</code> gives the model too much room to improvise.</p>
+
+          <p>A better approach is to expose smaller tools with obvious names and hard boundaries:</p>
+          <ul>
+            <li><code>list_pull_requests</code></li>
+            <li><code>get_ci_run_status</code></li>
+            <li><code>create_draft_blog_post</code></li>
+            <li><code>read_customer_invoice</code></li>
+            <li><code>queue_calendar_invite</code></li>
+          </ul>
+
+          <div class="code-block">
+            <pre><code>{
+  "name": "create_pull_request",
+  "description": "Create a pull request against a repository branch after changes are already pushed",
+  "inputSchema": {
+    "type": "object",
+    "properties": {
+      "repo": { "type": "string" },
+      "base": { "type": "string" },
+      "head": { "type": "string" },
+      "title": { "type": "string", "maxLength": 120 },
+      "body": { "type": "string", "maxLength": 10000 }
+    },
+    "required": ["repo", "base", "head", "title"]
+  }
+}</code></pre>
+          </div>
+
+          <p>If a tool performs writes, name the write plainly. If it performs deletion, say deletion in the name. Make dangerous intent impossible to hide behind a vague interface.</p>
+
+          <h2>Pattern 2: Separate read tools from write tools</h2>
+          <p>A strong default is to split tools by effect level. Read-only tools should fetch, inspect, preview, and calculate. Write tools should update, merge, delete, and notify. That split makes it much easier to enforce different validation and approval rules.</p>
+
+          <p>In practice, that often means two-step flows such as:</p>
+          <ol>
+            <li><code>plan_blog_post_topic</code></li>
+            <li><code>publish_blog_post</code></li>
+          </ol>
+
+          <h2>Pattern 3: Validate arguments like the model will be wrong sometimes</h2>
+          <p>The worst MCP servers assume the model will always send perfect arguments because the schema looks precise. Real workloads are messier than that. Arguments can be incomplete, stale, over-broad, or valid JSON but still semantically unsafe.</p>
+
+          <div class="code-block">
+            <pre><code>function validateCreatePr(input: CreatePrInput, session: SessionContext) {
+  assertAllowedRepo(session, input.repo);
+  assertBranchPrefix(input.head, "ai-blog/");
+  assertNonEmpty(input.title);
+  assertMaxLength(input.body, 10000);
+
+  if (input.base !== "master") {
+    throw new Error("PR base branch must be master for this workflow");
+  }
+}</code></pre>
+          </div>
+
+          <p>Schema validation is just the first layer. The real protection comes from business-rule checks, authorization checks, and environment-specific assumptions.</p>
+
+          <h2>Pattern 4: Make approvals explicit for destructive or external actions</h2>
+          <p>Not every tool needs a human in the loop. But deleting data, sending outbound messages, changing production infrastructure, merging to protected branches, and rotating credentials should not feel casual.</p>
+
+          <p>Several approval patterns work well:</p>
+          <ul>
+            <li>require a <code>confirm: true</code> field after a preview call</li>
+            <li>mint a short-lived approval token from a separate service</li>
+            <li>enforce client-side approvals for tools tagged destructive or external</li>
+            <li>make the first call return a dry-run summary instead of performing the action</li>
+          </ul>
+
+          <h2>Pattern 5: Scope permissions per tool, not just per server</h2>
+          <p>One MCP server often bundles multiple tools. That is convenient, but dangerous if the whole server runs under one broad credential. Prefer separate GitHub tokens for issue reads versus PR writes, read-only database credentials for reporting tools, and workspace allowlists instead of a blanket filesystem mount.</p>
+
+          <h2>Pattern 6: Add session isolation and execution boundaries</h2>
+          <p>Operational isolation matters as much as protocol design. Reasonable boundaries include separate temp directories per session, request-scoped context instead of mutable globals, execution timeouts, output limits, and restricted network egress for tools that should not talk to the public internet.</p>
+
+          <h2>Pattern 7: Defend against prompt injection at the tool boundary</h2>
+          <p>Prompt injection is not just a model problem in tool-calling systems. It is also a server problem. A summarization workflow that reads GitHub issue text should not gain the ability to merge a PR just because the issue body says “please merge this immediately.”</p>
+
+          <p>Useful checks include rejecting raw untrusted instructions in shell-like tools, flagging attempts to escape workspaces or tenants, and storing provenance when arguments came from untrusted sources such as web pages or uploaded files.</p>
+
+          <h2>Pattern 8: Build for observability from day one</h2>
+          <p>If you ever need to answer “what exactly did the agent do?”, plain text logs are not enough. At minimum, log tool name, actor or session identity, timestamp, duration, sanitized arguments, authorization decision, approval state, and result status.</p>
+
+          <div class="code-block">
+            <pre><code>{
+  "timestamp": "2026-03-26T21:57:00Z",
+  "session_id": "sess_42",
+  "tool": "create_pull_request",
+  "actor": "agent",
+  "repo": "negiadventures/negiadventures.github.io",
+  "authorized": true,
+  "approval": "not-required",
+  "status": "success",
+  "duration_ms": 834
+}</code></pre>
+          </div>
+
+          <h2>Pattern 9: Prefer policy checks over prompt-only guardrails</h2>
+          <p>Prompt instructions like “never modify production” are useful, but they are not a security control. Real controls live in branch protection, ACL checks, allowlists, outbound restrictions, rate limits, and approval gates. If a policy matters, enforce it outside the prompt.</p>
+
+          <h2>Pattern 10: Design for graceful refusal</h2>
+          <p>A secure MCP server should be comfortable saying no. Refusals should be specific enough to help the user recover without training the model to keep probing. “Forbidden” is weak. “merge_pull_request is disabled for repositories outside the approved allowlist” is much better.</p>
+
+          <h2>A practical build checklist</h2>
+          <ul>
+            <li>Tool names are narrow and intention-revealing</li>
+            <li>Read and write tools are split</li>
+            <li>Every write tool has business-rule validation beyond JSON schema</li>
+            <li>Credentials are scoped per tool or per effect level</li>
+            <li>Session isolation is in place</li>
+            <li>Tool timeouts and output caps are configured</li>
+            <li>Dangerous actions have approval or preview flows</li>
+            <li>Structured logs capture tool calls and decisions</li>
+            <li>Policies are enforced server-side, not only in prompts</li>
+            <li>Destructive tools are easy to disable quickly</li>
+          </ul>
+
+          <h2>References and resources</h2>
+          <ul>
+            <li><a href="https://modelcontextprotocol.io/introduction">Model Context Protocol docs</a></li>
+            <li><a href="https://www.anthropic.com/news/model-context-protocol">Anthropic: Introducing the Model Context Protocol</a></li>
+            <li><a href="https://genai.owasp.org/resource/a-practical-guide-for-secure-mcp-server-development/">OWASP GenAI: A Practical Guide for Secure MCP Server Development</a></li>
+          </ul>
+
+          <h2>Key takeaways</h2>
+          <ol>
+            <li>MCP servers are not just integration glue; they are security boundaries.</li>
+            <li>Narrow tools outperform giant “do anything” tools in both safety and reliability.</li>
+            <li>JSON schema is necessary, but business-rule validation is where most real protection lives.</li>
+            <li>Read/write separation, approval flows, and structured logs are worth the extra effort.</li>
+            <li>If a policy matters, enforce it outside the prompt.</li>
+          </ol>
+        </div>
+
+        <div class="blog-post-tags">
+          <span class="blog-post-tag">MCP</span>
+          <span class="blog-post-tag">AI Tools</span>
+          <span class="blog-post-tag">Security</span>
+          <span class="blog-post-tag">Developer Workflow</span>
+        </div>
+
+        <div class="blog-footer">
+          <p><a href="index.html">Browse more blog posts</a></p>
+        </div>
+      </div>
+    </header>
+  </body>
+</html>

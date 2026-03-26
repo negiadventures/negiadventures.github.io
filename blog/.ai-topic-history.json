@@ -1,0 +1,12 @@
+{
+  "topics": [
+    {
+      "date": "2026-03-26",
+      "skill": "MCP server design",
+      "topic": "Practical security patterns for MCP servers used by tool-calling agents",
+      "slug": "secure-mcp-server-design-patterns",
+      "title": "Secure MCP Server Design Patterns for Real Tool-Calling Agents",
+      "summary": "A practical tutorial on designing MCP servers with narrow tools, write approvals, server-side validation, session isolation, prompt-injection defenses, and structured observability."
+    }
+  ]
+}
