@@ -1,6 +1,14 @@
 {
   "topics": [
     {
+      "date": "2026-03-27",
+      "skill": "OpenClaw VPS operations",
+      "topic": "Hardening a self-hosted OpenClaw deployment on a VPS without losing useful automations",
+      "slug": "openclaw-vps-hardening",
+      "title": "How to Harden OpenClaw on a VPS Without Breaking the Good Parts",
+      "summary": "A practical guide to securing OpenClaw on a VPS with least-privilege credentials, reduced network exposure, approval boundaries, cron hygiene, and operational visibility."
+    },
+    {
       "date": "2026-03-26",
       "skill": "MCP server design",
       "topic": "Practical security patterns for MCP servers used by tool-calling agents",
