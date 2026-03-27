@@ -1,0 +1,422 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="A practical guide to hardening OpenClaw on a VPS with least-privilege credentials, network restrictions, approval boundaries, and operations checks that actually matter.">
+    <meta name="author" content="Anirudh Negi">
+    <title>How to Harden OpenClaw on a VPS Without Breaking the Good Parts | Anirudh Negi</title>
+    <link rel="canonical" href="https://negiadventures.github.io/blog/openclaw-vps-hardening.html">
+    <meta property="og:type" content="article">
+    <meta property="og:url" content="https://negiadventures.github.io/blog/openclaw-vps-hardening.html">
+    <meta property="og:title" content="How to Harden OpenClaw on a VPS Without Breaking the Good Parts | Anirudh Negi">
+    <meta property="og:description" content="A practical guide to hardening OpenClaw on a VPS with least-privilege credentials, network restrictions, approval boundaries, and operations checks that actually matter.">
+    <meta property="og:image" content="https://negiadventures.github.io/images/profile.jpg">
+    <meta property="article:published_time" content="2026-03-27">
+    <meta property="article:author" content="Anirudh Negi">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:url" content="https://negiadventures.github.io/blog/openclaw-vps-hardening.html">
+    <meta name="twitter:title" content="How to Harden OpenClaw on a VPS Without Breaking the Good Parts | Anirudh Negi">
+    <meta name="twitter:description" content="A practical guide to hardening OpenClaw on a VPS with least-privilege credentials, network restrictions, approval boundaries, and operations checks that actually matter.">
+    <meta name="twitter:image" content="https://negiadventures.github.io/images/profile.jpg">
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "BlogPosting",
+      "headline": "How to Harden OpenClaw on a VPS Without Breaking the Good Parts",
+      "description": "A practical guide to hardening OpenClaw on a VPS with least-privilege credentials, network restrictions, approval boundaries, and operations checks that actually matter.",
+      "image": "https://negiadventures.github.io/images/profile.jpg",
+      "url": "https://negiadventures.github.io/blog/openclaw-vps-hardening.html",
+      "datePublished": "2026-03-27",
+      "author": {
+        "@type": "Person",
+        "name": "Anirudh Negi",
+        "url": "https://negiadventures.github.io"
+      },
+      "publisher": {
+        "@type": "Person",
+        "name": "Anirudh Negi",
+        "url": "https://negiadventures.github.io"
+      }
+    }
+    </script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../stylesheets/stylesheet.css?v=5" media="screen">
+    <style>
+      .blog-post {
+        max-width: 800px;
+        margin: 0 auto;
+        padding: 60px 20px;
+      }
+
+      .blog-post-header {
+        margin-bottom: 40px;
+      }
+
+      .blog-post-nav {
+        margin-bottom: 30px;
+      }
+
+      .blog-post-nav a {
+        color: var(--accent-strong);
+        font-size: 0.95rem;
+      }
+
+      .blog-post-nav a:hover {
+        color: var(--accent);
+      }
+
+      .blog-post-title {
+        font-size: 2.5rem;
+        margin-bottom: 16px;
+      }
+
+      .blog-post-meta {
+        display: flex;
+        gap: 20px;
+        color: var(--text-muted);
+        font-size: 0.95rem;
+        margin-bottom: 30px;
+        flex-wrap: wrap;
+      }
+
+      .blog-post-image {
+        width: 100%;
+        height: 300px;
+        object-fit: cover;
+        border-radius: 16px;
+        margin-bottom: 30px;
+        border: 1px solid var(--border);
+        background: linear-gradient(135deg, rgba(10, 16, 32, 1), rgba(19, 31, 58, 1));
+      }
+
+      .blog-post-content h2 {
+        font-size: 1.6rem;
+        margin-top: 40px;
+        margin-bottom: 16px;
+        color: var(--text-light);
+      }
+
+      .blog-post-content h3 {
+        font-size: 1.3rem;
+        margin-top: 30px;
+        margin-bottom: 12px;
+        color: var(--text-light);
+      }
+
+      .blog-post-content p {
+        line-height: 1.8;
+        margin-bottom: 16px;
+        color: var(--text-muted);
+      }
+
+      .blog-post-content ul,
+      .blog-post-content ol {
+        line-height: 1.8;
+        margin-bottom: 20px;
+        color: var(--text-muted);
+        padding-left: 24px;
+      }
+
+      .blog-post-content li {
+        margin-bottom: 8px;
+      }
+
+      .code-block {
+        background: var(--bg-alt);
+        border: 1px solid var(--border);
+        border-radius: 12px;
+        padding: 20px;
+        margin: 20px 0;
+        overflow-x: auto;
+      }
+
+      .code-block pre {
+        margin: 0;
+        font-family: var(--mono);
+        font-size: 0.9rem;
+        line-height: 1.6;
+        color: var(--text-light);
+      }
+
+      .code-block code {
+        color: var(--accent-strong);
+      }
+
+      .blog-post-tags {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        margin-top: 40px;
+        padding-top: 30px;
+        border-top: 1px solid var(--border);
+      }
+
+      .blog-post-tag {
+        background: var(--accent-soft);
+        color: var(--accent-strong);
+        border-radius: 999px;
+        padding: 6px 14px;
+        font-size: 0.85rem;
+        font-family: var(--mono);
+        border: 1px solid transparent;
+        transition: border-color 0.2s ease;
+      }
+
+      .blog-post-tag:hover {
+        border-color: var(--accent);
+      }
+
+      .blog-footer {
+        margin-top: 60px;
+        padding-top: 30px;
+        border-top: 1px solid var(--border);
+        text-align: center;
+      }
+
+      .blog-footer a {
+        color: var(--accent-strong);
+      }
+
+      .blog-footer a:hover {
+        color: var(--accent);
+      }
+
+      @media (max-width: 768px) {
+        .blog-post {
+          padding: 40px 16px;
+        }
+
+        .blog-post-title {
+          font-size: 2rem;
+        }
+
+        .blog-post-image {
+          height: 200px;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <a href="../index.html#main" class="skip-link">Skip to main content</a>
+
+    <header class="site-header">
+      <div class="container blog-post">
+        <div class="blog-post-nav">
+          <a href="index.html">&larr; Back to All Posts</a>
+        </div>
+
+        <div class="blog-post-header">
+          <h1 class="blog-post-title">How to Harden OpenClaw on a VPS Without Breaking the Good Parts</h1>
+          <div class="blog-post-meta">
+            <span>March 27, 2026</span>
+            <span>&bull;</span>
+            <span>11 min read</span>
+          </div>
+          <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1200 630'%3E%3Cdefs%3E%3ClinearGradient id='bg' x1='0' x2='1' y1='0' y2='1'%3E%3Cstop offset='0%25' stop-color='%2309141f'/%3E%3Cstop offset='100%25' stop-color='%2311263f'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='1200' height='630' fill='url(%23bg)'/%3E%3Ccircle cx='960' cy='120' r='150' fill='%2327d3ff' fill-opacity='0.12'/%3E%3Ccircle cx='180' cy='520' r='190' fill='%238d6bff' fill-opacity='0.14'/%3E%3Crect x='110' y='110' width='980' height='410' rx='28' fill='%230f172a' stroke='%2338bdf8' stroke-opacity='0.35'/%3E%3Ctext x='165' y='235' fill='white' font-family='Arial, sans-serif' font-size='56' font-weight='700'%3EHarden OpenClaw%3C/text%3E%3Ctext x='165' y='305' fill='%2390cdf4' font-family='Arial, sans-serif' font-size='56' font-weight='700'%3Eon a VPS%3C/text%3E%3Ctext x='165' y='390' fill='%23cbd5e1' font-family='Arial, sans-serif' font-size='28'%3EKeep the assistant useful without giving it a blank check%3C/text%3E%3C/svg%3E" alt="How to Harden OpenClaw on a VPS Without Breaking the Good Parts" class="blog-post-image">
+        </div>
+
+        <div class="blog-post-content">
+          <p>OpenClaw gets interesting the moment it stops being a toy. A local chat bot is nice. A self-hosted assistant that can read files, schedule jobs, open pull requests, and interact with real accounts is a different category of system entirely.</p>
+
+          <p>That is also the moment where VPS deployment stops being a “just ship it” problem and becomes an operations problem. If the box is exposed, the model has too much tool access, or your tokens are over-scoped, you are not running a quirky assistant anymore. You are running an automation surface with credentials.</p>
+
+          <p>The trick is not to lock OpenClaw down so hard that it becomes useless. The trick is to narrow the blast radius while keeping the workflows that actually matter. Here is the practical hardening baseline I would want before calling a public VPS deployment healthy.</p>
+
+          <h2>1. Start with a threat model that matches reality</h2>
+          <p>Before touching firewall rules, define what the assistant can reach and what would actually hurt if it went wrong.</p>
+          <ul>
+            <li><strong>Public surface:</strong> web UI, gateway, reverse proxy, SSH, webhook endpoints</li>
+            <li><strong>Secrets:</strong> API keys, GitHub tokens, mail credentials, session cookies, OAuth refresh tokens</li>
+            <li><strong>Actions:</strong> writing files, sending messages, opening PRs, running commands, browser automation</li>
+            <li><strong>Failure modes:</strong> prompt injection, over-broad tools, leaked tokens, outbound spam, filesystem escape, accidental cron loops</li>
+          </ul>
+
+          <p>If you do not enumerate those early, you end up with fake security: lots of settings, no clear boundary.</p>
+
+          <h2>2. Keep the network surface boring</h2>
+          <p>The best OpenClaw VPS is the one that exposes as little as possible. In practice, that usually means:</p>
+          <ol>
+            <li>put OpenClaw behind a reverse proxy</li>
+            <li>terminate TLS there</li>
+            <li>avoid direct public binds unless you have to</li>
+            <li>restrict admin-only paths by IP, VPN, or tailnet when possible</li>
+          </ol>
+
+          <p>Do not leave miscellaneous service ports open just because the install worked once. Ask what truly needs to be reachable from the public internet.</p>
+
+          <div class="code-block">
+            <pre><code># Example baseline idea, not a copy-paste prescription
+# Public: 80/443
+# Admin: SSH only from trusted IPs or a tailnet
+# Internal: app ports bound to localhost when possible
+
+ss -tulpn
+ufw status verbose</code></pre>
+          </div>
+
+          <p>If a service can bind to localhost and only be reached through the proxy, that is usually a win.</p>
+
+          <h2>3. Treat SSH like a production interface</h2>
+          <p>Most self-hosted incidents are less glamorous than prompt injection. They start with weak SSH posture or stale packages. Minimum sane baseline:</p>
+          <ul>
+            <li>disable password auth if you can</li>
+            <li>use keys only</li>
+            <li>limit which users can SSH in</li>
+            <li>keep sudo access narrow</li>
+            <li>turn on unattended security updates or an equivalent patch routine</li>
+            <li>log auth failures and review them occasionally</li>
+          </ul>
+
+          <p>If your assistant is high-value enough to carry secrets, the host is high-value enough to deserve grown-up access control.</p>
+
+          <h2>4. Run with least privilege all the way down</h2>
+          <p>The common failure mode is to grant one big credential to the whole stack because it is convenient. That convenience turns into lateral movement.</p>
+
+          <p>Instead:</p>
+          <ul>
+            <li>use separate tokens for read-heavy versus write-heavy integrations</li>
+            <li>prefer fine-grained GitHub tokens over classic all-repo tokens</li>
+            <li>scope filesystem access to the actual workspace, not the whole home directory</li>
+            <li>give browser automation its own profile and data directory</li>
+            <li>split privileged maintenance tasks from normal assistant tasks</li>
+          </ul>
+
+          <p>If one tool goes sideways, it should not inherit every other permission on the box.</p>
+
+          <h2>5. Be explicit about which tools are allowed to write</h2>
+          <p>Read tools and write tools should not feel morally equivalent. The assistant can inspect a repo, summarize a log, or read a document with much lower risk than sending an email, merging a PR, or editing a production config.</p>
+
+          <p>A practical policy is:</p>
+          <ul>
+            <li><strong>default allow:</strong> safe read-only tools</li>
+            <li><strong>default review:</strong> anything that writes externally</li>
+            <li><strong>default deny:</strong> destructive or broad shell-like capabilities unless you really need them</li>
+          </ul>
+
+          <p>This is one reason OpenClaw approval flows matter so much. A human checkpoint for external or destructive actions is not friction for its own sake. It is what keeps one bad interpretation from becoming a real-world mistake.</p>
+
+          <h2>6. Put boundaries around cron and automation</h2>
+          <p>Cron jobs are great right up until they become a persistence mechanism for bad behavior. A reminder job is harmless. A badly scoped recurring agent task with broad tools can quietly burn budget, spam channels, or keep touching files long after the original need is gone.</p>
+
+          <p>Good cron hygiene:</p>
+          <ul>
+            <li>use exact one-shot reminders for exact timing</li>
+            <li>prefer isolated runs for recurring agent jobs</li>
+            <li>keep schedules human-readable and documented</li>
+            <li>review enabled jobs periodically</li>
+            <li>set timeouts and keep delivery targets intentional</li>
+          </ul>
+
+          <div class="code-block">
+            <pre><code># Useful operational checks
+openclaw gateway status
+openclaw cron list
+openclaw cron runs &lt;job-id&gt;</code></pre>
+          </div>
+
+          <p>Automation should be discoverable. If you cannot quickly answer “what jobs are active and what do they touch?”, the system is too opaque.</p>
+
+          <h2>7. Separate the machine from the memory</h2>
+          <p>OpenClaw is unusually useful because it can carry context across files, memory, and sessions. That also means your memory files can become sensitive. Long-term notes often contain names, preferences, decisions, internal URLs, and fragments of credentials or workflows if you are not careful.</p>
+
+          <p>Hardening here is mostly discipline:</p>
+          <ul>
+            <li>keep memory curated, not secret-dense</li>
+            <li>avoid storing raw tokens or passwords in workspace files</li>
+            <li>keep backups encrypted if the workspace leaves the machine</li>
+            <li>be careful about exposing main-session memory into shared or public contexts</li>
+          </ul>
+
+          <p>Memory is part of your attack surface because it shapes future actions.</p>
+
+          <h2>8. Watch outbound traffic and external actions</h2>
+          <p>People focus on inbound security and forget that a compromised or badly instructed assistant can do damage by talking outwards: posting publicly, emailing strangers, hitting APIs in loops, or shipping sensitive text to third-party endpoints.</p>
+
+          <p>Useful safeguards include:</p>
+          <ul>
+            <li>outbound allowlists for especially sensitive environments</li>
+            <li>separate API keys per integration so abuse is easier to revoke</li>
+            <li>budget limits where providers support them</li>
+            <li>clear review before sending messages outside the machine</li>
+          </ul>
+
+          <p>If the assistant can leave the box, that path deserves the same scrutiny as inbound access.</p>
+
+          <h2>9. Add observability before you need it</h2>
+          <p>When something weird happens, you want evidence, not vibes. Basic operational visibility should answer:</p>
+          <ul>
+            <li>which sessions were active</li>
+            <li>which tools were called</li>
+            <li>which cron jobs ran</li>
+            <li>whether a task was isolated or attached to a persistent session</li>
+            <li>what changed on disk and in git</li>
+          </ul>
+
+          <p>The point is not just forensic debugging. Good visibility also tells you when the setup is too broad or too noisy.</p>
+
+          <div class="code-block">
+            <pre><code># A compact host-level checklist
+journalctl -u openclaw --since "24 hours ago"
+git -C /path/to/repo status --short
+openclaw gateway status</code></pre>
+          </div>
+
+          <h2>10. Keep a small, repeatable hardening checklist</h2>
+          <p>The best security posture is the one you can repeat after upgrades, migrations, and sleep deprivation. Mine would be something like this:</p>
+          <ol>
+            <li>Host updated and SSH hardened</li>
+            <li>Only necessary public ports exposed</li>
+            <li>OpenClaw services bound narrowly where possible</li>
+            <li>Reverse proxy terminates TLS</li>
+            <li>Secrets split by integration and privilege level</li>
+            <li>Dangerous tools gated by approval or disabled</li>
+            <li>Cron jobs reviewed and time-bounded</li>
+            <li>Workspace access scoped and backups handled safely</li>
+            <li>Outbound integrations intentionally enabled</li>
+            <li>Operational checks documented so future-you can verify the setup fast</li>
+          </ol>
+
+          <h2>What not to do</h2>
+          <ul>
+            <li>Do not expose every service directly because reverse proxy config felt annoying</li>
+            <li>Do not give the assistant a giant personal access token “just for testing” and forget about it</li>
+            <li>Do not leave browser sessions logged into sensitive sites without thinking about what tools can reach them</li>
+            <li>Do not treat memory files as a safe place for secrets</li>
+            <li>Do not assume prompt instructions are a substitute for permission boundaries</li>
+          </ul>
+
+          <h2>References and resources</h2>
+          <ul>
+            <li><a href="https://github.com/openclaw/openclaw">OpenClaw on GitHub</a></li>
+            <li><a href="https://github.com/openclaw/openclaw#operations--troubleshooting">OpenClaw operations and troubleshooting docs</a></li>
+            <li><a href="https://owasp.org/www-project-top-ten/">OWASP Top 10</a></li>
+            <li><a href="https://cheatsheetseries.owasp.org/cheatsheets/Server_Side_Request_Forgery_Prevention_Cheat_Sheet.html">OWASP SSRF Prevention Cheat Sheet</a></li>
+          </ul>
+
+          <h2>Key takeaways</h2>
+          <ol>
+            <li>OpenClaw on a VPS is an operations system, not just a chat app.</li>
+            <li>Least privilege matters more than clever prompting.</li>
+            <li>Read, write, and destructive actions should live under different levels of trust.</li>
+            <li>Cron, memory, and outbound integrations are part of the attack surface.</li>
+            <li>The right hardening posture keeps the assistant useful while making mistakes much less expensive.</li>
+          </ol>
+        </div>
+
+        <div class="blog-post-tags">
+          <span class="blog-post-tag">OpenClaw</span>
+          <span class="blog-post-tag">VPS</span>
+          <span class="blog-post-tag">Security</span>
+          <span class="blog-post-tag">Operations</span>
+        </div>
+
+        <div class="blog-footer">
+          <p><a href="index.html">Browse more blog posts</a></p>
+        </div>
+      </div>
+    </header>
+  </body>
+</html>
