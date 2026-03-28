@@ -1,6 +1,14 @@
 {
   "topics": [
     {
+      "date": "2026-03-28",
+      "skill": "Claude Code refactoring workflow",
+      "topic": "Using Claude Code to plan and execute large refactors in phases with explicit checkpoints and verification loops",
+      "slug": "claude-code-large-refactors",
+      "title": "Claude Code Workflows for Large Refactors Without Losing the Plot",
+      "summary": "A practical guide to using Claude Code for large refactors with short specs, phased execution, move-first edits, review passes, and explicit verification."
+    },
+    {
       "date": "2026-03-27",
       "skill": "OpenClaw VPS operations",
       "topic": "Hardening a self-hosted OpenClaw deployment on a VPS without losing useful automations",
