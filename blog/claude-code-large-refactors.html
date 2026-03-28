@@ -1,0 +1,476 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="A practical guide to using Claude Code for large refactors with specs, checkpoints, verification loops, and guardrails that keep big changes understandable.">
+    <meta name="author" content="Anirudh Negi">
+    <title>Claude Code Workflows for Large Refactors Without Losing the Plot | Anirudh Negi</title>
+    <link rel="canonical" href="https://negiadventures.github.io/blog/claude-code-large-refactors.html">
+    <meta property="og:type" content="article">
+    <meta property="og:url" content="https://negiadventures.github.io/blog/claude-code-large-refactors.html">
+    <meta property="og:title" content="Claude Code Workflows for Large Refactors Without Losing the Plot | Anirudh Negi">
+    <meta property="og:description" content="A practical guide to using Claude Code for large refactors with specs, checkpoints, verification loops, and guardrails that keep big changes understandable.">
+    <meta property="og:image" content="https://negiadventures.github.io/images/profile.jpg">
+    <meta property="article:published_time" content="2026-03-28">
+    <meta property="article:author" content="Anirudh Negi">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:url" content="https://negiadventures.github.io/blog/claude-code-large-refactors.html">
+    <meta name="twitter:title" content="Claude Code Workflows for Large Refactors Without Losing the Plot | Anirudh Negi">
+    <meta name="twitter:description" content="A practical guide to using Claude Code for large refactors with specs, checkpoints, verification loops, and guardrails that keep big changes understandable.">
+    <meta name="twitter:image" content="https://negiadventures.github.io/images/profile.jpg">
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "BlogPosting",
+      "headline": "Claude Code Workflows for Large Refactors Without Losing the Plot",
+      "description": "A practical guide to using Claude Code for large refactors with specs, checkpoints, verification loops, and guardrails that keep big changes understandable.",
+      "image": "https://negiadventures.github.io/images/profile.jpg",
+      "url": "https://negiadventures.github.io/blog/claude-code-large-refactors.html",
+      "datePublished": "2026-03-28",
+      "author": {
+        "@type": "Person",
+        "name": "Anirudh Negi",
+        "url": "https://negiadventures.github.io"
+      },
+      "publisher": {
+        "@type": "Person",
+        "name": "Anirudh Negi",
+        "url": "https://negiadventures.github.io"
+      }
+    }
+    </script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../stylesheets/stylesheet.css?v=5" media="screen">
+    <style>
+      .blog-post {
+        max-width: 800px;
+        margin: 0 auto;
+        padding: 60px 20px;
+      }
+
+      .blog-post-header {
+        margin-bottom: 40px;
+      }
+
+      .blog-post-nav {
+        margin-bottom: 30px;
+      }
+
+      .blog-post-nav a {
+        color: var(--accent-strong);
+        font-size: 0.95rem;
+      }
+
+      .blog-post-nav a:hover {
+        color: var(--accent);
+      }
+
+      .blog-post-title {
+        font-size: 2.5rem;
+        margin-bottom: 16px;
+      }
+
+      .blog-post-meta {
+        display: flex;
+        gap: 20px;
+        color: var(--text-muted);
+        font-size: 0.95rem;
+        margin-bottom: 30px;
+        flex-wrap: wrap;
+      }
+
+      .blog-post-image {
+        width: 100%;
+        height: 300px;
+        object-fit: cover;
+        border-radius: 16px;
+        margin-bottom: 30px;
+        border: 1px solid var(--border);
+        background: linear-gradient(135deg, rgba(10, 16, 32, 1), rgba(19, 31, 58, 1));
+      }
+
+      .blog-post-content h2 {
+        font-size: 1.6rem;
+        margin-top: 40px;
+        margin-bottom: 16px;
+        color: var(--text-light);
+      }
+
+      .blog-post-content h3 {
+        font-size: 1.3rem;
+        margin-top: 30px;
+        margin-bottom: 12px;
+        color: var(--text-light);
+      }
+
+      .blog-post-content p {
+        line-height: 1.8;
+        margin-bottom: 16px;
+        color: var(--text-muted);
+      }
+
+      .blog-post-content ul,
+      .blog-post-content ol {
+        line-height: 1.8;
+        margin-bottom: 20px;
+        color: var(--text-muted);
+        padding-left: 24px;
+      }
+
+      .blog-post-content li {
+        margin-bottom: 8px;
+      }
+
+      .code-block {
+        background: var(--bg-alt);
+        border: 1px solid var(--border);
+        border-radius: 12px;
+        padding: 20px;
+        margin: 20px 0;
+        overflow-x: auto;
+      }
+
+      .code-block pre {
+        margin: 0;
+        font-family: var(--mono);
+        font-size: 0.9rem;
+        line-height: 1.6;
+        color: var(--text-light);
+      }
+
+      .code-block code {
+        color: var(--accent-strong);
+      }
+
+      .blog-post-tags {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        margin-top: 40px;
+        padding-top: 30px;
+        border-top: 1px solid var(--border);
+      }
+
+      .blog-post-tag {
+        background: var(--accent-soft);
+        color: var(--accent-strong);
+        border-radius: 999px;
+        padding: 6px 14px;
+        font-size: 0.85rem;
+        font-family: var(--mono);
+        border: 1px solid transparent;
+        transition: border-color 0.2s ease;
+      }
+
+      .blog-post-tag:hover {
+        border-color: var(--accent);
+      }
+
+      .blog-footer {
+        margin-top: 60px;
+        padding-top: 30px;
+        border-top: 1px solid var(--border);
+        text-align: center;
+      }
+
+      .blog-footer a {
+        color: var(--accent-strong);
+      }
+
+      .blog-footer a:hover {
+        color: var(--accent);
+      }
+
+      @media (max-width: 768px) {
+        .blog-post {
+          padding: 40px 16px;
+        }
+
+        .blog-post-title {
+          font-size: 2rem;
+        }
+
+        .blog-post-image {
+          height: 200px;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <a href="../index.html#main" class="skip-link">Skip to main content</a>
+
+    <header class="site-header">
+      <div class="container blog-post">
+        <div class="blog-post-nav">
+          <a href="index.html">&larr; Back to All Posts</a>
+        </div>
+
+        <div class="blog-post-header">
+          <h1 class="blog-post-title">Claude Code Workflows for Large Refactors Without Losing the Plot</h1>
+          <div class="blog-post-meta">
+            <span>March 28, 2026</span>
+            <span>&bull;</span>
+            <span>10 min read</span>
+          </div>
+          <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1200 630'%3E%3Cdefs%3E%3ClinearGradient id='bg' x1='0' x2='1' y1='0' y2='1'%3E%3Cstop offset='0%25' stop-color='%2309131f'/%3E%3Cstop offset='100%25' stop-color='%23172a46'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='1200' height='630' fill='url(%23bg)'/%3E%3Ccircle cx='1010' cy='140' r='150' fill='%2327d3ff' fill-opacity='0.12'/%3E%3Ccircle cx='160' cy='520' r='200' fill='%238d6bff' fill-opacity='0.14'/%3E%3Crect x='105' y='110' width='990' height='410' rx='28' fill='%230f172a' stroke='%2338bdf8' stroke-opacity='0.35'/%3E%3Ctext x='155' y='225' fill='white' font-family='Arial, sans-serif' font-size='54' font-weight='700'%3EClaude Code Workflows%3C/text%3E%3Ctext x='155' y='295' fill='%2390cdf4' font-family='Arial, sans-serif' font-size='54' font-weight='700'%3Efor Large Refactors%3C/text%3E%3Ctext x='155' y='380' fill='%23cbd5e1' font-family='Arial, sans-serif' font-size='28'%3ESpecs, checkpoints, and verification loops that scale%3C/text%3E%3C/svg%3E" alt="Claude Code Workflows for Large Refactors Without Losing the Plot" class="blog-post-image">
+        </div>
+
+        <div class="blog-post-content">
+          <p>Large refactors are where AI coding tools become either a force multiplier or a chaos engine. Small edits are easy. The hard part is changing architecture, naming, directory layout, or service boundaries without slowly turning the codebase into something nobody understands.</p>
+
+          <p>Claude Code is especially useful here because it works well in a repository-shaped workflow: read the code, inspect neighboring files, propose a plan, make targeted edits, and verify the result in the same loop. But the tool only helps if the workflow around it is disciplined.</p>
+
+          <p>This post covers the practical setup I would use to make Claude Code useful on big refactors without giving it permission to create a giant, inscrutable diff.</p>
+
+          <h2>The problem with AI-assisted refactors</h2>
+          <p>The failure mode is not just bad code. It is comprehension debt.</p>
+          <p>You ask for a broad cleanup, the tool touches thirty files, abstractions shift, names change, tests partly pass, and now the repository technically builds but nobody on the team is fully sure what happened. That is worse than a failed attempt because it costs review time, debugging time, and confidence.</p>
+          <p>For large refactors, the real goal is not “let the model change everything.” The real goal is:</p>
+          <ol>
+            <li>define the end state clearly</li>
+            <li>break the work into reviewable slices</li>
+            <li>keep verification close to each slice</li>
+            <li>preserve a readable narrative in commits and PRs</li>
+          </ol>
+
+          <h2>Start with a spec before touching code</h2>
+          <p>If the refactor is larger than a couple of files, I want a short spec first. Not a giant design doc. Just enough structure to stop drift.</p>
+          <p>A good refactor spec answers:</p>
+          <ul>
+            <li>What is changing?</li>
+            <li>What is not changing?</li>
+            <li>What interfaces must remain stable?</li>
+            <li>What can be deleted after migration?</li>
+            <li>How will we verify success?</li>
+            <li>What are the risky areas?</li>
+          </ul>
+          <p>A lightweight spec can live in <code>specs/refactor-auth-service.md</code> or even in the PR description while you work.</p>
+
+          <h3>Example prompt</h3>
+          <div class="code-block"><pre><code>I want to refactor the billing module into three layers:
+1. API routes
+2. domain services
+3. provider adapters
+
+Constraints:
+- Do not change external API behavior
+- Keep Stripe as the only provider for now
+- Preserve all existing tests
+- Prefer moving code over rewriting logic
+
+First: inspect the repo and write a short refactor plan with phases,
+risky files, invariants to preserve, and verification commands.
+Do not edit code yet.</code></pre></div>
+          <p>That last line matters. “Do not edit code yet” is often the difference between getting a plan and getting a diff you did not ask for.</p>
+
+          <h2>Use phases, not one giant prompt</h2>
+          <p>A large refactor should feel like a sequence of small migrations.</p>
+          <p>A practical phase breakdown looks like this:</p>
+          <h3>Phase 1: map the current system</h3>
+          <ul>
+            <li>identify entry points</li>
+            <li>find duplicated logic</li>
+            <li>list dependencies and side effects</li>
+            <li>note the test surface</li>
+          </ul>
+          <h3>Phase 2: create destination structure</h3>
+          <ul>
+            <li>add new directories or modules</li>
+            <li>introduce interfaces or helper layers</li>
+            <li>keep behavior unchanged</li>
+          </ul>
+          <h3>Phase 3: move code incrementally</h3>
+          <ul>
+            <li>migrate one subsystem at a time</li>
+            <li>keep old call sites working during transition</li>
+            <li>remove dead code only after verification</li>
+          </ul>
+          <h3>Phase 4: normalize naming and cleanup</h3>
+          <ul>
+            <li>rename symbols consistently</li>
+            <li>update docs and comments</li>
+            <li>tighten tests and lint rules</li>
+          </ul>
+          <h3>Phase 5: final verification</h3>
+          <ul>
+            <li>run tests, type checks, lint, and a quick manual smoke test</li>
+            <li>inspect the diff for accidental behavior changes</li>
+          </ul>
+          <p>Claude Code tends to do much better when each phase has a narrow objective and a clear stop condition.</p>
+
+          <h2>Ask for checkpoints, not just results</h2>
+          <p>One of the most useful patterns is checkpointing. Instead of saying “finish the refactor,” tell Claude Code to stop after a bounded milestone and summarize what changed.</p>
+          <h3>Example checkpoint prompt</h3>
+          <div class="code-block"><pre><code>Implement only Phase 2 from the plan.
+
+Requirements:
+- create the target module structure
+- do not change runtime behavior yet
+- keep the diff as small as possible
+- after editing, summarize every file changed and why
+- then stop</code></pre></div>
+
+          <h2>Make verification commands explicit</h2>
+          <p>Never assume the tool knows the most relevant verification path. Tell it exactly what “done” means.</p>
+          <p>For a JavaScript or TypeScript repo, that might be:</p>
+          <div class="code-block"><pre><code>npm test
+npm run lint
+npm run typecheck</code></pre></div>
+          <p>For a Python service:</p>
+          <div class="code-block"><pre><code>pytest
+ruff check .
+mypy src</code></pre></div>
+          <p>And for larger systems, I like to add one targeted smoke path:</p>
+          <div class="code-block"><pre><code># example
+pnpm test billing-webhook.spec.ts
+pnpm exec playwright test tests/smoke/checkout.spec.ts</code></pre></div>
+          <p>The point is simple: broad refactors need broad checks, but they also need one or two checks that are close to the risky path.</p>
+
+          <h2>Prefer move-first refactors over rewrite-first refactors</h2>
+          <p>When using AI tools, move-first beats rewrite-first most of the time.</p>
+          <p>Why?</p>
+          <ul>
+            <li>smaller diffs are easier to review</li>
+            <li>tests stay meaningful</li>
+            <li>behavior drift is easier to catch</li>
+            <li>you preserve the repository’s history and intent</li>
+          </ul>
+          <p>A good instruction is:</p>
+          <div class="code-block"><pre><code>Prefer extraction, relocation, and renaming over rewriting logic.
+If behavior must change, call it out explicitly before making the change.</code></pre></div>
+          <p>That single constraint tends to improve refactor quality a lot.</p>
+
+          <h2>Use a second pass for review, not just generation</h2>
+          <p>One useful workflow is to use Claude Code twice:</p>
+          <ol>
+            <li>once as the implementer</li>
+            <li>once as the reviewer</li>
+          </ol>
+          <p>After a phase lands, ask for a review-style read of the diff:</p>
+          <div class="code-block"><pre><code>Review the current diff like a strict senior engineer.
+Look for:
+- accidental behavior changes
+- naming inconsistencies
+- dead abstractions
+- missed imports or references
+- test gaps
+- places where the new structure is worse than the old one
+
+Do not edit yet. Just produce findings ordered by severity.</code></pre></div>
+          <p>This works well because critique mode is different from generation mode. You often get better results by separating them.</p>
+
+          <h2>Keep a visible migration narrative</h2>
+          <p>Refactors become easier to review when the repository tells a story.</p>
+          <ul>
+            <li>branch names that describe the migration</li>
+            <li>commits grouped by phase</li>
+            <li>PR text that explains what changed first, second, and third</li>
+            <li>comments in temporary adapters that say when they can be deleted</li>
+          </ul>
+          <p>Claude Code can help draft this narrative too. Ask it to produce a PR outline after the coding phase:</p>
+          <ul>
+            <li>problem being solved</li>
+            <li>migration steps</li>
+            <li>what stayed stable</li>
+            <li>follow-up cleanup still left</li>
+          </ul>
+          <p>That turns the AI from “code generator” into “technical editor,” which is usually more valuable during big changes.</p>
+
+          <h2>Watch out for these common failure modes</h2>
+          <h3>1. Hidden cross-file breakage</h3>
+          <p>A tool may update the obvious imports but miss string-based references, config keys, or CLI flags.</p>
+          <h3>2. New abstractions with no payoff</h3>
+          <p>AI tools love creating wrappers. Some are useful. Many just add indirection. If a new layer does not simplify testing, ownership, or reuse, question it.</p>
+          <h3>3. Mixed naming schemes</h3>
+          <p>Half the repo says <code>billingService</code>, the other half says <code>billingManager</code>, and two folders use different conventions. This is a refactor smell, not progress.</p>
+          <h3>4. Big diff, weak tests</h3>
+          <p>If the change touches fifteen files and the only passing check is one unit test, confidence is fake.</p>
+          <h3>5. Cleanup that is too early</h3>
+          <p>Deleting old paths before the new path is fully verified is how migrations become outages.</p>
+
+          <h2>A practical refactor loop that works</h2>
+          <p>If I were doing a serious refactor with Claude Code, my loop would look like this:</p>
+          <ol>
+            <li>write a short spec</li>
+            <li>ask for a phased plan only</li>
+            <li>execute one phase at a time</li>
+            <li>run explicit verification after each phase</li>
+            <li>request a review-only pass on the diff</li>
+            <li>clean up naming and docs last</li>
+            <li>open a PR with a readable migration story</li>
+          </ol>
+          <p>That sounds slower than one giant autonomous run, but in practice it is faster because review quality stays high and rollback risk stays low.</p>
+
+          <h2>Example: turning a routes-heavy app into layered modules</h2>
+          <p>Say your app currently has route handlers doing everything directly:</p>
+          <ul>
+            <li>request parsing</li>
+            <li>validation</li>
+            <li>business logic</li>
+            <li>third-party API calls</li>
+            <li>response formatting</li>
+          </ul>
+          <p>A clean layered refactor might target this end state:</p>
+          <ul>
+            <li><code>routes/</code> for HTTP-only concerns</li>
+            <li><code>services/</code> for application logic</li>
+            <li><code>providers/</code> for third-party integrations</li>
+            <li><code>models/</code> or <code>schemas/</code> for data contracts</li>
+          </ul>
+          <p>The staged prompt sequence could be:</p>
+          <ol>
+            <li>map all route handlers and shared dependencies</li>
+            <li>create <code>services/</code> and <code>providers/</code> without changing behavior</li>
+            <li>migrate one route group at a time</li>
+            <li>run route-level tests after each migration</li>
+            <li>remove duplicated logic only after the new structure is stable</li>
+          </ol>
+          <p>That is the kind of work AI tools can accelerate well because it mixes pattern recognition with repetitive but reviewable edits.</p>
+
+          <h2>The best use of Claude Code in big refactors</h2>
+          <p>The best use is not “let it redesign my system from scratch.”</p>
+          <p>The best use is:</p>
+          <ul>
+            <li>make the existing system legible</li>
+            <li>plan a migration path</li>
+            <li>handle repetitive edits carefully</li>
+            <li>verify aggressively</li>
+            <li>explain the resulting diff clearly</li>
+          </ul>
+          <p>In other words, Claude Code is strongest when it acts like a fast staff engineer with supervision, not an unchecked autopilot.</p>
+
+          <h2>References and resources</h2>
+          <ul>
+            <li><a href="https://docs.anthropic.com" target="_blank" rel="noreferrer">Anthropic Claude Code docs</a></li>
+            <li><a href="https://medium.com/@addyosmani/my-llm-coding-workflow-going-into-2026-52fe1681325e" target="_blank" rel="noreferrer">Addy Osmani on LLM coding workflows</a></li>
+            <li><a href="https://martinfowler.com/books/refactoring.html" target="_blank" rel="noreferrer">Martin Fowler on refactoring</a></li>
+            <li><a href="https://github.blog/developer-skills/github/code-review-best-practices/" target="_blank" rel="noreferrer">GitHub guide to code review best practices</a></li>
+          </ul>
+
+          <h2>Key takeaways</h2>
+          <ul>
+            <li>Large AI-assisted refactors fail when scope is vague and verification is weak.</li>
+            <li>Short specs, phased execution, and explicit checkpoints make Claude Code much more reliable.</li>
+            <li>Review mode matters as much as generation mode.</li>
+            <li>The best refactor outcome is not just working code. It is a working codebase that still makes sense to humans.</li>
+          </ul>
+
+          <div class="blog-post-tags">
+            <span class="blog-post-tag">Claude Code</span>
+            <span class="blog-post-tag">Refactoring</span>
+            <span class="blog-post-tag">AI Coding</span>
+            <span class="blog-post-tag">Developer Workflow</span>
+          </div>
+        </div>
+
+        <div class="blog-footer">
+          <p>More practical AI workflow writeups on the <a href="index.html">blog</a> &bull; <a href="../index.html">Back to Portfolio</a></p>
+          <p style="margin-top: 16px; font-size: 0.9rem;"><em>Built for engineers using AI as a high-leverage collaborator, not a substitute for review.</em></p>
+        </div>
+      </div>
+    </header>
+  </body>
+</html>
