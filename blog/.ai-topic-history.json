@@ -1,6 +1,14 @@
 {
   "topics": [
     {
+      "date": "2026-03-29",
+      "skill": "Agent memory architecture",
+      "topic": "Designing durable memory for AI agents with working state, episodic summaries, semantic facts, scoped retrieval, and explicit write policies",
+      "slug": "agent-memory-strategies",
+      "title": "Agent Memory Strategies That Don't Rot in Production",
+      "summary": "A practical guide to designing agent memory that stays useful in production by separating working memory, episodes, and semantic facts while controlling writes, retrieval, and drift."
+    },
+    {
       "date": "2026-03-28",
       "skill": "Claude Code refactoring workflow",
       "topic": "Using Claude Code to plan and execute large refactors in phases with explicit checkpoints and verification loops",
