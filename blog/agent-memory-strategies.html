@@ -1,0 +1,472 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="A practical guide to designing memory for AI agents with working memory, episodic summaries, semantic facts, write policies, retrieval rules, and debugging loops that stay useful over time.">
+    <meta name="author" content="Anirudh Negi">
+    <title>Agent Memory Strategies That Don't Rot in Production | Anirudh Negi</title>
+    <link rel="canonical" href="https://negiadventures.github.io/blog/agent-memory-strategies.html">
+    <meta property="og:type" content="article">
+    <meta property="og:url" content="https://negiadventures.github.io/blog/agent-memory-strategies.html">
+    <meta property="og:title" content="Agent Memory Strategies That Don't Rot in Production | Anirudh Negi">
+    <meta property="og:description" content="A practical guide to designing memory for AI agents with working memory, episodic summaries, semantic facts, write policies, retrieval rules, and debugging loops that stay useful over time.">
+    <meta property="og:image" content="https://negiadventures.github.io/images/profile.jpg">
+    <meta property="article:published_time" content="2026-03-29">
+    <meta property="article:author" content="Anirudh Negi">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:url" content="https://negiadventures.github.io/blog/agent-memory-strategies.html">
+    <meta name="twitter:title" content="Agent Memory Strategies That Don't Rot in Production | Anirudh Negi">
+    <meta name="twitter:description" content="A practical guide to designing memory for AI agents with working memory, episodic summaries, semantic facts, write policies, retrieval rules, and debugging loops that stay useful over time.">
+    <meta name="twitter:image" content="https://negiadventures.github.io/images/profile.jpg">
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "BlogPosting",
+      "headline": "Agent Memory Strategies That Don't Rot in Production",
+      "description": "A practical guide to designing memory for AI agents with working memory, episodic summaries, semantic facts, write policies, retrieval rules, and debugging loops that stay useful over time.",
+      "image": "https://negiadventures.github.io/images/profile.jpg",
+      "url": "https://negiadventures.github.io/blog/agent-memory-strategies.html",
+      "datePublished": "2026-03-29",
+      "author": {
+        "@type": "Person",
+        "name": "Anirudh Negi",
+        "url": "https://negiadventures.github.io"
+      },
+      "publisher": {
+        "@type": "Person",
+        "name": "Anirudh Negi",
+        "url": "https://negiadventures.github.io"
+      }
+    }
+    </script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../stylesheets/stylesheet.css?v=5" media="screen">
+    <style>
+      .blog-post {
+        max-width: 800px;
+        margin: 0 auto;
+        padding: 60px 20px;
+      }
+
+      .blog-post-header {
+        margin-bottom: 40px;
+      }
+
+      .blog-post-nav {
+        margin-bottom: 30px;
+      }
+
+      .blog-post-nav a {
+        color: var(--accent-strong);
+        font-size: 0.95rem;
+      }
+
+      .blog-post-nav a:hover {
+        color: var(--accent);
+      }
+
+      .blog-post-title {
+        font-size: 2.5rem;
+        margin-bottom: 16px;
+      }
+
+      .blog-post-meta {
+        display: flex;
+        gap: 20px;
+        color: var(--text-muted);
+        font-size: 0.95rem;
+        margin-bottom: 30px;
+        flex-wrap: wrap;
+      }
+
+      .blog-post-image {
+        width: 100%;
+        height: 300px;
+        object-fit: cover;
+        border-radius: 16px;
+        margin-bottom: 30px;
+        border: 1px solid var(--border);
+        background: linear-gradient(135deg, rgba(9, 20, 31, 1), rgba(16, 38, 63, 1));
+      }
+
+      .blog-post-content h2 {
+        font-size: 1.6rem;
+        margin-top: 40px;
+        margin-bottom: 16px;
+        color: var(--text-light);
+      }
+
+      .blog-post-content h3 {
+        font-size: 1.3rem;
+        margin-top: 30px;
+        margin-bottom: 12px;
+        color: var(--text-light);
+      }
+
+      .blog-post-content p {
+        line-height: 1.8;
+        margin-bottom: 16px;
+        color: var(--text-muted);
+      }
+
+      .blog-post-content ul,
+      .blog-post-content ol {
+        line-height: 1.8;
+        margin-bottom: 20px;
+        color: var(--text-muted);
+        padding-left: 24px;
+      }
+
+      .blog-post-content li {
+        margin-bottom: 8px;
+      }
+
+      .code-block {
+        background: var(--bg-alt);
+        border: 1px solid var(--border);
+        border-radius: 12px;
+        padding: 20px;
+        margin: 20px 0;
+        overflow-x: auto;
+      }
+
+      .code-block pre {
+        margin: 0;
+        font-family: var(--mono);
+        font-size: 0.9rem;
+        line-height: 1.6;
+        color: var(--text-light);
+      }
+
+      .code-block code {
+        color: var(--accent-strong);
+      }
+
+      .blog-post-tags {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        margin-top: 40px;
+        padding-top: 30px;
+        border-top: 1px solid var(--border);
+      }
+
+      .blog-post-tag {
+        background: var(--accent-soft);
+        color: var(--accent-strong);
+        border-radius: 999px;
+        padding: 6px 14px;
+        font-size: 0.85rem;
+        font-family: var(--mono);
+        border: 1px solid transparent;
+        transition: border-color 0.2s ease;
+      }
+
+      .blog-post-tag:hover {
+        border-color: var(--accent);
+      }
+
+      .blog-footer {
+        margin-top: 60px;
+        padding-top: 30px;
+        border-top: 1px solid var(--border);
+        text-align: center;
+      }
+
+      .blog-footer a {
+        color: var(--accent-strong);
+      }
+
+      .blog-footer a:hover {
+        color: var(--accent);
+      }
+
+      @media (max-width: 768px) {
+        .blog-post {
+          padding: 40px 16px;
+        }
+
+        .blog-post-title {
+          font-size: 2rem;
+        }
+
+        .blog-post-image {
+          height: 200px;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <a href="../index.html#main" class="skip-link">Skip to main content</a>
+
+    <header class="site-header">
+      <div class="container blog-post">
+        <div class="blog-post-nav">
+          <a href="index.html">&larr; Back to All Posts</a>
+        </div>
+
+        <div class="blog-post-header">
+          <h1 class="blog-post-title">Agent Memory Strategies That Don't Rot in Production</h1>
+          <div class="blog-post-meta">
+            <span>March 29, 2026</span>
+            <span>&bull;</span>
+            <span>11 min read</span>
+          </div>
+          <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1200 630'%3E%3Cdefs%3E%3ClinearGradient id='bg' x1='0' x2='1' y1='0' y2='1'%3E%3Cstop offset='0%25' stop-color='%2309141f'/%3E%3Cstop offset='100%25' stop-color='%2310263f'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='1200' height='630' fill='url(%23bg)'/%3E%3Ccircle cx='1015' cy='125' r='145' fill='%2327d3ff' fill-opacity='0.12'/%3E%3Ccircle cx='180' cy='525' r='190' fill='%238d6bff' fill-opacity='0.14'/%3E%3Crect x='105' y='110' width='990' height='410' rx='28' fill='%230f172a' stroke='%2338bdf8' stroke-opacity='0.35'/%3E%3Ctext x='155' y='225' fill='white' font-family='Arial, sans-serif' font-size='54' font-weight='700'%3EAgent Memory Strategies%3C/text%3E%3Ctext x='155' y='295' fill='%2390cdf4' font-family='Arial, sans-serif' font-size='54' font-weight='700'%3Efor Production%3C/text%3E%3Ctext x='155' y='380' fill='%23cbd5e1' font-family='Arial, sans-serif' font-size='28'%3EWorking memory, write policies, retrieval, and drift control%3C/text%3E%3C/svg%3E" alt="Agent Memory Strategies That Don't Rot in Production" class="blog-post-image">
+        </div>
+
+        <div class="blog-post-content">
+          <p>Most agent demos feel smart right up until the second week.</p>
+
+          <p>That is when memory starts to betray you. The assistant remembers the wrong preference, drags stale context into a new task, forgets why a previous action failed, or fills the prompt with low-value summaries that nobody would trust in a real system. The problem is usually not that the model needs a bigger context window. The problem is that the memory design is sloppy.</p>
+
+          <p>If you want an agent that stays useful across sessions, tools, and longer workflows, you need to treat memory like infrastructure instead of a magical feature. This post covers the practical memory patterns I would use for a production-grade AI agent: what to store, what not to store, when to write, how to retrieve, and how to debug the whole thing when it goes sideways.</p>
+
+          <h2>The failure mode: memory without a policy</h2>
+          <p>A surprising number of “memory-enabled” agents are just doing one of these three things:</p>
+          <ol>
+            <li>dumping chat transcripts into a vector store</li>
+            <li>saving arbitrary facts whenever the model says something looks important</li>
+            <li>replaying giant summaries until the prompt turns into sludge</li>
+          </ol>
+          <p>All three approaches work for a demo. All three become messy in production.</p>
+          <p>The practical goal is not “remember everything.” It is:</p>
+          <ul>
+            <li>keep the current task grounded</li>
+            <li>carry forward durable facts worth reusing</li>
+            <li>retain enough history to learn from past outcomes</li>
+            <li>make every stored memory explainable and auditable</li>
+          </ul>
+
+          <h2>Separate memory by job, not by storage engine</h2>
+          <p>When teams say they need memory, they often jump straight to the database choice: vectors, graphs, SQL, Redis, whatever. That is backwards.</p>
+          <p>Start by deciding what job each memory layer performs.</p>
+
+          <h3>1. Working memory</h3>
+          <p>This is the short-lived state for the task in flight.</p>
+          <ul>
+            <li>current user goal</li>
+            <li>active files, tickets, or URLs</li>
+            <li>tool outputs from the current run</li>
+            <li>temporary decisions like “use branch B, not branch A”</li>
+          </ul>
+          <p>Working memory should be cheap to rebuild. It does not need to survive forever. In many agent systems, this is just structured session state plus a rolling summary.</p>
+
+          <h3>2. Episodic memory</h3>
+          <p>This is the record of what happened.</p>
+          <ul>
+            <li>We tried migration X and rolled it back because latency spiked.</li>
+            <li>The user preferred the calendar summary in bullet format.</li>
+            <li>The last deploy failed during schema validation.</li>
+          </ul>
+          <p>Episodic memory is valuable because agents improve when they can recall prior attempts and outcomes, not just facts.</p>
+
+          <h3>3. Semantic memory</h3>
+          <p>This is durable knowledge distilled from repeated evidence.</p>
+          <ul>
+            <li>preferred repo naming conventions</li>
+            <li>stable user preferences</li>
+            <li>operational facts like approved deployment windows</li>
+            <li>internal service ownership or environment details</li>
+          </ul>
+          <p>Semantic memory should be harder to write than episodic memory. Facts should be earned, not guessed.</p>
+
+          <h2>The pattern that holds up best: log first, consolidate later</h2>
+          <p>If I had to pick one memory rule that prevents the most pain, it is this: <strong>store raw events first, then consolidate them into higher-level memory later.</strong></p>
+          <p>That gives you two major advantages:</p>
+          <ol>
+            <li>you keep an audit trail of what actually happened</li>
+            <li>you avoid instantly canonizing a bad inference as a durable fact</li>
+          </ol>
+
+          <div class="code-block"><pre><code>user interaction or tool result
+  -&gt; append event
+  -&gt; optional lightweight tags
+  -&gt; background consolidation job
+  -&gt; semantic facts / summaries / embeddings</code></pre></div>
+
+          <p>Instead of letting the model write “User prefers aggressive automation” directly into long-term memory after one conversation, store the event that led to the guess. Then consolidate only after repeated evidence or explicit confirmation.</p>
+
+          <h2>Use write policies, not vibes</h2>
+          <p>Agents should not be allowed to write memory whenever they feel like it. Memory writes need rules.</p>
+          <p>My default write policy looks like this:</p>
+
+          <h3>Auto-write freely</h3>
+          <ul>
+            <li>execution traces for the current run</li>
+            <li>tool outputs tied to task history</li>
+            <li>explicit user statements such as “remember this”</li>
+            <li>success or failure outcomes of actions</li>
+          </ul>
+
+          <h3>Write only after confirmation or repeated evidence</h3>
+          <ul>
+            <li>personal preferences</li>
+            <li>team conventions</li>
+            <li>operational defaults</li>
+            <li>long-lived environment facts</li>
+          </ul>
+
+          <h3>Never auto-promote without review</h3>
+          <ul>
+            <li>sensitive data</li>
+            <li>speculative diagnoses</li>
+            <li>one-off exceptions</li>
+            <li>emotional interpretation</li>
+            <li>anything that could change external behavior in a surprising way</li>
+          </ul>
+
+          <h2>Retrieval should be selective and typed</h2>
+          <p>The second common mistake is treating retrieval like a pure similarity search problem.</p>
+          <p>The right memory is often not the most semantically similar chunk. It is the memory with the right type, freshness, confidence, and scope.</p>
+
+          <div class="code-block"><pre><code>retrieval_plan = {
+    "task": "prepare deployment summary",
+    "types": ["semantic_fact", "recent_episode", "open_decision"],
+    "scope": "project:checkout-service",
+    "freshness_days": 30,
+    "max_items": 8
+}</code></pre></div>
+
+          <p>In practice, retrieval filters should include memory type, project or user scope, recency window, confidence score, source count, and whether the memory changed behavior previously. Vectors can still help, but they should usually sit inside a retrieval policy, not replace one.</p>
+
+          <h2>Summaries should compress decisions, not paraphrase everything</h2>
+          <p>Bad summaries are a silent killer. If your summarizer keeps rewriting the whole conversation, the agent slowly loses the sharp edges that actually matter.</p>
+          <p>Good summaries answer a few narrow questions:</p>
+          <ul>
+            <li>What decision was made?</li>
+            <li>What constraint matters next time?</li>
+            <li>What failed and why?</li>
+            <li>What is still unresolved?</li>
+          </ul>
+
+          <div class="code-block"><pre><code>episode_id: deploy-2026-03-29-01
+context: checkout-service release
+attempted_action: apply schema migration v14
+outcome: failed
+root_cause: staging data violated new NOT NULL constraint
+follow_up: backfill null records before retrying migration
+confidence: high</code></pre></div>
+
+          <p>That summary is small, specific, and retrievable. It is also useful to humans.</p>
+
+          <h2>Keep memory scoped so it cannot poison everything</h2>
+          <p>One of the most underappreciated production risks is memory bleed. An agent learns a preference in one repo, workspace, or user thread and starts applying it everywhere else.</p>
+          <p>The fix is simple: scope memory aggressively.</p>
+          <ul>
+            <li><strong>session scope</strong> for current work</li>
+            <li><strong>thread or conversation scope</strong> for short-lived continuity</li>
+            <li><strong>project scope</strong> for repo-specific conventions</li>
+            <li><strong>user scope</strong> for explicit stable preferences</li>
+            <li><strong>global scope</strong> only for carefully curated facts</li>
+          </ul>
+          <p>When in doubt, store lower than you think. Upward promotion should require evidence.</p>
+
+          <h2>The best memory is often structured, not embedded</h2>
+          <p>A lot of agent builders reach for embeddings first because vector search feels like the modern answer to everything. But some of the highest-value memories are simple structured records.</p>
+          <ul>
+            <li>key-value preferences</li>
+            <li>checklists</li>
+            <li>run outcomes</li>
+            <li>approval decisions</li>
+            <li>environment metadata</li>
+            <li>known constraints with timestamps</li>
+          </ul>
+          <p>If a fact needs exact recall, deterministic filtering, or easy updating, store it in a structured schema first. Add embeddings only when semantic lookup adds value.</p>
+          <p>A practical split looks like this:</p>
+          <ul>
+            <li><strong>SQL or document store</strong> for typed facts and events</li>
+            <li><strong>vector index</strong> for semantic retrieval over notes and summaries</li>
+            <li><strong>optional graph layer</strong> when relationships between entities really matter</li>
+          </ul>
+
+          <h2>Memory quality improves when you track confidence</h2>
+          <p>Not every memory deserves equal weight. Confidence is how you stop a weak inference from outranking a confirmed fact.</p>
+          <p>Useful confidence inputs include direct user statement versus inferred preference, one event versus repeated pattern, tool-verified outcome versus model guess, and recent evidence versus stale evidence.</p>
+
+          <h2>Debug memory like any other production subsystem</h2>
+          <p>If an agent starts behaving strangely, memory should be one of the first systems you inspect.</p>
+          <ol>
+            <li>what memories were retrieved?</li>
+            <li>why were they retrieved?</li>
+            <li>what was excluded?</li>
+            <li>which memory write happened most recently?</li>
+            <li>was a summary generated from raw events or from another summary?</li>
+            <li>did any low-confidence memory change behavior?</li>
+          </ol>
+          <p>Without this trail, memory bugs feel like model randomness. With it, they are usually ordinary systems bugs.</p>
+
+          <h3>Useful telemetry to keep</h3>
+          <ul>
+            <li>memory write rate per session</li>
+            <li>retrieval hit rate by memory type</li>
+            <li>stale memory usage rate</li>
+            <li>promotion rate from episode to semantic fact</li>
+            <li>override or correction rate from users</li>
+            <li>token cost of retrieved memory blocks</li>
+          </ul>
+
+          <h2>A practical memory architecture for a real agent</h2>
+          <p>If I were building a serious assistant for developer workflows, operations, or personal assistance, I would start with something like this:</p>
+          <h3>Ingestion</h3>
+          <ul>
+            <li>append raw interaction and tool events</li>
+            <li>classify candidate memory type</li>
+            <li>attach scope, timestamp, and source ID</li>
+          </ul>
+          <h3>Consolidation</h3>
+          <ul>
+            <li>summarize completed episodes</li>
+            <li>promote stable facts only with evidence thresholds</li>
+            <li>expire or down-rank stale task-specific notes</li>
+          </ul>
+          <h3>Retrieval</h3>
+          <ul>
+            <li>fetch typed memory by scope first</li>
+            <li>run semantic search over summaries second</li>
+            <li>cap total retrieved blocks aggressively</li>
+            <li>show provenance to the reasoning layer when possible</li>
+          </ul>
+          <h3>Governance</h3>
+          <ul>
+            <li>explicit rules for sensitive memory</li>
+            <li>human-visible correction path</li>
+            <li>delete and update flows that actually work</li>
+            <li>per-scope retention policies</li>
+          </ul>
+
+          <h2>A note on developer agents specifically</h2>
+          <p>Developer agents need slightly different memory from chat assistants. What matters most is not personality continuity. It is operational continuity.</p>
+          <p>The memories worth preserving are things like repo-specific test commands, known flaky checks, deploy order dependencies, prior incident fixes, coding conventions that affect reviews, and where secrets or approvals must never be handled automatically.</p>
+
+          <h2>References and resources</h2>
+          <ul>
+            <li><a href="https://docs.letta.com/guides/core-concepts/stateful-agents/" target="_blank" rel="noopener noreferrer">Letta docs: Stateful agents and memory concepts</a></li>
+            <li><a href="https://langchain-ai.github.io/langgraph/concepts/memory/" target="_blank" rel="noopener noreferrer">LangGraph docs: Memory and persistence patterns</a></li>
+            <li><a href="https://aws.amazon.com/blogs/machine-learning/amazon-bedrock-agentcore-memory-building-context-aware-agents/" target="_blank" rel="noopener noreferrer">Amazon Bedrock AgentCore Memory overview</a></li>
+            <li><a href="https://arxiv.org/abs/2310.08560" target="_blank" rel="noopener noreferrer">MemGPT paper</a></li>
+          </ul>
+
+          <h2>The takeaway</h2>
+          <p>The durable trick is not adding more memory. It is making memory earn its place.</p>
+          <p>A good agent memory system separates working state from durable knowledge, logs events before promoting facts, scopes everything tightly, retrieves selectively, and keeps enough telemetry that mistakes can be corrected instead of mythologized.</p>
+          <p>That is how memory stays useful after the demo glow wears off.</p>
+
+          <div class="blog-post-tags">
+            <span class="blog-post-tag">AI Agents</span>
+            <span class="blog-post-tag">Memory</span>
+            <span class="blog-post-tag">Developer Workflow</span>
+            <span class="blog-post-tag">LLM Ops</span>
+          </div>
+        </div>
+
+        <div class="blog-footer">
+          <p><a href="index.html">Browse more posts</a> or <a href="../index.html">return to the portfolio</a>.</p>
+        </div>
+      </div>
+    </header>
+  </body>
+</html>
