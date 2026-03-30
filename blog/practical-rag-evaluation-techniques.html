@@ -1,0 +1,471 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="A practical guide to evaluating RAG systems by separating retrieval from generation, building grounded test sets, tracking the right metrics, and running regression checks before users find the bugs.">
+    <meta name="author" content="Anirudh Negi">
+    <title>Practical RAG Evaluation Techniques That Catch Real Failures | Anirudh Negi</title>
+    <link rel="canonical" href="https://negiadventures.github.io/blog/practical-rag-evaluation-techniques.html">
+    <meta property="og:type" content="article">
+    <meta property="og:url" content="https://negiadventures.github.io/blog/practical-rag-evaluation-techniques.html">
+    <meta property="og:title" content="Practical RAG Evaluation Techniques That Catch Real Failures | Anirudh Negi">
+    <meta property="og:description" content="A practical guide to evaluating RAG systems by separating retrieval from generation, building grounded test sets, tracking the right metrics, and running regression checks before users find the bugs.">
+    <meta property="og:image" content="https://negiadventures.github.io/images/profile.jpg">
+    <meta property="article:published_time" content="2026-03-30">
+    <meta property="article:author" content="Anirudh Negi">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:url" content="https://negiadventures.github.io/blog/practical-rag-evaluation-techniques.html">
+    <meta name="twitter:title" content="Practical RAG Evaluation Techniques That Catch Real Failures | Anirudh Negi">
+    <meta name="twitter:description" content="A practical guide to evaluating RAG systems by separating retrieval from generation, building grounded test sets, tracking the right metrics, and running regression checks before users find the bugs.">
+    <meta name="twitter:image" content="https://negiadventures.github.io/images/profile.jpg">
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "BlogPosting",
+      "headline": "Practical RAG Evaluation Techniques That Catch Real Failures",
+      "description": "A practical guide to evaluating RAG systems by separating retrieval from generation, building grounded test sets, tracking the right metrics, and running regression checks before users find the bugs.",
+      "image": "https://negiadventures.github.io/images/profile.jpg",
+      "url": "https://negiadventures.github.io/blog/practical-rag-evaluation-techniques.html",
+      "datePublished": "2026-03-30",
+      "author": {
+        "@type": "Person",
+        "name": "Anirudh Negi",
+        "url": "https://negiadventures.github.io"
+      },
+      "publisher": {
+        "@type": "Person",
+        "name": "Anirudh Negi",
+        "url": "https://negiadventures.github.io"
+      }
+    }
+    </script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../stylesheets/stylesheet.css?v=5" media="screen">
+    <style>
+      .blog-post {
+        max-width: 800px;
+        margin: 0 auto;
+        padding: 60px 20px;
+      }
+
+      .blog-post-header {
+        margin-bottom: 40px;
+      }
+
+      .blog-post-nav {
+        margin-bottom: 30px;
+      }
+
+      .blog-post-nav a {
+        color: var(--accent-strong);
+        font-size: 0.95rem;
+      }
+
+      .blog-post-nav a:hover {
+        color: var(--accent);
+      }
+
+      .blog-post-title {
+        font-size: 2.5rem;
+        margin-bottom: 16px;
+      }
+
+      .blog-post-meta {
+        display: flex;
+        gap: 20px;
+        color: var(--text-muted);
+        font-size: 0.95rem;
+        margin-bottom: 30px;
+        flex-wrap: wrap;
+      }
+
+      .blog-post-image {
+        width: 100%;
+        height: 300px;
+        object-fit: cover;
+        border-radius: 16px;
+        margin-bottom: 30px;
+        border: 1px solid var(--border);
+        background: linear-gradient(135deg, rgba(10, 18, 32, 1), rgba(24, 39, 69, 1));
+      }
+
+      .blog-post-content h2 {
+        font-size: 1.6rem;
+        margin-top: 40px;
+        margin-bottom: 16px;
+        color: var(--text-light);
+      }
+
+      .blog-post-content h3 {
+        font-size: 1.3rem;
+        margin-top: 30px;
+        margin-bottom: 12px;
+        color: var(--text-light);
+      }
+
+      .blog-post-content p {
+        line-height: 1.8;
+        margin-bottom: 16px;
+        color: var(--text-muted);
+      }
+
+      .blog-post-content ul,
+      .blog-post-content ol {
+        line-height: 1.8;
+        margin-bottom: 20px;
+        color: var(--text-muted);
+        padding-left: 24px;
+      }
+
+      .blog-post-content li {
+        margin-bottom: 8px;
+      }
+
+      .code-block {
+        background: var(--bg-alt);
+        border: 1px solid var(--border);
+        border-radius: 12px;
+        padding: 20px;
+        margin: 20px 0;
+        overflow-x: auto;
+      }
+
+      .code-block pre {
+        margin: 0;
+        font-family: var(--mono);
+        font-size: 0.9rem;
+        line-height: 1.6;
+        color: var(--text-light);
+      }
+
+      .code-block code {
+        color: var(--accent-strong);
+      }
+
+      .blog-post-tags {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        margin-top: 40px;
+        padding-top: 30px;
+        border-top: 1px solid var(--border);
+      }
+
+      .blog-post-tag {
+        background: var(--accent-soft);
+        color: var(--accent-strong);
+        border-radius: 999px;
+        padding: 6px 14px;
+        font-size: 0.85rem;
+        font-family: var(--mono);
+        border: 1px solid transparent;
+        transition: border-color 0.2s ease;
+      }
+
+      .blog-post-tag:hover {
+        border-color: var(--accent);
+      }
+
+      .blog-footer {
+        margin-top: 60px;
+        padding-top: 30px;
+        border-top: 1px solid var(--border);
+        text-align: center;
+      }
+
+      .blog-footer a {
+        color: var(--accent-strong);
+      }
+
+      .blog-footer a:hover {
+        color: var(--accent);
+      }
+
+      @media (max-width: 768px) {
+        .blog-post {
+          padding: 40px 16px;
+        }
+
+        .blog-post-title {
+          font-size: 2rem;
+        }
+
+        .blog-post-image {
+          height: 200px;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <a href="../index.html#main" class="skip-link">Skip to main content</a>
+
+    <header class="site-header">
+      <div class="container blog-post">
+        <div class="blog-post-nav">
+          <a href="index.html">&larr; Back to All Posts</a>
+        </div>
+
+        <div class="blog-post-header">
+          <h1 class="blog-post-title">Practical RAG Evaluation Techniques That Catch Real Failures</h1>
+          <div class="blog-post-meta">
+            <span>March 30, 2026</span>
+            <span>&bull;</span>
+            <span>10 min read</span>
+          </div>
+          <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1200 630'%3E%3Cdefs%3E%3ClinearGradient id='bg' x1='0' x2='1' y1='0' y2='1'%3E%3Cstop offset='0%25' stop-color='%230a1220'/%3E%3Cstop offset='100%25' stop-color='%23182745'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='1200' height='630' fill='url(%23bg)'/%3E%3Ccircle cx='985' cy='130' r='145' fill='%2327d3ff' fill-opacity='0.12'/%3E%3Ccircle cx='175' cy='520' r='190' fill='%238d6bff' fill-opacity='0.14'/%3E%3Crect x='100' y='110' width='1000' height='410' rx='28' fill='%230f172a' stroke='%2338bdf8' stroke-opacity='0.35'/%3E%3Ctext x='150' y='225' fill='white' font-family='Arial, sans-serif' font-size='52' font-weight='700'%3EPractical RAG Evaluation%3C/text%3E%3Ctext x='150' y='295' fill='%2390cdf4' font-family='Arial, sans-serif' font-size='52' font-weight='700'%3EThat Catches Real Failures%3C/text%3E%3Ctext x='150' y='380' fill='%23cbd5e1' font-family='Arial, sans-serif' font-size='28'%3EScore retrieval, grounding, and regressions separately%3C/text%3E%3C/svg%3E" alt="Practical RAG Evaluation Techniques That Catch Real Failures" class="blog-post-image">
+        </div>
+
+        <div class="blog-post-content">
+          <p>RAG systems usually fail in more boring ways than people expect.</p>
+
+          <p>Most teams imagine the main risk is the model hallucinating wildly. In practice, the more common failure is quieter: the system retrieves the wrong chunk, misses the crucial chunk, stuffs too much low-value context into the prompt, or answers confidently from partial evidence. The user still gets a polished response, but it is wrong in a way that is harder to notice.</p>
+
+          <p>That is why &ldquo;the answer sounded good&rdquo; is not an evaluation strategy.</p>
+
+          <p>If you are building anything important on top of retrieval-augmented generation, you need an eval loop that separates retrieval quality from answer quality, catches regressions early, and gives you a path to debug what broke. This post covers the practical evaluation techniques I would use for a production RAG system.</p>
+
+          <h2>The core mistake: evaluating only the final answer</h2>
+          <p>A lot of RAG teams start with a single question: did the model give a good answer?</p>
+          <p>That matters, but it is not enough.</p>
+          <p>RAG is a pipeline. It usually includes document ingestion, chunking, embeddings, indexing, retrieval, reranking, prompt assembly, and generation. When the final answer is wrong, you need to know where the failure happened.</p>
+          <p>A useful evaluation setup asks at least three separate questions:</p>
+          <ol>
+            <li><strong>Did retrieval find the right evidence?</strong></li>
+            <li><strong>Did the prompt assembly preserve the useful evidence?</strong></li>
+            <li><strong>Did the model produce a grounded answer from that evidence?</strong></li>
+          </ol>
+          <p>If you only score the final response, you will struggle to tell whether you should fix chunking, retrieval parameters, prompt construction, or the model itself.</p>
+
+          <h2>Evaluate retrieval and generation separately</h2>
+          <p>This is the highest-leverage habit you can adopt.</p>
+
+          <h3>Retrieval evaluation</h3>
+          <p>Retrieval evaluation answers questions like:</p>
+          <ul>
+            <li>Was the relevant chunk present in the top-k results?</li>
+            <li>How much irrelevant context got pulled in?</li>
+            <li>Did the retriever miss a required citation or policy section?</li>
+            <li>Did reranking improve or hurt the result?</li>
+          </ul>
+          <p>Useful retrieval metrics include:</p>
+          <ul>
+            <li><strong>Recall@k</strong>: whether the system retrieved the needed supporting chunk in the top-k</li>
+            <li><strong>Precision@k</strong>: how much of the retrieved context was actually relevant</li>
+            <li><strong>MRR / NDCG</strong>: whether the most useful evidence appeared high enough in the ranking</li>
+            <li><strong>Context relevance scoring</strong>: human- or model-judged relevance of each retrieved chunk</li>
+          </ul>
+          <p>If retrieval is weak, no amount of prompt polish will save the system reliably.</p>
+
+          <h3>Generation evaluation</h3>
+          <p>Generation evaluation answers different questions:</p>
+          <ul>
+            <li>Did the answer use the retrieved evidence correctly?</li>
+            <li>Did it invent unsupported details?</li>
+            <li>Did it omit important caveats that were present in context?</li>
+            <li>Was the answer complete enough for the user’s task?</li>
+          </ul>
+          <p>Useful generation checks include:</p>
+          <ul>
+            <li><strong>Faithfulness / groundedness</strong>: is the answer supported by the retrieved context?</li>
+            <li><strong>Answer correctness</strong>: does it match a trusted reference answer?</li>
+            <li><strong>Completeness</strong>: did it cover the required parts of the question?</li>
+            <li><strong>Format / policy adherence</strong>: did it follow the expected structure and safety requirements?</li>
+          </ul>
+          <p>This split matters because it changes how you debug.</p>
+          <ul>
+            <li>Low retrieval recall -&gt; fix chunking, indexing, query reformulation, hybrid search, or reranking.</li>
+            <li>Good retrieval but weak grounded answers -&gt; fix prompt structure, citation requirements, or the model choice.</li>
+            <li>Good offline scores but bad user experience -&gt; your test set probably does not resemble production traffic.</li>
+          </ul>
+
+          <h2>Build a test set from real questions, not invented demo prompts</h2>
+          <p>The fastest way to fool yourself is to evaluate on tidy examples you wrote after already seeing the system work.</p>
+          <p>A better test set mixes four sources:</p>
+
+          <h3>1. Real production-like questions</h3>
+          <p>Pull anonymized queries from logs, support tickets, docs search, or internal QA threads. These tend to contain ambiguity, jargon, typos, and incomplete phrasing, which is exactly what real users do.</p>
+
+          <h3>2. Expert-written gold questions</h3>
+          <p>Have someone who actually understands the domain write the questions that matter most. These are often high-value edge cases like pricing exceptions, policy conflicts, or multi-step technical procedures.</p>
+
+          <h3>3. Synthetic coverage questions</h3>
+          <p>Synthetic generation is useful for bootstrapping coverage across sections of a knowledge base. It is especially handy when you want broad recall testing across many documents. But synthetic questions should support the eval set, not replace human examples.</p>
+
+          <h3>4. Adversarial and stress cases</h3>
+          <p>Include cases that are designed to break the system:</p>
+          <ul>
+            <li>ambiguous questions</li>
+            <li>multi-hop questions requiring multiple chunks</li>
+            <li>outdated-policy traps</li>
+            <li>prompt injection attempts inside retrieved documents</li>
+            <li>questions with no answer in the knowledge base</li>
+            <li>near-duplicate chunks with conflicting wording</li>
+          </ul>
+          <p>If the system is heading to production, these cases are not optional.</p>
+
+          <h2>Track the right failure categories</h2>
+          <p>Raw scores help, but error buckets are what actually guide improvements.</p>
+          <p>When a run fails, tag it with the dominant cause:</p>
+          <ul>
+            <li><strong>retrieval miss</strong>: needed evidence was not retrieved</li>
+            <li><strong>ranking issue</strong>: evidence was retrieved but buried too low</li>
+            <li><strong>chunking issue</strong>: the answer required context split across bad chunk boundaries</li>
+            <li><strong>context overload</strong>: too much irrelevant text diluted the useful signal</li>
+            <li><strong>grounding failure</strong>: model ignored correct context and guessed</li>
+            <li><strong>partial answer</strong>: answer was technically supported but incomplete</li>
+            <li><strong>policy failure</strong>: answer violated formatting, compliance, or safety rules</li>
+          </ul>
+          <p>This turns evaluation from a scoreboard into a roadmap.</p>
+
+          <h2>Use a small but trusted golden set for regressions</h2>
+          <p>Every serious RAG system should have a regression set that is small enough to run often and sharp enough to catch meaningful breakage.</p>
+          <p>I like a layered structure:</p>
+          <ul>
+            <li><strong>golden set</strong>: 30-100 high-value questions that should never quietly regress</li>
+            <li><strong>broader offline set</strong>: a few hundred or few thousand examples for experiment comparison</li>
+            <li><strong>live monitoring set</strong>: production queries sampled continuously for drift detection</li>
+          </ul>
+          <p>Your golden set should include:</p>
+          <ul>
+            <li>top user intents</li>
+            <li>expensive failure modes</li>
+            <li>historically broken cases</li>
+            <li>questions that require careful citation or precise wording</li>
+            <li>refusal cases where the system should explicitly say it does not know</li>
+          </ul>
+          <p>Run this set every time you change retrieval parameters, chunking logic, embeddings, prompts, reranking, or the model.</p>
+
+          <h2>Measure the context, not just the answer</h2>
+          <p>One of the best practical habits in RAG evaluation is to store and inspect the retrieved context alongside the answer.</p>
+          <p>For each evaluated query, log:</p>
+          <ul>
+            <li>the query</li>
+            <li>retrieved chunk IDs</li>
+            <li>chunk text or references</li>
+            <li>scores from retrieval/reranking</li>
+            <li>final assembled prompt context</li>
+            <li>model answer</li>
+            <li>evaluation labels and metrics</li>
+          </ul>
+          <p>This makes failures inspectable instead of mystical.</p>
+
+          <h2>A practical evaluation loop for RAG changes</h2>
+          <p>Here is a lightweight workflow that scales surprisingly well.</p>
+
+          <h3>Step 1: Freeze a baseline</h3>
+          <p>Before changing anything, run the current system on the golden set and save the outputs.</p>
+
+          <h3>Step 2: Change one major variable at a time</h3>
+          <p>Examples:</p>
+          <ul>
+            <li>chunk size and overlap</li>
+            <li>embedding model</li>
+            <li>hybrid retrieval on vs off</li>
+            <li>reranker added vs removed</li>
+            <li>top-k size</li>
+            <li>prompt instruction for citations</li>
+          </ul>
+          <p>If you change five things at once, you learn almost nothing.</p>
+
+          <h3>Step 3: Compare retrieval first</h3>
+          <p>Check whether recall@k, precision@k, or judged context quality improved. If retrieval got worse, do not let a marginal answer-quality gain distract you.</p>
+
+          <h3>Step 4: Compare generation quality</h3>
+          <p>Then look at faithfulness, correctness, completeness, and structured policy checks.</p>
+
+          <h3>Step 5: Review failures manually</h3>
+          <p>A small manual review pass is still worth it. Automated evals are helpful, but they can miss subtle issues like misleading wording, overconfident tone, or answers that are technically grounded but practically useless.</p>
+
+          <h3>Step 6: Promote only if the change wins on the questions you care about</h3>
+          <p>Do not ship based on average score alone. A small average gain is not worth it if the new setup breaks your most valuable queries.</p>
+
+          <h2>LLM-as-a-judge is useful, but only with calibration</h2>
+          <p>Model-graded evals are genuinely helpful for RAG, especially when you need to score faithfulness, completeness, or relevance at scale.</p>
+          <p>But they are not magic.</p>
+          <p>Use them with two guardrails:</p>
+          <ol>
+            <li><strong>Anchor them to explicit rubrics</strong><br>Ask the judge to score specific criteria like citation support, completeness, and contradiction against context, rather than vague “quality.”</li>
+            <li><strong>Calibrate with human review</strong><br>Regularly compare automated judgments with human labels on a subset of examples. If they drift apart, fix the rubric or stop trusting the metric.</li>
+          </ol>
+          <p>The goal is not to remove humans. The goal is to spend human attention where it changes decisions.</p>
+
+          <h2>Common RAG eval anti-patterns</h2>
+          <p>A few traps show up constantly.</p>
+          <h3>Evaluating only happy-path questions</h3>
+          <p>If every test question is neat and obvious, your scores will look excellent right before users break the system.</p>
+          <h3>Optimizing for a single aggregate number</h3>
+          <p>One headline score can hide retrieval regressions, citation failures, or refusal problems. Always keep component metrics and failure categories visible.</p>
+          <h3>Ignoring “no answer” behavior</h3>
+          <p>A good RAG system should know when the knowledge base does not support an answer. Refusal and uncertainty behavior deserve their own tests.</p>
+          <h3>Never revisiting the dataset</h3>
+          <p>Knowledge bases change. User behavior changes. Evaluation sets go stale. If your eval set is not evolving, it will slowly stop protecting you.</p>
+          <h3>Treating chunking as a preprocessing detail</h3>
+          <p>Chunking is not housekeeping. It is one of the biggest determinants of retrieval quality and should be evaluated directly.</p>
+
+          <h2>A compact example scorecard</h2>
+          <p>You do not need a giant platform to start. Even a simple scorecard can be enough:</p>
+          <div class="code-block">
+            <pre><code>Run: hybrid-search-v3
+Golden set size: 52 queries
+
+Retrieval
+- Recall@5: 0.88 -&gt; 0.94
+- Precision@5: 0.61 -&gt; 0.68
+- NDCG@5: 0.73 -&gt; 0.81
+
+Generation
+- Faithfulness: 0.86 -&gt; 0.91
+- Correctness: 0.79 -&gt; 0.84
+- Completeness: 0.74 -&gt; 0.80
+- Refusal accuracy: 0.92 -&gt; 0.95
+
+Top failure shifts
+- Retrieval miss: 11 -&gt; 5
+- Chunking issue: 7 -&gt; 4
+- Grounding failure: 4 -&gt; 4
+- Partial answer: 6 -&gt; 3</code></pre>
+          </div>
+
+          <h2>What I would prioritize first</h2>
+          <p>If I inherited a RAG system with no serious eval pipeline, I would do this in order:</p>
+          <ol>
+            <li>create a 30-50 query golden set from real user questions</li>
+            <li>save retrieved context and final answers for every run</li>
+            <li>separate retrieval scoring from answer scoring</li>
+            <li>add explicit failure labels for manual review</li>
+            <li>run regressions on every retrieval or prompt change</li>
+            <li>expand with adversarial cases once the basics are stable</li>
+          </ol>
+          <p>This gets you out of demo mode quickly.</p>
+
+          <h2>The real payoff</h2>
+          <p>Good RAG evaluation is not about prettier dashboards. It is about shortening the path from “the assistant answered badly” to “we know exactly what to fix.”</p>
+          <p>Once you can isolate retrieval problems from generation problems, compare changes against a trusted golden set, and inspect context-level failures, the system becomes much easier to improve. You stop guessing. You stop over-crediting the model. And you get a workflow that can survive real production changes.</p>
+          <p>That is the difference between a RAG demo and a RAG product.</p>
+
+          <h2>References and resources</h2>
+          <ul>
+            <li><a href="https://developers.openai.com/api/docs/guides/evaluation-best-practices/">OpenAI, <em>Evaluation best practices</em></a></li>
+            <li><a href="https://qdrant.tech/blog/rag-evaluation-guide/">Qdrant, <em>Best Practices in RAG Evaluation</em></a></li>
+            <li><a href="https://www.evidentlyai.com/llm-guide/rag-evaluation">Evidently AI, <em>A complete guide to RAG evaluation</em></a></li>
+            <li><a href="https://arxiv.org/abs/2005.11401">Lewis et al., <em>Retrieval-Augmented Generation for Knowledge-Intensive NLP Tasks</em></a></li>
+          </ul>
+
+          <div class="blog-post-tags">
+            <span class="blog-post-tag">RAG</span>
+            <span class="blog-post-tag">Evaluation</span>
+            <span class="blog-post-tag">LLM Ops</span>
+            <span class="blog-post-tag">Developer Workflow</span>
+          </div>
+        </div>
+
+        <div class="blog-footer">
+          <p><a href="index.html">Read more posts</a> or <a href="../index.html">return to the portfolio</a>.</p>
+        </div>
+      </div>
+    </header>
+  </body>
+</html>

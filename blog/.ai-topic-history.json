@@ -1,6 +1,14 @@
 {
   "topics": [
     {
+      "date": "2026-03-30",
+      "skill": "RAG evaluation workflow",
+      "topic": "Evaluating retrieval-augmented generation systems with separate retrieval and answer metrics, grounded golden sets, failure labeling, and regression checks",
+      "slug": "practical-rag-evaluation-techniques",
+      "title": "Practical RAG Evaluation Techniques That Catch Real Failures",
+      "summary": "A practical guide to evaluating RAG systems by splitting retrieval from generation, building realistic test sets, tracking failure categories, and running regressions that catch breakage before users do."
+    },
+    {
       "date": "2026-03-29",
       "skill": "Agent memory architecture",
       "topic": "Designing durable memory for AI agents with working state, episodic summaries, semantic facts, scoped retrieval, and explicit write policies",
