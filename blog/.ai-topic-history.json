@@ -1,6 +1,14 @@
 {
   "topics": [
     {
+      "date": "2026-03-31",
+      "skill": "Local LLM tooling",
+      "topic": "Building a practical local LLM development environment with Ollama, Open WebUI, coding clients, quantization tradeoffs, prompt versioning, and explicit hosted-model fallback rules",
+      "slug": "local-llm-dev-environments",
+      "title": "Local LLM Dev Environments That Stay Fast, Cheap, and Private",
+      "summary": "A practical guide to setting up local LLMs for daily developer work with Ollama, Open WebUI, coding-focused clients, prompt/version control, smoke tests, and smart escalation to hosted models when local ones are not enough."
+    },
+    {
       "date": "2026-03-30",
       "skill": "RAG evaluation workflow",
       "topic": "Evaluating retrieval-augmented generation systems with separate retrieval and answer metrics, grounded golden sets, failure labeling, and regression checks",
