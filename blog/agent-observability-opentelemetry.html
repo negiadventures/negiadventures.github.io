@@ -1,0 +1,488 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="A practical guide to tracing AI agents with OpenTelemetry and OpenInference so you can debug tool calls, latency, token usage, and multi-step failures without drowning in logs.">
+    <meta name="author" content="Anirudh Negi">
+    <title>Tracing AI Agents with OpenTelemetry Without Drowning in Logs | Anirudh Negi</title>
+    <link rel="canonical" href="https://negiadventures.github.io/blog/agent-observability-opentelemetry.html">
+    <meta property="og:type" content="article">
+    <meta property="og:url" content="https://negiadventures.github.io/blog/agent-observability-opentelemetry.html">
+    <meta property="og:title" content="Tracing AI Agents with OpenTelemetry Without Drowning in Logs | Anirudh Negi">
+    <meta property="og:description" content="A practical guide to tracing AI agents with OpenTelemetry and OpenInference so you can debug tool calls, latency, token usage, and multi-step failures without drowning in logs.">
+    <meta property="og:image" content="https://negiadventures.github.io/images/profile.jpg">
+    <meta property="article:published_time" content="2026-04-01">
+    <meta property="article:author" content="Anirudh Negi">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:url" content="https://negiadventures.github.io/blog/agent-observability-opentelemetry.html">
+    <meta name="twitter:title" content="Tracing AI Agents with OpenTelemetry Without Drowning in Logs | Anirudh Negi">
+    <meta name="twitter:description" content="A practical guide to tracing AI agents with OpenTelemetry and OpenInference so you can debug tool calls, latency, token usage, and multi-step failures without drowning in logs.">
+    <meta name="twitter:image" content="https://negiadventures.github.io/images/profile.jpg">
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "BlogPosting",
+      "headline": "Tracing AI Agents with OpenTelemetry Without Drowning in Logs",
+      "description": "A practical guide to tracing AI agents with OpenTelemetry and OpenInference so you can debug tool calls, latency, token usage, and multi-step failures without drowning in logs.",
+      "image": "https://negiadventures.github.io/images/profile.jpg",
+      "url": "https://negiadventures.github.io/blog/agent-observability-opentelemetry.html",
+      "datePublished": "2026-04-01",
+      "author": {
+        "@type": "Person",
+        "name": "Anirudh Negi",
+        "url": "https://negiadventures.github.io"
+      },
+      "publisher": {
+        "@type": "Person",
+        "name": "Anirudh Negi",
+        "url": "https://negiadventures.github.io"
+      }
+    }
+    </script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../stylesheets/stylesheet.css?v=5" media="screen">
+    <style>
+      .blog-post {
+        max-width: 800px;
+        margin: 0 auto;
+        padding: 60px 20px;
+      }
+
+      .blog-post-header {
+        margin-bottom: 40px;
+      }
+
+      .blog-post-nav {
+        margin-bottom: 30px;
+      }
+
+      .blog-post-nav a {
+        color: var(--accent-strong);
+        font-size: 0.95rem;
+      }
+
+      .blog-post-nav a:hover {
+        color: var(--accent);
+      }
+
+      .blog-post-title {
+        font-size: 2.5rem;
+        margin-bottom: 16px;
+      }
+
+      .blog-post-meta {
+        display: flex;
+        gap: 20px;
+        color: var(--text-muted);
+        font-size: 0.95rem;
+        margin-bottom: 30px;
+        flex-wrap: wrap;
+      }
+
+      .blog-post-image {
+        width: 100%;
+        height: 300px;
+        object-fit: cover;
+        border-radius: 16px;
+        margin-bottom: 30px;
+        border: 1px solid var(--border);
+        background: linear-gradient(135deg, rgba(8, 18, 31, 1), rgba(24, 39, 69, 1));
+      }
+
+      .blog-post-content h2 {
+        font-size: 1.6rem;
+        margin-top: 40px;
+        margin-bottom: 16px;
+        color: var(--text-light);
+      }
+
+      .blog-post-content h3 {
+        font-size: 1.3rem;
+        margin-top: 30px;
+        margin-bottom: 12px;
+        color: var(--text-light);
+      }
+
+      .blog-post-content p {
+        line-height: 1.8;
+        margin-bottom: 16px;
+        color: var(--text-muted);
+      }
+
+      .blog-post-content ul,
+      .blog-post-content ol {
+        line-height: 1.8;
+        margin-bottom: 20px;
+        color: var(--text-muted);
+        padding-left: 24px;
+      }
+
+      .blog-post-content li {
+        margin-bottom: 8px;
+      }
+
+      .code-block {
+        background: var(--bg-alt);
+        border: 1px solid var(--border);
+        border-radius: 12px;
+        padding: 20px;
+        margin: 20px 0;
+        overflow-x: auto;
+      }
+
+      .code-block pre {
+        margin: 0;
+        font-family: var(--mono);
+        font-size: 0.9rem;
+        line-height: 1.6;
+        color: var(--text-light);
+      }
+
+      .code-block code {
+        color: var(--accent-strong);
+      }
+
+      .blog-post-tags {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        margin-top: 40px;
+        padding-top: 30px;
+        border-top: 1px solid var(--border);
+      }
+
+      .blog-post-tag {
+        background: var(--accent-soft);
+        color: var(--accent-strong);
+        border-radius: 999px;
+        padding: 6px 14px;
+        font-size: 0.85rem;
+        font-family: var(--mono);
+        border: 1px solid transparent;
+        transition: border-color 0.2s ease;
+      }
+
+      .blog-post-tag:hover {
+        border-color: var(--accent);
+      }
+
+      .blog-footer {
+        margin-top: 60px;
+        padding-top: 30px;
+        border-top: 1px solid var(--border);
+        text-align: center;
+      }
+
+      .blog-footer a {
+        color: var(--accent-strong);
+      }
+
+      .blog-footer a:hover {
+        color: var(--accent);
+      }
+
+      @media (max-width: 768px) {
+        .blog-post {
+          padding: 40px 16px;
+        }
+
+        .blog-post-title {
+          font-size: 2rem;
+        }
+
+        .blog-post-image {
+          height: 200px;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <a href="../index.html#main" class="skip-link">Skip to main content</a>
+
+    <header class="site-header">
+      <div class="container blog-post">
+        <div class="blog-post-nav">
+          <a href="index.html">&larr; Back to All Posts</a>
+        </div>
+
+        <div class="blog-post-header">
+          <h1 class="blog-post-title">Tracing AI Agents with OpenTelemetry Without Drowning in Logs</h1>
+          <div class="blog-post-meta">
+            <span>April 1, 2026</span>
+            <span>&bull;</span>
+            <span>10 min read</span>
+          </div>
+          <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1200 630'%3E%3Cdefs%3E%3ClinearGradient id='bg' x1='0' x2='1' y1='0' y2='1'%3E%3Cstop offset='0%25' stop-color='%2308121f'/%3E%3Cstop offset='100%25' stop-color='%23182745'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='1200' height='630' fill='url(%23bg)'/%3E%3Ccircle cx='980' cy='120' r='150' fill='%2327d3ff' fill-opacity='0.12'/%3E%3Ccircle cx='180' cy='520' r='190' fill='%238d6bff' fill-opacity='0.14'/%3E%3Crect x='105' y='110' width='990' height='410' rx='28' fill='%230f172a' stroke='%2338bdf8' stroke-opacity='0.35'/%3E%3Ctext x='155' y='220' fill='white' font-family='Arial, sans-serif' font-size='52' font-weight='700'%3ETracing AI Agents%3C/text%3E%3Ctext x='155' y='292' fill='%2390cdf4' font-family='Arial, sans-serif' font-size='52' font-weight='700'%3Ewith OpenTelemetry%3C/text%3E%3Ctext x='155' y='378' fill='%23cbd5e1' font-family='Arial, sans-serif' font-size='28'%3EDebug tool calls, latency, tokens, and multi-step failures%3C/text%3E%3C/svg%3E" alt="Tracing AI Agents with OpenTelemetry Without Drowning in Logs" class="blog-post-image">
+        </div>
+
+        <div class="blog-post-content">
+          <p>If you have ever debugged an agent with nothing but <code>print()</code> statements and vibes, you already know the problem. Traditional logs tell you that <em>something</em> happened. They rarely tell you which model call asked for a tool, how long that tool took, which retrieval step poisoned the answer, or why the agent burned 40 seconds and 30k tokens before returning something useless.</p>
+
+          <p>That is exactly where tracing helps. Instead of one flat log stream, you get a request-shaped view of the entire run: the root task, nested model calls, tool executions, retrieval steps, retries, and the final answer. Done well, tracing turns agent debugging from archaeology into engineering.</p>
+
+          <p>This is the practical setup I would use for an agent system in 2026: <strong>OpenTelemetry for the trace model, OpenInference semantic conventions for AI-specific fields, and a backend that can actually visualize nested spans.</strong></p>
+
+          <h2>Why normal logs are not enough for agent systems</h2>
+          <p>A typical agent failure is multi-step:</p>
+          <ol>
+            <li>the user asks a messy real-world question</li>
+            <li>the agent calls the model</li>
+            <li>the model selects the wrong tool</li>
+            <li>the tool returns partial data</li>
+            <li>the agent retries with stale context</li>
+            <li>the final answer looks confident anyway</li>
+          </ol>
+
+          <p>If you only collect logs, those events end up scattered across services and timestamps. You can grep for fragments, but you cannot easily see the full path of the request.</p>
+
+          <p>A trace gives you that path. OpenTelemetry treats the whole run as a <strong>trace</strong> and each unit of work as a <strong>span</strong>. That maps cleanly to agent workloads:</p>
+          <ul>
+            <li><strong>root span</strong> = one user task</li>
+            <li><strong>child spans</strong> = model calls, retrieval, tool execution, guardrails, post-processing</li>
+            <li><strong>span attributes</strong> = model name, token counts, latency, tool name, status, retry count</li>
+            <li><strong>events</strong> = prompts truncated for inspection, validation failures, fallback decisions</li>
+          </ul>
+
+          <p>That structure matters because agent bugs are rarely isolated. They are usually coordination bugs.</p>
+
+          <h2>The minimum span model that stays useful</h2>
+          <p>The fastest way to ruin observability is to instrument everything without deciding what questions you want answered. For AI agents, I want the trace to answer five things quickly:</p>
+          <ul>
+            <li>Which step failed?</li>
+            <li>Was the problem the model, the tool, or the retrieval layer?</li>
+            <li>How much latency and token spend came from each step?</li>
+            <li>Did the agent recover with a retry or fallback?</li>
+            <li>Did the final answer come from grounded data or just model improvisation?</li>
+          </ul>
+
+          <p>A minimal span tree usually looks like this:</p>
+          <div class="code-block"><pre><code>agent.run
+├── planner.llm
+├── retriever.search
+├── tool.github_issue_lookup
+├── tool.repo_read
+├── responder.llm
+└── guardrails.output_check</code></pre></div>
+
+          <p>Do not start by tracing every helper function in your codebase. Start at workflow boundaries. If a step changes cost, latency, or behavior, it probably deserves its own span.</p>
+
+          <h2>A practical Python example</h2>
+          <p>This example keeps the structure simple on purpose. The root span wraps the entire run, and each meaningful sub-step becomes a child span.</p>
+          <div class="code-block"><pre><code>from opentelemetry import trace
+from opentelemetry.sdk.trace import TracerProvider
+from opentelemetry.sdk.trace.export import BatchSpanProcessor
+from opentelemetry.exporter.otlp.proto.http.trace_exporter import OTLPSpanExporter
+
+trace.set_tracer_provider(TracerProvider())
+trace.get_tracer_provider().add_span_processor(
+    BatchSpanProcessor(OTLPSpanExporter(endpoint="http://localhost:4318/v1/traces"))
+)
+tracer = trace.get_tracer("support-agent")
+
+
+def run_agent(user_query: str) -> str:
+    with tracer.start_as_current_span("agent.run") as root:
+        root.set_attribute("agent.query", user_query)
+        root.set_attribute("agent.max_iterations", 6)
+
+        plan = call_planner_llm(user_query)
+        docs = search_docs(plan)
+        tool_result = maybe_call_tool(plan)
+        answer = compose_answer(user_query, docs, tool_result)
+
+        root.set_attribute("agent.status", "completed")
+        return answer</code></pre></div>
+
+          <p>Then make the children explicit:</p>
+          <div class="code-block"><pre><code>def call_planner_llm(user_query: str) -> dict:
+    with tracer.start_as_current_span("planner.llm") as span:
+        span.set_attribute("gen_ai.system", "openai")
+        span.set_attribute("gen_ai.request.model", "gpt-4.1")
+        span.set_attribute("agent.phase", "planning")
+
+        response = client.responses.create(
+            model="gpt-4.1",
+            input=user_query,
+        )
+
+        span.set_attribute("gen_ai.usage.input_tokens", response.usage.input_tokens)
+        span.set_attribute("gen_ai.usage.output_tokens", response.usage.output_tokens)
+        span.set_attribute("agent.finish_reason", response.output[0].finish_reason)
+        return parse_plan(response)</code></pre></div>
+
+          <p>The code itself is not the hard part. The hard part is deciding what to attach as attributes so future-you can answer real production questions.</p>
+
+          <h2>Use OpenInference so your spans describe AI work, not just generic RPCs</h2>
+          <p>Plain OpenTelemetry gives you the trace primitives: traces, spans, context propagation, exporters, and backends. That is great, but AI systems have extra semantics that matter:</p>
+          <ul>
+            <li>model provider and model name</li>
+            <li>input and output token usage</li>
+            <li>prompts and messages</li>
+            <li>tool calls</li>
+            <li>retrieval inputs and returned documents</li>
+            <li>session and user metadata</li>
+            <li>agent role or step type</li>
+          </ul>
+
+          <p>This is where <strong>OpenInference</strong> is useful. It adds conventions and instrumentation for LLM and agent workloads so your traces carry AI-native meaning instead of a bag of arbitrary custom fields.</p>
+
+          <p>In practice that means you can standardize around attributes for model calls, retrieval, and tools without inventing your own naming scheme every week.</p>
+
+          <h2>What I would capture on every agent run</h2>
+          <p>At the root span level:</p>
+          <ul>
+            <li>agent name and version</li>
+            <li>user-visible task id</li>
+            <li>workflow or route name</li>
+            <li>session id when relevant</li>
+            <li>final status: completed, failed, timed_out, blocked, fallback</li>
+            <li>total iteration count</li>
+          </ul>
+
+          <p>At model-call spans:</p>
+          <ul>
+            <li>provider and model name</li>
+            <li>prompt template or prompt version</li>
+            <li>input and output token counts</li>
+            <li>latency</li>
+            <li>finish reason</li>
+            <li>fallback source if a backup model was used</li>
+          </ul>
+
+          <p>At tool spans:</p>
+          <ul>
+            <li>tool name</li>
+            <li>normalized arguments, redacted if sensitive</li>
+            <li>latency</li>
+            <li>retry count</li>
+            <li>result size or summary</li>
+            <li>exception type on failure</li>
+          </ul>
+
+          <p>At retrieval spans:</p>
+          <ul>
+            <li>corpus or index name</li>
+            <li>query used after rewriting</li>
+            <li>top-k requested and returned</li>
+            <li>whether citations made it into the answer</li>
+            <li>retrieval score summary if available</li>
+          </ul>
+
+          <p>Those fields cover most of the “why did this run go weird?” questions that show up in real systems.</p>
+
+          <h2>The redaction rule matters more than the exporter choice</h2>
+          <p>A lot of teams get excited about dashboards and forget the obvious question: are you shipping sensitive prompts, documents, API arguments, or customer data into your tracing backend?</p>
+
+          <p>You need a policy before broad instrumentation goes live.</p>
+
+          <p>A practical default:</p>
+          <ul>
+            <li>keep full raw prompts out of traces unless you truly need them</li>
+            <li>hash or redact user identifiers</li>
+            <li>store tool arguments in summarized form when they may contain secrets</li>
+            <li>emit document ids or chunk ids instead of full retrieved passages by default</li>
+            <li>gate verbose capture behind an environment flag for temporary debugging</li>
+          </ul>
+
+          <p>This is boring operational hygiene, but it matters. Observability can become a data leak if you instrument first and think later.</p>
+
+          <h2>Three dashboards that actually help</h2>
+          <h3>1. Slowest traces by percentile</h3>
+          <p>Use this to find where latency really accumulates. You may discover the model is fine and the real culprit is a slow tool or vector search round-trip.</p>
+
+          <h3>2. Failed traces grouped by span name</h3>
+          <p>This quickly reveals whether failures cluster around one tool, one guardrail, or one retrieval path.</p>
+
+          <h3>3. Cost-heavy traces with token breakdown</h3>
+          <p>If your root span cost looks bad, the child spans will show whether the issue is a planner loop, a verbose responder model, or repeated retries.</p>
+
+          <p>That alone gets you most of the operational value without turning observability into its own product.</p>
+
+          <h2>A simple failure taxonomy</h2>
+          <p>Your traces become much more useful when failures are labeled consistently. I like categories such as:</p>
+          <ul>
+            <li><code>tool_error</code></li>
+            <li><code>retrieval_miss</code></li>
+            <li><code>model_refusal</code></li>
+            <li><code>timeout</code></li>
+            <li><code>rate_limit</code></li>
+            <li><code>guardrail_block</code></li>
+            <li><code>bad_plan</code></li>
+            <li><code>hallucinated_answer</code></li>
+          </ul>
+
+          <p>Attach one of those to the root span and, when useful, to the failing child span. Over time that gives you a real distribution of failures instead of a generic red wall of “exception occurred.”</p>
+
+          <h2>What good traces changed for one of my agent workflows</h2>
+          <p>The most useful pattern I keep seeing is that traces reveal <em>misattribution</em>. People blame the model first because the model is the most visible part of the system.</p>
+
+          <p>In reality, the bigger problems are often elsewhere:</p>
+          <ul>
+            <li>retrieval returned the wrong chunk family</li>
+            <li>a tool silently truncated results</li>
+            <li>the planner used a broad tool when a narrow tool existed</li>
+            <li>a retry loop preserved the original bad assumption</li>
+            <li>a fallback model masked the first failure and made root cause harder to see</li>
+          </ul>
+
+          <p>Tracing makes these visible because you can follow the whole chain in one place.</p>
+
+          <h2>Common mistakes</h2>
+          <h3>Instrumenting only the final model call</h3>
+          <p>If you do not trace planning, retrieval, and tools, you will miss the steps that usually create the bad answer.</p>
+
+          <h3>Capturing too much raw payload data</h3>
+          <p>The point is to debug behavior, not to mirror your whole database into observability.</p>
+
+          <h3>Using inconsistent span names</h3>
+          <p><code>llm_call</code>, <code>model</code>, <code>ai-step</code>, and <code>prompt-1</code> are not a taxonomy. Pick stable names so you can aggregate meaningfully.</p>
+
+          <h3>Ignoring context propagation across services</h3>
+          <p>If the API layer, worker, and tool service do not share trace context, your traces stop at the most inconvenient boundary.</p>
+
+          <h2>A pragmatic stack that works</h2>
+          <p>If I wanted a setup that stays portable, I would use:</p>
+          <ol>
+            <li><strong>OpenTelemetry SDK</strong> for span creation and export</li>
+            <li><strong>OpenInference</strong> conventions or instrumentation for AI-specific metadata</li>
+            <li><strong>OTLP exporter</strong> so the backend stays swappable</li>
+            <li>a backend like <strong>Jaeger</strong>, <strong>Tempo/Grafana</strong>, <strong>Langfuse</strong>, <strong>Phoenix</strong>, or another OTEL-compatible store depending on the team</li>
+          </ol>
+
+          <p>That gives you a standards-based instrumentation layer and freedom to change the visualization layer later.</p>
+
+          <h2>References and resources</h2>
+          <ul>
+            <li><a href="https://opentelemetry.io/docs/concepts/signals/traces/">OpenTelemetry traces documentation</a></li>
+            <li><a href="https://github.com/Arize-ai/openinference">OpenInference specification and instrumentation</a></li>
+            <li><a href="https://langfuse.com/docs/observability/overview">Langfuse observability overview</a></li>
+            <li><a href="https://phoenix.arize.com/">Arize Phoenix</a></li>
+          </ul>
+
+          <h2>Key takeaways</h2>
+          <ol>
+            <li>Agent failures are usually workflow failures, not just model failures.</li>
+            <li>Trace the full run shape: planning, retrieval, tools, response, and guardrails.</li>
+            <li>OpenTelemetry gives the structure; OpenInference makes that structure AI-aware.</li>
+            <li>Redaction policy is part of observability design, not an afterthought.</li>
+            <li>Good traces reduce debugging time and make token, latency, and reliability work much less guessy.</li>
+          </ol>
+        </div>
+
+        <div class="blog-post-tags">
+          <span class="blog-post-tag">AI Agents</span>
+          <span class="blog-post-tag">OpenTelemetry</span>
+          <span class="blog-post-tag">Observability</span>
+          <span class="blog-post-tag">LLM Ops</span>
+        </div>
+
+        <div class="blog-footer">
+          <p><a href="index.html">Browse more blog posts</a></p>
+        </div>
+      </div>
+    </header>
+  </body>
+</html>
