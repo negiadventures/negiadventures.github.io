@@ -1,6 +1,14 @@
 {
   "topics": [
     {
+      "date": "2026-04-01",
+      "skill": "AI agent observability",
+      "topic": "Tracing AI agents with OpenTelemetry and OpenInference to debug tool calls, retrieval failures, latency, token usage, and multi-step execution paths",
+      "slug": "agent-observability-opentelemetry",
+      "title": "Tracing AI Agents with OpenTelemetry Without Drowning in Logs",
+      "summary": "A practical guide to tracing AI agents with OpenTelemetry and OpenInference so teams can inspect nested model/tool spans, track cost and latency, label failures, and debug workflows without relying on flat logs."
+    },
+    {
       "date": "2026-03-31",
       "skill": "Local LLM tooling",
       "topic": "Building a practical local LLM development environment with Ollama, Open WebUI, coding clients, quantization tradeoffs, prompt versioning, and explicit hosted-model fallback rules",
