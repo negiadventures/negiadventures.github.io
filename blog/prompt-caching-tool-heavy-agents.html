@@ -1,0 +1,382 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="A practical guide to reducing latency and cost in tool-heavy AI agents with stable prompt prefixes, prompt caching, context compaction, and retrieval boundaries.">
+    <meta name="author" content="Anirudh Negi">
+    <title>Prompt Caching for Tool-Heavy AI Agents That Need to Stay Fast | Anirudh Negi</title>
+    <link rel="canonical" href="https://negiadventures.github.io/blog/prompt-caching-tool-heavy-agents.html">
+    <meta property="og:type" content="article">
+    <meta property="og:url" content="https://negiadventures.github.io/blog/prompt-caching-tool-heavy-agents.html">
+    <meta property="og:title" content="Prompt Caching for Tool-Heavy AI Agents That Need to Stay Fast | Anirudh Negi">
+    <meta property="og:description" content="A practical guide to reducing latency and cost in tool-heavy AI agents with stable prompt prefixes, prompt caching, context compaction, and retrieval boundaries.">
+    <meta property="og:image" content="https://negiadventures.github.io/images/profile.jpg">
+    <meta property="article:published_time" content="2026-04-02">
+    <meta property="article:author" content="Anirudh Negi">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:url" content="https://negiadventures.github.io/blog/prompt-caching-tool-heavy-agents.html">
+    <meta name="twitter:title" content="Prompt Caching for Tool-Heavy AI Agents That Need to Stay Fast | Anirudh Negi">
+    <meta name="twitter:description" content="A practical guide to reducing latency and cost in tool-heavy AI agents with stable prompt prefixes, prompt caching, context compaction, and retrieval boundaries.">
+    <meta name="twitter:image" content="https://negiadventures.github.io/images/profile.jpg">
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "BlogPosting",
+      "headline": "Prompt Caching for Tool-Heavy AI Agents That Need to Stay Fast",
+      "description": "A practical guide to reducing latency and cost in tool-heavy AI agents with stable prompt prefixes, prompt caching, context compaction, and retrieval boundaries.",
+      "image": "https://negiadventures.github.io/images/profile.jpg",
+      "url": "https://negiadventures.github.io/blog/prompt-caching-tool-heavy-agents.html",
+      "datePublished": "2026-04-02",
+      "author": {
+        "@type": "Person",
+        "name": "Anirudh Negi",
+        "url": "https://negiadventures.github.io"
+      },
+      "publisher": {
+        "@type": "Person",
+        "name": "Anirudh Negi",
+        "url": "https://negiadventures.github.io"
+      }
+    }
+    </script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../stylesheets/stylesheet.css?v=5" media="screen">
+    <style>
+      .blog-post {
+        max-width: 800px;
+        margin: 0 auto;
+        padding: 60px 20px;
+      }
+
+      .blog-post-header {
+        margin-bottom: 40px;
+      }
+
+      .blog-post-nav {
+        margin-bottom: 30px;
+      }
+
+      .blog-post-nav a {
+        color: var(--accent-strong);
+        font-size: 0.95rem;
+      }
+
+      .blog-post-nav a:hover {
+        color: var(--accent);
+      }
+
+      .blog-post-title {
+        font-size: 2.5rem;
+        margin-bottom: 16px;
+      }
+
+      .blog-post-meta {
+        display: flex;
+        gap: 20px;
+        color: var(--text-muted);
+        font-size: 0.95rem;
+        margin-bottom: 30px;
+        flex-wrap: wrap;
+      }
+
+      .blog-post-image {
+        width: 100%;
+        height: 300px;
+        object-fit: cover;
+        border-radius: 16px;
+        margin-bottom: 30px;
+        border: 1px solid var(--border);
+      }
+
+      .blog-post-content h2 {
+        font-size: 1.6rem;
+        margin-top: 40px;
+        margin-bottom: 16px;
+        color: var(--text-light);
+      }
+
+      .blog-post-content h3 {
+        font-size: 1.3rem;
+        margin-top: 30px;
+        margin-bottom: 12px;
+        color: var(--text-light);
+      }
+
+      .blog-post-content p {
+        line-height: 1.8;
+        margin-bottom: 16px;
+        color: var(--text-muted);
+      }
+
+      .blog-post-content ul {
+        line-height: 1.8;
+        margin-bottom: 20px;
+        color: var(--text-muted);
+      }
+
+      .blog-post-content ol {
+        line-height: 1.8;
+        margin-bottom: 20px;
+        color: var(--text-muted);
+        padding-left: 24px;
+      }
+
+      .blog-post-content li {
+        margin-bottom: 8px;
+      }
+
+      .code-block {
+        background: var(--bg-alt);
+        border: 1px solid var(--border);
+        border-radius: 12px;
+        padding: 20px;
+        margin: 20px 0;
+        overflow-x: auto;
+      }
+
+      .code-block pre {
+        margin: 0;
+        font-family: var(--mono);
+        font-size: 0.9rem;
+        line-height: 1.6;
+        color: var(--text-light);
+      }
+
+      .code-block code {
+        color: var(--accent-strong);
+      }
+
+      .blog-post-tags {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        margin-top: 40px;
+        padding-top: 30px;
+        border-top: 1px solid var(--border);
+      }
+
+      .blog-post-tag {
+        background: var(--accent-soft);
+        color: var(--accent-strong);
+        border-radius: 999px;
+        padding: 6px 14px;
+        font-size: 0.85rem;
+        font-family: var(--mono);
+        border: 1px solid transparent;
+        transition: border-color 0.2s ease;
+      }
+
+      .blog-post-tag:hover {
+        border-color: var(--accent);
+      }
+
+      .blog-footer {
+        margin-top: 60px;
+        padding-top: 30px;
+        border-top: 1px solid var(--border);
+        text-align: center;
+      }
+
+      .blog-footer a {
+        color: var(--accent-strong);
+      }
+
+      .blog-footer a:hover {
+        color: var(--accent);
+      }
+
+      @media (max-width: 768px) {
+        .blog-post {
+          padding: 40px 16px;
+        }
+
+        .blog-post-title {
+          font-size: 2rem;
+        }
+
+        .blog-post-image {
+          height: 200px;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <a href="../index.html#main" class="skip-link">Skip to main content</a>
+
+    <header class="site-header">
+      <div class="container blog-post">
+        <div class="blog-post-nav">
+          <a href="index.html">&larr; Back to All Posts</a>
+        </div>
+
+        <div class="blog-post-header">
+          <h1 class="blog-post-title">Prompt Caching for Tool-Heavy AI Agents That Need to Stay Fast</h1>
+          <div class="blog-post-meta">
+            <span>April 2, 2026</span>
+            <span>&bull;</span>
+            <span>9 min read</span>
+          </div>
+          <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1200 630'%3E%3Cdefs%3E%3ClinearGradient id='bg' x1='0' x2='1' y1='0' y2='1'%3E%3Cstop offset='0%25' stop-color='%2309141f'/%3E%3Cstop offset='100%25' stop-color='%2316294a'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='1200' height='630' fill='url(%23bg)'/%3E%3Ccircle cx='980' cy='120' r='145' fill='%2327d3ff' fill-opacity='0.12'/%3E%3Ccircle cx='180' cy='520' r='190' fill='%238d6bff' fill-opacity='0.14'/%3E%3Crect x='105' y='110' width='990' height='410' rx='28' fill='%230f172a' stroke='%2338bdf8' stroke-opacity='0.35'/%3E%3Ctext x='155' y='220' fill='white' font-family='Arial, sans-serif' font-size='50' font-weight='700'%3EPrompt Caching for%3C/text%3E%3Ctext x='155' y='292' fill='%2390cdf4' font-family='Arial, sans-serif' font-size='50' font-weight='700'%3ETool-Heavy AI Agents%3C/text%3E%3Ctext x='155' y='378' fill='%23cbd5e1' font-family='Arial, sans-serif' font-size='28'%3EStable prefixes, compaction, and lean retrieval for lower latency%3C/text%3E%3C/svg%3E" alt="Prompt Caching for Tool-Heavy AI Agents That Need to Stay Fast" class="blog-post-image">
+        </div>
+
+        <div class="blog-post-content">
+          <p>Tool-heavy agents get expensive for a boring reason: they keep resending the same context. The system prompt barely changes. Tool schemas barely change. Operating rules barely change. But every turn pays to reprocess them unless you design for cacheability.</p>
+
+          <p>If your agent reads code, calls tools, retries, summarizes, and asks follow-up questions, prompt caching is one of the highest-leverage optimizations you can make. It does not magically fix a bad workflow, but it can shave real latency and cost off the repetitive part of every turn.</p>
+
+          <p>The trick is simple in theory and easy to get wrong in practice: keep the front of the prompt stable, push variable inputs toward the end, and stop dragging a full transcript around after the useful bits have already been compressed.</p>
+
+          <h2>Where tool-heavy agents waste money</h2>
+          <p>A typical coding or ops agent sends the model a long system prompt, stable policies, tool schemas, prior turns, retrieved files, logs, and the actual new task. Only the tail of that request changes a lot. The front is usually near-identical.</p>
+          <p>That means the expensive part of each request is often not the new task. It is the repeated preamble. If you keep changing the prefix order, inserting dynamic state too early, or stuffing every new retrieval chunk before the instruction block, you destroy cache reuse.</p>
+
+          <h2>The practical design rule: freeze the prefix</h2>
+          <p>For prompt caching to help, exact prefix matches matter. So the goal is not just making prompts shorter. It is making the beginning of prompts extremely stable.</p>
+          <ol>
+            <li>System role and permanent operating rules</li>
+            <li>Stable team or app instructions</li>
+            <li>Stable tool definitions</li>
+            <li>Stable examples if you truly need them</li>
+            <li>Rolling compacted state</li>
+            <li>Retrieved task-specific context</li>
+            <li>The latest user request</li>
+          </ol>
+          <p>That ordering keeps the reusable block at the front and pushes volatile data to the back where it cannot poison the cache key.</p>
+
+          <h2>A bad pattern versus a better one</h2>
+
+          <h3>Bad</h3>
+          <div class="code-block">
+            <pre><code>{
+  "input": [
+    {"role": "system", "content": "You are a coding agent."},
+    {"role": "user", "content": "Current time: 2026-04-02T12:00:07Z"},
+    {"role": "user", "content": "Relevant repo files: ...dynamic chunk..."},
+    {"role": "user", "content": "Tool list: ...long schema block..."},
+    {"role": "user", "content": "Please fix the failing tests."}
+  ]
+}</code></pre>
+          </div>
+
+          <h3>Better</h3>
+          <div class="code-block">
+            <pre><code>{
+  "input": [
+    {"role": "system", "content": "You are a coding agent. Follow repo rules, explain risky actions, and verify before finishing."},
+    {"role": "system", "content": "Available tools: ...stable schema block..."},
+    {"role": "system", "content": "Workflow policy: inspect, plan, edit, test, summarize."},
+    {"role": "assistant", "content": "Compacted prior state: branch, known failures, accepted constraints."},
+    {"role": "user", "content": "Relevant repo files: ...dynamic chunk..."},
+    {"role": "user", "content": "Please fix the failing tests in auth middleware."}
+  ]
+}</code></pre>
+          </div>
+
+          <p>Nothing revolutionary there. It is just discipline.</p>
+
+          <h2>Prompt caching is not only for chatbots</h2>
+          <p>In a tool-heavy workflow, the model repeatedly re-reads tool schemas, environment policies, output rules, coding conventions, repo guidance, and escalation rules. That is exactly the material you want the model to see every turn, and exactly the material that should be stable enough to cache.</p>
+          <p>Agent quality often pushes you toward richer instructions, while agent cost pushes you toward a reusable prefix. Prompt caching is the compromise that lets you have both.</p>
+
+          <h2>Use compaction before the transcript becomes the product</h2>
+          <p>Long-running agents have a second problem: even if the prefix is stable, the conversation history keeps growing. After enough tool calls, intermediate plans, and dead-end reasoning, sending the full transcript every turn becomes silly.</p>
+          <p>The fix is to carry forward state, not raw history. Use server-side compaction when your API supports it, or explicitly compact and pass forward the compacted window as the new baseline context.</p>
+
+          <h2>What should survive compaction</h2>
+          <ul>
+            <li>the current goal</li>
+            <li>accepted constraints</li>
+            <li>important prior decisions</li>
+            <li>unresolved risks</li>
+            <li>tool outputs that still matter</li>
+            <li>critical names, paths, and identifiers</li>
+          </ul>
+          <p>Usually drop superseded plans, repetitive confirmations, verbose tool chatter, and raw logs that can be fetched again.</p>
+
+          <h2>Retrieval boundaries matter as much as caching</h2>
+          <p>Teams often sabotage caching by retrieving too much context too early. A better pattern is to keep the reusable instruction prefix fixed, retrieve only the smallest task-relevant context, inject those results after the stable prefix, and replace them aggressively between turns.</p>
+          <p>A coding agent usually does not need the entire repo map, multiple old traces, and a copied issue thread on every turn. It needs the few files or traces relevant to the current decision.</p>
+
+          <h2>A production-friendly request loop</h2>
+          <div class="code-block">
+            <pre><code>BASE_PREFIX = [
+    SYSTEM_RULES,
+    TOOL_SCHEMAS,
+    WORKFLOW_POLICY,
+]
+
+state = load_compacted_state()
+
+while True:
+    retrieved = fetch_minimum_relevant_context(task=state.active_task)
+    latest_user_message = get_latest_user_message()
+
+    response = client.responses.create(
+        model="gpt-5.4",
+        input=[*BASE_PREFIX, state, *retrieved, latest_user_message],
+        prompt_cache_retention="24h",
+        prompt_cache_key="repo:main-agent",
+        store=False,
+        context_management=[{"type": "compaction", "compact_threshold": 200000}],
+    )
+
+    state = extract_latest_compacted_state(response)
+    handle_tools_and_output(response)</code></pre>
+          </div>
+
+          <p>The important bits are that the base prefix stays stable, state is compact instead of a raw transcript, retrieval is deliberately minimal, and compaction prevents context from bloating forever.</p>
+
+          <h2>Mistakes that quietly kill cache hit rate</h2>
+          <ul>
+            <li>Injecting timestamps near the top</li>
+            <li>Reordering tools between requests</li>
+            <li>Shoving retrieval before instructions</li>
+            <li>Treating every past turn as sacred</li>
+            <li>Changing prompt templates casually</li>
+          </ul>
+
+          <h2>How to tell whether this is working</h2>
+          <p>Do not guess. Measure cached prompt tokens, median latency by workflow, long-tail latency after many turns, input token count before and after compaction, and task success rate after shrinking retrieval scope.</p>
+          <p>If cost drops but accuracy tanks, you compacted too aggressively or retrieved too little. If accuracy stays stable but latency barely moves, your supposedly stable prefix probably is not actually stable.</p>
+
+          <h2>A sane rollout plan</h2>
+          <ol>
+            <li>Freeze and version the reusable prefix</li>
+            <li>Move dynamic retrieval and timestamps to the end</li>
+            <li>Keep tool schemas stable across related requests</li>
+            <li>Introduce prompt cache keys for repeated workflows</li>
+            <li>Add compaction once long-running sessions become noisy</li>
+            <li>Measure cost and task success before tightening further</li>
+          </ol>
+
+          <h2>The real takeaway</h2>
+          <p>The fastest way to make an agent cheaper is often not choosing a smaller model. It is stopping the expensive habit of making the model reread the same novel every turn.</p>
+          <p>Prompt caching works best when paired with prompt discipline, narrow retrieval, and aggressive context compaction. Together, those three patterns make tool-heavy agents less bloated, less fragile, and much easier to run at scale.</p>
+
+          <h2>References and resources</h2>
+          <ul>
+            <li><a href="https://developers.openai.com/api/docs/guides/prompt-caching" target="_blank" rel="noreferrer">OpenAI API: Prompt Caching</a></li>
+            <li><a href="https://developers.openai.com/api/docs/guides/compaction" target="_blank" rel="noreferrer">OpenAI API: Compaction</a></li>
+            <li><a href="https://developers.openai.com/api/docs/guides/cost-optimization" target="_blank" rel="noreferrer">OpenAI API: Cost Optimization</a></li>
+            <li><a href="https://developers.openai.com/api/docs/guides/prompting" target="_blank" rel="noreferrer">OpenAI API: Prompting</a></li>
+          </ul>
+
+          <div class="blog-post-tags">
+            <span class="blog-post-tag">AI Agents</span>
+            <span class="blog-post-tag">Prompt Caching</span>
+            <span class="blog-post-tag">Cost Optimization</span>
+            <span class="blog-post-tag">Developer Workflow</span>
+          </div>
+        </div>
+
+        <div class="blog-footer">
+          <p><a href="../index.html">Back to Portfolio</a></p>
+          <p style="margin-top: 16px; font-size: 0.9rem;"><em>Practical notes on AI engineering, developer workflows, and production tradeoffs.</em></p>
+        </div>
+      </div>
+    </header>
+  </body>
+</html>
