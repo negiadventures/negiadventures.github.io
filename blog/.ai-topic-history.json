@@ -1,6 +1,14 @@
 {
   "topics": [
     {
+      "date": "2026-04-02",
+      "skill": "AI cost engineering",
+      "topic": "Using prompt caching, stable prompt prefixes, context compaction, and retrieval boundaries to reduce latency and cost in tool-heavy AI agents without degrading task quality",
+      "slug": "prompt-caching-tool-heavy-agents",
+      "title": "Prompt Caching for Tool-Heavy AI Agents That Need to Stay Fast",
+      "summary": "A practical guide to reducing latency and cost in tool-heavy AI agents by freezing the reusable prompt prefix, pushing dynamic context later in the request, compacting long-running state, and measuring cache effectiveness."
+    },
+    {
       "date": "2026-04-01",
       "skill": "AI agent observability",
       "topic": "Tracing AI agents with OpenTelemetry and OpenInference to debug tool calls, retrieval failures, latency, token usage, and multi-step execution paths",
