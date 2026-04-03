@@ -1,6 +1,14 @@
 {
   "topics": [
     {
+      "date": "2026-04-03",
+      "skill": "AI code review workflow",
+      "topic": "Reviewing AI-generated pull requests with scoped diffs, invariant checklists, CI guardrails, and CODEOWNERS-based risk controls so teams can merge faster without rubber-stamping",
+      "slug": "reviewing-ai-generated-pull-requests",
+      "title": "Reviewing AI-Generated Pull Requests Without Becoming the Bottleneck",
+      "summary": "A practical guide to reviewing AI-generated pull requests with scoped diffs, invariant checklists, CI guardrails, and risk-based review loops so teams can move quickly without rubber-stamping machine-made code."
+    },
+    {
       "date": "2026-04-02",
       "skill": "AI cost engineering",
       "topic": "Using prompt caching, stable prompt prefixes, context compaction, and retrieval boundaries to reduce latency and cost in tool-heavy AI agents without degrading task quality",

@@ -1,0 +1,228 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="A practical guide to reviewing AI-generated pull requests with scoped diffs, invariant checklists, CI guardrails, and fast human approval loops.">
+    <meta name="author" content="Anirudh Negi">
+    <title>Reviewing AI-Generated Pull Requests Without Becoming the Bottleneck | Anirudh Negi</title>
+    <link rel="canonical" href="https://negiadventures.github.io/blog/reviewing-ai-generated-pull-requests.html">
+    <meta property="og:type" content="article">
+    <meta property="og:url" content="https://negiadventures.github.io/blog/reviewing-ai-generated-pull-requests.html">
+    <meta property="og:title" content="Reviewing AI-Generated Pull Requests Without Becoming the Bottleneck | Anirudh Negi">
+    <meta property="og:description" content="A practical guide to reviewing AI-generated pull requests with scoped diffs, invariant checklists, CI guardrails, and fast human approval loops.">
+    <meta property="og:image" content="https://negiadventures.github.io/images/profile.jpg">
+    <meta property="article:published_time" content="2026-04-03">
+    <meta property="article:author" content="Anirudh Negi">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:url" content="https://negiadventures.github.io/blog/reviewing-ai-generated-pull-requests.html">
+    <meta name="twitter:title" content="Reviewing AI-Generated Pull Requests Without Becoming the Bottleneck | Anirudh Negi">
+    <meta name="twitter:description" content="A practical guide to reviewing AI-generated pull requests with scoped diffs, invariant checklists, CI guardrails, and fast human approval loops.">
+    <meta name="twitter:image" content="https://negiadventures.github.io/images/profile.jpg">
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "BlogPosting",
+      "headline": "Reviewing AI-Generated Pull Requests Without Becoming the Bottleneck",
+      "description": "A practical guide to reviewing AI-generated pull requests with scoped diffs, invariant checklists, CI guardrails, and fast human approval loops.",
+      "image": "https://negiadventures.github.io/images/profile.jpg",
+      "url": "https://negiadventures.github.io/blog/reviewing-ai-generated-pull-requests.html",
+      "datePublished": "2026-04-03",
+      "author": {
+        "@type": "Person",
+        "name": "Anirudh Negi",
+        "url": "https://negiadventures.github.io"
+      },
+      "publisher": {
+        "@type": "Person",
+        "name": "Anirudh Negi",
+        "url": "https://negiadventures.github.io"
+      }
+    }
+    </script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../stylesheets/stylesheet.css?v=5" media="screen">
+    <style>
+      .blog-post { max-width: 800px; margin: 0 auto; padding: 60px 20px; }
+      .blog-post-header { margin-bottom: 40px; }
+      .blog-post-nav { margin-bottom: 30px; }
+      .blog-post-nav a { color: var(--accent-strong); font-size: 0.95rem; }
+      .blog-post-nav a:hover { color: var(--accent); }
+      .blog-post-title { font-size: 2.5rem; margin-bottom: 16px; }
+      .blog-post-meta { display: flex; gap: 20px; color: var(--text-muted); font-size: 0.95rem; margin-bottom: 30px; flex-wrap: wrap; }
+      .blog-post-image { width: 100%; height: 300px; object-fit: cover; border-radius: 16px; margin-bottom: 30px; border: 1px solid var(--border); }
+      .blog-post-content h2 { font-size: 1.6rem; margin-top: 40px; margin-bottom: 16px; color: var(--text-light); }
+      .blog-post-content h3 { font-size: 1.3rem; margin-top: 30px; margin-bottom: 12px; color: var(--text-light); }
+      .blog-post-content p { line-height: 1.8; margin-bottom: 16px; color: var(--text-muted); }
+      .blog-post-content ul { line-height: 1.8; margin-bottom: 20px; color: var(--text-muted); }
+      .blog-post-content ol { line-height: 1.8; margin-bottom: 20px; color: var(--text-muted); padding-left: 24px; }
+      .blog-post-content li { margin-bottom: 8px; }
+      .code-block { background: var(--bg-alt); border: 1px solid var(--border); border-radius: 12px; padding: 20px; margin: 20px 0; overflow-x: auto; }
+      .code-block pre { margin: 0; font-family: var(--mono); font-size: 0.9rem; line-height: 1.6; color: var(--text-light); }
+      .code-block code { color: var(--accent-strong); }
+      .blog-post-tags { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 40px; padding-top: 30px; border-top: 1px solid var(--border); }
+      .blog-post-tag { background: var(--accent-soft); color: var(--accent-strong); border-radius: 999px; padding: 6px 14px; font-size: 0.85rem; font-family: var(--mono); border: 1px solid transparent; transition: border-color 0.2s ease; }
+      .blog-post-tag:hover { border-color: var(--accent); }
+      .blog-footer { margin-top: 60px; padding-top: 30px; border-top: 1px solid var(--border); text-align: center; }
+      .blog-footer a { color: var(--accent-strong); }
+      .blog-footer a:hover { color: var(--accent); }
+      @media (max-width: 768px) { .blog-post { padding: 40px 16px; } .blog-post-title { font-size: 2rem; } .blog-post-image { height: 200px; } }
+    </style>
+  </head>
+  <body>
+    <a href="../index.html#main" class="skip-link">Skip to main content</a>
+    <header class="site-header">
+      <div class="container blog-post">
+        <div class="blog-post-nav">
+          <a href="index.html">&larr; Back to All Posts</a>
+        </div>
+        <div class="blog-post-header">
+          <h1 class="blog-post-title">Reviewing AI-Generated Pull Requests Without Becoming the Bottleneck</h1>
+          <div class="blog-post-meta">
+            <span>April 3, 2026</span>
+            <span>&bull;</span>
+            <span>8 min read</span>
+          </div>
+          <img src="data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%27%20viewBox%3D%270%200%201200%20630%27%3E%3Cdefs%3E%3ClinearGradient%20id%3D%27bg%27%20x1%3D%270%27%20x2%3D%271%27%20y1%3D%270%27%20y2%3D%271%27%3E%3Cstop%20offset%3D%270%25%27%20stop-color%3D%27%2309131f%27%2F%3E%3Cstop%20offset%3D%27100%25%27%20stop-color%3D%27%23182b4a%27%2F%3E%3C%2FlinearGradient%3E%3C%2Fdefs%3E%3Crect%20width%3D%271200%27%20height%3D%27630%27%20fill%3D%27url%28%23bg%29%27%2F%3E%3Ccircle%20cx%3D%27980%27%20cy%3D%27120%27%20r%3D%27150%27%20fill%3D%27%2327d3ff%27%20fill-opacity%3D%270.12%27%2F%3E%3Ccircle%20cx%3D%27170%27%20cy%3D%27520%27%20r%3D%27190%27%20fill%3D%27%238d6bff%27%20fill-opacity%3D%270.15%27%2F%3E%3Crect%20x%3D%27105%27%20y%3D%27110%27%20width%3D%27990%27%20height%3D%27410%27%20rx%3D%2728%27%20fill%3D%27%230f172a%27%20stroke%3D%27%2338bdf8%27%20stroke-opacity%3D%270.35%27%2F%3E%3Ctext%20x%3D%27150%27%20y%3D%27220%27%20fill%3D%27white%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2748%27%20font-weight%3D%27700%27%3EReviewing%20AI-Generated%3C%2Ftext%3E%3Ctext%20x%3D%27150%27%20y%3D%27292%27%20fill%3D%27%2390cdf4%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2748%27%20font-weight%3D%27700%27%3EPull%20Requests%3C%2Ftext%3E%3Ctext%20x%3D%27150%27%20y%3D%27378%27%20fill%3D%27%23cbd5e1%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2728%27%3EFaster%20review%20loops%20with%20checklists%2C%20CI%20gates%2C%20and%20scoped%20diffs%3C%2Ftext%3E%3C%2Fsvg%3E" alt="Reviewing AI-Generated Pull Requests Without Becoming the Bottleneck" class="blog-post-image">
+        </div>
+        <div class="blog-post-content">
+          <p>AI coding agents are very good at producing a lot of code quickly. They are much less good at guaranteeing that every changed line preserves the assumptions your system quietly depends on.</p>
+          <p>That is why the review problem has changed. The bottleneck is no longer writing the first draft. It is deciding which machine-generated pull requests are safe to merge, which need human redesign, and which should be sent back with tighter constraints.</p>
+          <p>The right answer is not to review every AI PR like a handwritten masterpiece, and it is definitely not to rubber-stamp anything that passes tests. The practical answer is to build a review loop that narrows the diff, checks the invariants that matter, and pushes routine validation into automation.</p>
+          <h2>Why AI PRs feel harder to review</h2>
+          <p>Most AI-generated pull requests fail in familiar ways: they touch too much code, mix cleanup with behavior changes, and make the reviewer reconstruct intent from the diff instead of receiving it clearly up front.</p>
+          <ul>
+            <li>they touch more files than the task really required</li>
+            <li>they make style and structure changes alongside behavior changes</li>
+            <li>they preserve surface behavior while quietly weakening edge-case guarantees</li>
+            <li>they fix the visible bug while smuggling in unrelated refactors</li>
+            <li>they introduce plausible-looking abstractions that nobody asked for</li>
+          </ul>
+          <h2>The first rule: force the PR to stay narrow</h2>
+          <p>If an agent can edit twenty files, it often will. Review gets dramatically easier when the task definition limits what the agent is allowed to touch.</p>
+          <ol>
+            <li>the exact bug or outcome to change</li>
+            <li>the preferred files or modules to modify</li>
+            <li>constraints on tests, migrations, and public interfaces</li>
+            <li>a rule against opportunistic cleanup</li>
+            <li>a requirement to explain the risky parts in the PR summary</li>
+          </ol>
+          <p>When the prompt is narrow, the review can be narrow too.</p>
+          <h2>Review the invariant, not just the implementation</h2>
+          <p>Human reviewers should spend less time asking whether the code looks smart and more time asking whether key guarantees still hold.</p>
+          <p>For each AI PR, define the invariants that must remain true. Examples include authentication remaining fail-closed, retries staying idempotent, write paths validating server-side, pagination order remaining stable, and caching never leaking across tenants.</p>
+          <h2>Use a lightweight risk rubric</h2>
+          <p>Not every AI-generated PR deserves the same level of suspicion. A cheap triage rubric helps reviewers move at the right speed.</p>
+          <h3>Low risk</h3>
+          <ul><li>copy changes</li><li>UI text or spacing</li><li>isolated tests</li><li>small logging improvements</li></ul>
+          <h3>Medium risk</h3>
+          <ul><li>controller logic</li><li>query changes</li><li>validation paths</li><li>retry behavior</li><li>feature flags</li></ul>
+          <h3>High risk</h3>
+          <ul><li>auth and permissions</li><li>payments or billing</li><li>schema and migration changes</li><li>concurrency and locking</li><li>caching, queues, and background job semantics</li><li>security-sensitive parsing or deserialization</li></ul>
+          <h2>A PR template that works better with agents</h2>
+          <p>Make the agent fill in structured review context so the human reviewer starts with intent, constraints, and reviewer focus instead of guessing.</p>
+          <div class="code-block"><pre><code>## What changed
+- ...
+
+## Why this approach
+- ...
+
+## Files touched
+- ...
+
+## Invariants checked
+- auth remains fail-closed
+- API response shape unchanged
+- migration compatibility preserved
+
+## Tests run
+- ...
+
+## Reviewer focus
+- Please verify retry behavior in webhook delivery</code></pre></div>
+          <h2>Diff slicing beats scrolling</h2>
+          <p>Large AI PRs often look harmless until you read them in chunks. Review public API changes, validation and authorization, state changes, tests, and cleanup separately. If the PR mixes all of them, send it back for a narrower retry.</p>
+          <h2>Push routine skepticism into CI</h2>
+          <p>Humans should not spend time manually repeating checks a machine can run more reliably. For AI PRs, the CI pipeline should do as much of the boring suspicion as possible.</p>
+          <div class="code-block"><pre><code>name: ai-pr-guardrails
+on:
+  pull_request:
+    branches: [master]
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: npm ci
+      - run: npm run lint
+      - run: npm run typecheck
+      - run: npm test -- --runInBand
+      - run: python3 scripts/check-pr-scope.py</code></pre></div>
+          <h2>Add one scope check that agents cannot sweet-talk</h2>
+          <p>AI-generated PRs often violate scope in subtle ways. A tiny script that compares changed files against a restricted-path list catches a lot of nonsense early.</p>
+          <div class="code-block"><pre><code>import subprocess
+import sys
+
+changed = subprocess.check_output([
+    'git', 'diff', '--name-only', 'origin/master...HEAD'
+], text=True).splitlines()
+
+restricted = {
+    'app/auth/',
+    'infra/terraform/',
+    'db/migrations/',
+}
+
+violations = [
+    changed_path for changed_path in changed
+    if any(changed_path.startswith(prefix) for prefix in restricted)
+]
+
+if violations:
+    print('Restricted paths require explicit human approval:')
+    for changed_path in violations:
+        print(f'- {changed_path}')
+    sys.exit(1)</code></pre></div>
+          <h2>Review tests like contracts, not decoration</h2>
+          <p>Agents are very willing to add tests that merely ratify their implementation. Good review asks whether the tests fail for the old bug, prove the intended contract, and cover the edge case that could silently regress.</p>
+          <h2>Watch for the five most common AI review smells</h2>
+          <h3>1. Too much confidence around unclear behavior</h3>
+          <p>If the code introduces a new branch, fallback, or default without explaining why, pause.</p>
+          <h3>2. Cosmetic churn around a real fix</h3>
+          <p>Unrelated renames and formatting changes make review slower and hide risk.</p>
+          <h3>3. Dead abstractions</h3>
+          <p>New helper layers that save three lines today can cost three hours later.</p>
+          <h3>4. Missing negative paths</h3>
+          <p>Happy-path tests pass while permission failures, null inputs, or retry loops stay untested.</p>
+          <h3>5. Correct local change, broken system behavior</h3>
+          <p>The function is cleaner, but cache invalidation, ordering, or retries changed downstream.</p>
+          <h2>Use CODEOWNERS and branch protections like a grown-up</h2>
+          <p>The easiest way to normalize safe AI PR review is to stop relying on memory and put the policy in the repo: require CODEOWNERS review on sensitive paths, require status checks, block force-pushes, require conversation resolution, and prefer squash merge for noisy agent iterations.</p>
+          <h2>A practical human review loop</h2>
+          <ol><li>read the PR summary before the diff</li><li>classify risk level</li><li>inspect touched files for scope creep</li><li>read tests before implementation on risky changes</li><li>verify invariants and side effects</li><li>confirm CI evidence, not just green badges</li><li>request a narrower retry if the change mixes concerns</li></ol>
+          <h2>The real goal is faster trust, not blind trust</h2>
+          <p>AI coding tools are not making code review obsolete. They are making review system design more important.</p>
+          <p>If you want fast merges without becoming the bottleneck, do three things well: keep the PR narrow, make invariants explicit, and automate repetitive suspicion. Once those are in place, the human reviewer can spend attention on judgment instead of diff archaeology.</p>
+          <h2>References and resources</h2>
+          <ul>
+            <li><a href="https://docs.github.com/en/pull-requests/collaborating-with-pull-requests/reviewing-changes-in-pull-requests/about-pull-request-reviews" target="_blank" rel="noreferrer">GitHub Docs: About pull request reviews</a></li>
+            <li><a href="https://docs.github.com/en/repositories/configuring-branches-and-merges-in-your-repository/managing-protected-branches/about-protected-branches" target="_blank" rel="noreferrer">GitHub Docs: Managing a branch protection rule</a></li>
+            <li><a href="https://docs.github.com/en/repositories/managing-your-repositorys-settings-and-features/customizing-your-repository/about-code-owners" target="_blank" rel="noreferrer">GitHub Docs: About code owners</a></li>
+            <li><a href="https://platform.openai.com/docs/overview" target="_blank" rel="noreferrer">OpenAI platform docs</a></li>
+          </ul>
+          <div class="blog-post-tags"><span class="blog-post-tag">AI Coding</span><span class="blog-post-tag">Code Review</span><span class="blog-post-tag">GitHub</span><span class="blog-post-tag">Developer Workflow</span></div>
+        </div>
+        <div class="blog-footer">
+          <p><a href="../index.html">Back to Portfolio</a></p>
+          <p style="margin-top: 16px; font-size: 0.9rem;"><em>Practical notes on AI engineering, developer workflows, and production tradeoffs.</em></p>
+        </div>
+      </div>
+    </header>
+  </body>
+</html>
