@@ -1,6 +1,14 @@
 {
   "topics": [
     {
+      "date": "2026-04-04",
+      "skill": "Cursor monorepo workflow",
+      "topic": "Using Cursor with layered rules, repo maps, scoped context, and verification commands to keep AI edits accurate and contained inside large monorepos",
+      "slug": "cursor-rules-monorepos",
+      "title": "Cursor Rules for Monorepos That Keep AI Edits on the Rails",
+      "summary": "A practical guide to using Cursor in large monorepos with layered rules, local context, blast-radius guardrails, and verification loops that keep AI edits narrow and reviewable."
+    },
+    {
       "date": "2026-04-03",
       "skill": "AI code review workflow",
       "topic": "Reviewing AI-generated pull requests with scoped diffs, invariant checklists, CI guardrails, and CODEOWNERS-based risk controls so teams can merge faster without rubber-stamping",

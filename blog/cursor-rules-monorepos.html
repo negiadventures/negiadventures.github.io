@@ -1,0 +1,253 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="A practical guide to using Cursor effectively in large monorepos with layered rules, scoped context, repo maps, verification loops, and guardrails that stop AI edits from wandering across the codebase.">
+    <meta name="author" content="Anirudh Negi">
+    <title>Cursor Rules for Monorepos That Keep AI Edits on the Rails | Anirudh Negi</title>
+    <link rel="canonical" href="https://negiadventures.github.io/blog/cursor-rules-monorepos.html">
+    <meta property="og:type" content="article">
+    <meta property="og:url" content="https://negiadventures.github.io/blog/cursor-rules-monorepos.html">
+    <meta property="og:title" content="Cursor Rules for Monorepos That Keep AI Edits on the Rails | Anirudh Negi">
+    <meta property="og:description" content="A practical guide to using Cursor effectively in large monorepos with layered rules, scoped context, repo maps, verification loops, and guardrails that stop AI edits from wandering across the codebase.">
+    <meta property="og:image" content="https://negiadventures.github.io/images/profile.jpg">
+    <meta property="article:published_time" content="2026-04-04">
+    <meta property="article:author" content="Anirudh Negi">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:url" content="https://negiadventures.github.io/blog/cursor-rules-monorepos.html">
+    <meta name="twitter:title" content="Cursor Rules for Monorepos That Keep AI Edits on the Rails | Anirudh Negi">
+    <meta name="twitter:description" content="A practical guide to using Cursor effectively in large monorepos with layered rules, scoped context, repo maps, verification loops, and guardrails that stop AI edits from wandering across the codebase.">
+    <meta name="twitter:image" content="https://negiadventures.github.io/images/profile.jpg">
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "BlogPosting",
+      "headline": "Cursor Rules for Monorepos That Keep AI Edits on the Rails",
+      "description": "A practical guide to using Cursor effectively in large monorepos with layered rules, scoped context, repo maps, verification loops, and guardrails that stop AI edits from wandering across the codebase.",
+      "image": "https://negiadventures.github.io/images/profile.jpg",
+      "url": "https://negiadventures.github.io/blog/cursor-rules-monorepos.html",
+      "datePublished": "2026-04-04",
+      "author": {
+        "@type": "Person",
+        "name": "Anirudh Negi",
+        "url": "https://negiadventures.github.io"
+      },
+      "publisher": {
+        "@type": "Person",
+        "name": "Anirudh Negi",
+        "url": "https://negiadventures.github.io"
+      }
+    }
+    </script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../stylesheets/stylesheet.css?v=5" media="screen">
+    <style>
+      .blog-post { max-width: 800px; margin: 0 auto; padding: 60px 20px; }
+      .blog-post-header { margin-bottom: 40px; }
+      .blog-post-nav { margin-bottom: 30px; }
+      .blog-post-nav a { color: var(--accent-strong); font-size: 0.95rem; }
+      .blog-post-nav a:hover { color: var(--accent); }
+      .blog-post-title { font-size: 2.5rem; margin-bottom: 16px; }
+      .blog-post-meta { display: flex; gap: 20px; color: var(--text-muted); font-size: 0.95rem; margin-bottom: 30px; flex-wrap: wrap; }
+      .blog-post-image { width: 100%; height: 300px; object-fit: cover; border-radius: 16px; margin-bottom: 30px; border: 1px solid var(--border); background: linear-gradient(135deg, rgba(10, 16, 32, 1), rgba(19, 31, 58, 1)); }
+      .blog-post-content h2 { font-size: 1.6rem; margin-top: 40px; margin-bottom: 16px; color: var(--text-light); }
+      .blog-post-content h3 { font-size: 1.3rem; margin-top: 30px; margin-bottom: 12px; color: var(--text-light); }
+      .blog-post-content p { line-height: 1.8; margin-bottom: 16px; color: var(--text-muted); }
+      .blog-post-content ul, .blog-post-content ol { line-height: 1.8; margin-bottom: 20px; color: var(--text-muted); padding-left: 24px; }
+      .blog-post-content li { margin-bottom: 8px; }
+      .code-block { background: var(--bg-alt); border: 1px solid var(--border); border-radius: 12px; padding: 20px; margin: 20px 0; overflow-x: auto; }
+      .code-block pre { margin: 0; font-family: var(--mono); font-size: 0.9rem; line-height: 1.6; color: var(--text-light); }
+      .code-block code { color: var(--accent-strong); }
+      .blog-post-tags { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 40px; padding-top: 30px; border-top: 1px solid var(--border); }
+      .blog-post-tag { background: var(--accent-soft); color: var(--accent-strong); border-radius: 999px; padding: 6px 14px; font-size: 0.85rem; font-family: var(--mono); border: 1px solid transparent; transition: border-color 0.2s ease; }
+      .blog-post-tag:hover { border-color: var(--accent); }
+      .blog-footer { margin-top: 60px; padding-top: 30px; border-top: 1px solid var(--border); text-align: center; }
+      .blog-footer a { color: var(--accent-strong); }
+      .blog-footer a:hover { color: var(--accent); }
+      @media (max-width: 768px) {
+        .blog-post { padding: 40px 16px; }
+        .blog-post-title { font-size: 2rem; }
+        .blog-post-image { height: 200px; }
+      }
+    </style>
+  </head>
+  <body>
+    <a href="../index.html#main" class="skip-link">Skip to main content</a>
+
+    <header class="site-header">
+      <div class="container blog-post">
+        <div class="blog-post-nav">
+          <a href="index.html">&larr; Back to All Posts</a>
+        </div>
+
+        <div class="blog-post-header">
+          <h1 class="blog-post-title">Cursor Rules for Monorepos That Keep AI Edits on the Rails</h1>
+          <div class="blog-post-meta">
+            <span>April 4, 2026</span>
+            <span>&bull;</span>
+            <span>10 min read</span>
+          </div>
+          <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1200 630'%3E%3Cdefs%3E%3ClinearGradient id='bg' x1='0' x2='1' y1='0' y2='1'%3E%3Cstop offset='0%25' stop-color='%2309131f'/%3E%3Cstop offset='100%25' stop-color='%23162a49'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='1200' height='630' fill='url(%23bg)'/%3E%3Ccircle cx='990' cy='120' r='150' fill='%2327d3ff' fill-opacity='0.12'/%3E%3Ccircle cx='175' cy='520' r='190' fill='%238d6bff' fill-opacity='0.14'/%3E%3Crect x='105' y='110' width='990' height='410' rx='28' fill='%230f172a' stroke='%2338bdf8' stroke-opacity='0.35'/%3E%3Ctext x='155' y='220' fill='white' font-family='Arial, sans-serif' font-size='54' font-weight='700'%3ECursor Rules for%3C/text%3E%3Ctext x='155' y='292' fill='%2390cdf4' font-family='Arial, sans-serif' font-size='54' font-weight='700'%3EMonorepos%3C/text%3E%3Ctext x='155' y='378' fill='%23cbd5e1' font-family='Arial, sans-serif' font-size='28'%3ELayered guardrails, scoped context, and faster verification loops%3C/text%3E%3C/svg%3E" alt="Cursor Rules for Monorepos That Keep AI Edits on the Rails" class="blog-post-image">
+        </div>
+
+        <div class="blog-post-content">
+          <p>Cursor is excellent right up until the repo gets big enough that everything starts to look equally important. In a monorepo, that usually means the model grabs the wrong package, edits shared code too early, or “fixes” a local problem by creating a cross-repo ripple nobody asked for.</p>
+          <p>That is not really a model problem. It is a context-shaping problem. If you want AI coding tools to work well in a monorepo, you need to make the repository legible: where things live, what is safe to change, what invariants cannot move, and how a task should be verified before it counts as done.</p>
+          <p>This is where Cursor rules help. Used well, they act like an operations manual for the agent. Used badly, they turn into a giant pile of stale prose the model mostly ignores.</p>
+          <p>Here is the setup I would use to keep Cursor productive in a real monorepo without letting it roam.</p>
+
+          <h2>1. Start with a map, not a manifesto</h2>
+          <p>The first mistake is writing a massive top-level rules file full of abstract principles. The model does not need a company values deck. It needs a usable map.</p>
+          <p>A good monorepo rule set answers five practical questions quickly:</p>
+          <ol>
+            <li>Which apps and packages exist?</li>
+            <li>Which directories are usually safe to edit together?</li>
+            <li>Which shared modules are high-blast-radius?</li>
+            <li>Which commands verify a change?</li>
+            <li>What should the model do before it proposes cross-cutting edits?</li>
+          </ol>
+          <div class="code-block"><pre><code># .cursor/rules/repo-map.mdc
+- apps/web: customer-facing Next.js app
+- apps/admin: internal admin dashboard
+- packages/ui: shared design system, high blast radius
+- packages/config: lint, tsconfig, shared build presets
+- services/api: backend APIs and background jobs
+
+Before editing shared packages, explain why app-local changes are not enough.
+Run the smallest relevant test command first.</code></pre></div>
+          <p>That one file already eliminates a lot of waste. It tells Cursor where to look and, more importantly, where to hesitate.</p>
+
+          <h2>2. Layer rules by scope</h2>
+          <p>One rule file for the whole monorepo is rarely enough. The trick is to keep the global layer short and push specifics down to the directories where they matter.</p>
+          <ul>
+            <li><strong>Global rules</strong> for repository layout, safety, and verification habits</li>
+            <li><strong>App-level rules</strong> for frameworks, data boundaries, and local commands</li>
+            <li><strong>Package-level rules</strong> for shared libraries with strict invariants</li>
+            <li><strong>Task notes</strong> for temporary migrations or one-off refactors</li>
+          </ul>
+          <div class="code-block"><pre><code>.cursor/rules/
+  global.mdc
+  repo-map.mdc
+apps/web/.cursor/rules/
+  ui-patterns.mdc
+  api-calls.mdc
+packages/ui/.cursor/rules/
+  public-api.mdc
+  visual-regression.mdc</code></pre></div>
+          <p>The win here is not just token efficiency. It is behavior. Scoped rules make it more likely that the model stays inside the part of the repo the task actually concerns.</p>
+
+          <h2>3. Write rules as constraints plus examples</h2>
+          <p>Vague advice like “write clean code” is useless. Rules should be phrased as concrete constraints with a short example of the preferred shape.</p>
+          <ul>
+            <li>In <code>apps/web</code>, prefer server components unless a hook or browser API is required</li>
+            <li>In <code>packages/ui</code>, do not change exported prop names without updating all consumers in the same diff</li>
+            <li>For backend handlers, validate input at the edge before calling domain services</li>
+          </ul>
+          <div class="code-block"><pre><code>// Preferred handler shape
+export async function createOrder(req: Request) {
+  const input = CreateOrderSchema.parse(await req.json());
+  const order = await orderService.create(input);
+  return Response.json({ order }, { status: 201 });
+}</code></pre></div>
+          <p>If the repo has one blessed pattern for forms, API routes, feature flags, or database access, show it explicitly.</p>
+
+          <h2>4. Mark the high-blast-radius zones</h2>
+          <p>Most monorepo pain comes from shared packages. Cursor sees a bug in one app and decides the most elegant fix is to touch <code>packages/ui</code>, <code>packages/config</code>, and <code>packages/types</code> all at once. Sometimes that is correct. Often it is how you accidentally turn a one-file bugfix into a Friday afternoon.</p>
+          <p>So say it plainly in the rules: shared UI packages require consumer impact review, schema packages require downstream usage search, config packages should only change when app-local overrides are impossible, and generated code should not be hand-edited.</p>
+          <div class="code-block"><pre><code>Before editing packages/ui or packages/types:
+1. explain why the change cannot stay app-local
+2. list likely downstream consumers
+3. run a repo search for impacted imports
+4. propose the narrowest safe diff</code></pre></div>
+          <p>That tiny pause is often enough to stop an unnecessary cross-cutting rewrite.</p>
+
+          <h2>5. Teach the model how to search the repo</h2>
+          <p>In large codebases, the first failure is usually retrieval. The model cannot follow your architecture if it never saw it.</p>
+          <p>Good rules tell Cursor where to search before writing code: find similar implementations first, inspect nearby tests, look for the nearest canonical example, and search for public exports before editing a shared module.</p>
+          <div class="code-block"><pre><code>For new work:
+- search for 2-3 existing examples before creating files
+- reuse nearest matching pattern unless the user asks for a redesign
+- cite the files you used as precedents in your plan</code></pre></div>
+          <p>This changes the workflow from “generate first” to “read first,” which is exactly what large repos need.</p>
+
+          <h2>6. Pair rules with verification commands</h2>
+          <p>A rule without a verification loop is just a suggestion. Cursor gets much more reliable when each area of the repo comes with the fastest relevant way to check it.</p>
+          <div class="code-block"><pre><code># apps/web
+pnpm --filter web lint
+pnpm --filter web test
+
+# packages/ui
+pnpm --filter @acme/ui test
+pnpm --filter @acme/ui build
+
+# full repo only when necessary
+pnpm turbo run lint test --affected</code></pre></div>
+          <p>Prefer the smallest validating command that proves the change, and escalate to expensive repo-wide checks only when shared code changed.</p>
+
+          <h2>7. Keep temporary migration rules separate</h2>
+          <p>Monorepos are always in the middle of something: a design system migration, an auth rewrite, a logging rollout, or a TypeScript strictness push. Those are real constraints, but they should not live forever in the same rule file as your stable architecture.</p>
+          <div class="code-block"><pre><code># .cursor/rules/migrations/button-v2.mdc
+- Prefer ButtonV2 for all new work
+- Do not introduce new usages of legacy Button
+- When touching old screens, migrate only the local file unless requested otherwise</code></pre></div>
+          <p>This prevents temporary instructions from fossilizing into permanent noise.</p>
+
+          <h2>8. Add a preflight checklist for risky prompts</h2>
+          <p>Some tasks need the model to slow down before typing. A tiny preflight block for refactors, renames, and shared-package edits works surprisingly well.</p>
+          <div class="code-block"><pre><code>For refactors touching more than one package:
+- state the exact files you expect to edit
+- list invariants that must remain true
+- identify rollback points
+- do not begin editing until the plan is coherent</code></pre></div>
+
+          <h2>9. Optimize for comprehension, not maximum autonomy</h2>
+          <p>The better goal is high-confidence assistance with visible reasoning: narrow plans, explicit file lists, small diffs, fast checks, and clear justification for shared changes.</p>
+          <p>If the model can explain why it touched a shared package, cite the nearby precedent, and pass the smallest meaningful verification step, you are already in a very good place.</p>
+
+          <h2>10. Audit the rules like code</h2>
+          <p>Rules rot. Frameworks move. Package ownership changes. Commands get renamed. Treat rule files like code: assign owners, prune stale rules, keep examples current, and test whether the verification commands still work.</p>
+
+          <h2>A practical baseline to copy</h2>
+          <div class="code-block"><pre><code># global.mdc
+- Search for existing examples before creating new patterns
+- Prefer app-local fixes before editing shared packages
+- Keep diffs narrow and name impacted files up front
+- Run the smallest relevant validation command first
+- Escalate to repo-wide validation only for shared-code changes
+
+# packages/ui/public-api.mdc
+- Treat exported components and props as stable public API
+- Search for downstream consumers before changing exports
+- If changing an export is required, update all consumers in the same diff
+- Run package tests before proposing the change complete</code></pre></div>
+
+          <h2>References and resources</h2>
+          <ul>
+            <li><a href="https://docs.cursor.com/">Cursor documentation</a></li>
+            <li><a href="https://turbo.build/repo/docs">Turborepo documentation</a></li>
+            <li><a href="https://pnpm.io/workspaces">pnpm workspace documentation</a></li>
+            <li><a href="https://www.typescriptlang.org/docs/handbook/project-references.html">TypeScript project references</a></li>
+          </ul>
+
+          <h2>Closing thought</h2>
+          <p>The main job of Cursor rules in a monorepo is not to make the AI sound smart. It is to reduce unnecessary surface area. Good rules narrow the search space, protect the dangerous edges, and make verification cheap enough that developers keep using it.</p>
+          <p>That is what keeps AI edits on the rails when the repository gets large.</p>
+
+          <div class="blog-post-tags">
+            <span class="blog-post-tag">Cursor</span>
+            <span class="blog-post-tag">Monorepos</span>
+            <span class="blog-post-tag">AI Coding</span>
+            <span class="blog-post-tag">Developer Workflow</span>
+          </div>
+        </div>
+
+        <div class="blog-footer">
+          <p><a href="index.html">Browse more posts</a> or <a href="../index.html">return to the portfolio</a>.</p>
+        </div>
+      </div>
+    </header>
+  </body>
+</html>
