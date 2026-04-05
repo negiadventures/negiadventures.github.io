@@ -1,6 +1,14 @@
 {
   "topics": [
     {
+      "date": "2026-04-05",
+      "skill": "Repository instruction playbooks",
+      "topic": "Using AGENTS.md, CLAUDE.md, repo maps, verification commands, and scoped edit rules to make AI coding agents safer, more consistent, and easier for humans to review",
+      "slug": "agent-playbooks-repo-instructions",
+      "title": "Repo Playbooks for AI Coding Agents That Actually Change Behavior",
+      "summary": "A practical guide to writing repository playbooks for AI coding agents with repo maps, no-go zones, verification commands, and review-friendly output rules that reduce drift and improve pull requests."
+    },
+    {
       "date": "2026-04-04",
       "skill": "Cursor monorepo workflow",
       "topic": "Using Cursor with layered rules, repo maps, scoped context, and verification commands to keep AI edits accurate and contained inside large monorepos",

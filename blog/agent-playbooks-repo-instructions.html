@@ -1,0 +1,429 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="A practical guide to using repo-specific instruction files like AGENTS.md and CLAUDE.md to make AI coding agents safer, more consistent, and easier to review.">
+    <meta name="author" content="Anirudh Negi">
+    <title>Repo Playbooks for AI Coding Agents That Actually Change Behavior | Anirudh Negi</title>
+    <link rel="canonical" href="https://negiadventures.github.io/blog/agent-playbooks-repo-instructions.html">
+    <meta property="og:type" content="article">
+    <meta property="og:url" content="https://negiadventures.github.io/blog/agent-playbooks-repo-instructions.html">
+    <meta property="og:title" content="Repo Playbooks for AI Coding Agents That Actually Change Behavior | Anirudh Negi">
+    <meta property="og:description" content="A practical guide to using repo-specific instruction files like AGENTS.md and CLAUDE.md to make AI coding agents safer, more consistent, and easier to review.">
+    <meta property="og:image" content="data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A//www.w3.org/2000/svg%27%20viewBox%3D%270%200%201200%20630%27%3E%3Cdefs%3E%3ClinearGradient%20id%3D%27bg%27%20x1%3D%270%27%20x2%3D%271%27%20y1%3D%270%27%20y2%3D%271%27%3E%3Cstop%20offset%3D%270%25%27%20stop-color%3D%27%2309141f%27/%3E%3Cstop%20offset%3D%27100%25%27%20stop-color%3D%27%23172b46%27/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect%20width%3D%271200%27%20height%3D%27630%27%20fill%3D%27url%28%23bg%29%27/%3E%3Ccircle%20cx%3D%27990%27%20cy%3D%27120%27%20r%3D%27150%27%20fill%3D%27%2327d3ff%27%20fill-opacity%3D%270.12%27/%3E%3Ccircle%20cx%3D%27180%27%20cy%3D%27520%27%20r%3D%27190%27%20fill%3D%27%238d6bff%27%20fill-opacity%3D%270.14%27/%3E%3Crect%20x%3D%27105%27%20y%3D%27110%27%20width%3D%27990%27%20height%3D%27410%27%20rx%3D%2728%27%20fill%3D%27%230f172a%27%20stroke%3D%27%2338bdf8%27%20stroke-opacity%3D%270.35%27/%3E%3Ctext%20x%3D%27155%27%20y%3D%27220%27%20fill%3D%27white%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2750%27%20font-weight%3D%27700%27%3ERepo%20Playbooks%20for%3C/text%3E%3Ctext%20x%3D%27155%27%20y%3D%27292%27%20fill%3D%27%2390cdf4%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2750%27%20font-weight%3D%27700%27%3EAI%20Coding%20Agents%3C/text%3E%3Ctext%20x%3D%27155%27%20y%3D%27378%27%20fill%3D%27%23cbd5e1%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2728%27%3EAGENTS.md%2C%20CLAUDE.md%2C%20and%20rules%20that%20reduce%20drift%3C/text%3E%3C/svg%3E">
+    <meta property="article:published_time" content="2026-04-05">
+    <meta property="article:author" content="Anirudh Negi">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:url" content="https://negiadventures.github.io/blog/agent-playbooks-repo-instructions.html">
+    <meta name="twitter:title" content="Repo Playbooks for AI Coding Agents That Actually Change Behavior | Anirudh Negi">
+    <meta name="twitter:description" content="A practical guide to using repo-specific instruction files like AGENTS.md and CLAUDE.md to make AI coding agents safer, more consistent, and easier to review.">
+    <meta name="twitter:image" content="data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A//www.w3.org/2000/svg%27%20viewBox%3D%270%200%201200%20630%27%3E%3Cdefs%3E%3ClinearGradient%20id%3D%27bg%27%20x1%3D%270%27%20x2%3D%271%27%20y1%3D%270%27%20y2%3D%271%27%3E%3Cstop%20offset%3D%270%25%27%20stop-color%3D%27%2309141f%27/%3E%3Cstop%20offset%3D%27100%25%27%20stop-color%3D%27%23172b46%27/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect%20width%3D%271200%27%20height%3D%27630%27%20fill%3D%27url%28%23bg%29%27/%3E%3Ccircle%20cx%3D%27990%27%20cy%3D%27120%27%20r%3D%27150%27%20fill%3D%27%2327d3ff%27%20fill-opacity%3D%270.12%27/%3E%3Ccircle%20cx%3D%27180%27%20cy%3D%27520%27%20r%3D%27190%27%20fill%3D%27%238d6bff%27%20fill-opacity%3D%270.14%27/%3E%3Crect%20x%3D%27105%27%20y%3D%27110%27%20width%3D%27990%27%20height%3D%27410%27%20rx%3D%2728%27%20fill%3D%27%230f172a%27%20stroke%3D%27%2338bdf8%27%20stroke-opacity%3D%270.35%27/%3E%3Ctext%20x%3D%27155%27%20y%3D%27220%27%20fill%3D%27white%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2750%27%20font-weight%3D%27700%27%3ERepo%20Playbooks%20for%3C/text%3E%3Ctext%20x%3D%27155%27%20y%3D%27292%27%20fill%3D%27%2390cdf4%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2750%27%20font-weight%3D%27700%27%3EAI%20Coding%20Agents%3C/text%3E%3Ctext%20x%3D%27155%27%20y%3D%27378%27%20fill%3D%27%23cbd5e1%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2728%27%3EAGENTS.md%2C%20CLAUDE.md%2C%20and%20rules%20that%20reduce%20drift%3C/text%3E%3C/svg%3E">
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "BlogPosting",
+      "headline": "Repo Playbooks for AI Coding Agents That Actually Change Behavior",
+      "description": "A practical guide to using repo-specific instruction files like AGENTS.md and CLAUDE.md to make AI coding agents safer, more consistent, and easier to review.",
+      "image": "data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A//www.w3.org/2000/svg%27%20viewBox%3D%270%200%201200%20630%27%3E%3Cdefs%3E%3ClinearGradient%20id%3D%27bg%27%20x1%3D%270%27%20x2%3D%271%27%20y1%3D%270%27%20y2%3D%271%27%3E%3Cstop%20offset%3D%270%25%27%20stop-color%3D%27%2309141f%27/%3E%3Cstop%20offset%3D%27100%25%27%20stop-color%3D%27%23172b46%27/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect%20width%3D%271200%27%20height%3D%27630%27%20fill%3D%27url%28%23bg%29%27/%3E%3Ccircle%20cx%3D%27990%27%20cy%3D%27120%27%20r%3D%27150%27%20fill%3D%27%2327d3ff%27%20fill-opacity%3D%270.12%27/%3E%3Ccircle%20cx%3D%27180%27%20cy%3D%27520%27%20r%3D%27190%27%20fill%3D%27%238d6bff%27%20fill-opacity%3D%270.14%27/%3E%3Crect%20x%3D%27105%27%20y%3D%27110%27%20width%3D%27990%27%20height%3D%27410%27%20rx%3D%2728%27%20fill%3D%27%230f172a%27%20stroke%3D%27%2338bdf8%27%20stroke-opacity%3D%270.35%27/%3E%3Ctext%20x%3D%27155%27%20y%3D%27220%27%20fill%3D%27white%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2750%27%20font-weight%3D%27700%27%3ERepo%20Playbooks%20for%3C/text%3E%3Ctext%20x%3D%27155%27%20y%3D%27292%27%20fill%3D%27%2390cdf4%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2750%27%20font-weight%3D%27700%27%3EAI%20Coding%20Agents%3C/text%3E%3Ctext%20x%3D%27155%27%20y%3D%27378%27%20fill%3D%27%23cbd5e1%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2728%27%3EAGENTS.md%2C%20CLAUDE.md%2C%20and%20rules%20that%20reduce%20drift%3C/text%3E%3C/svg%3E",
+      "url": "https://negiadventures.github.io/blog/agent-playbooks-repo-instructions.html",
+      "datePublished": "2026-04-05",
+      "dateModified": "2026-04-05",
+      "author": {
+        "@type": "Person",
+        "name": "Anirudh Negi",
+        "url": "https://negiadventures.github.io"
+      },
+      "publisher": {
+        "@type": "Person",
+        "name": "Anirudh Negi",
+        "url": "https://negiadventures.github.io"
+      },
+      "mainEntityOfPage": {
+        "@type": "WebPage",
+        "@id": "https://negiadventures.github.io/blog/agent-playbooks-repo-instructions.html"
+      }
+    }
+    </script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../stylesheets/stylesheet.css?v=5" media="screen">
+    <style>
+      .blog-post {
+        max-width: 800px;
+        margin: 0 auto;
+        padding: 60px 20px;
+      }
+
+      .blog-post-header {
+        margin-bottom: 40px;
+      }
+
+      .blog-post-nav {
+        margin-bottom: 30px;
+      }
+
+      .blog-post-nav a {
+        color: var(--accent-strong);
+        font-size: 0.95rem;
+      }
+
+      .blog-post-nav a:hover {
+        color: var(--accent);
+      }
+
+      .blog-post-title {
+        font-size: 2.5rem;
+        margin-bottom: 16px;
+      }
+
+      .blog-post-meta {
+        display: flex;
+        gap: 20px;
+        color: var(--text-muted);
+        font-size: 0.95rem;
+        margin-bottom: 30px;
+        flex-wrap: wrap;
+      }
+
+      .blog-post-image {
+        width: 100%;
+        height: 300px;
+        object-fit: cover;
+        border-radius: 16px;
+        margin-bottom: 30px;
+        border: 1px solid var(--border);
+      }
+
+      .blog-post-content h2 {
+        font-size: 1.6rem;
+        margin-top: 40px;
+        margin-bottom: 16px;
+        color: var(--text-light);
+      }
+
+      .blog-post-content h3 {
+        font-size: 1.3rem;
+        margin-top: 30px;
+        margin-bottom: 12px;
+        color: var(--text-light);
+      }
+
+      .blog-post-content p {
+        line-height: 1.8;
+        margin-bottom: 16px;
+        color: var(--text-muted);
+      }
+
+      .blog-post-content ul,
+      .blog-post-content ol {
+        line-height: 1.8;
+        margin-bottom: 20px;
+        color: var(--text-muted);
+        padding-left: 24px;
+      }
+
+      .blog-post-content li {
+        margin-bottom: 8px;
+      }
+
+      .code-block {
+        background: var(--bg-alt);
+        border: 1px solid var(--border);
+        border-radius: 12px;
+        padding: 20px;
+        margin: 20px 0;
+        overflow-x: auto;
+      }
+
+      .code-block pre {
+        margin: 0;
+        font-family: var(--mono);
+        font-size: 0.9rem;
+        line-height: 1.6;
+        color: var(--text-light);
+      }
+
+      .code-block code {
+        color: var(--accent-strong);
+      }
+
+      .blog-post-tags {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        margin-top: 40px;
+        padding-top: 30px;
+        border-top: 1px solid var(--border);
+      }
+
+      .blog-post-tag {
+        background: var(--accent-soft);
+        color: var(--accent-strong);
+        border-radius: 999px;
+        padding: 6px 14px;
+        font-size: 0.85rem;
+        font-family: var(--mono);
+        border: 1px solid transparent;
+        transition: border-color 0.2s ease;
+      }
+
+      .blog-post-tag:hover {
+        border-color: var(--accent);
+      }
+
+      .blog-footer {
+        margin-top: 60px;
+        padding-top: 30px;
+        border-top: 1px solid var(--border);
+        text-align: center;
+      }
+
+      .blog-footer a {
+        color: var(--accent-strong);
+      }
+
+      .blog-footer a:hover {
+        color: var(--accent);
+      }
+
+      @media (max-width: 768px) {
+        .blog-post {
+          padding: 40px 16px;
+        }
+
+        .blog-post-title {
+          font-size: 2rem;
+        }
+
+        .blog-post-image {
+          height: 200px;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <a href="../index.html#main" class="skip-link">Skip to main content</a>
+
+    <header class="site-header">
+      <div class="container blog-post">
+        <div class="blog-post-nav">
+          <a href="index.html">&larr; Back to All Posts</a>
+        </div>
+
+        <div class="blog-post-header">
+          <h1 class="blog-post-title">Repo Playbooks for AI Coding Agents That Actually Change Behavior</h1>
+          <div class="blog-post-meta">
+            <span>April 5, 2026</span>
+            <span>&bull;</span>
+            <span>9 min read</span>
+          </div>
+          <img src="data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A//www.w3.org/2000/svg%27%20viewBox%3D%270%200%201200%20630%27%3E%3Cdefs%3E%3ClinearGradient%20id%3D%27bg%27%20x1%3D%270%27%20x2%3D%271%27%20y1%3D%270%27%20y2%3D%271%27%3E%3Cstop%20offset%3D%270%25%27%20stop-color%3D%27%2309141f%27/%3E%3Cstop%20offset%3D%27100%25%27%20stop-color%3D%27%23172b46%27/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect%20width%3D%271200%27%20height%3D%27630%27%20fill%3D%27url%28%23bg%29%27/%3E%3Ccircle%20cx%3D%27990%27%20cy%3D%27120%27%20r%3D%27150%27%20fill%3D%27%2327d3ff%27%20fill-opacity%3D%270.12%27/%3E%3Ccircle%20cx%3D%27180%27%20cy%3D%27520%27%20r%3D%27190%27%20fill%3D%27%238d6bff%27%20fill-opacity%3D%270.14%27/%3E%3Crect%20x%3D%27105%27%20y%3D%27110%27%20width%3D%27990%27%20height%3D%27410%27%20rx%3D%2728%27%20fill%3D%27%230f172a%27%20stroke%3D%27%2338bdf8%27%20stroke-opacity%3D%270.35%27/%3E%3Ctext%20x%3D%27155%27%20y%3D%27220%27%20fill%3D%27white%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2750%27%20font-weight%3D%27700%27%3ERepo%20Playbooks%20for%3C/text%3E%3Ctext%20x%3D%27155%27%20y%3D%27292%27%20fill%3D%27%2390cdf4%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2750%27%20font-weight%3D%27700%27%3EAI%20Coding%20Agents%3C/text%3E%3Ctext%20x%3D%27155%27%20y%3D%27378%27%20fill%3D%27%23cbd5e1%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2728%27%3EAGENTS.md%2C%20CLAUDE.md%2C%20and%20rules%20that%20reduce%20drift%3C/text%3E%3C/svg%3E" alt="Repo Playbooks for AI Coding Agents That Actually Change Behavior" class="blog-post-image">
+        </div>
+
+        <div class="blog-post-content">
+          <p>AI coding agents improve fast, but one thing still breaks surprisingly often: they inherit the repository with almost no social context. They can read the code, but they do not automatically understand what your team considers risky, which commands are safe, where tests live, how architecture is partitioned, or what “done” means for a change.</p>
+
+          <p>That is where repo playbooks come in. A good <code>AGENTS.md</code>, <code>CLAUDE.md</code>, or repo-specific instructions file acts like a local operating manual for the agent. It shortens the gap between “the model can edit files” and “the model consistently behaves like a careful contributor in this codebase.”</p>
+
+          <h2>Why repo instructions matter more than people expect</h2>
+          <p>Most AI coding failures are not raw capability failures. They are context failures. A model can write correct code and still edit the wrong package, run the wrong test suite, skip a migration policy, or rewrite generated files that should have stayed untouched.</p>
+          <p>The fix is rarely “use a better model.” The fix is usually “give the model a tighter local contract.”</p>
+
+          <h2>The five questions a playbook should answer</h2>
+          <ol>
+            <li>What is this repo?</li>
+            <li>What should never be changed casually?</li>
+            <li>What commands prove a change is safe?</li>
+            <li>How should edits stay scoped?</li>
+            <li>What output style makes review easy for humans?</li>
+          </ol>
+          <p>If your instruction file does not answer those, the agent fills the gaps with generic priors. Sometimes that works. Sometimes it decides your production monorepo is a toy app.</p>
+
+          <h2>What belongs in a strong repo playbook</h2>
+
+          <h3>1. A map of the repo</h3>
+          <p>Start with a crisp orientation block. It helps the model find the owning package instead of searching everything and making the first plausible edit.</p>
+          <div class="code-block"><pre><code># Repo map
+- apps/web: customer-facing frontend
+- apps/admin: internal operations UI
+- services/api: public HTTP API
+- packages/ui: shared design system
+- packages/config: lint, tsconfig, and build presets</code></pre></div>
+
+          <h3>2. Explicit no-go zones</h3>
+          <p>Tell the agent what not to touch unless the task clearly requires it.</p>
+          <div class="code-block"><pre><code># Avoid editing unless explicitly required
+- generated/**
+- infra/terraform/prod/**
+- package-lock.json unless dependencies changed
+- database schema files without migration notes</code></pre></div>
+
+          <h3>3. Verification commands</h3>
+          <p>Every repo playbook should define what “done” looks like in commands, not vibes.</p>
+          <div class="code-block"><pre><code># Verification
+For frontend-only changes:
+- pnpm --filter web lint
+- pnpm --filter web test
+
+For API changes:
+- pnpm --filter api test
+- pnpm --filter api typecheck</code></pre></div>
+
+          <h3>4. Scope rules</h3>
+          <p>Scope rules keep the agent from turning one bugfix into a repo-wide cleanup campaign.</p>
+          <div class="code-block"><pre><code># Scope rules
+- Prefer the smallest working fix.
+- Do not rename files or move modules unless required.
+- Do not introduce new dependencies without justification.
+- If the task crosses more than one app and one shared package, propose a plan first.</code></pre></div>
+
+          <h3>5. A review-friendly final response</h3>
+          <p>Instruction files should shape handoff too.</p>
+          <div class="code-block"><pre><code># Final response
+Include:
+1. What changed
+2. Risks or assumptions
+3. Commands run
+4. Any follow-up work not completed</code></pre></div>
+
+          <h2>Rules beat essays</h2>
+          <p>The first version many teams write is too long and too abstract. Models respond best to compact, procedural guidance. Humans maintaining the file do too.</p>
+          <p>A useful structure is simple: repo purpose, repo map, common commands, edit boundaries, testing rules, review expectations, and environment gotchas. That works better than a manifesto about engineering culture.</p>
+
+          <h2>A practical playbook example</h2>
+          <div class="code-block"><pre><code># AGENTS.md
+
+## Purpose
+This repo contains the customer web app, admin UI, and shared API packages for Acme.
+
+## Preferred workflow
+- Read nearby files before editing.
+- Keep changes scoped to the smallest useful unit.
+- Match existing naming and patterns before introducing new abstractions.
+
+## Repo map
+- apps/web: Next.js storefront
+- apps/admin: internal tools
+- services/api: Fastify backend
+- packages/ui: shared React components
+
+## Edit boundaries
+- Avoid generated files.
+- Do not modify CI, infra, or lockfiles unless the task requires it.
+- For schema changes, update migration notes in docs/db-changes.md.
+
+## Verification
+- Frontend: pnpm --filter web lint &amp;&amp; pnpm --filter web test
+- Admin: pnpm --filter admin lint &amp;&amp; pnpm --filter admin test
+- API: pnpm --filter api test &amp;&amp; pnpm --filter api typecheck
+
+## Output
+Summarize changed files, commands run, and remaining risks.</code></pre></div>
+
+          <h2>AGENTS.md vs CLAUDE.md vs tool-specific rules</h2>
+          <p>Different tools look for different files, but the operating idea is the same. My preference is to keep one canonical repo playbook and let tool-specific files lightly adapt it. If every tool gets a separate drifting instruction set, the repo slowly turns into a hall of mirrors.</p>
+          <ul>
+            <li><strong>AGENTS.md</strong> works well as a general repo contract for agentic workflows.</li>
+            <li><strong>CLAUDE.md</strong> is often used for Claude-centric project instructions.</li>
+            <li><strong>Editor-specific rules</strong> can add local behavior inside tools like Cursor or Copilot.</li>
+          </ul>
+
+          <h2>What to add for monorepos</h2>
+          <p>Monorepos need extra help because retrieval alone often is not enough. Add package ownership boundaries, shared type ownership, narrow test commands, and explicit rules for when a change is allowed to cross package lines.</p>
+          <div class="code-block"><pre><code>## Monorepo rules
+- Prefer fixing behavior in the owning package before patching consumers.
+- Shared types belong in packages/contracts.
+- If changing packages/contracts, run tests in each dependent app you touched.
+- Do not “clean up” unrelated packages in the same PR.</code></pre></div>
+
+          <h2>What to add for production-sensitive repos</h2>
+          <p>If the repo touches infrastructure, security, billing, or migrations, be blunt. Spell out approval boundaries, secrets rules, rollback expectations, and local commands that must never be run casually.</p>
+          <div class="code-block"><pre><code>## Production-sensitive areas
+- Changes under infra/prod require human review before execution.
+- Never print secrets, tokens, or .env contents.
+- For billing code, preserve idempotency checks and existing audit logs.
+- For migrations, write forward and rollback notes.</code></pre></div>
+
+          <h2>The hidden win: better pull requests</h2>
+          <p>Repo playbooks improve explanation quality too. When an agent knows it should report changed files, tests run, assumptions, and risk areas, the PR description gets sharper. That matters because the real bottleneck in AI coding is not code generation. It is compressing enough confidence into a reviewable diff that a human can say yes.</p>
+          <ul>
+            <li>smaller PRs</li>
+            <li>fewer drive-by cleanups</li>
+            <li>clearer validation notes</li>
+            <li>better awareness of risky directories</li>
+            <li>less reviewer confusion</li>
+          </ul>
+
+          <h2>Common mistakes</h2>
+          <h3>Writing only style guidance</h3>
+          <p>Naming rules are fine, but verification and safety rules matter more. “Use camelCase” will not stop a bad migration.</p>
+          <h3>Making the file too abstract</h3>
+          <p>“Be thoughtful and consistent” sounds nice but is weak. Prefer instructions the model can operationalize.</p>
+          <h3>Forgetting update hygiene</h3>
+          <p>If the playbook says <code>npm test</code> but the repo moved to <code>pnpm</code>, the file becomes negative signal. Stale rules are worse than missing ones.</p>
+          <h3>Encoding every edge case</h3>
+          <p>Do not turn the file into a wiki. Capture the high-leverage rules that prevent the most mistakes.</p>
+
+          <h2>A starter template</h2>
+          <div class="code-block"><pre><code># AGENTS.md
+
+## Repo purpose
+Short description of what this repository contains.
+
+## Repo map
+- path: what lives here
+- path: what lives here
+
+## Workflow expectations
+- Read nearby files before editing.
+- Prefer narrow diffs.
+- Match existing patterns before inventing new ones.
+
+## Avoid editing
+- generated/**
+- lockfiles unless dependencies change
+- infra/prod/** unless explicitly requested
+
+## Verification
+- command for app A
+- command for app B
+
+## Risk notes
+- migrations require notes
+- billing changes preserve audit behavior
+- do not expose secrets
+
+## Final response
+- summarize files changed
+- list commands run
+- call out assumptions and follow-ups</code></pre></div>
+
+          <h2>Final takeaway</h2>
+          <p>AI coding agents do not need a motivational speech. They need a local operating manual. A good repo playbook narrows the search space, clarifies what safe work looks like, and makes the final diff easier for humans to trust.</p>
+          <p>If you are already using agentic coding tools and not seeing consistent results, this is one of the highest-leverage fixes available.</p>
+
+          <h2>References and resources</h2>
+          <ul>
+            <li><a href="https://docs.anthropic.com/en/docs/claude-code/overview">Anthropic Claude Code documentation</a></li>
+            <li><a href="https://platform.openai.com/docs/guides/agents">OpenAI agent workflow guidance</a></li>
+            <li><a href="https://docs.github.com/en/copilot/how-tos/configure-custom-instructions/add-repository-custom-instructions-for-github-copilot">GitHub Copilot repository custom instructions</a></li>
+            <li><a href="https://modelcontextprotocol.io/introduction">Model Context Protocol documentation</a></li>
+          </ul>
+        </div>
+
+        <div class="blog-post-tags">
+          <span class="blog-post-tag">AI Coding</span>
+          <span class="blog-post-tag">Developer Workflow</span>
+          <span class="blog-post-tag">Agent Guardrails</span>
+          <span class="blog-post-tag">Prompt Engineering</span>
+        </div>
+
+        <footer class="blog-footer">
+          <p><a href="index.html">Browse more posts</a> or <a href="../index.html">return to the portfolio</a>.</p>
+        </footer>
+      </div>
+    </header>
+  </body>
+</html>
