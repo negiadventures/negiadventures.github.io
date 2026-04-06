@@ -1,0 +1,239 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="A practical guide to isolating AI coding agents with dev containers, read-only mounts, network controls, and microVMs so they can work usefully without getting a blank check on your machine.">
+    <meta name="author" content="Anirudh Negi">
+    <title>Sandboxing AI Coding Agents Without Killing Developer Velocity | Anirudh Negi</title>
+    <link rel="canonical" href="https://negiadventures.github.io/blog/agent-sandboxing-workflows.html">
+    <meta property="og:type" content="article">
+    <meta property="og:url" content="https://negiadventures.github.io/blog/agent-sandboxing-workflows.html">
+    <meta property="og:title" content="Sandboxing AI Coding Agents Without Killing Developer Velocity | Anirudh Negi">
+    <meta property="og:description" content="A practical guide to isolating AI coding agents with dev containers, read-only mounts, network controls, and microVMs so they can work usefully without getting a blank check on your machine.">
+    <meta property="og:image" content="data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A//www.w3.org/2000/svg%27%20viewBox%3D%270%200%201200%20630%27%3E%3Cdefs%3E%3ClinearGradient%20id%3D%27bg%27%20x1%3D%270%27%20x2%3D%271%27%20y1%3D%270%27%20y2%3D%271%27%3E%3Cstop%20offset%3D%270%25%27%20stop-color%3D%27%2309131f%27/%3E%3Cstop%20offset%3D%27100%25%27%20stop-color%3D%27%23182d49%27/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect%20width%3D%271200%27%20height%3D%27630%27%20fill%3D%27url%28%23bg%29%27/%3E%3Ccircle%20cx%3D%27990%27%20cy%3D%27125%27%20r%3D%27150%27%20fill%3D%27%2327d3ff%27%20fill-opacity%3D%270.12%27/%3E%3Ccircle%20cx%3D%27175%27%20cy%3D%27520%27%20r%3D%27195%27%20fill%3D%27%238d6bff%27%20fill-opacity%3D%270.14%27/%3E%3Crect%20x%3D%27105%27%20y%3D%27110%27%20width%3D%27990%27%20height%3D%27410%27%20rx%3D%2728%27%20fill%3D%27%230f172a%27%20stroke%3D%27%2338bdf8%27%20stroke-opacity%3D%270.35%27/%3E%3Ctext%20x%3D%27150%27%20y%3D%27218%27%20fill%3D%27white%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2748%27%20font-weight%3D%27700%27%3ESandboxing AI Coding%3C/text%3E%3Ctext%20x%3D%27150%27%20y%3D%27290%27%20fill%3D%27%2390cdf4%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2748%27%20font-weight%3D%27700%27%3EAgents%3C/text%3E%3Ctext%20x%3D%27150%27%20y%3D%27376%27%20fill%3D%27%23cbd5e1%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2728%27%3EDev%20containers%2C%20read-only%20mounts%2C%20and%20microVM%20boundaries%3C/text%3E%3C/svg%3E">
+    <meta property="article:published_time" content="2026-04-06">
+    <meta property="article:author" content="Anirudh Negi">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:url" content="https://negiadventures.github.io/blog/agent-sandboxing-workflows.html">
+    <meta name="twitter:title" content="Sandboxing AI Coding Agents Without Killing Developer Velocity | Anirudh Negi">
+    <meta name="twitter:description" content="A practical guide to isolating AI coding agents with dev containers, read-only mounts, network controls, and microVMs so they can work usefully without getting a blank check on your machine.">
+    <meta name="twitter:image" content="data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A//www.w3.org/2000/svg%27%20viewBox%3D%270%200%201200%20630%27%3E%3Cdefs%3E%3ClinearGradient%20id%3D%27bg%27%20x1%3D%270%27%20x2%3D%271%27%20y1%3D%270%27%20y2%3D%271%27%3E%3Cstop%20offset%3D%270%25%27%20stop-color%3D%27%2309131f%27/%3E%3Cstop%20offset%3D%27100%25%27%20stop-color%3D%27%23182d49%27/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect%20width%3D%271200%27%20height%3D%27630%27%20fill%3D%27url%28%23bg%29%27/%3E%3Ccircle%20cx%3D%27990%27%20cy%3D%27125%27%20r%3D%27150%27%20fill%3D%27%2327d3ff%27%20fill-opacity%3D%270.12%27/%3E%3Ccircle%20cx%3D%27175%27%20cy%3D%27520%27%20r%3D%27195%27%20fill%3D%27%238d6bff%27%20fill-opacity%3D%270.14%27/%3E%3Crect%20x%3D%27105%27%20y%3D%27110%27%20width%3D%27990%27%20height%3D%27410%27%20rx%3D%2728%27%20fill%3D%27%230f172a%27%20stroke%3D%27%2338bdf8%27%20stroke-opacity%3D%270.35%27/%3E%3Ctext%20x%3D%27150%27%20y%3D%27218%27%20fill%3D%27white%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2748%27%20font-weight%3D%27700%27%3ESandboxing AI Coding%3C/text%3E%3Ctext%20x%3D%27150%27%20y%3D%27290%27%20fill%3D%27%2390cdf4%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2748%27%20font-weight%3D%27700%27%3EAgents%3C/text%3E%3Ctext%20x%3D%27150%27%20y%3D%27376%27%20fill%3D%27%23cbd5e1%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2728%27%3EDev%20containers%2C%20read-only%20mounts%2C%20and%20microVM%20boundaries%3C/text%3E%3C/svg%3E">
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "BlogPosting",
+      "headline": "Sandboxing AI Coding Agents Without Killing Developer Velocity",
+      "description": "A practical guide to isolating AI coding agents with dev containers, read-only mounts, network controls, and microVMs so they can work usefully without getting a blank check on your machine.",
+      "image": "data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A//www.w3.org/2000/svg%27%20viewBox%3D%270%200%201200%20630%27%3E%3Cdefs%3E%3ClinearGradient%20id%3D%27bg%27%20x1%3D%270%27%20x2%3D%271%27%20y1%3D%270%27%20y2%3D%271%27%3E%3Cstop%20offset%3D%270%25%27%20stop-color%3D%27%2309131f%27/%3E%3Cstop%20offset%3D%27100%25%27%20stop-color%3D%27%23182d49%27/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect%20width%3D%271200%27%20height%3D%27630%27%20fill%3D%27url%28%23bg%29%27/%3E%3Ccircle%20cx%3D%27990%27%20cy%3D%27125%27%20r%3D%27150%27%20fill%3D%27%2327d3ff%27%20fill-opacity%3D%270.12%27/%3E%3Ccircle%20cx%3D%27175%27%20cy%3D%27520%27%20r%3D%27195%27%20fill%3D%27%238d6bff%27%20fill-opacity%3D%270.14%27/%3E%3Crect%20x%3D%27105%27%20y%3D%27110%27%20width%3D%27990%27%20height%3D%27410%27%20rx%3D%2728%27%20fill%3D%27%230f172a%27%20stroke%3D%27%2338bdf8%27%20stroke-opacity%3D%270.35%27/%3E%3Ctext%20x%3D%27150%27%20y%3D%27218%27%20fill%3D%27white%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2748%27%20font-weight%3D%27700%27%3ESandboxing AI Coding%3C/text%3E%3Ctext%20x%3D%27150%27%20y%3D%27290%27%20fill%3D%27%2390cdf4%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2748%27%20font-weight%3D%27700%27%3EAgents%3C/text%3E%3Ctext%20x%3D%27150%27%20y%3D%27376%27%20fill%3D%27%23cbd5e1%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2728%27%3EDev%20containers%2C%20read-only%20mounts%2C%20and%20microVM%20boundaries%3C/text%3E%3C/svg%3E",
+      "url": "https://negiadventures.github.io/blog/agent-sandboxing-workflows.html",
+      "datePublished": "2026-04-06",
+      "author": {
+        "@type": "Person",
+        "name": "Anirudh Negi",
+        "url": "https://negiadventures.github.io"
+      },
+      "publisher": {
+        "@type": "Person",
+        "name": "Anirudh Negi",
+        "url": "https://negiadventures.github.io"
+      }
+    }
+    </script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../stylesheets/stylesheet.css?v=5" media="screen">
+    <style>
+      .blog-post {
+        max-width: 800px;
+        margin: 0 auto;
+        padding: 60px 20px;
+      }
+      .blog-post-header { margin-bottom: 40px; }
+      .blog-post-nav { margin-bottom: 30px; }
+      .blog-post-nav a { color: var(--accent-strong); font-size: 0.95rem; }
+      .blog-post-nav a:hover { color: var(--accent); }
+      .blog-post-title { font-size: 2.5rem; margin-bottom: 16px; }
+      .blog-post-meta { display: flex; gap: 20px; color: var(--text-muted); font-size: 0.95rem; margin-bottom: 30px; flex-wrap: wrap; }
+      .blog-post-image { width: 100%; height: 300px; object-fit: cover; border-radius: 16px; margin-bottom: 30px; border: 1px solid var(--border); }
+      .blog-post-content h2 { font-size: 1.6rem; margin-top: 40px; margin-bottom: 16px; color: var(--text-light); }
+      .blog-post-content h3 { font-size: 1.3rem; margin-top: 30px; margin-bottom: 12px; color: var(--text-light); }
+      .blog-post-content p { line-height: 1.8; margin-bottom: 16px; color: var(--text-muted); }
+      .blog-post-content ul, .blog-post-content ol { line-height: 1.8; margin-bottom: 20px; color: var(--text-muted); padding-left: 24px; }
+      .blog-post-content li { margin-bottom: 8px; }
+      .code-block { background: var(--bg-alt); border: 1px solid var(--border); border-radius: 12px; padding: 20px; margin: 20px 0; overflow-x: auto; }
+      .code-block pre { margin: 0; font-family: var(--mono); font-size: 0.9rem; line-height: 1.6; color: var(--text-light); }
+      .code-block code { color: var(--accent-strong); }
+      .blog-post-tags { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 40px; padding-top: 30px; border-top: 1px solid var(--border); }
+      .blog-post-tag { background: var(--accent-soft); color: var(--accent-strong); border-radius: 999px; padding: 6px 14px; font-size: 0.85rem; font-family: var(--mono); border: 1px solid transparent; transition: border-color 0.2s ease; }
+      .blog-post-tag:hover { border-color: var(--accent); }
+      .blog-footer { margin-top: 60px; padding-top: 30px; border-top: 1px solid var(--border); text-align: center; }
+      .blog-footer a { color: var(--accent-strong); }
+      .blog-footer a:hover { color: var(--accent); }
+      @media (max-width: 768px) {
+        .blog-post { padding: 40px 16px; }
+        .blog-post-title { font-size: 2rem; }
+        .blog-post-image { height: 200px; }
+      }
+    </style>
+  </head>
+  <body>
+    <a href="../index.html#main" class="skip-link">Skip to main content</a>
+    <header class="site-header">
+      <div class="container blog-post">
+        <div class="blog-post-nav">
+          <a href="index.html">&larr; Back to All Posts</a>
+        </div>
+        <div class="blog-post-header">
+          <h1 class="blog-post-title">Sandboxing AI Coding Agents Without Killing Developer Velocity</h1>
+          <div class="blog-post-meta">
+            <span>April 6, 2026</span>
+            <span>&bull;</span>
+            <span>9 min read</span>
+          </div>
+          <img src="data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A//www.w3.org/2000/svg%27%20viewBox%3D%270%200%201200%20630%27%3E%3Cdefs%3E%3ClinearGradient%20id%3D%27bg%27%20x1%3D%270%27%20x2%3D%271%27%20y1%3D%270%27%20y2%3D%271%27%3E%3Cstop%20offset%3D%270%25%27%20stop-color%3D%27%2309131f%27/%3E%3Cstop%20offset%3D%27100%25%27%20stop-color%3D%27%23182d49%27/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect%20width%3D%271200%27%20height%3D%27630%27%20fill%3D%27url%28%23bg%29%27/%3E%3Ccircle%20cx%3D%27990%27%20cy%3D%27125%27%20r%3D%27150%27%20fill%3D%27%2327d3ff%27%20fill-opacity%3D%270.12%27/%3E%3Ccircle%20cx%3D%27175%27%20cy%3D%27520%27%20r%3D%27195%27%20fill%3D%27%238d6bff%27%20fill-opacity%3D%270.14%27/%3E%3Crect%20x%3D%27105%27%20y%3D%27110%27%20width%3D%27990%27%20height%3D%27410%27%20rx%3D%2728%27%20fill%3D%27%230f172a%27%20stroke%3D%27%2338bdf8%27%20stroke-opacity%3D%270.35%27/%3E%3Ctext%20x%3D%27150%27%20y%3D%27218%27%20fill%3D%27white%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2748%27%20font-weight%3D%27700%27%3ESandboxing AI Coding%3C/text%3E%3Ctext%20x%3D%27150%27%20y%3D%27290%27%20fill%3D%27%2390cdf4%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2748%27%20font-weight%3D%27700%27%3EAgents%3C/text%3E%3Ctext%20x%3D%27150%27%20y%3D%27376%27%20fill%3D%27%23cbd5e1%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2728%27%3EDev%20containers%2C%20read-only%20mounts%2C%20and%20microVM%20boundaries%3C/text%3E%3C/svg%3E" alt="Sandboxing AI Coding Agents Without Killing Developer Velocity" class="blog-post-image">
+        </div>
+        <div class="blog-post-content">
+          <p>The hard part of AI coding is not getting a model to write code. The hard part is letting it run useful commands without quietly handing it your whole machine.</p>
+          <p>That tension shows up fast in real workflows. The agent wants to install packages, run tests, inspect the repository, build containers, and maybe hit an internal service. You want all of that to happen inside clear boundaries so a bad prompt, a confused tool call, or a risky dependency install does not spill across your laptop or production-adjacent environment.</p>
+          <p>The fix is not one magical sandbox. It is a layered setup: isolate execution, scope filesystem access, constrain network reach, and make sensitive actions require a different lane than routine coding work.</p>
+
+          <h2>The threat model is boring, and that is why it matters</h2>
+          <p>Most failures here are not movie-plot jailbreaks. They are ordinary engineering mistakes with better tooling behind them.</p>
+          <ul>
+            <li>modify files outside the intended repo</li>
+            <li>leak secrets from shell history or local config files</li>
+            <li>install packages with post-install scripts that touch the host</li>
+            <li>run expensive or destructive commands because the task description was ambiguous</li>
+            <li>persist credentials in places a later task can read</li>
+            <li>open a network path to systems that were never part of the assignment</li>
+          </ul>
+
+          <h2>Start with the right mental model</h2>
+          <p>A container is not a complete security strategy. It is just one boundary.</p>
+          <p>For practical AI coding work, think in four layers:</p>
+          <ol>
+            <li><strong>Workspace scope</strong> — what files can the agent read or write?</li>
+            <li><strong>Runtime isolation</strong> — what process boundary contains the code execution?</li>
+            <li><strong>Network policy</strong> — what hosts can the agent reach?</li>
+            <li><strong>Approval path</strong> — what still requires a human or a separate trusted workflow?</li>
+          </ol>
+
+          <h2>A good default: dev container plus narrow mounts</h2>
+          <p>For many teams, the best first step is a repeatable development container with a small blast radius. The Development Containers spec is useful because it standardizes the environment around the repository instead of around one engineer's laptop.</p>
+          <ul>
+            <li>Mount the target repository as writable</li>
+            <li>Mount only small caches if performance really needs them</li>
+            <li>Keep out home directories, SSH keys, cloud credentials, and unrelated projects</li>
+            <li>Avoid Docker socket access unless nested builds are genuinely required</li>
+          </ul>
+
+          <h2>Read-only mounts are underrated</h2>
+          <p>Docker bind mounts are writable by default. That means processes in the container can change the host filesystem unless you explicitly mark the mount <code>readonly</code> or <code>ro</code>.</p>
+          <div class="code-block"><pre><code>docker run --rm \
+  --mount type=bind,src=$PWD,dst=/workspace \
+  --mount type=bind,src=$HOME/.npm,dst=/home/dev/.npm,readonly \
+  --mount type=bind,src=$HOME/.gitconfig,dst=/home/dev/.gitconfig,readonly \
+  my-agent-image</code></pre></div>
+          <p>If a mount exists only to make the environment feel familiar, it is probably too generous.</p>
+
+          <h2>Treat network access as a separate permission</h2>
+          <p>For coding agents, network access is often the real privilege. Package installs, test services, GitHub APIs, and cloud endpoints should not all live behind one blanket allow rule.</p>
+          <ul>
+            <li><strong>No network</strong> for local editing and static analysis</li>
+            <li><strong>Registry-only</strong> for dependency installation</li>
+            <li><strong>Allowlisted outbound</strong> for GitHub APIs or specific internal test services</li>
+            <li><strong>Never ambient access</strong> to production from the same environment that executes untrusted code</li>
+          </ul>
+
+          <h2>MicroVMs are worth it when the agent gets more power</h2>
+          <p>Regular containers still share the host kernel. That is why stronger isolation layers exist. Firecracker uses lightweight microVMs with a reduced device model, while gVisor inserts an application kernel between the workload and the host kernel.</p>
+          <p>Reach for stronger isolation when the agent runs arbitrary repo code, installs third-party dependencies often, serves many users, or has access to systems you care about.</p>
+
+          <h2>Never pass the host Docker socket casually</h2>
+          <p>Mounting <code>/var/run/docker.sock</code> into a coding environment can effectively bypass the original container boundary. If the agent needs image-build capability, prefer a nested daemon, rootless tooling, a remote build service, or a microVM-backed sandbox with its own runtime.</p>
+
+          <h2>Build two lanes: routine work and sensitive work</h2>
+          <h3>Lane 1: routine coding</h3>
+          <ul>
+            <li>reading and editing repo files</li>
+            <li>linting, formatting, type checks, and unit tests</li>
+            <li>short-lived environment with narrow mounts and limited egress</li>
+          </ul>
+          <h3>Lane 2: sensitive actions</h3>
+          <ul>
+            <li>deploys, releases, infrastructure changes, and credentialed publishing</li>
+            <li>separate executor or workflow</li>
+            <li>explicit approval boundary and audited credentials</li>
+          </ul>
+
+          <h2>Make the sandbox disposable</h2>
+          <p>Disposable environments reduce stale credentials, strange one-off fixes, and container drift. Persist only what you deliberately need, such as package caches.</p>
+
+          <h2>A minimal policy that teams can actually maintain</h2>
+          <div class="code-block"><pre><code>AI coding sandbox policy
+
+- Mount only the target repo as writable.
+- Mount caches read-only unless writes are required for performance.
+- Do not mount the host home directory.
+- Do not mount SSH agents, cloud config, or Docker socket by default.
+- Default network mode is off; enable only the minimum required egress.
+- Use a separate executor for deploys, releases, and infrastructure changes.
+- Destroy the sandbox after each task unless a human explicitly keeps it.</code></pre></div>
+
+          <h2>What this looks like in practice</h2>
+          <div class="code-block"><pre><code>{
+  "name": "repo-agent",
+  "image": "mcr.microsoft.com/devcontainers/base:ubuntu",
+  "workspaceFolder": "/workspace",
+  "features": {
+    "ghcr.io/devcontainers/features/node:1": {
+      "version": "22"
+    }
+  },
+  "mounts": [
+    "source=${localWorkspaceFolder},target=/workspace,type=bind",
+    "source=${localEnv:HOME}/.npm,target=/home/vscode/.npm,type=bind,consistency=cached"
+  ],
+  "postCreateCommand": "npm ci",
+  "remoteUser": "vscode"
+}</code></pre></div>
+          <p>Then tighten it before handing it to an agent: make extra mounts read-only where possible, strip credential-bearing files, disable network unless setup truly requires it, and keep approvals outside the container for sensitive actions.</p>
+
+          <h2>Common mistakes</h2>
+          <ul>
+            <li><strong>Confusing reproducibility with isolation</strong></li>
+            <li><strong>Over-mounting for convenience</strong></li>
+            <li><strong>Mixing package installation and deploy power</strong></li>
+            <li><strong>Keeping sandboxes alive forever</strong></li>
+          </ul>
+
+          <h2>Final takeaway</h2>
+          <p>Useful AI coding does not require giving the agent a blank check. The winning pattern is layered: reproducible dev environment, narrow writable scope, read-only everything else, explicit egress rules, and a separate path for high-trust actions.</p>
+          <p>If your current setup mounts half your laptop into the agent so it can feel comfortable, that is not velocity. That is unsecured convenience dressed up as workflow.</p>
+
+          <h2>References and resources</h2>
+          <ul>
+            <li><a href="https://containers.dev/" target="_blank" rel="noreferrer">Development Containers specification</a></li>
+            <li><a href="https://docs.docker.com/engine/storage/bind-mounts/" target="_blank" rel="noreferrer">Docker bind mounts documentation</a></li>
+            <li><a href="https://docs.docker.com/ai/sandboxes/" target="_blank" rel="noreferrer">Docker Sandboxes overview</a></li>
+            <li><a href="https://gvisor.dev/docs/" target="_blank" rel="noreferrer">gVisor documentation</a></li>
+            <li><a href="https://firecracker-microvm.github.io/" target="_blank" rel="noreferrer">Firecracker microVM docs</a></li>
+          </ul>
+
+          <div class="blog-post-tags">
+            <span class="blog-post-tag">AI Coding</span>
+            <span class="blog-post-tag">Security</span>
+            <span class="blog-post-tag">Dev Containers</span>
+            <span class="blog-post-tag">Operations</span>
+          </div>
+        </div>
+        <div class="blog-footer">
+          <p><a href="index.html">Back to Blog</a> &bull; <a href="../index.html">Back to Portfolio</a></p>
+          <p style="margin-top: 16px; font-size: 0.9rem;"><em>Strong AI coding workflows start with narrow permissions, not good intentions.</em></p>
+        </div>
+      </div>
+    </header>
+  </body>
+</html>

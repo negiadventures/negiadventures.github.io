@@ -1,6 +1,14 @@
 {
   "topics": [
     {
+      "date": "2026-04-06",
+      "skill": "AI coding sandboxing",
+      "topic": "Isolating AI coding agents with dev containers, read-only mounts, explicit network policy, and microVM-backed runtimes so they can run useful workflows without broad host access",
+      "slug": "agent-sandboxing-workflows",
+      "title": "Sandboxing AI Coding Agents Without Killing Developer Velocity",
+      "summary": "A practical guide to isolating AI coding agents with narrow writable mounts, read-only supporting files, explicit network controls, and stronger runtime boundaries when containers alone are not enough."
+    },
+    {
       "date": "2026-04-05",
       "skill": "Repository instruction playbooks",
       "topic": "Using AGENTS.md, CLAUDE.md, repo maps, verification commands, and scoped edit rules to make AI coding agents safer, more consistent, and easier for humans to review",
