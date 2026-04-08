@@ -1,6 +1,14 @@
 {
   "topics": [
     {
+      "date": "2026-04-08",
+      "skill": "OpenClaw skills",
+      "topic": "Building a reusable scheduled repo worker skill with project-memory, task-engine, and hybrid modes for bounded automation, PR packaging, and reviewer-in-the-loop workflows",
+      "slug": "openclaw-skill-scheduled-repo-worker",
+      "title": "Building Reusable OpenClaw Skills for Scheduled Repo Automation",
+      "summary": "A practical guide to building reusable OpenClaw skills for scheduled repo automation, covering project-memory vs task-engine modes, repo-local memory, PR packaging runs, token-budget tradeoffs, and reviewer-in-the-loop workflows."
+    },
+    {
       "date": "2026-04-06",
       "skill": "AI coding sandboxing",
       "topic": "Isolating AI coding agents with dev containers, read-only mounts, explicit network policy, and microVM-backed runtimes so they can run useful workflows without broad host access",
