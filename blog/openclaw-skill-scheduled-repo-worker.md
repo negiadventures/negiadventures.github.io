@@ -19,7 +19,9 @@ If you find yourself repeatedly teaching an agent how to bootstrap repo state, c
 
 That is where OpenClaw skills get interesting. A good skill is not just a note about how to do something. It is a way to encode judgment, structure, defaults, and guardrails so the same category of work becomes repeatable.
 
-In this post, I want to walk through a practical example: creating a basic OpenClaw skill for scheduled repo automation. The goal is a reusable skill that can set up recurring runs for a repository, maintain repo-local state, package coherent pull requests on designated runs, and post updates to Discord.
+In this post, I want to walk through a practical example: creating a basic OpenClaw skill for structured repo automation. The goal is a reusable skill that can set up recurring runs for a repository, maintain repo-local state, package coherent pull requests on designated runs, and post updates to Discord.
+
+Think of it as the difference between chatting with a capable assistant and building a small operating system for a recurring type of work. The prompt still matters, but the system around the prompt matters more.
 
 More importantly, I want to explain why this pattern is useful, how to keep it safe, and how it changes the role of the human from full-time operator to reviewer, prioritizer, and idea amplifier.
 
@@ -71,6 +73,15 @@ This is useful for:
 It is not a magic autonomous company. It is a constrained system for recurring execution. That distinction matters.
 
 ## Why this kind of skill is valuable in practice
+
+A reusable scheduled-repo skill removes a bunch of recurring pain points. More importantly, it turns repeated operational knowledge into a portable setup you can apply to the next repo without rebuilding the workflow from memory.
+
+A well-designed version gives you:
+
+- repeatable setup for recurring implementation work
+- safer defaults around branches, PRs, and delivery targets
+- lower token waste because the repo carries durable context
+- clearer handoff between the model and the human reviewer
 
 A reusable scheduled-repo skill removes a bunch of recurring pain points:
 
@@ -136,6 +147,8 @@ That is a far more believable and useful automation model than fully hands-off c
 ## Two useful modes for this skill
 
 One of the biggest design choices is admitting that not every repository behaves the same way.
+
+Some repos are exploratory and need flexible project memory. Others are highly structured and need the automation to respect an existing queue and task engine. Treating both the same usually produces awkward results.
 
 I like two main modes, plus a hybrid.
 
