@@ -63,43 +63,17 @@
           <p>More importantly, I want to explain why this pattern is useful, how to keep it safe, and how it changes the role of the human from full-time operator to reviewer, prioritizer, and idea amplifier.</p>
           <h2>Why plain prompts are not enough</h2>
           <p>A plain prompt is great when the task is isolated. It is much weaker when the workflow repeats across multiple projects.</p>
-          <p>The repeated setup usually looks something like this:</p>
-          <ul>
-            <li>create repo-local memory files</li>
-            <li>define normal runs versus PR-packaging runs</li>
-            <li>enforce `main`-first branch discipline</li>
-            <li>route status updates to a Discord channel</li>
-            <li>stop the agent from opening junk pull requests</li>
-            <li>keep the next steps readable for future runs</li>
-          </ul>
+          <p>The repeated setup usually sounds small at first, but it adds up quickly. You need repo-local memory files, a distinction between normal runs and PR-packaging runs, branch discipline that always returns to updated <code>main</code>, reliable Discord delivery, and some way to stop the system from generating low-value pull requests. Once you notice that entire bundle repeating, it becomes obvious that the real artifact is the workflow itself.</p>
           <p>You can absolutely describe that in chat every time. The problem is that it wastes tokens, introduces drift, and makes it easy to forget the little rules that matter.</p>
-          <p>A skill is better because it captures:</p>
-          <ul>
-            <li>the trigger for when the workflow applies</li>
-            <li>the inputs required to set it up</li>
-            <li>the default decisions that are usually right</li>
-            <li>the file structure to create</li>
-            <li>the branch and PR rules</li>
-            <li>the schedule patterns</li>
-            <li>the quality bar for what counts as useful progress</li>
-          </ul>
+          <p>A skill is better because it captures the trigger for when the workflow applies, the inputs required to configure it, the default decisions that are usually right, the file structure to generate, the branch and pull request rules to preserve, and the quality bar for what should count as useful progress. That is a different level of abstraction than “here is a prompt.”</p>
           <p>That is a different level of abstraction than “here is a prompt.”</p>
           <h2>The useful pattern: scheduled repo automation</h2>
           <p>The example pattern I like here is a scheduled repo worker.</p>
-          <p>The idea is simple:</p>
-          <ul>
-            <li>normal runs make bounded progress</li>
-            <li>a designated PR run packages coherent work</li>
-            <li>repo-local files store current state and next actions</li>
-            <li>the human reviews pull requests and adjusts priorities instead of redoing setup from scratch</li>
-          </ul>
-          <p>This is useful for:</p>
-          <ul>
-            <li>product repos that need steady implementation progress</li>
-            <li>content or course repos that need incremental publishing work</li>
-            <li>internal automation repos that benefit from a structured engineering loop</li>
-            <li>projects where daily progress matters more than marathon sessions</li>
-          </ul>
+          <p>The idea is simple. Normal runs make bounded progress, a designated PR run packages coherent work, repo-local files store current state and next actions, and the human reviews pull requests and adjusts priorities instead of redoing setup from scratch.</p>
+          <div class="code-block"><pre><code>normal run -&gt; update state -&gt; bounded implementation -&gt; log checks
+normal run -&gt; update state -&gt; bounded implementation -&gt; log checks
+PR run     -&gt; sync main -&gt; branch fresh -&gt; package coherent work</code></pre></div>
+          <p>This pattern works especially well for product repos that need steady implementation progress, content or course repos that need incremental publishing work, internal automation repos that benefit from a structured engineering loop, and projects where daily progress matters more than marathon sessions.</p>
           <p>It is not a magic autonomous company. It is a constrained system for recurring execution. That distinction matters.</p>
           <h2>Why this kind of skill is valuable in practice</h2>
           <p>A reusable scheduled-repo skill removes a bunch of recurring pain points. More importantly, it turns repeated operational knowledge into a portable setup you can apply to the next repo without rebuilding the workflow from memory.</p>
@@ -143,33 +117,17 @@
             <li>idea enhancer</li>
           </ul>
           <p>That is a much healthier frame than “let the agent do everything.”</p>
-          <p>If the system is well designed, the agent can:</p>
-          <ul>
-            <li>make bounded progress on a schedule</li>
-            <li>preserve repo-local context between runs</li>
-            <li>package coherent pull requests</li>
-            <li>leave a clean audit trail</li>
-          </ul>
-          <p>And your role becomes much more like:</p>
-          <ul>
-            <li>reviewing PRs</li>
-            <li>nudging the roadmap</li>
-            <li>improving ideas</li>
-            <li>catching low-quality directions early</li>
-          </ul>
+          <p>If the system is well designed, the agent can make bounded progress on a schedule, preserve repo-local context between runs, package coherent pull requests, and leave a clean audit trail. Your role shifts in parallel. Instead of spending time repeatedly restating setup and structure, you spend more of it reviewing pull requests, nudging the roadmap, improving ideas, and catching low-quality directions early.</p>
           <p>That is a far more believable and useful automation model than fully hands-off coding theater.</p>
           <h2>Two useful modes for this skill</h2>
+          <div class="code-block"><pre><code>project-memory -&gt; open-ended repos -&gt; human-readable state files
+task-engine    -&gt; structured repos  -&gt; queue/state/task files
+hybrid         -&gt; both              -&gt; machine-readable tasks + project memory</code></pre></div>
           <p>One of the biggest design choices is admitting that not every repository behaves the same way.</p>
           <p>Some repos are exploratory and need flexible project memory. Others are highly structured and need the automation to respect an existing queue and task engine. Treating both the same usually produces awkward results.</p>
           <p>I like two main modes, plus a hybrid.</p>
           <h2>Mode 1: project-memory</h2>
-          <p>This is for open-ended repos that do not already have a strong task engine.</p>
-          <p>The skill creates and maintains files like:</p>
-          <ul>
-            <li>`docs/WORK_STATE.md`</li>
-            <li>`docs/NEXT_ACTIONS.md`</li>
-            <li>`docs/PROJECT_LOG.md`</li>
-          </ul>
+          <p>This is for open-ended repos that do not already have a strong task engine. In this mode, the skill creates and maintains files like <code>docs/WORK_STATE.md</code>, <code>docs/NEXT_ACTIONS.md</code>, and <code>docs/PROJECT_LOG.md</code>. The point is not paperwork. The point is to give recurring runs a durable memory layer that survives beyond any single chat session.</p>
           <p>This mode is best when the project is still evolving and the automation needs human-readable context to stay grounded.</p>
           <h3>Why it helps</h3>
           <ul>
@@ -238,30 +196,9 @@
             <li>Discord target</li>
             <li>quality priorities</li>
           </ul>
-          <p>It can also offer schedule presets such as:</p>
-          <h3>Light</h3>
-          <ul>
-            <li>9 AM normal</li>
-            <li>3 PM normal</li>
-            <li>9 PM PR</li>
-          </ul>
-          <h3>Medium</h3>
-          <ul>
-            <li>4 AM normal</li>
-            <li>8 AM normal</li>
-            <li>12 PM normal</li>
-            <li>4 PM PR</li>
-            <li>8 PM normal</li>
-            <li>12 AM normal</li>
-          </ul>
-          <p>That keeps setup approachable.</p>
+          <p>It can also offer schedule presets such as a light cadence with two implementation runs and one PR run, or a medium cadence with several progress runs spread through the day plus an evening packaging run. That keeps setup approachable without forcing every user to think in cron syntax on day one.</p>
           <h3>`project-memory-templates.md`</h3>
-          <p>This provides templates for:</p>
-          <ul>
-            <li>`WORK_STATE.md`</li>
-            <li>`NEXT_ACTIONS.md`</li>
-            <li>`PROJECT_LOG.md`</li>
-          </ul>
+          <p>This provides templates for <code>WORK_STATE.md</code>, <code>NEXT_ACTIONS.md</code>, and <code>PROJECT_LOG.md</code>. Those files are the backbone of recurring autonomous work in open-ended repos because they turn vague continuity into explicit state.</p>
           <p>Those files are the backbone of recurring autonomous work in open-ended repos.</p>
           <h3>`task-engine-notes.md`</h3>
           <p>This explains how to preserve an existing queue, state, and task workflow instead of trampling it with a generic doc system.</p>
@@ -297,7 +234,7 @@ git pull --ff-only origin main
           <h2>Failure modes worth designing around</h2>
           <p>A good skill should explicitly protect against the obvious failure modes.</p>
           <h3>Wrong delivery target</h3>
-          <p>The skill should accept either a raw channel ID or a full Discord URL, then extract the channel ID cleanly.</p>
+          <p>The skill should accept either a raw channel ID or a full Discord URL, then extract the channel ID cleanly. That sounds minor, but little conveniences like that are exactly what make a reusable skill feel polished instead of brittle.</p>
           <h3>Docs-only churn</h3>
           <p>If a PR run packages only status updates, that is usually a smell. The workflow should skip the PR and explain why.</p>
           <h3>Stale branch packaging</h3>
@@ -307,30 +244,9 @@ git pull --ff-only origin main
           <h3>Under-specified quality goals</h3>
           <p>If the repo needs rich content, strong design, or scalable structure, say so in the prompts and state files. Otherwise the automation may optimize for shallow completion.</p>
           <h2>When this kind of skill is worth using</h2>
-          <p>Use it when:</p>
-          <ul>
-            <li>the repo needs recurring bounded progress</li>
-            <li>PR packaging should happen on a schedule</li>
-            <li>multiple repos need similar setup patterns</li>
-            <li>reviewable automation matters more than raw speed</li>
-            <li>repo-local memory would improve continuity</li>
-          </ul>
-          <p>Avoid it when:</p>
-          <ul>
-            <li>the repo is a tiny one-off</li>
-            <li>the project goal is still too vague</li>
-            <li>a schedule would create churn without direction</li>
-            <li>the work is too sensitive to automate without additional controls</li>
-          </ul>
+          <p>Use this kind of skill when the repo needs recurring bounded progress, when PR packaging should happen on a schedule, when multiple repos need similar setup patterns, when reviewable automation matters more than raw speed, and when repo-local memory would improve continuity. Avoid it when the repo is a tiny one-off, when the project goal is still too vague, when a schedule would create churn without direction, or when the work is too sensitive to automate without additional controls.</p>
           <h2>A minimum viable version is enough to start</h2>
-          <p>You do not need a giant skill framework on day one.</p>
-          <p>A genuinely useful first version can be:</p>
-          <ul>
-            <li>one good `SKILL.md`</li>
-            <li>one question-flow reference</li>
-            <li>one project-memory template file</li>
-            <li>one task-engine note file</li>
-          </ul>
+          <p>You do not need a giant skill framework on day one. A genuinely useful first version can be as small as one good <code>SKILL.md</code>, one question-flow reference, one project-memory template file, and one task-engine note file. That is enough to test the pattern on real repos and refine it from there.</p>
           <p>That is enough to test the pattern on real repos and refine it from there.</p>
           <h2>Final takeaway</h2>
           <p>The biggest shift here is not “AI can write code on a schedule.” That part is easy to overstate.</p>
@@ -339,8 +255,8 @@ git pull --ff-only origin main
           <p>In other words, the skill is not just a convenience layer. It is a way to turn raw model capability into something closer to a repeatable system.</p>
           <h2>References and resources</h2>
           <ul>
-            <li>[OpenClaw documentation](https://docs.openclaw.ai)</li>
-            <li>[OpenClaw GitHub repository](https://github.com/openclaw/openclaw)</li>
+            <li><a href="https://docs.openclaw.ai" target="_blank" rel="noreferrer">OpenClaw documentation</a></li>
+            <li><a href="https://github.com/openclaw/openclaw" target="_blank" rel="noreferrer">OpenClaw GitHub repository</a></li>
           </ul>
           <div class="blog-post-tags">
             <span class="blog-post-tag">OpenClaw</span>
