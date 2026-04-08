@@ -11,82 +11,494 @@
     <meta property="og:url" content="https://negiadventures.github.io/blog/openclaw-skill-scheduled-repo-worker.html">
     <meta property="og:title" content="Building Reusable OpenClaw Skills for Structured Repo Automation | Anirudh Negi">
     <meta property="og:description" content="A detailed guide to designing reusable OpenClaw skills with a scheduled repo worker example, including project-memory vs task-engine modes, repo-local state, PR packaging runs, and reviewer-in-the-loop automation.">
-    <meta property="og:image" content="data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A//www.w3.org/2000/svg%27%20viewBox%3D%270%200%201200%20630%27%3E%3Cdefs%3E%3ClinearGradient%20id%3D%27bg%27%20x1%3D%270%27%20x2%3D%271%27%20y1%3D%270%27%20y2%3D%271%27%3E%3Cstop%20offset%3D%270%25%27%20stop-color%3D%27%2309131f%27/%3E%3Cstop%20offset%3D%27100%25%27%20stop-color%3D%27%23182d49%27/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect%20width%3D%271200%27%20height%3D%27630%27%20fill%3D%27url%28%23bg%29%27/%3E%3Ccircle%20cx%3D%27990%27%20cy%3D%27125%27%20r%3D%27150%27%20fill%3D%27%2327d3ff%27%20fill-opacity%3D%270.12%27/%3E%3Ccircle%20cx%3D%27175%27%20cy%3D%27520%27%20r%3D%27195%27%20fill%3D%27%238d6bff%27%20fill-opacity%3D%270.14%27/%3E%3Crect%20x%3D%27105%27%20y%3D%27110%27%20width%3D%27990%27%20height%3D%27410%27%20rx%3D%2728%27%20fill%3D%27%230f172a%27%20stroke%3D%27%2338bdf8%27%20stroke-opacity%3D%270.35%27/%3E%3Ctext%20x%3D%27150%27%20y%3D%27210%27%20fill%3D%27white%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2746%27%20font-weight%3D%27700%27%3EReusable%20OpenClaw%20Skills%3C/text%3E%3Ctext%20x%3D%27150%27%20y%3D%27282%27%20fill%3D%27%2390cdf4%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2746%27%20font-weight%3D%27700%27%3Efor%20Scheduled%20Repo%20Work%3C/text%3E%3Ctext%20x%3D%27150%27%20y%3D%27368%27%20fill%3D%27%23cbd5e1%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2728%27%3EProject%20memory%2C%20task%20engines%2C%20PR%20runs%2C%20and%20reviewer-in-the-loop%20automation%3C/text%3E%3C/svg%3E">
+    <meta property="og:image" content="https://negiadventures.github.io/images/profile.jpg">
     <meta property="article:published_time" content="2026-04-08">
     <meta property="article:author" content="Anirudh Negi">
     <meta name="twitter:card" content="summary_large_image">
     <meta name="twitter:url" content="https://negiadventures.github.io/blog/openclaw-skill-scheduled-repo-worker.html">
     <meta name="twitter:title" content="Building Reusable OpenClaw Skills for Structured Repo Automation | Anirudh Negi">
     <meta name="twitter:description" content="A detailed guide to designing reusable OpenClaw skills with a scheduled repo worker example, including project-memory vs task-engine modes, repo-local state, PR packaging runs, and reviewer-in-the-loop automation.">
-    <meta name="twitter:image" content="data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A//www.w3.org/2000/svg%27%20viewBox%3D%270%200%201200%20630%27%3E%3Cdefs%3E%3ClinearGradient%20id%3D%27bg%27%20x1%3D%270%27%20x2%3D%271%27%20y1%3D%270%27%20y2%3D%271%27%3E%3Cstop%20offset%3D%270%25%27%20stop-color%3D%27%2309131f%27/%3E%3Cstop%20offset%3D%27100%25%27%20stop-color%3D%27%23182d49%27/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect%20width%3D%271200%27%20height%3D%27630%27%20fill%3D%27url%28%23bg%29%27/%3E%3Ccircle%20cx%3D%27990%27%20cy%3D%27125%27%20r%3D%27150%27%20fill%3D%27%2327d3ff%27%20fill-opacity%3D%270.12%27/%3E%3Ccircle%20cx%3D%27175%27%20cy%3D%27520%27%20r%3D%27195%27%20fill%3D%27%238d6bff%27%20fill-opacity%3D%270.14%27/%3E%3Crect%20x%3D%27105%27%20y%3D%27110%27%20width%3D%27990%27%20height%3D%27410%27%20rx%3D%2728%27%20fill%3D%27%230f172a%27%20stroke%3D%27%2338bdf8%27%20stroke-opacity%3D%270.35%27/%3E%3Ctext%20x%3D%27150%27%20y%3D%27210%27%20fill%3D%27white%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2746%27%20font-weight%3D%27700%27%3EReusable%20OpenClaw%20Skills%3C/text%3E%3Ctext%20x%3D%27150%27%20y%3D%27282%27%20fill%3D%27%2390cdf4%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2746%27%20font-weight%3D%27700%27%3Efor%20Scheduled%20Repo%20Work%3C/text%3E%3Ctext%20x%3D%27150%27%20y%3D%27368%27%20fill%3D%27%23cbd5e1%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2728%27%3EProject%20memory%2C%20task%20engines%2C%20PR%20runs%2C%20and%20reviewer-in-the-loop%20automation%3C/text%3E%3C/svg%3E">
-    <script type="application/ld+json">{"@context":"https://schema.org","@type":"BlogPosting","headline":"Building Reusable OpenClaw Skills for Structured Repo Automation","description":"A detailed guide to designing reusable OpenClaw skills with a scheduled repo worker example, including project-memory vs task-engine modes, repo-local state, PR packaging runs, and reviewer-in-the-loop automation.","image":"data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A//www.w3.org/2000/svg%27%20viewBox%3D%270%200%201200%20630%27%3E%3Cdefs%3E%3ClinearGradient%20id%3D%27bg%27%20x1%3D%270%27%20x2%3D%271%27%20y1%3D%270%27%20y2%3D%271%27%3E%3Cstop%20offset%3D%270%25%27%20stop-color%3D%27%2309131f%27/%3E%3Cstop%20offset%3D%27100%25%27%20stop-color%3D%27%23182d49%27/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect%20width%3D%271200%27%20height%3D%27630%27%20fill%3D%27url%28%23bg%29%27/%3E%3Ccircle%20cx%3D%27990%27%20cy%3D%27125%27%20r%3D%27150%27%20fill%3D%27%2327d3ff%27%20fill-opacity%3D%270.12%27/%3E%3Ccircle%20cx%3D%27175%27%20cy%3D%27520%27%20r%3D%27195%27%20fill%3D%27%238d6bff%27%20fill-opacity%3D%270.14%27/%3E%3Crect%20x%3D%27105%27%20y%3D%27110%27%20width%3D%27990%27%20height%3D%27410%27%20rx%3D%2728%27%20fill%3D%27%230f172a%27%20stroke%3D%27%2338bdf8%27%20stroke-opacity%3D%270.35%27/%3E%3Ctext%20x%3D%27150%27%20y%3D%27210%27%20fill%3D%27white%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2746%27%20font-weight%3D%27700%27%3EReusable%20OpenClaw%20Skills%3C/text%3E%3Ctext%20x%3D%27150%27%20y%3D%27282%27%20fill%3D%27%2390cdf4%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2746%27%20font-weight%3D%27700%27%3Efor%20Scheduled%20Repo%20Work%3C/text%3E%3Ctext%20x%3D%27150%27%20y%3D%27368%27%20fill%3D%27%23cbd5e1%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2728%27%3EProject%20memory%2C%20task%20engines%2C%20PR%20runs%2C%20and%20reviewer-in-the-loop%20automation%3C/text%3E%3C/svg%3E","url":"https://negiadventures.github.io/blog/openclaw-skill-scheduled-repo-worker.html","datePublished":"2026-04-08","author":{"@type":"Person","name":"Anirudh Negi","url":"https://negiadventures.github.io"},"publisher":{"@type":"Person","name":"Anirudh Negi","url":"https://negiadventures.github.io"}}</script>
+    <meta name="twitter:image" content="https://negiadventures.github.io/images/profile.jpg">
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "BlogPosting",
+      "headline": "Building Reusable OpenClaw Skills for Structured Repo Automation",
+      "description": "A detailed guide to designing reusable OpenClaw skills with a scheduled repo worker example, including project-memory vs task-engine modes, repo-local state, PR packaging runs, and reviewer-in-the-loop automation.",
+      "image": "https://negiadventures.github.io/images/profile.jpg",
+      "url": "https://negiadventures.github.io/blog/openclaw-skill-scheduled-repo-worker.html",
+      "datePublished": "2026-04-08",
+      "author": {
+        "@type": "Person",
+        "name": "Anirudh Negi",
+        "url": "https://negiadventures.github.io"
+      },
+      "publisher": {
+        "@type": "Person",
+        "name": "Anirudh Negi",
+        "url": "https://negiadventures.github.io"
+      }
+    }
+    </script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="../stylesheets/stylesheet.css?v=5" media="screen">
     <style>
-      .blog-post { max-width: 800px; margin: 0 auto; padding: 60px 20px; }
-      .blog-post-header { margin-bottom: 40px; }
-      .blog-post-nav { margin-bottom: 30px; }
-      .blog-post-nav a { color: var(--accent-strong); font-size: 0.95rem; }
-      .blog-post-title { font-size: 2.5rem; margin-bottom: 16px; }
-      .blog-post-meta { display: flex; gap: 20px; color: var(--text-muted); font-size: 0.95rem; margin-bottom: 30px; flex-wrap: wrap; }
-      .blog-post-image { width: 100%; height: 300px; object-fit: cover; border-radius: 16px; margin-bottom: 30px; border: 1px solid var(--border); }
-      .blog-post-content h2 { font-size: 1.6rem; margin-top: 40px; margin-bottom: 16px; color: var(--text-light); }
-      .blog-post-content h3 { font-size: 1.3rem; margin-top: 30px; margin-bottom: 12px; color: var(--text-light); }
-      .blog-post-content p { line-height: 1.8; margin-bottom: 16px; color: var(--text-muted); }
-      .blog-post-content ul { line-height: 1.8; margin-bottom: 20px; color: var(--text-muted); padding-left: 24px; }
-      .blog-post-content li { margin-bottom: 8px; }
-      .code-block { background: var(--bg-alt); border: 1px solid var(--border); border-radius: 12px; padding: 20px; margin: 20px 0; overflow-x: auto; }
-      .code-block pre { margin: 0; font-family: var(--mono); font-size: 0.9rem; line-height: 1.6; color: var(--text-light); white-space: pre-wrap; }
-      .blog-post-tags { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 40px; padding-top: 30px; border-top: 1px solid var(--border); }
-      .blog-post-tag { background: var(--accent-soft); color: var(--accent-strong); border-radius: 999px; padding: 6px 14px; font-size: 0.85rem; font-family: var(--mono); border: 1px solid transparent; }
-      .blog-footer { margin-top: 60px; padding-top: 30px; border-top: 1px solid var(--border); text-align: center; }
+      .blog-post {
+        max-width: 800px;
+        margin: 0 auto;
+        padding: 60px 20px;
+      }
+
+      .blog-post-header {
+        margin-bottom: 40px;
+      }
+
+      .blog-post-nav {
+        margin-bottom: 30px;
+      }
+
+      .blog-post-nav a {
+        color: var(--accent-strong);
+        font-size: 0.95rem;
+      }
+
+      .blog-post-nav a:hover {
+        color: var(--accent);
+      }
+
+      .blog-post-title {
+        font-size: 2.5rem;
+        margin-bottom: 16px;
+      }
+
+      .blog-post-meta {
+        display: flex;
+        gap: 20px;
+        color: var(--text-muted);
+        font-size: 0.95rem;
+        margin-bottom: 30px;
+        flex-wrap: wrap;
+      }
+
+      .blog-post-image {
+        width: 100%;
+        height: 300px;
+        object-fit: cover;
+        border-radius: 16px;
+        margin-bottom: 30px;
+        border: 1px solid var(--border);
+        background: linear-gradient(135deg, rgba(9, 19, 31, 1), rgba(24, 45, 73, 1));
+      }
+
+      .blog-post-content h2 {
+        font-size: 1.6rem;
+        margin-top: 40px;
+        margin-bottom: 16px;
+        color: var(--text-light);
+      }
+
+      .blog-post-content h3 {
+        font-size: 1.3rem;
+        margin-top: 30px;
+        margin-bottom: 12px;
+        color: var(--text-light);
+      }
+
+      .blog-post-content p {
+        line-height: 1.8;
+        margin-bottom: 16px;
+        color: var(--text-muted);
+      }
+
+      .blog-post-content ul,
+      .blog-post-content ol {
+        line-height: 1.8;
+        margin-bottom: 20px;
+        color: var(--text-muted);
+        padding-left: 24px;
+      }
+
+      .blog-post-content li {
+        margin-bottom: 8px;
+      }
+
+      .code-block {
+        background: var(--bg-alt);
+        border: 1px solid var(--border);
+        border-radius: 12px;
+        padding: 20px;
+        margin: 20px 0;
+        overflow-x: auto;
+      }
+
+      .code-block pre {
+        margin: 0;
+        font-family: var(--mono);
+        font-size: 0.9rem;
+        line-height: 1.6;
+        color: var(--text-light);
+      }
+
+      .code-block code {
+        color: var(--accent-strong);
+      }
+
+      .blog-post-tags {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        margin-top: 40px;
+        padding-top: 30px;
+        border-top: 1px solid var(--border);
+      }
+
+      .blog-post-tag {
+        background: var(--accent-soft);
+        color: var(--accent-strong);
+        border-radius: 999px;
+        padding: 6px 14px;
+        font-size: 0.85rem;
+        font-family: var(--mono);
+        border: 1px solid transparent;
+        transition: border-color 0.2s ease;
+      }
+
+      .blog-post-tag:hover {
+        border-color: var(--accent);
+      }
+
+      .blog-footer {
+        margin-top: 60px;
+        padding-top: 30px;
+        border-top: 1px solid var(--border);
+        text-align: center;
+      }
+
+      .blog-footer a {
+        color: var(--accent-strong);
+      }
+
+      .blog-footer a:hover {
+        color: var(--accent);
+      }
+
+      /* Diagrams and visual components */
+      .diagram {
+        background: var(--bg-alt);
+        border: 1px solid var(--border);
+        border-radius: 12px;
+        padding: 24px;
+        margin: 24px 0;
+        overflow-x: auto;
+      }
+
+      .diagram-label {
+        font-size: 0.75rem;
+        font-family: var(--mono);
+        color: var(--text-muted);
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+        margin-bottom: 16px;
+      }
+
+      .flow-row {
+        display: flex;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 4px;
+        margin-bottom: 12px;
+      }
+
+      .flow-node {
+        background: rgba(99, 102, 241, 0.15);
+        border: 1px solid rgba(129, 140, 248, 0.4);
+        border-radius: 8px;
+        padding: 6px 14px;
+        font-family: var(--mono);
+        font-size: 0.85rem;
+        color: var(--accent-strong);
+        white-space: nowrap;
+      }
+
+      .flow-node.pr-node {
+        background: rgba(168, 85, 247, 0.15);
+        border-color: rgba(168, 85, 247, 0.4);
+        color: #c084fc;
+      }
+
+      .flow-node.discord-node {
+        background: rgba(88, 101, 242, 0.15);
+        border-color: rgba(88, 101, 242, 0.4);
+        color: #818cf8;
+      }
+
+      .flow-arrow {
+        color: var(--text-muted);
+        font-size: 0.9rem;
+        padding: 0 2px;
+      }
+
+      .flow-divider {
+        width: 100%;
+        height: 1px;
+        background: var(--border);
+        margin: 12px 0;
+      }
+
+      .flow-label {
+        font-family: var(--mono);
+        font-size: 0.75rem;
+        color: var(--text-muted);
+        margin-bottom: 8px;
+      }
+
+      /* Mode comparison cards */
+      .mode-grid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 16px;
+        margin: 24px 0;
+      }
+
+      .mode-card {
+        background: var(--bg-alt);
+        border: 1px solid var(--border);
+        border-radius: 12px;
+        padding: 20px;
+        transition: border-color 0.2s ease;
+      }
+
+      .mode-card:hover {
+        border-color: var(--accent);
+      }
+
+      .mode-card-title {
+        font-family: var(--mono);
+        font-size: 0.9rem;
+        color: var(--accent-strong);
+        margin-bottom: 8px;
+        font-weight: 600;
+      }
+
+      .mode-card-subtitle {
+        font-size: 0.8rem;
+        color: var(--text-muted);
+        margin-bottom: 12px;
+      }
+
+      .mode-card-files {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+      }
+
+      .mode-card-files li {
+        font-family: var(--mono);
+        font-size: 0.78rem;
+        color: var(--text-muted);
+        padding: 3px 0;
+        border-bottom: 1px solid rgba(51, 65, 85, 0.5);
+        margin-bottom: 0;
+      }
+
+      .mode-card-files li:last-child {
+        border-bottom: none;
+      }
+
+      /* File tree */
+      .file-tree {
+        background: var(--bg-alt);
+        border: 1px solid var(--border);
+        border-radius: 12px;
+        padding: 20px 24px;
+        margin: 20px 0;
+        font-family: var(--mono);
+        font-size: 0.88rem;
+        line-height: 1.9;
+        color: var(--text-light);
+      }
+
+      .file-tree .tree-dir {
+        color: var(--accent-strong);
+        font-weight: 600;
+      }
+
+      .file-tree .tree-file {
+        color: var(--text-muted);
+      }
+
+      .file-tree .tree-annotation {
+        color: rgba(148, 163, 184, 0.5);
+        font-size: 0.78rem;
+      }
+
+      /* Callout box */
+      .callout {
+        background: rgba(99, 102, 241, 0.08);
+        border-left: 3px solid var(--accent);
+        border-radius: 0 8px 8px 0;
+        padding: 16px 20px;
+        margin: 20px 0;
+      }
+
+      .callout p {
+        margin: 0;
+        color: var(--text-muted);
+        font-size: 0.95rem;
+      }
+
+      /* Use / avoid grid */
+      .use-avoid-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 16px;
+        margin: 20px 0;
+      }
+
+      .use-avoid-card {
+        background: var(--bg-alt);
+        border: 1px solid var(--border);
+        border-radius: 12px;
+        padding: 20px;
+      }
+
+      .use-avoid-card.use {
+        border-top: 2px solid #34d399;
+      }
+
+      .use-avoid-card.avoid {
+        border-top: 2px solid #f87171;
+      }
+
+      .use-avoid-card h4 {
+        font-size: 0.85rem;
+        font-family: var(--mono);
+        margin-bottom: 12px;
+        margin-top: 0;
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+      }
+
+      .use-avoid-card.use h4 { color: #34d399; }
+      .use-avoid-card.avoid h4 { color: #f87171; }
+
+      .use-avoid-card ul {
+        padding-left: 16px;
+        margin: 0;
+      }
+
+      .use-avoid-card li {
+        font-size: 0.9rem;
+        margin-bottom: 6px;
+      }
+
+      @media (max-width: 768px) {
+        .blog-post {
+          padding: 40px 16px;
+        }
+
+        .blog-post-title {
+          font-size: 2rem;
+        }
+
+        .blog-post-image {
+          height: 200px;
+        }
+
+        .mode-grid {
+          grid-template-columns: 1fr;
+        }
+
+        .use-avoid-grid {
+          grid-template-columns: 1fr;
+        }
+      }
     </style>
   </head>
   <body>
     <a href="../index.html#main" class="skip-link">Skip to main content</a>
+
     <header class="site-header">
       <div class="container blog-post">
-        <div class="blog-post-nav"><a href="index.html">&larr; Back to All Posts</a></div>
+        <div class="blog-post-nav">
+          <a href="index.html">&larr; Back to All Posts</a>
+        </div>
+
         <div class="blog-post-header">
           <h1 class="blog-post-title">Building Reusable OpenClaw Skills for Structured Repo Automation</h1>
-          <div class="blog-post-meta"><span>April 8, 2026</span><span>&bull;</span><span>11 min read</span></div>
-          <img src="data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A//www.w3.org/2000/svg%27%20viewBox%3D%270%200%201200%20630%27%3E%3Cdefs%3E%3ClinearGradient%20id%3D%27bg%27%20x1%3D%270%27%20x2%3D%271%27%20y1%3D%270%27%20y2%3D%271%27%3E%3Cstop%20offset%3D%270%25%27%20stop-color%3D%27%2309131f%27/%3E%3Cstop%20offset%3D%27100%25%27%20stop-color%3D%27%23182d49%27/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect%20width%3D%271200%27%20height%3D%27630%27%20fill%3D%27url%28%23bg%29%27/%3E%3Ccircle%20cx%3D%27990%27%20cy%3D%27125%27%20r%3D%27150%27%20fill%3D%27%2327d3ff%27%20fill-opacity%3D%270.12%27/%3E%3Ccircle%20cx%3D%27175%27%20cy%3D%27520%27%20r%3D%27195%27%20fill%3D%27%238d6bff%27%20fill-opacity%3D%270.14%27/%3E%3Crect%20x%3D%27105%27%20y%3D%27110%27%20width%3D%27990%27%20height%3D%27410%27%20rx%3D%2728%27%20fill%3D%27%230f172a%27%20stroke%3D%27%2338bdf8%27%20stroke-opacity%3D%270.35%27/%3E%3Ctext%20x%3D%27150%27%20y%3D%27210%27%20fill%3D%27white%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2746%27%20font-weight%3D%27700%27%3EReusable%20OpenClaw%20Skills%3C/text%3E%3Ctext%20x%3D%27150%27%20y%3D%27282%27%20fill%3D%27%2390cdf4%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2746%27%20font-weight%3D%27700%27%3Efor%20Scheduled%20Repo%20Work%3C/text%3E%3Ctext%20x%3D%27150%27%20y%3D%27368%27%20fill%3D%27%23cbd5e1%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2728%27%3EProject%20memory%2C%20task%20engines%2C%20PR%20runs%2C%20and%20reviewer-in-the-loop%20automation%3C/text%3E%3C/svg%3E" alt="Building Reusable OpenClaw Skills for Structured Repo Automation" class="blog-post-image">
+          <div class="blog-post-meta">
+            <span>April 8, 2026</span>
+            <span>&bull;</span>
+            <span>13 min read</span>
+          </div>
+          <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1200 630'%3E%3Cdefs%3E%3ClinearGradient id='bg' x1='0' x2='1' y1='0' y2='1'%3E%3Cstop offset='0%25' stop-color='%2309131f'/%3E%3Cstop offset='100%25' stop-color='%23182d49'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='1200' height='630' fill='url(%23bg)'/%3E%3Ccircle cx='990' cy='125' r='150' fill='%2327d3ff' fill-opacity='0.12'/%3E%3Ccircle cx='175' cy='520' r='195' fill='%238d6bff' fill-opacity='0.14'/%3E%3Crect x='105' y='110' width='990' height='410' rx='28' fill='%230f172a' stroke='%2338bdf8' stroke-opacity='0.35'/%3E%3Ctext x='150' y='210' fill='white' font-family='Arial, sans-serif' font-size='46' font-weight='700'%3EReusable OpenClaw Skills%3C/text%3E%3Ctext x='150' y='282' fill='%2390cdf4' font-family='Arial, sans-serif' font-size='46' font-weight='700'%3Efor Scheduled Repo Work%3C/text%3E%3Ctext x='150' y='368' fill='%23cbd5e1' font-family='Arial, sans-serif' font-size='28'%3EProject memory, task engines, PR runs, and reviewer-in-the-loop automation%3C/text%3E%3C/svg%3E" alt="Building Reusable OpenClaw Skills for Structured Repo Automation" class="blog-post-image">
         </div>
+
         <div class="blog-post-content">
-                    <p>A lot of AI workflow advice stops at better prompts. That helps, but it does not solve the bigger problem: the same useful setup patterns keep getting rebuilt from scratch.</p>
+
+          <p>A lot of AI workflow advice stops at better prompts. That helps, but it does not solve the bigger problem: the same useful setup patterns keep getting rebuilt from scratch.</p>
           <p>If you find yourself repeatedly teaching an agent how to bootstrap repo state, create recurring work loops, package pull requests, and post updates to the right place, you are no longer dealing with a one-off prompt problem. You are dealing with a reusable workflow problem.</p>
           <p>That is where OpenClaw skills get interesting. A good skill is not just a note about how to do something. It is a way to encode judgment, structure, defaults, and guardrails so the same category of work becomes repeatable.</p>
-          <p>In this post, I want to walk through a practical example: creating a basic OpenClaw skill for structured repo automation. The goal is a reusable skill that can set up recurring runs for a repository, maintain repo-local state, package coherent pull requests on designated runs, and post updates to Discord.</p>
-          <p>Think of it as the difference between chatting with a capable assistant and building a small operating system for a recurring type of work. The prompt still matters, but the system around the prompt matters more.</p>
-          <p>More importantly, I want to explain why this pattern is useful, how to keep it safe, and how it changes the role of the human from full-time operator to reviewer, prioritizer, and idea amplifier.</p>
+          <p>In this post, I walk through a practical example: creating an OpenClaw skill for structured repo automation. The goal is a reusable skill that can set up recurring runs for a repository, maintain repo-local state, package coherent pull requests on designated runs, and post updates to Discord. Think of it as the difference between chatting with a capable assistant and building a small operating system for a recurring type of work.</p>
+
           <h2>Why plain prompts are not enough</h2>
           <p>A plain prompt is great when the task is isolated. It is much weaker when the workflow repeats across multiple projects.</p>
-          <p>The repeated setup usually sounds small at first, but it adds up quickly. You need repo-local memory files, a distinction between normal runs and PR-packaging runs, branch discipline that always returns to updated <code>main</code>, reliable Discord delivery, and some way to stop the system from generating low-value pull requests. Once you notice that entire bundle repeating, it becomes obvious that the real artifact is the workflow itself.</p>
-          <p>You can absolutely describe that in chat every time. The problem is that it wastes tokens, introduces drift, and makes it easy to forget the little rules that matter.</p>
-          <p>A skill is better because it captures the trigger for when the workflow applies, the inputs required to configure it, the default decisions that are usually right, the file structure to generate, the branch and pull request rules to preserve, and the quality bar for what should count as useful progress. That is a different level of abstraction than “here is a prompt.”</p>
-          <p>That is a different level of abstraction than “here is a prompt.”</p>
-          <h2>The useful pattern: scheduled repo automation</h2>
-          <p>The example pattern I like here is a scheduled repo worker.</p>
-          <p>The idea is simple. Normal runs make bounded progress, a designated PR run packages coherent work, repo-local files store current state and next actions, and the human reviews pull requests and adjusts priorities instead of redoing setup from scratch.</p>
-          <div class="code-block"><pre><code>normal run -&gt; update state -&gt; bounded implementation -&gt; log checks
-normal run -&gt; update state -&gt; bounded implementation -&gt; log checks
-PR run     -&gt; sync main -&gt; branch fresh -&gt; package coherent work</code></pre></div>
-          <p>This pattern works especially well for product repos that need steady implementation progress, content or course repos that need incremental publishing work, internal automation repos that benefit from a structured engineering loop, and projects where daily progress matters more than marathon sessions.</p>
-          <p>It is not a magic autonomous company. It is a constrained system for recurring execution. That distinction matters.</p>
-          <h2>Why this kind of skill is valuable in practice</h2>
-          <p>A reusable scheduled-repo skill removes a bunch of recurring pain points. More importantly, it turns repeated operational knowledge into a portable setup you can apply to the next repo without rebuilding the workflow from memory.</p>
-          <p>A well-designed version gives you:</p>
+          <p>The repeated setup usually looks something like this:</p>
           <ul>
-            <li>repeatable setup for recurring implementation work</li>
-            <li>safer defaults around branches, pull requests, and delivery targets</li>
-            <li>lower token waste because the repo carries durable context</li>
-            <li>clearer handoff between the model and the human reviewer</li>
+            <li>create repo-local memory files</li>
+            <li>define normal runs versus PR-packaging runs</li>
+            <li>enforce <code>main</code>-first branch discipline</li>
+            <li>route status updates to a Discord channel</li>
+            <li>stop the agent from opening junk pull requests</li>
+            <li>keep next steps readable for future runs</li>
           </ul>
-          <p>A reusable scheduled-repo skill removes a bunch of recurring pain points:</p>
+          <p>You can absolutely describe that in chat every time. The problem is that it wastes tokens, introduces drift, and makes it easy to forget the little rules that matter.</p>
+          <p>A skill is better because it captures the trigger for when the workflow applies, the inputs required to configure it, the default decisions that are usually right, the file structure to generate, the branch and pull request rules to preserve, and the quality bar for what should count as useful progress. That is a different level of abstraction than "here is a prompt."</p>
+
+          <h2>The scheduled repo automation pattern</h2>
+          <p>The core pattern is a scheduled repo worker. Normal runs make bounded progress. A designated PR run packages coherent work. Repo-local files store current state and next actions. The human reviews pull requests and adjusts priorities instead of redoing setup from scratch.</p>
+
+          <div class="diagram">
+            <div class="diagram-label">Run cycle overview</div>
+            <div class="flow-label">Normal runs (repeating)</div>
+            <div class="flow-row">
+              <span class="flow-node">read state</span>
+              <span class="flow-arrow">&rarr;</span>
+              <span class="flow-node">bounded work</span>
+              <span class="flow-arrow">&rarr;</span>
+              <span class="flow-node">update state</span>
+              <span class="flow-arrow">&rarr;</span>
+              <span class="flow-node">log + check</span>
+            </div>
+            <div class="flow-divider"></div>
+            <div class="flow-label">PR run (every N normal runs)</div>
+            <div class="flow-row">
+              <span class="flow-node pr-node">sync main</span>
+              <span class="flow-arrow">&rarr;</span>
+              <span class="flow-node pr-node">fresh branch</span>
+              <span class="flow-arrow">&rarr;</span>
+              <span class="flow-node pr-node">package work</span>
+              <span class="flow-arrow">&rarr;</span>
+              <span class="flow-node pr-node">open PR</span>
+              <span class="flow-arrow">&rarr;</span>
+              <span class="flow-node discord-node">Discord update</span>
+            </div>
+          </div>
+
+          <p>This pattern works well for product repos that need steady implementation progress, content or course repos that need incremental publishing work, internal automation repos that benefit from a structured engineering loop, and projects where daily progress matters more than marathon sessions.</p>
+
+          <div class="callout">
+            <p>This is not a magic autonomous company. It is a constrained system for recurring execution. That distinction matters.</p>
+          </div>
+
+          <h2>Why this kind of skill is valuable</h2>
+          <p>A reusable scheduled-repo skill turns repeated operational knowledge into a portable setup you can apply to the next repo without rebuilding the workflow from memory.</p>
+
           <h3>1. It reduces setup repetition</h3>
-          <p>You do not have to keep re-inventing the same workflow for every repo.</p>
+          <p>You do not have to keep re-inventing the same workflow for every repo. The skill carries the defaults, the file structure, the branch rules, and the quality bar — so setup goes from a thirty-minute conversation to a short configuration step.</p>
+
           <h3>2. It encodes safer defaults</h3>
           <p>Good defaults prevent silly failures such as:</p>
           <ul>
@@ -95,169 +507,406 @@ PR run     -&gt; sync main -&gt; branch fresh -&gt; package coherent work</code>
             <li>opening a PR that only contains docs churn</li>
             <li>forgetting to update state files</li>
           </ul>
+
           <h3>3. It makes autonomous runs more reviewable</h3>
-          <p>Instead of random edits appearing out of nowhere, the repo has a visible loop:</p>
-          <ul>
-            <li>what is happening now</li>
-            <li>what changed last</li>
-            <li>what should happen next</li>
-          </ul>
-          <h3>4. It helps with limited token budgets</h3>
-          <p>When model usage is expensive or limited, repo-local memory matters more. Durable files like `WORK_STATE.md` and `NEXT_ACTIONS.md` reduce wasted context.</p>
-          <h3>5. It still helps with abundant token budgets</h3>
-          <p>Even if you have plenty of usage headroom, structure still matters. More tokens do not magically create discipline. They can actually make drift worse if the workflow is under-specified.</p>
+          <p>Instead of random edits appearing out of nowhere, the repo has a visible loop: what is happening now, what changed last, and what should happen next.</p>
+
+          <h3>4. It reduces token waste</h3>
+          <p>When model usage is expensive or limited, repo-local memory matters more. Durable files like <code>WORK_STATE.md</code> and <code>NEXT_ACTIONS.md</code> reduce wasted context across sessions.</p>
+
+          <h3>5. Structure still matters with abundant tokens</h3>
+          <p>Even with plenty of usage headroom, more tokens do not magically create discipline. They can actually make drift worse if the workflow is under-specified.</p>
+
           <h2>Turning a model into a bounded builder loop</h2>
-          <p>This is one of the most interesting parts of the pattern.</p>
-          <p>A skill like this is not just about saving a few prompts. It is about creating a system where the model can do useful recurring implementation work, while the human stays in the loop as:</p>
-          <ul>
-            <li>reviewer</li>
-            <li>prioritizer</li>
-            <li>product or architecture guide</li>
-            <li>quality controller</li>
-            <li>idea enhancer</li>
-          </ul>
-          <p>That is a much healthier frame than “let the agent do everything.”</p>
-          <p>If the system is well designed, the agent can make bounded progress on a schedule, preserve repo-local context between runs, package coherent pull requests, and leave a clean audit trail. Your role shifts in parallel. Instead of spending time repeatedly restating setup and structure, you spend more of it reviewing pull requests, nudging the roadmap, improving ideas, and catching low-quality directions early.</p>
-          <p>That is a far more believable and useful automation model than fully hands-off coding theater.</p>
-          <h2>Two useful modes for this skill</h2>
-          <div class="code-block"><pre><code>project-memory -&gt; open-ended repos -&gt; human-readable state files
-task-engine    -&gt; structured repos  -&gt; queue/state/task files
-hybrid         -&gt; both              -&gt; machine-readable tasks + project memory</code></pre></div>
-          <p>One of the biggest design choices is admitting that not every repository behaves the same way.</p>
-          <p>Some repos are exploratory and need flexible project memory. Others are highly structured and need the automation to respect an existing queue and task engine. Treating both the same usually produces awkward results.</p>
-          <p>I like two main modes, plus a hybrid.</p>
-          <h2>Mode 1: project-memory</h2>
-          <p>This is for open-ended repos that do not already have a strong task engine. In this mode, the skill creates and maintains files like <code>docs/WORK_STATE.md</code>, <code>docs/NEXT_ACTIONS.md</code>, and <code>docs/PROJECT_LOG.md</code>. The point is not paperwork. The point is to give recurring runs a durable memory layer that survives beyond any single chat session.</p>
-          <p>This mode is best when the project is still evolving and the automation needs human-readable context to stay grounded.</p>
-          <h3>Why it helps</h3>
-          <ul>
-            <li>gives the repo durable memory</li>
-            <li>keeps “what’s next” short and concrete</li>
-            <li>provides a dated history of actual work</li>
-            <li>helps normal runs and PR runs behave consistently</li>
-          </ul>
-          <h2>Mode 2: task-engine</h2>
-          <p>Some repos are already much more structured. They may already have:</p>
-          <ul>
-            <li>`state.json`</li>
-            <li>`queue.json`</li>
-            <li>`NEXT_TASK.md`</li>
-            <li>`RUN_LOG.md`</li>
-            <li>task specifications in a `plan/tasks/` directory</li>
-          </ul>
-          <p>In that case, the skill should not bulldoze that structure and replace it with generic docs. It should adapt to the existing task engine.</p>
-          <h3>Why it helps</h3>
-          <ul>
-            <li>preserves the repo’s current-task contract</li>
-            <li>makes automation predictable</li>
-            <li>avoids random skipping or wandering</li>
-            <li>keeps “one task per PR” or similar rules intact</li>
-          </ul>
-          <h2>Mode 3: hybrid</h2>
-          <p>Hybrid is for repos that already have a task engine but still need higher-level project memory.</p>
-          <p>That means keeping the machine-readable workflow while also adding human-readable memory files.</p>
-          <p>This gives you both:</p>
-          <ul>
-            <li>task progression</li>
-            <li>project-level handoff</li>
-          </ul>
-          <p>That turns out to be surprisingly useful in longer-running automation setups.</p>
-          <h2>A basic skill layout</h2>
-          <p>The example skill structure can stay pretty small.</p>
-          <div class="code-block"><pre><code>scheduled-repo-worker/
-├── SKILL.md
-└── references/
-    ├── question-flow.md
-    ├── project-memory-templates.md
-    └── task-engine-notes.md</code></pre></div>
-          <p>That is enough for a good first version.</p>
+          <p>A skill like this is not just about saving a few prompts. It is about creating a system where the model does useful recurring implementation work while the human stays in the loop as reviewer, prioritizer, product or architecture guide, and quality controller.</p>
+          <p>If the system is well designed, the agent can make bounded progress on a schedule, preserve repo-local context between runs, package coherent pull requests, and leave a clean audit trail. Your role becomes reviewing PRs, nudging the roadmap, improving ideas, and catching low-quality directions early — which is a far more believable model than fully hands-off coding theater.</p>
+
+          <h2>Three modes for the skill</h2>
+          <p>One of the biggest design choices is admitting that not every repository behaves the same way. Some repos are exploratory and need flexible project memory. Others are highly structured and need the automation to respect an existing queue and task engine. Treating both the same usually produces awkward results.</p>
+
+          <div class="mode-grid">
+            <div class="mode-card">
+              <div class="mode-card-title">project-memory</div>
+              <div class="mode-card-subtitle">Open-ended repos without a task engine</div>
+              <ul class="mode-card-files">
+                <li>docs/WORK_STATE.md</li>
+                <li>docs/NEXT_ACTIONS.md</li>
+                <li>docs/PROJECT_LOG.md</li>
+              </ul>
+            </div>
+            <div class="mode-card">
+              <div class="mode-card-title">task-engine</div>
+              <div class="mode-card-subtitle">Structured repos with existing queues</div>
+              <ul class="mode-card-files">
+                <li>state.json</li>
+                <li>queue.json</li>
+                <li>NEXT_TASK.md</li>
+                <li>RUN_LOG.md</li>
+                <li>plan/tasks/*.md</li>
+              </ul>
+            </div>
+            <div class="mode-card">
+              <div class="mode-card-title">hybrid</div>
+              <div class="mode-card-subtitle">Task engine + high-level project memory</div>
+              <ul class="mode-card-files">
+                <li>state.json / queue.json</li>
+                <li>NEXT_TASK.md</li>
+                <li>docs/WORK_STATE.md</li>
+                <li>docs/PROJECT_LOG.md</li>
+              </ul>
+            </div>
+          </div>
+
+          <h3>Mode 1: project-memory</h3>
+          <p>This is for open-ended repos that do not already have a strong task engine. The skill creates and maintains human-readable state files. The point is not paperwork — it is to give recurring runs a durable memory layer that survives beyond any single chat session. Best when the project is still evolving and the automation needs human-readable context to stay grounded.</p>
+
+          <h3>Mode 2: task-engine</h3>
+          <p>Some repos are already much more structured, with existing <code>state.json</code>, <code>queue.json</code>, <code>NEXT_TASK.md</code>, and task specs in a <code>plan/tasks/</code> directory. In that case, the skill should not bulldoze that structure. It should adapt to the existing task engine — preserving the current-task contract, keeping automation predictable, and maintaining rules like "one task per PR."</p>
+
+          <h3>Mode 3: hybrid</h3>
+          <p>Hybrid is for repos that already have a task engine but still need higher-level project memory. That means keeping the machine-readable workflow while also adding human-readable memory files. This gives you both task progression and project-level handoff, which turns out to be surprisingly useful in longer-running automation setups.</p>
+
+          <h2>Skill file layout</h2>
+          <p>The skill structure can stay small. A first version needs only four files:</p>
+
+          <div class="file-tree">
+            <div><span class="tree-dir">scheduled-repo-worker/</span></div>
+            <div>├── <span class="tree-dir">SKILL.md</span> <span class="tree-annotation">← trigger, inputs, modes, branch rules, quality bar</span></div>
+            <div>└── <span class="tree-dir">references/</span></div>
+            <div>&nbsp;&nbsp;&nbsp;&nbsp;├── <span class="tree-file">question-flow.md</span> <span class="tree-annotation">← setup questions and schedule presets</span></div>
+            <div>&nbsp;&nbsp;&nbsp;&nbsp;├── <span class="tree-file">project-memory-templates.md</span> <span class="tree-annotation">← WORK_STATE, NEXT_ACTIONS, PROJECT_LOG</span></div>
+            <div>&nbsp;&nbsp;&nbsp;&nbsp;└── <span class="tree-file">task-engine-notes.md</span> <span class="tree-annotation">← how to adapt to existing queues</span></div>
+          </div>
+
           <h2>What belongs in SKILL.md</h2>
-          <p>The main skill file should answer:</p>
-          <ul>
-            <li>when this skill applies</li>
-            <li>what mode to choose</li>
-            <li>what inputs to collect</li>
-            <li>what files to generate</li>
-            <li>what branch and PR rules to enforce</li>
-            <li>what quality rules to preserve</li>
-          </ul>
-          <p>A useful description might say something like:</p>
-          <div class="code-block"><pre><code>Bootstrap and maintain recurring repo automation for coding or content projects that should make bounded progress on a schedule, update repo-local project state, create PRs on designated runs, and post summaries to Discord.</code></pre></div>
-          <p>That is much better than a vague description like “helps with cron.”</p>
-          <h2>What belongs in references</h2>
-          <p>The reference files are where the skill becomes practical.</p>
-          <h3>`question-flow.md`</h3>
-          <p>This file helps gather the minimum required setup cleanly. For example:</p>
-          <ul>
-            <li>repo path or repo URL</li>
-            <li>project goal</li>
-            <li>mode</li>
-            <li>schedule preset</li>
-            <li>Discord target</li>
-            <li>quality priorities</li>
-          </ul>
-          <p>It can also offer schedule presets such as a light cadence with two implementation runs and one PR run, or a medium cadence with several progress runs spread through the day plus an evening packaging run. That keeps setup approachable without forcing every user to think in cron syntax on day one.</p>
-          <h3>`project-memory-templates.md`</h3>
-          <p>This provides templates for <code>WORK_STATE.md</code>, <code>NEXT_ACTIONS.md</code>, and <code>PROJECT_LOG.md</code>. Those files are the backbone of recurring autonomous work in open-ended repos because they turn vague continuity into explicit state.</p>
-          <p>Those files are the backbone of recurring autonomous work in open-ended repos.</p>
-          <h3>`task-engine-notes.md`</h3>
-          <p>This explains how to preserve an existing queue, state, and task workflow instead of trampling it with a generic doc system.</p>
-          <h2>The branch and PR rules matter more than people think</h2>
-          <p>One of the most common failure modes in scheduled automation is stale branch packaging.</p>
-          <p>The fix is boring but important. PR-run guidance should always encode this pattern:</p>
-          <div class="code-block"><pre><code>git checkout main
+          <p>The main skill file should answer when this skill applies, what mode to choose, what inputs to collect, what files to generate, what branch and PR rules to enforce, and what quality rules to preserve. Here is a realistic example:</p>
+
+          <div class="code-block"><pre>## scheduled-repo-worker
+
+Bootstrap and maintain recurring repo automation for coding or content
+projects that should make bounded progress on a schedule, update
+repo-local project state, create PRs on designated runs, and post
+summaries to Discord.
+
+### When to use this skill
+
+Trigger this skill when the user asks to:
+- set up scheduled or recurring automation for a repo
+- create a structured work loop with PR packaging
+- configure an agent to run on a cron schedule against a repo
+
+### Inputs required
+
+| Input            | Required | Notes                                           |
+|------------------|----------|-------------------------------------------------|
+| repo_path        | yes      | local path or GitHub URL                        |
+| project_goal     | yes      | one or two sentences on what success looks like |
+| mode             | yes      | project-memory / task-engine / hybrid           |
+| schedule_preset  | yes      | light / medium / custom                         |
+| discord_target   | yes      | channel ID or full Discord webhook URL          |
+| quality_notes    | no       | special constraints (e.g. "prefer TypeScript")  |
+
+### Mode selection guide
+
+- No existing task engine        → project-memory
+- Existing state.json/queue.json → task-engine
+- Task engine + project context  → hybrid
+
+### Branch and PR rules
+
+Always apply these on every PR run:
+1. git checkout main
+2. git pull --ff-only origin main
+3. Create a fresh branch (never stack on older PR branches)
+4. Open a PR only if the work is meaningful and reviewable
+5. Skip the PR and note the reason if only status-doc changes exist
+
+### Quality bar
+
+Do not generate a PR that only contains:
+- updates to WORK_STATE.md or PROJECT_LOG.md
+- reformatted code with no behavior change
+- TODO comments without accompanying implementation</pre></div>
+
+          <h2>Reference file: question-flow.md</h2>
+          <p>This file helps gather the minimum required setup cleanly. A good question flow covers the six key inputs and offers schedule presets so users do not need to think in cron syntax on day one.</p>
+
+          <div class="code-block"><pre>## Question flow for scheduled-repo-worker setup
+
+Ask these questions in order. Skip optional questions if the user
+has already provided the information.
+
+---
+
+**Q1 — Repo** (required)
+What is the path or GitHub URL for the repo you want to automate?
+
+---
+
+**Q2 — Goal** (required)
+In one or two sentences, what does success look like for this repo
+over the next month?
+
+Example answers:
+- "Ship the initial API with docs and a passing test suite."
+- "Publish 8 new course modules with exercises and solutions."
+- "Keep dependency upgrades and lint fixes merged on a weekly cadence."
+
+---
+
+**Q3 — Mode** (required)
+Does the repo already have a task engine (state.json, queue.json,
+NEXT_TASK.md, or a plan/tasks/ directory)?
+
+- Yes → task-engine (or hybrid if you also want project memory)
+- No  → project-memory
+
+---
+
+**Q4 — Schedule** (required)
+Pick a preset or describe your own cadence:
+
+  light   →  2 normal runs + 1 PR run per day
+              9 AM normal  |  3 PM normal  |  9 PM PR
+
+  medium  →  5 normal runs + 1 PR run per day
+              4 AM normal  |  8 AM normal  |  12 PM normal
+              4 PM PR      |  8 PM normal  |  12 AM normal
+
+  custom  → describe your preferred times and which runs are PR runs
+
+Cron examples:
+  light  : "0 9,15 * * *" normal  +  "0 21 * * *" PR
+  medium : "0 4,8,12,20,0 * * *" normal  +  "0 16 * * *" PR
+
+---
+
+**Q5 — Discord target** (required)
+Paste a Discord channel ID or a full webhook URL.
+Either format works — the skill will extract the channel ID cleanly.
+
+---
+
+**Q6 — Quality priorities** (optional)
+Any special constraints?
+
+Examples:
+- "Prefer TypeScript strict mode, no any"
+- "Every module must include tests"
+- "Keep bundle size under 200 KB"
+- "No third-party dependencies without approval"</pre></div>
+
+          <h2>Reference file: project-memory-templates.md</h2>
+          <p>These templates are the backbone of recurring autonomous work in open-ended repos. They turn vague continuity into explicit, machine-readable state that survives across sessions.</p>
+
+          <div class="code-block"><pre># WORK_STATE.md — template
+
+## Current Status
+<!-- one sentence: what phase is the project in right now -->
+Active development — authentication layer complete, dashboard in progress.
+
+## Current Strategic Focus
+<!-- what the agent should prioritize in the next 1-3 runs -->
+Implement the dashboard data-fetching layer and connect it to the
+existing auth context.
+
+## Just Completed
+<!-- bulleted list of what was done in the last run or two -->
+- Added JWT refresh token endpoint (POST /auth/refresh)
+- Wrote unit tests for token expiry edge cases
+- Updated OpenAPI spec with new auth routes
+
+## In Progress
+<!-- work that is partially done but not merged -->
+- Dashboard: fetching user metrics from /api/metrics (50% done)
+- Storybook stories for Button and Input components (not started)
+
+## Blockers
+<!-- anything preventing progress — leave empty if none -->
+None.
+
+## Next Recommended Task
+<!-- the single clearest next step for the next normal run -->
+Complete the dashboard metrics fetch and add a loading skeleton
+component while data is in flight.
+
+## Testing Status
+<!-- passing / partial / broken — brief notes -->
+All auth tests passing. Dashboard tests not yet written.
+
+## PR Status
+<!-- last PR number and date, or "none open" -->
+PR #12 merged 2026-04-07 — auth refresh token endpoint</pre></div>
+
+          <div class="code-block"><pre># NEXT_ACTIONS.md — template
+
+## Priority queue
+<!-- ordered list — top item is what the next normal run should do -->
+1. Dashboard metrics fetch + loading skeleton
+2. Storybook stories for Button and Input
+3. Error boundary for dashboard data failures
+4. E2E test: login → dashboard → logout flow
+
+## Deferred
+<!-- things acknowledged but intentionally not in the queue yet -->
+- Dark mode support (waiting for design input)
+- Notification system (blocked on backend events API)
+
+## Notes for next PR run
+<!-- anything the PR-packaging run should know -->
+The next PR should bundle the dashboard data layer and at minimum
+a loading state. Do not include the Storybook stories — those
+are still incomplete.</pre></div>
+
+          <div class="code-block"><pre># PROJECT_LOG.md — template
+
+## 2026-04-08 — Normal run
+Completed dashboard metrics fetch. Added loading skeleton component.
+Wrote 3 unit tests for the fetch hook. WORK_STATE.md updated.
+
+## 2026-04-07 — PR run
+Packaged PR #12: auth refresh token endpoint.
+Merged same day. Discord update posted to #dev-updates.
+
+## 2026-04-07 — Normal run
+Auth refresh token endpoint complete. Tests passing.
+Updated NEXT_ACTIONS.md to promote dashboard task to top.</pre></div>
+
+          <h2>Reference file: task-engine-notes.md</h2>
+          <p>This file explains how the skill should behave when it encounters an existing task engine, so it does not tramples the repo's existing structure.</p>
+
+          <div class="code-block"><pre>## task-engine-notes
+
+When the repo already has a task engine, the scheduled-repo-worker
+skill adapts rather than replacing.
+
+### Detection
+
+The repo has a task engine if ANY of these exist:
+- state.json or .state.json at repo root
+- queue.json or plan/queue.json
+- NEXT_TASK.md at repo root
+- plan/tasks/ directory with .md files
+
+### Behavior on normal runs
+
+1. Read state.json to identify the current task
+2. Read the corresponding task file (e.g. plan/tasks/TASK-042.md)
+3. Implement the task within the specified scope
+4. Update state.json: mark task as in-progress or complete
+5. Append a one-line entry to RUN_LOG.md
+6. Do NOT modify queue.json order unless the task spec says so
+
+### Behavior on PR runs
+
+1. git checkout main && git pull --ff-only origin main
+2. Create branch: task/TASK-042-short-description
+3. Confirm the task is genuinely complete (tests passing, scope met)
+4. Open PR with title matching the task spec title
+5. Include in PR body: task ID, what was done, tests run
+6. Post Discord update with PR link and task summary
+
+### Preserving the contract
+
+- Never skip a task unless the task spec explicitly marks it blocked
+- Never reorder queue.json based on your own judgment
+- If the current task is blocked, add a note to state.json and
+  stop — do not pick the next task without human approval
+
+### Hybrid additions
+
+If the user also wants project memory, add these alongside the
+task engine files (do not replace them):
+- docs/WORK_STATE.md  ← human-readable project health summary
+- docs/PROJECT_LOG.md ← dated log of what happened across runs
+
+These files should summarize task progress in plain language,
+not duplicate the machine-readable state.json content.</pre></div>
+
+          <h2>Branch and PR rules that prevent the common failures</h2>
+          <p>One of the most common failure modes in scheduled automation is stale branch packaging. The fix is boring but important. PR-run guidance should always encode this sequence:</p>
+
+          <div class="code-block"><pre>git checkout main
 git pull --ff-only origin main
-# then create a fresh branch if a PR is warranted</code></pre></div>
-          <p>That prevents a lot of nonsense.</p>
-          <p>It also helps to explicitly say:</p>
+# verify you are on the latest main before creating a branch
+git checkout -b task/short-description-$(date +%Y%m%d)</pre></div>
+
+          <p>It also helps to explicitly state:</p>
           <ul>
             <li>do not stack on an older PR branch</li>
             <li>create a PR only if the work is meaningful and reviewable</li>
-            <li>skip PRs that only contain status-doc churn</li>
+            <li>skip PRs that only contain status-doc churn and explain why</li>
           </ul>
           <p>Those are exactly the sorts of rules that belong in a reusable skill instead of being rediscovered the hard way.</p>
+
           <h2>Why repo-local memory is the real backbone</h2>
-          <p>This is probably the most underrated part of the whole pattern.</p>
           <p>Without durable repo-local state, the automation stays shallow. Chat memory alone is not enough. What survives and compounds is what gets written to files.</p>
-          <p>For open-ended repos, files like these are disproportionately valuable:</p>
-          <div class="code-block"><pre><code># Work State
-## Current Status
-## Current Strategic Focus
-## Just Completed
-## In Progress
-## Blockers
-## Next Recommended Task
-## Testing Status
-## PR Status</code></pre></div>
-          <p>That might look simple, but it changes the quality of recurring runs a lot.</p>
-          <p>It reduces token waste, improves handoff quality, and makes PR packaging runs more grounded.</p>
+          <p>The <code>WORK_STATE.md</code> template above might look simple, but the impact on recurring run quality is significant. It reduces token waste, improves handoff quality between sessions, and makes PR packaging runs more grounded because the agent knows exactly what was completed, what is in progress, and what comes next.</p>
+          <p>The alternative — relying on the model to reconstruct context from the diff — works once or twice but degrades quickly. Files do not forget.</p>
+
           <h2>Failure modes worth designing around</h2>
           <p>A good skill should explicitly protect against the obvious failure modes.</p>
+
           <h3>Wrong delivery target</h3>
           <p>The skill should accept either a raw channel ID or a full Discord URL, then extract the channel ID cleanly. That sounds minor, but little conveniences like that are exactly what make a reusable skill feel polished instead of brittle.</p>
+
           <h3>Docs-only churn</h3>
-          <p>If a PR run packages only status updates, that is usually a smell. The workflow should skip the PR and explain why.</p>
+          <p>If a PR run packages only status updates — changes to <code>WORK_STATE.md</code> or <code>PROJECT_LOG.md</code> with nothing else — that is a smell. The workflow should skip the PR, log the reason, and wait for the next normal run to add substantive work first.</p>
+
           <h3>Stale branch packaging</h3>
-          <p>Always sync the default branch first.</p>
+          <p>Always sync <code>main</code> before creating a branch. If <code>git pull --ff-only</code> fails, stop and report the conflict rather than packaging from an outdated base.</p>
+
           <h3>Over-rigid task systems</h3>
-          <p>Task engines are good, but sometimes they need a higher-level project memory layer too.</p>
+          <p>Task engines are good, but sometimes they need a higher-level project memory layer too. The hybrid mode exists for exactly this case.</p>
+
           <h3>Under-specified quality goals</h3>
-          <p>If the repo needs rich content, strong design, or scalable structure, say so in the prompts and state files. Otherwise the automation may optimize for shallow completion.</p>
-          <h2>When this kind of skill is worth using</h2>
-          <p>Use this kind of skill when the repo needs recurring bounded progress, when PR packaging should happen on a schedule, when multiple repos need similar setup patterns, when reviewable automation matters more than raw speed, and when repo-local memory would improve continuity. Avoid it when the repo is a tiny one-off, when the project goal is still too vague, when a schedule would create churn without direction, or when the work is too sensitive to automate without additional controls.</p>
+          <p>If the repo needs rich content, strong design, or scalable structure, say so explicitly in the quality notes and in the state files. Otherwise the automation may optimize for shallow completion — technically progressing through tasks without producing work worth merging.</p>
+
+          <h2>When to use this skill</h2>
+
+          <div class="use-avoid-grid">
+            <div class="use-avoid-card use">
+              <h4>Use when</h4>
+              <ul>
+                <li>the repo needs recurring bounded progress</li>
+                <li>PR packaging should happen on a schedule</li>
+                <li>multiple repos need similar setup patterns</li>
+                <li>reviewable automation matters more than raw speed</li>
+                <li>repo-local memory would improve continuity</li>
+              </ul>
+            </div>
+            <div class="use-avoid-card avoid">
+              <h4>Avoid when</h4>
+              <ul>
+                <li>the repo is a tiny one-off</li>
+                <li>the project goal is still too vague</li>
+                <li>a schedule would create churn without direction</li>
+                <li>the work is too sensitive to automate without additional controls</li>
+              </ul>
+            </div>
+          </div>
+
           <h2>A minimum viable version is enough to start</h2>
-          <p>You do not need a giant skill framework on day one. A genuinely useful first version can be as small as one good <code>SKILL.md</code>, one question-flow reference, one project-memory template file, and one task-engine note file. That is enough to test the pattern on real repos and refine it from there.</p>
-          <p>That is enough to test the pattern on real repos and refine it from there.</p>
+          <p>You do not need a giant skill framework on day one. A genuinely useful first version is:</p>
+          <ul>
+            <li>one good <code>SKILL.md</code> with trigger conditions, inputs, branch rules, and quality bar</li>
+            <li>one <code>question-flow.md</code> with setup questions and schedule presets</li>
+            <li>one <code>project-memory-templates.md</code> with the three state file templates</li>
+            <li>one <code>task-engine-notes.md</code> explaining how to adapt to existing queues</li>
+          </ul>
+          <p>That is enough to test the pattern on real repos and refine it from there. The skill itself improves through the same loop it describes: bounded runs, concrete feedback, and targeted adjustments over time.</p>
+
           <h2>Final takeaway</h2>
-          <p>The biggest shift here is not “AI can write code on a schedule.” That part is easy to overstate.</p>
+          <p>The biggest shift here is not "AI can write code on a schedule." That part is easy to overstate.</p>
           <p>The real shift is that a well-designed skill can turn repeated operational knowledge into a reusable workflow with guardrails. Once that exists, scheduled runs stop feeling like random background automation and start feeling like a constrained engineering loop.</p>
-          <p>That is where the value is. The repo carries memory. The automation works in bounded slices. PR runs package coherent work. The human reviews and improves the direction.</p>
-          <p>In other words, the skill is not just a convenience layer. It is a way to turn raw model capability into something closer to a repeatable system.</p>
+          <p>The repo carries memory. The automation works in bounded slices. PR runs package coherent work. The human reviews and improves the direction. The skill is not just a convenience layer — it is a way to turn raw model capability into something closer to a repeatable system.</p>
+
           <h2>References and resources</h2>
           <ul>
             <li><a href="https://docs.openclaw.ai" target="_blank" rel="noreferrer">OpenClaw documentation</a></li>
             <li><a href="https://github.com/openclaw/openclaw" target="_blank" rel="noreferrer">OpenClaw GitHub repository</a></li>
           </ul>
+
           <div class="blog-post-tags">
             <span class="blog-post-tag">OpenClaw</span>
             <span class="blog-post-tag">Agent Skills</span>
@@ -265,6 +914,7 @@ git pull --ff-only origin main
             <span class="blog-post-tag">Automation</span>
           </div>
         </div>
+
         <div class="blog-footer">
           <p><a href="index.html">Back to Blog</a> &bull; <a href="../index.html">Back to Portfolio</a></p>
           <p style="margin-top: 16px; font-size: 0.9rem;"><em>The useful part of automation is not just generation. It is repeatable structure with guardrails.</em></p>

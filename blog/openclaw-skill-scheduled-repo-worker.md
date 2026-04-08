@@ -8,7 +8,7 @@ tags:
   - Agent Skills
   - AI Coding
   - Automation
-image: data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A//www.w3.org/2000/svg%27%20viewBox%3D%270%200%201200%20630%27%3E%3Cdefs%3E%3ClinearGradient%20id%3D%27bg%27%20x1%3D%270%27%20x2%3D%271%27%20y1%3D%270%27%20y2%3D%271%27%3E%3Cstop%20offset%3D%270%25%27%20stop-color%3D%27%2309131f%27/%3E%3Cstop%20offset%3D%27100%25%27%20stop-color%3D%27%23182d49%27/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect%20width%3D%271200%27%20height%3D%27630%27%20fill%3D%27url%28%23bg%29%27/%3E%3Ccircle%20cx%3D%27990%27%20cy%3D%27125%27%20r%3D%27150%27%20fill%3D%27%2327d3ff%27%20fill-opacity%3D%270.12%27/%3E%3Ccircle%20cx%3D%27175%27%20cy%3D%27520%27%20r%3D%27195%27%20fill%3D%27%238d6bff%27%20fill-opacity%3D%270.14%27/%3E%3Crect%20x%3D%27105%27%20y%3D%27110%27%20width%3D%27990%27%20height%3D%27410%27%20rx%3D%2728%27%20fill%3D%27%230f172a%27%20stroke%3D%27%2338bdf8%27%20stroke-opacity%3D%270.35%27/%3E%3Ctext%20x%3D%27150%27%20y%3D%27210%27%20fill%3D%27white%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2746%27%20font-weight%3D%27700%27%3EReusable%20OpenClaw%20Skills%3C/text%3E%3Ctext%20x%3D%27150%27%20y%3D%27282%27%20fill%3D%27%2390cdf4%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2746%27%20font-weight%3D%27700%27%3Efor%20Scheduled%20Repo%20Work%3C/text%3E%3Ctext%20x%3D%27150%27%20y%3D%27368%27%20fill%3D%27%23cbd5e1%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2728%27%3EProject%20memory%2C%20task%20engines%2C%20PR%20runs%2C%20and%20reviewer-in-the-loop%20automation%3C/text%3E%3C/svg%3E
+image: https://negiadventures.github.io/images/profile.jpg
 ---
 
 # Building Reusable OpenClaw Skills for Structured Repo Automation
@@ -19,11 +19,7 @@ If you find yourself repeatedly teaching an agent how to bootstrap repo state, c
 
 That is where OpenClaw skills get interesting. A good skill is not just a note about how to do something. It is a way to encode judgment, structure, defaults, and guardrails so the same category of work becomes repeatable.
 
-In this post, I want to walk through a practical example: creating a basic OpenClaw skill for structured repo automation. The goal is a reusable skill that can set up recurring runs for a repository, maintain repo-local state, package coherent pull requests on designated runs, and post updates to Discord.
-
-Think of it as the difference between chatting with a capable assistant and building a small operating system for a recurring type of work. The prompt still matters, but the system around the prompt matters more.
-
-More importantly, I want to explain why this pattern is useful, how to keep it safe, and how it changes the role of the human from full-time operator to reviewer, prioritizer, and idea amplifier.
+In this post, I walk through a practical example: creating an OpenClaw skill for structured repo automation. The goal is a reusable skill that can set up recurring runs for a repository, maintain repo-local state, package coherent pull requests on designated runs, and post updates to Discord. Think of it as the difference between chatting with a capable assistant and building a small operating system for a recurring type of work.
 
 ## Why plain prompts are not enough
 
@@ -36,58 +32,35 @@ The repeated setup usually looks something like this:
 - enforce `main`-first branch discipline
 - route status updates to a Discord channel
 - stop the agent from opening junk pull requests
-- keep the next steps readable for future runs
+- keep next steps readable for future runs
 
 You can absolutely describe that in chat every time. The problem is that it wastes tokens, introduces drift, and makes it easy to forget the little rules that matter.
 
-A skill is better because it captures:
+A skill is better because it captures the trigger for when the workflow applies, the inputs required to configure it, the default decisions that are usually right, the file structure to generate, the branch and pull request rules to preserve, and the quality bar for what should count as useful progress. That is a different level of abstraction than "here is a prompt."
 
-- the trigger for when the workflow applies
-- the inputs required to set it up
-- the default decisions that are usually right
-- the file structure to create
-- the branch and PR rules
-- the schedule patterns
-- the quality bar for what counts as useful progress
+## The scheduled repo automation pattern
 
-That is a different level of abstraction than “here is a prompt.”
+The core pattern is a scheduled repo worker. Normal runs make bounded progress. A designated PR run packages coherent work. Repo-local files store current state and next actions. The human reviews pull requests and adjusts priorities instead of redoing setup from scratch.
 
-## The useful pattern: scheduled repo automation
+```
+Normal runs (repeating):
+  read state → bounded work → update state → log + check
 
-The example pattern I like here is a scheduled repo worker.
+PR run (every N normal runs):
+  sync main → fresh branch → package work → open PR → Discord update
+```
 
-The idea is simple:
+This pattern works well for product repos that need steady implementation progress, content or course repos that need incremental publishing work, internal automation repos that benefit from a structured engineering loop, and projects where daily progress matters more than marathon sessions.
 
-- normal runs make bounded progress
-- a designated PR run packages coherent work
-- repo-local files store current state and next actions
-- the human reviews pull requests and adjusts priorities instead of redoing setup from scratch
+> This is not a magic autonomous company. It is a constrained system for recurring execution. That distinction matters.
 
-This is useful for:
+## Why this kind of skill is valuable
 
-- product repos that need steady implementation progress
-- content or course repos that need incremental publishing work
-- internal automation repos that benefit from a structured engineering loop
-- projects where daily progress matters more than marathon sessions
-
-It is not a magic autonomous company. It is a constrained system for recurring execution. That distinction matters.
-
-## Why this kind of skill is valuable in practice
-
-A reusable scheduled-repo skill removes a bunch of recurring pain points. More importantly, it turns repeated operational knowledge into a portable setup you can apply to the next repo without rebuilding the workflow from memory.
-
-A well-designed version gives you:
-
-- repeatable setup for recurring implementation work
-- safer defaults around branches, PRs, and delivery targets
-- lower token waste because the repo carries durable context
-- clearer handoff between the model and the human reviewer
-
-A reusable scheduled-repo skill removes a bunch of recurring pain points:
+A reusable scheduled-repo skill turns repeated operational knowledge into a portable setup you can apply to the next repo without rebuilding the workflow from memory.
 
 ### 1. It reduces setup repetition
 
-You do not have to keep re-inventing the same workflow for every repo.
+You do not have to keep re-inventing the same workflow for every repo. The skill carries the defaults, the file structure, the branch rules, and the quality bar — so setup goes from a thirty-minute conversation to a short configuration step.
 
 ### 2. It encodes safer defaults
 
@@ -100,240 +73,273 @@ Good defaults prevent silly failures such as:
 
 ### 3. It makes autonomous runs more reviewable
 
-Instead of random edits appearing out of nowhere, the repo has a visible loop:
+Instead of random edits appearing out of nowhere, the repo has a visible loop: what is happening now, what changed last, and what should happen next.
 
-- what is happening now
-- what changed last
-- what should happen next
+### 4. It reduces token waste
 
-### 4. It helps with limited token budgets
+When model usage is expensive or limited, repo-local memory matters more. Durable files like `WORK_STATE.md` and `NEXT_ACTIONS.md` reduce wasted context across sessions.
 
-When model usage is expensive or limited, repo-local memory matters more. Durable files like `WORK_STATE.md` and `NEXT_ACTIONS.md` reduce wasted context.
+### 5. Structure still matters with abundant tokens
 
-### 5. It still helps with abundant token budgets
-
-Even if you have plenty of usage headroom, structure still matters. More tokens do not magically create discipline. They can actually make drift worse if the workflow is under-specified.
+Even with plenty of usage headroom, more tokens do not magically create discipline. They can actually make drift worse if the workflow is under-specified.
 
 ## Turning a model into a bounded builder loop
 
-This is one of the most interesting parts of the pattern.
+A skill like this is not just about saving a few prompts. It is about creating a system where the model does useful recurring implementation work while the human stays in the loop as reviewer, prioritizer, product or architecture guide, and quality controller.
 
-A skill like this is not just about saving a few prompts. It is about creating a system where the model can do useful recurring implementation work, while the human stays in the loop as:
+If the system is well designed, the agent can make bounded progress on a schedule, preserve repo-local context between runs, package coherent pull requests, and leave a clean audit trail. Your role becomes reviewing PRs, nudging the roadmap, improving ideas, and catching low-quality directions early — which is a far more believable model than fully hands-off coding theater.
 
-- reviewer
-- prioritizer
-- product or architecture guide
-- quality controller
-- idea enhancer
+## Three modes for the skill
 
-That is a much healthier frame than “let the agent do everything.”
+One of the biggest design choices is admitting that not every repository behaves the same way. Some repos are exploratory and need flexible project memory. Others are highly structured and need the automation to respect an existing queue and task engine. Treating both the same usually produces awkward results.
 
-If the system is well designed, the agent can:
+| Mode | Best for | Key files |
+|------|----------|-----------|
+| project-memory | Open-ended repos | WORK_STATE.md, NEXT_ACTIONS.md, PROJECT_LOG.md |
+| task-engine | Structured repos with queues | state.json, queue.json, NEXT_TASK.md, RUN_LOG.md |
+| hybrid | Task engine + project context | Both sets |
 
-- make bounded progress on a schedule
-- preserve repo-local context between runs
-- package coherent pull requests
-- leave a clean audit trail
+### Mode 1: project-memory
 
-And your role becomes much more like:
+This is for open-ended repos that do not already have a strong task engine. The skill creates and maintains human-readable state files. The point is not paperwork — it is to give recurring runs a durable memory layer that survives beyond any single chat session.
 
-- reviewing PRs
-- nudging the roadmap
-- improving ideas
-- catching low-quality directions early
+### Mode 2: task-engine
 
-That is a far more believable and useful automation model than fully hands-off coding theater.
+Some repos are already much more structured, with existing `state.json`, `queue.json`, `NEXT_TASK.md`, and task specs in a `plan/tasks/` directory. In that case, the skill should not bulldoze that structure. It should adapt to the existing task engine — preserving the current-task contract, keeping automation predictable, and maintaining rules like "one task per PR."
 
-## Two useful modes for this skill
+### Mode 3: hybrid
 
-One of the biggest design choices is admitting that not every repository behaves the same way.
+Hybrid is for repos that already have a task engine but still need higher-level project memory. This gives you both task progression and project-level handoff, which turns out to be surprisingly useful in longer-running automation setups.
 
-Some repos are exploratory and need flexible project memory. Others are highly structured and need the automation to respect an existing queue and task engine. Treating both the same usually produces awkward results.
-
-I like two main modes, plus a hybrid.
-
-## Mode 1: project-memory
-
-This is for open-ended repos that do not already have a strong task engine.
-
-The skill creates and maintains files like:
-
-- `docs/WORK_STATE.md`
-- `docs/NEXT_ACTIONS.md`
-- `docs/PROJECT_LOG.md`
-
-This mode is best when the project is still evolving and the automation needs human-readable context to stay grounded.
-
-### Why it helps
-
-- gives the repo durable memory
-- keeps “what’s next” short and concrete
-- provides a dated history of actual work
-- helps normal runs and PR runs behave consistently
-
-## Mode 2: task-engine
-
-Some repos are already much more structured. They may already have:
-
-- `state.json`
-- `queue.json`
-- `NEXT_TASK.md`
-- `RUN_LOG.md`
-- task specifications in a `plan/tasks/` directory
-
-In that case, the skill should not bulldoze that structure and replace it with generic docs. It should adapt to the existing task engine.
-
-### Why it helps
-
-- preserves the repo’s current-task contract
-- makes automation predictable
-- avoids random skipping or wandering
-- keeps “one task per PR” or similar rules intact
-
-## Mode 3: hybrid
-
-Hybrid is for repos that already have a task engine but still need higher-level project memory.
-
-That means keeping the machine-readable workflow while also adding human-readable memory files.
-
-This gives you both:
-
-- task progression
-- project-level handoff
-
-That turns out to be surprisingly useful in longer-running automation setups.
-
-## A basic skill layout
-
-The example skill structure can stay pretty small.
+## Skill file layout
 
 ```text
 scheduled-repo-worker/
-├── SKILL.md
+├── SKILL.md                      ← trigger, inputs, modes, branch rules, quality bar
 └── references/
-    ├── question-flow.md
-    ├── project-memory-templates.md
-    └── task-engine-notes.md
+    ├── question-flow.md           ← setup questions and schedule presets
+    ├── project-memory-templates.md  ← WORK_STATE, NEXT_ACTIONS, PROJECT_LOG
+    └── task-engine-notes.md       ← how to adapt to existing queues
 ```
-
-That is enough for a good first version.
 
 ## What belongs in SKILL.md
 
-The main skill file should answer:
-
-- when this skill applies
-- what mode to choose
-- what inputs to collect
-- what files to generate
-- what branch and PR rules to enforce
-- what quality rules to preserve
-
-A useful description might say something like:
-
 ```md
-Bootstrap and maintain recurring repo automation for coding or content projects that should make bounded progress on a schedule, update repo-local project state, create PRs on designated runs, and post summaries to Discord.
+## scheduled-repo-worker
+
+Bootstrap and maintain recurring repo automation for coding or content
+projects that should make bounded progress on a schedule, update
+repo-local project state, create PRs on designated runs, and post
+summaries to Discord.
+
+### When to use this skill
+
+Trigger this skill when the user asks to:
+- set up scheduled or recurring automation for a repo
+- create a structured work loop with PR packaging
+- configure an agent to run on a cron schedule against a repo
+
+### Inputs required
+
+| Input            | Required | Notes                                           |
+|------------------|----------|-------------------------------------------------|
+| repo_path        | yes      | local path or GitHub URL                        |
+| project_goal     | yes      | one or two sentences on what success looks like |
+| mode             | yes      | project-memory / task-engine / hybrid           |
+| schedule_preset  | yes      | light / medium / custom                         |
+| discord_target   | yes      | channel ID or full Discord webhook URL          |
+| quality_notes    | no       | special constraints (e.g. "prefer TypeScript")  |
+
+### Mode selection guide
+
+- No existing task engine        → project-memory
+- Existing state.json/queue.json → task-engine
+- Task engine + project context  → hybrid
+
+### Branch and PR rules
+
+Always apply these on every PR run:
+1. git checkout main
+2. git pull --ff-only origin main
+3. Create a fresh branch (never stack on older PR branches)
+4. Open a PR only if the work is meaningful and reviewable
+5. Skip the PR and note the reason if only status-doc changes exist
+
+### Quality bar
+
+Do not generate a PR that only contains:
+- updates to WORK_STATE.md or PROJECT_LOG.md
+- reformatted code with no behavior change
+- TODO comments without accompanying implementation
 ```
 
-That is much better than a vague description like “helps with cron.”
+## Reference file: question-flow.md
 
-## What belongs in references
+```md
+## Question flow for scheduled-repo-worker setup
 
-The reference files are where the skill becomes practical.
+**Q1 — Repo** (required)
+What is the path or GitHub URL for the repo you want to automate?
 
-### `question-flow.md`
+**Q2 — Goal** (required)
+In one or two sentences, what does success look like for this repo
+over the next month?
 
-This file helps gather the minimum required setup cleanly. For example:
+**Q3 — Mode** (required)
+Does the repo already have a task engine (state.json, queue.json,
+NEXT_TASK.md, or a plan/tasks/ directory)?
 
-- repo path or repo URL
-- project goal
-- mode
-- schedule preset
-- Discord target
-- quality priorities
+- Yes → task-engine (or hybrid if you also want project memory)
+- No  → project-memory
 
-It can also offer schedule presets such as:
+**Q4 — Schedule** (required)
 
-### Light
+  light   →  2 normal runs + 1 PR run per day
+              9 AM normal  |  3 PM normal  |  9 PM PR
+              Cron: "0 9,15 * * *" normal  +  "0 21 * * *" PR
 
-- 9 AM normal
-- 3 PM normal
-- 9 PM PR
+  medium  →  5 normal runs + 1 PR run per day
+              4 AM, 8 AM, 12 PM, 8 PM, 12 AM normal  |  4 PM PR
+              Cron: "0 4,8,12,20,0 * * *" normal  +  "0 16 * * *" PR
 
-### Medium
+  custom  → describe your preferred times and which runs are PR runs
 
-- 4 AM normal
-- 8 AM normal
-- 12 PM normal
-- 4 PM PR
-- 8 PM normal
-- 12 AM normal
+**Q5 — Discord target** (required)
+Paste a Discord channel ID or a full webhook URL.
 
-That keeps setup approachable.
+**Q6 — Quality priorities** (optional)
+Any special constraints? Examples:
+- "Prefer TypeScript strict mode, no any"
+- "Every module must include tests"
+- "No third-party dependencies without approval"
+```
 
-### `project-memory-templates.md`
+## Reference file: project-memory-templates.md
 
-This provides templates for:
+### WORK_STATE.md
 
-- `WORK_STATE.md`
-- `NEXT_ACTIONS.md`
-- `PROJECT_LOG.md`
+```md
+# Work State
 
-Those files are the backbone of recurring autonomous work in open-ended repos.
+## Current Status
+Active development — authentication layer complete, dashboard in progress.
 
-### `task-engine-notes.md`
+## Current Strategic Focus
+Implement the dashboard data-fetching layer and connect it to the
+existing auth context.
 
-This explains how to preserve an existing queue, state, and task workflow instead of trampling it with a generic doc system.
+## Just Completed
+- Added JWT refresh token endpoint (POST /auth/refresh)
+- Wrote unit tests for token expiry edge cases
+- Updated OpenAPI spec with new auth routes
 
-## The branch and PR rules matter more than people think
+## In Progress
+- Dashboard: fetching user metrics from /api/metrics (50% done)
+- Storybook stories for Button and Input components (not started)
 
-One of the most common failure modes in scheduled automation is stale branch packaging.
+## Blockers
+None.
 
-The fix is boring but important. PR-run guidance should always encode this pattern:
+## Next Recommended Task
+Complete the dashboard metrics fetch and add a loading skeleton
+component while data is in flight.
+
+## Testing Status
+All auth tests passing. Dashboard tests not yet written.
+
+## PR Status
+PR #12 merged 2026-04-07 — auth refresh token endpoint
+```
+
+### NEXT_ACTIONS.md
+
+```md
+# Next Actions
+
+## Priority queue
+1. Dashboard metrics fetch + loading skeleton
+2. Storybook stories for Button and Input
+3. Error boundary for dashboard data failures
+4. E2E test: login → dashboard → logout flow
+
+## Deferred
+- Dark mode support (waiting for design input)
+- Notification system (blocked on backend events API)
+
+## Notes for next PR run
+The next PR should bundle the dashboard data layer and at minimum
+a loading state. Do not include the Storybook stories — those
+are still incomplete.
+```
+
+## Reference file: task-engine-notes.md
+
+```md
+## task-engine-notes
+
+When the repo already has a task engine, the scheduled-repo-worker
+skill adapts rather than replacing.
+
+### Detection
+
+The repo has a task engine if ANY of these exist:
+- state.json or .state.json at repo root
+- queue.json or plan/queue.json
+- NEXT_TASK.md at repo root
+- plan/tasks/ directory with .md files
+
+### Behavior on normal runs
+
+1. Read state.json to identify the current task
+2. Read the corresponding task file (e.g. plan/tasks/TASK-042.md)
+3. Implement the task within the specified scope
+4. Update state.json: mark task as in-progress or complete
+5. Append a one-line entry to RUN_LOG.md
+6. Do NOT modify queue.json order unless the task spec says so
+
+### Behavior on PR runs
+
+1. git checkout main && git pull --ff-only origin main
+2. Create branch: task/TASK-042-short-description
+3. Confirm the task is genuinely complete (tests passing, scope met)
+4. Open PR with title matching the task spec title
+5. Post Discord update with PR link and task summary
+
+### Preserving the contract
+
+- Never skip a task unless the task spec explicitly marks it blocked
+- Never reorder queue.json based on your own judgment
+- If blocked, add a note to state.json and stop
+
+### Hybrid additions
+
+Add these alongside the task engine files:
+- docs/WORK_STATE.md  ← human-readable project health summary
+- docs/PROJECT_LOG.md ← dated log of what happened across runs
+```
+
+## Branch and PR rules that prevent the common failures
 
 ```bash
 git checkout main
 git pull --ff-only origin main
-# then create a fresh branch if a PR is warranted
+# verify you are on the latest main before creating a branch
+git checkout -b task/short-description-$(date +%Y%m%d)
 ```
 
-That prevents a lot of nonsense.
-
-It also helps to explicitly say:
+Also explicitly state:
 
 - do not stack on an older PR branch
 - create a PR only if the work is meaningful and reviewable
-- skip PRs that only contain status-doc churn
-
-Those are exactly the sorts of rules that belong in a reusable skill instead of being rediscovered the hard way.
+- skip PRs that only contain status-doc churn and explain why
 
 ## Why repo-local memory is the real backbone
 
-This is probably the most underrated part of the whole pattern.
-
 Without durable repo-local state, the automation stays shallow. Chat memory alone is not enough. What survives and compounds is what gets written to files.
 
-For open-ended repos, files like these are disproportionately valuable:
-
-```md
-# Work State
-## Current Status
-## Current Strategic Focus
-## Just Completed
-## In Progress
-## Blockers
-## Next Recommended Task
-## Testing Status
-## PR Status
-```
-
-That might look simple, but it changes the quality of recurring runs a lot.
-
-It reduces token waste, improves handoff quality, and makes PR packaging runs more grounded.
+The `WORK_STATE.md` template above might look simple, but the impact on recurring run quality is significant. It reduces token waste, improves handoff quality between sessions, and makes PR packaging runs more grounded because the agent knows exactly what was completed, what is in progress, and what comes next.
 
 ## Failure modes worth designing around
-
-A good skill should explicitly protect against the obvious failure modes.
 
 ### Wrong delivery target
 
@@ -341,21 +347,21 @@ The skill should accept either a raw channel ID or a full Discord URL, then extr
 
 ### Docs-only churn
 
-If a PR run packages only status updates, that is usually a smell. The workflow should skip the PR and explain why.
+If a PR run packages only status updates, the workflow should skip the PR, log the reason, and wait for the next normal run to add substantive work first.
 
 ### Stale branch packaging
 
-Always sync the default branch first.
+Always sync `main` before creating a branch. If `git pull --ff-only` fails, stop and report the conflict rather than packaging from an outdated base.
 
 ### Over-rigid task systems
 
-Task engines are good, but sometimes they need a higher-level project memory layer too.
+Task engines are good, but sometimes they need a higher-level project memory layer too. The hybrid mode exists for exactly this case.
 
 ### Under-specified quality goals
 
-If the repo needs rich content, strong design, or scalable structure, say so in the prompts and state files. Otherwise the automation may optimize for shallow completion.
+If the repo needs rich content, strong design, or scalable structure, say so explicitly in the quality notes and in the state files.
 
-## When this kind of skill is worth using
+## When to use this skill
 
 Use it when:
 
@@ -374,26 +380,22 @@ Avoid it when:
 
 ## A minimum viable version is enough to start
 
-You do not need a giant skill framework on day one.
+A genuinely useful first version is:
 
-A genuinely useful first version can be:
-
-- one good `SKILL.md`
-- one question-flow reference
-- one project-memory template file
-- one task-engine note file
+- one good `SKILL.md` with trigger conditions, inputs, branch rules, and quality bar
+- one `question-flow.md` with setup questions and schedule presets
+- one `project-memory-templates.md` with the three state file templates
+- one `task-engine-notes.md` explaining how to adapt to existing queues
 
 That is enough to test the pattern on real repos and refine it from there.
 
 ## Final takeaway
 
-The biggest shift here is not “AI can write code on a schedule.” That part is easy to overstate.
+The biggest shift here is not "AI can write code on a schedule." That part is easy to overstate.
 
 The real shift is that a well-designed skill can turn repeated operational knowledge into a reusable workflow with guardrails. Once that exists, scheduled runs stop feeling like random background automation and start feeling like a constrained engineering loop.
 
-That is where the value is. The repo carries memory. The automation works in bounded slices. PR runs package coherent work. The human reviews and improves the direction.
-
-In other words, the skill is not just a convenience layer. It is a way to turn raw model capability into something closer to a repeatable system.
+The repo carries memory. The automation works in bounded slices. PR runs package coherent work. The human reviews and improves the direction. The skill is not just a convenience layer — it is a way to turn raw model capability into something closer to a repeatable system.
 
 ## References and resources
 
