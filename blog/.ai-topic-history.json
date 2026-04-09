@@ -1,6 +1,14 @@
 {
   "topics": [
     {
+      "date": "2026-04-09",
+      "skill": "Gemini CLI debugging workflow",
+      "topic": "Using Gemini CLI for terminal-first debugging with plan mode, shell tooling, focused context, command capture, and verification loops so engineers can move from failing command to reviewed fix faster",
+      "slug": "gemini-cli-terminal-debugging",
+      "title": "Gemini CLI Terminal Debugging Workflows That Actually Shorten Incident Time",
+      "summary": "A practical guide to using Gemini CLI for terminal-first debugging with plan mode, shell tooling, focused context, and repeatable fix loops that keep production bug hunts fast and reviewable."
+    },
+    {
       "date": "2026-04-08",
       "skill": "OpenClaw skills",
       "topic": "Building a reusable scheduled repo worker skill with project-memory, task-engine, and hybrid modes for bounded automation, PR packaging, and reviewer-in-the-loop workflows",

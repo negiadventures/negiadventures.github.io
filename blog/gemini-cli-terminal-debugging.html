@@ -1,0 +1,205 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="A practical guide to using Gemini CLI for terminal-first debugging with plan mode, shell tooling, focused context, and repeatable fix loops that keep incidents moving without turning the model loose on your whole machine.">
+    <meta name="author" content="Anirudh Negi">
+    <title>Gemini CLI Terminal Debugging Workflows That Actually Shorten Incident Time | Anirudh Negi</title>
+    <link rel="canonical" href="https://negiadventures.github.io/blog/gemini-cli-terminal-debugging.html">
+    <meta property="og:type" content="article">
+    <meta property="og:url" content="https://negiadventures.github.io/blog/gemini-cli-terminal-debugging.html">
+    <meta property="og:title" content="Gemini CLI Terminal Debugging Workflows That Actually Shorten Incident Time | Anirudh Negi">
+    <meta property="og:description" content="A practical guide to using Gemini CLI for terminal-first debugging with plan mode, shell tooling, focused context, and repeatable fix loops that keep incidents moving without turning the model loose on your whole machine.">
+    <meta property="og:image" content="https://negiadventures.github.io/images/profile.jpg">
+    <meta property="article:published_time" content="2026-04-09">
+    <meta property="article:author" content="Anirudh Negi">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:url" content="https://negiadventures.github.io/blog/gemini-cli-terminal-debugging.html">
+    <meta name="twitter:title" content="Gemini CLI Terminal Debugging Workflows That Actually Shorten Incident Time | Anirudh Negi">
+    <meta name="twitter:description" content="A practical guide to using Gemini CLI for terminal-first debugging with plan mode, shell tooling, focused context, and repeatable fix loops that keep incidents moving without turning the model loose on your whole machine.">
+    <meta name="twitter:image" content="https://negiadventures.github.io/images/profile.jpg">
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "BlogPosting",
+      "headline": "Gemini CLI Terminal Debugging Workflows That Actually Shorten Incident Time",
+      "description": "A practical guide to using Gemini CLI for terminal-first debugging with plan mode, shell tooling, focused context, and repeatable fix loops that keep incidents moving without turning the model loose on your whole machine.",
+      "image": "https://negiadventures.github.io/images/profile.jpg",
+      "url": "https://negiadventures.github.io/blog/gemini-cli-terminal-debugging.html",
+      "datePublished": "2026-04-09",
+      "author": {
+        "@type": "Person",
+        "name": "Anirudh Negi",
+        "url": "https://negiadventures.github.io"
+      },
+      "publisher": {
+        "@type": "Person",
+        "name": "Anirudh Negi",
+        "url": "https://negiadventures.github.io"
+      }
+    }
+    </script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../stylesheets/stylesheet.css?v=5" media="screen">
+    <style>
+      .blog-post { max-width: 800px; margin: 0 auto; padding: 60px 20px; }
+      .blog-post-header { margin-bottom: 40px; }
+      .blog-post-nav { margin-bottom: 30px; }
+      .blog-post-nav a { color: var(--accent-strong); font-size: 0.95rem; }
+      .blog-post-nav a:hover { color: var(--accent); }
+      .blog-post-title { font-size: 2.5rem; margin-bottom: 16px; }
+      .blog-post-meta { display: flex; gap: 20px; color: var(--text-muted); font-size: 0.95rem; margin-bottom: 30px; flex-wrap: wrap; }
+      .blog-post-image { width: 100%; height: 300px; object-fit: cover; border-radius: 16px; margin-bottom: 30px; border: 1px solid var(--border); background: linear-gradient(135deg, rgba(9, 19, 31, 1), rgba(24, 45, 73, 1)); }
+      .blog-post-content h2 { font-size: 1.6rem; margin-top: 40px; margin-bottom: 16px; color: var(--text-light); }
+      .blog-post-content h3 { font-size: 1.3rem; margin-top: 30px; margin-bottom: 12px; color: var(--text-light); }
+      .blog-post-content p { line-height: 1.8; margin-bottom: 16px; color: var(--text-muted); }
+      .blog-post-content ul, .blog-post-content ol { line-height: 1.8; margin-bottom: 20px; color: var(--text-muted); padding-left: 24px; }
+      .blog-post-content li { margin-bottom: 8px; }
+      .code-block { background: var(--bg-alt); border: 1px solid var(--border); border-radius: 12px; padding: 20px; margin: 20px 0; overflow-x: auto; }
+      .code-block pre { margin: 0; font-family: var(--mono); font-size: 0.9rem; line-height: 1.6; color: var(--text-light); white-space: pre-wrap; }
+      .code-block code { color: var(--accent-strong); }
+      .blog-post-tags { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 40px; padding-top: 30px; border-top: 1px solid var(--border); }
+      .blog-post-tag { background: var(--accent-soft); color: var(--accent-strong); border-radius: 999px; padding: 6px 14px; font-size: 0.85rem; font-family: var(--mono); border: 1px solid transparent; transition: border-color 0.2s ease; }
+      .blog-post-tag:hover { border-color: var(--accent); }
+      .blog-footer { margin-top: 60px; padding-top: 30px; border-top: 1px solid var(--border); text-align: center; }
+      .blog-footer a { color: var(--accent-strong); }
+      .blog-footer a:hover { color: var(--accent); }
+      @media (max-width: 768px) { .blog-post { padding: 40px 16px; } .blog-post-title { font-size: 2rem; } .blog-post-image { height: 200px; } }
+    </style>
+  </head>
+  <body>
+    <a href="../index.html#main" class="skip-link">Skip to main content</a>
+
+    <header class="site-header">
+      <div class="container blog-post">
+        <div class="blog-post-nav">
+          <a href="index.html">&larr; Back to All Posts</a>
+        </div>
+
+        <div class="blog-post-header">
+          <h1 class="blog-post-title">Gemini CLI Terminal Debugging Workflows That Actually Shorten Incident Time</h1>
+          <div class="blog-post-meta">
+            <span>April 9, 2026</span>
+            <span>&bull;</span>
+            <span>10 min read</span>
+          </div>
+          <img src="data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A//www.w3.org/2000/svg%27%20viewBox%3D%270%200%201200%20630%27%3E%3Cdefs%3E%3ClinearGradient%20id%3D%27bg%27%20x1%3D%270%27%20x2%3D%271%27%20y1%3D%270%27%20y2%3D%271%27%3E%3Cstop%20offset%3D%270%25%27%20stop-color%3D%27%2309131f%27/%3E%3Cstop%20offset%3D%27100%25%27%20stop-color%3D%27%23182d49%27/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect%20width%3D%271200%27%20height%3D%27630%27%20fill%3D%27url%28%23bg%29%27/%3E%3Ccircle%20cx%3D%27990%27%20cy%3D%27125%27%20r%3D%27150%27%20fill%3D%27%2327d3ff%27%20fill-opacity%3D%270.12%27/%3E%3Ccircle%20cx%3D%27175%27%20cy%3D%27520%27%20r%3D%27195%27%20fill%3D%27%238d6bff%27%20fill-opacity%3D%270.14%27/%3E%3Crect%20x%3D%27105%27%20y%3D%27110%27%20width%3D%27990%27%20height%3D%27410%27%20rx%3D%2728%27%20fill%3D%27%230f172a%27%20stroke%3D%27%2338bdf8%27%20stroke-opacity%3D%270.35%27/%3E%3Ctext%20x%3D%27150%27%20y%3D%27210%27%20fill%3D%27white%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2746%27%20font-weight%3D%27700%27%3EGemini%20CLI%20Terminal%3C/text%3E%3Ctext%20x%3D%27150%27%20y%3D%27282%27%20fill%3D%27%2390cdf4%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2746%27%20font-weight%3D%27700%27%3EDebugging%20Workflows%3C/text%3E%3Ctext%20x%3D%27150%27%20y%3D%27368%27%20fill%3D%27%23cbd5e1%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2728%27%3EPlan%20mode%2C%20shell%20capture%2C%20and%20repeatable%20fix%20loops%3C/text%3E%3C/svg%3E" alt="Gemini CLI Terminal Debugging Workflows That Actually Shorten Incident Time" class="blog-post-image">
+        </div>
+
+        <div class="blog-post-content">
+          <p>Gemini CLI is most useful when you treat it like a terminal-native debugging partner, not a magic code vending machine. The sweet spot is giving it the failing command, the relevant files, and a narrow objective, then keeping the loop tight enough that every proposed change stays explainable.</p>
+
+          <p>This post covers a practical Gemini CLI workflow for debugging production-ish issues, local repro failures, and flaky dev setup problems without giving the model broad, unsupervised control.</p>
+
+          <h2>Why terminal-first debugging works well with Gemini CLI</h2>
+          <p>Most debugging already starts in the terminal: a test fails, a build breaks, a service exits unexpectedly, a linter starts complaining after a refactor, or a deploy script works on one machine but not another. Gemini CLI fits this flow because it can stay close to the evidence. You can hand it the exact failing output, let it inspect only the files that matter, and have it propose the next command or patch instead of forcing it to reconstruct the whole situation from memory.</p>
+
+          <p>That is a better pattern than dropping a giant repo into context and asking what is wrong.</p>
+
+          <h2>The debugging loop I actually recommend</h2>
+          <ol>
+            <li>Capture the failing command and raw output.</li>
+            <li>Ask Gemini CLI for a read-only diagnosis first.</li>
+            <li>Narrow the scope to the smallest relevant files.</li>
+            <li>Let it propose one fix path at a time.</li>
+            <li>Rerun the exact verification command.</li>
+            <li>Only then accept edits or commit the patch.</li>
+          </ol>
+
+          <h2>Start with plan mode, not edits</h2>
+          <p>Gemini CLI's plan mode is useful for the first pass because it forces a diagnosis before action. That matters when the visible failure is only a symptom.</p>
+          <div class="code-block"><pre><code>The command `pnpm test src/api/user.test.ts` fails with the output below.
+Do not edit files yet.
+Explain the most likely root causes, what evidence supports each one,
+and which file or command you would inspect next.</code></pre></div>
+          <p>This works because it gives Gemini CLI the exact failing command, blocks premature editing, and asks for ranked hypotheses instead of a single confident guess.</p>
+
+          <h2>Feed it command output like an incident artifact</h2>
+          <p>A lot of AI debugging goes sideways because the model gets a paraphrase instead of the actual logs. Paste the real stderr, stack trace, or test diff.</p>
+          <div class="code-block"><pre><code>Command:
+python -m pytest tests/test_auth.py -k refresh_token
+
+Output:
+E   AssertionError: expected 401, got 200
+...</code></pre></div>
+          <p>Real output gives the model anchors: filenames, line numbers, error classes, environment assumptions, and failing invariants.</p>
+
+          <h2>Keep context small on purpose</h2>
+          <p>Terminal debugging gets worse when the model sees too much irrelevant code. Give Gemini CLI a narrow search space: the failing command, the error output, the test or entrypoint involved, the config file that shapes runtime behavior, and one or two adjacent implementation files. If the issue smells like infrastructure or environment drift, also include the exact startup script, container file, or CI step.</p>
+
+          <h2>Use shell access for facts, not exploration theater</h2>
+          <p>Gemini CLI can execute shell commands, which is handy, but the point is to collect evidence quickly. Prefer short, high-signal commands that answer a specific question.</p>
+          <div class="code-block"><pre><code>rg "refresh_token|401|auth" src tests
+cat package.json
+pnpm test src/api/user.test.ts
+git diff -- src/api/auth.ts</code></pre></div>
+          <p>That is enough to identify the surface area, inspect the current state, and confirm whether a candidate fix worked.</p>
+
+          <h2>A reliable prompt pattern for the middle of the session</h2>
+          <div class="code-block"><pre><code>Given the failing test, the current implementation, and the config shown above:
+- state the most likely root cause in one paragraph
+- show the minimum code change needed
+- explain one risk of that change
+- list the exact command to verify it</code></pre></div>
+          <p>This pattern is great because it bundles the claim, the patch, the risk statement, and the verification step into one reviewable answer.</p>
+
+          <h2>Example workflow: debugging a broken dev server</h2>
+          <div class="code-block"><pre><code>`npm run dev` exits immediately after a config refactor.
+I pasted the stderr below.
+Inspect only package.json, vite.config.ts, src/config.ts, and src/main.ts.
+Do not edit yet. Give me the top 3 likely causes and the fastest check for each.</code></pre></div>
+          <p>Then, once Gemini CLI narrows it down, ask for the smallest patch, why it broke now, and the exact verification command. That is the right level of control.</p>
+
+          <h2>Where people burn time with AI debugging</h2>
+          <h3>Asking for a fix before a diagnosis</h3>
+          <p>That often produces a patch that changes visible behavior without addressing the root cause.</p>
+          <h3>Giving a summary instead of the artifact</h3>
+          <p>Paraphrased logs remove the clues that matter.</p>
+          <h3>Letting the session sprawl</h3>
+          <p>If the model has seen too many files and unrelated commands, it starts to generalize from noise.</p>
+          <h3>Verifying with a different command than the failure</h3>
+          <p>Always rerun the original failing command first, then broaden the checks.</p>
+
+          <h2>Security and safety guardrails that are worth keeping</h2>
+          <ul>
+            <li>Start in read-only or diagnosis-first mode when the failure is unclear.</li>
+            <li>Keep shell usage scoped to inspection and verification.</li>
+            <li>Require human review before multi-file edits.</li>
+            <li>Be careful with secrets in pasted logs and environment output.</li>
+            <li>Prefer repo-local context files and ignore rules over ad hoc prompt dumping.</li>
+          </ul>
+
+          <h2>A small workflow that scales surprisingly well</h2>
+          <div class="code-block"><pre><code>failing command
+-&gt; raw output
+-&gt; read-only diagnosis
+-&gt; minimal patch proposal
+-&gt; exact verification command
+-&gt; human review</code></pre></div>
+          <p>That workflow works for test failures, build regressions, broken scripts, misconfigured dev environments, and a decent chunk of CI debugging too.</p>
+
+          <h2>References and resources</h2>
+          <ul>
+            <li><a href="https://geminicli.com/docs/">Gemini CLI documentation</a></li>
+            <li><a href="https://geminicli.com/docs/reference/commands/">Gemini CLI command reference</a></li>
+            <li><a href="https://github.com/google-gemini/gemini-cli">Gemini CLI GitHub repository</a></li>
+          </ul>
+
+          <div class="blog-post-tags">
+            <span class="blog-post-tag">Gemini CLI</span>
+            <span class="blog-post-tag">Debugging</span>
+            <span class="blog-post-tag">Terminal Workflow</span>
+            <span class="blog-post-tag">AI Coding</span>
+          </div>
+
+          <div class="blog-footer">
+            <p><a href="index.html">Browse more posts</a></p>
+          </div>
+        </div>
+      </div>
+    </header>
+  </body>
+</html>
