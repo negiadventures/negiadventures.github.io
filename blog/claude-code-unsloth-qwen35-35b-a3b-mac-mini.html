@@ -1,0 +1,252 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="A detailed step-by-step guide to running Claude Code with Unsloth Qwen3.5-35B-A3B on a Mac mini M4 Pro, including model choice, local inference setup, KV cache fixes, tuning, and practical tradeoffs.">
+    <meta name="author" content="Anirudh Negi">
+    <title>How to Run Claude Code with Unsloth Qwen3.5-35B-A3B on a Mac mini M4 Pro | Anirudh Negi</title>
+    <link rel="canonical" href="https://negiadventures.github.io/blog/claude-code-unsloth-qwen35-35b-a3b-mac-mini.html">
+    <meta property="og:type" content="article">
+    <meta property="og:url" content="https://negiadventures.github.io/blog/claude-code-unsloth-qwen35-35b-a3b-mac-mini.html">
+    <meta property="og:title" content="How to Run Claude Code with Unsloth Qwen3.5-35B-A3B on a Mac mini M4 Pro | Anirudh Negi">
+    <meta property="og:description" content="A detailed step-by-step guide to running Claude Code with Unsloth Qwen3.5-35B-A3B on a Mac mini M4 Pro, including model choice, local inference setup, KV cache fixes, tuning, and practical tradeoffs.">
+    <meta property="og:image" content="data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A//www.w3.org/2000/svg%27%20viewBox%3D%270%200%201200%20630%27%3E%3Cdefs%3E%3ClinearGradient%20id%3D%27bg%27%20x1%3D%270%27%20x2%3D%271%27%20y1%3D%270%27%20y2%3D%271%27%3E%3Cstop%20offset%3D%270%25%27%20stop-color%3D%27%2308111d%27/%3E%3Cstop%20offset%3D%27100%25%27%20stop-color%3D%27%2316304a%27/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect%20width%3D%271200%27%20height%3D%27630%27%20fill%3D%27url%28%23bg%29%27/%3E%3Ccircle%20cx%3D%27990%27%20cy%3D%27125%27%20r%3D%27150%27%20fill%3D%27%2300d2ff%27%20fill-opacity%3D%270.14%27/%3E%3Ccircle%20cx%3D%27185%27%20cy%3D%27520%27%20r%3D%27195%27%20fill%3D%27%237c4dff%27%20fill-opacity%3D%270.16%27/%3E%3Crect%20x%3D%27105%27%20y%3D%2795%27%20width%3D%27990%27%20height%3D%27440%27%20rx%3D%2728%27%20fill%3D%27%230b1220%27%20stroke%3D%27%2338bdf8%27%20stroke-opacity%3D%270.35%27/%3E%3Ctext%20x%3D%27145%27%20y%3D%27205%27%20fill%3D%27white%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2746%27%20font-weight%3D%27700%27%3EClaude%20Code%20%2B%20Unsloth%3C/text%3E%3Ctext%20x%3D%27145%27%20y%3D%27278%27%20fill%3D%27%2390cdf4%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2746%27%20font-weight%3D%27700%27%3EQwen3.5-35B-A3B%3C/text%3E%3Ctext%20x%3D%27145%27%20y%3D%27352%27%20fill%3D%27%23cbd5e1%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2728%27%3EMac%20mini%20M4%20Pro%20setup%2C%20KV%20cache%20fix%2C%20local%20inference%20tuning%3C/text%3E%3Crect%20x%3D%27145%27%20y%3D%27400%27%20width%3D%27270%27%20height%3D%2752%27%20rx%3D%2714%27%20fill%3D%27%23111c2d%27%20stroke%3D%27%236ee7ff%27%20stroke-opacity%3D%270.45%27/%3E%3Ctext%20x%3D%27165%27%20y%3D%27433%27%20fill%3D%27%236ee7ff%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2724%27%3E48GB%20unified%20memory%3C/text%3E%3C/svg%3E">
+    <meta property="article:published_time" content="2026-04-10">
+    <meta property="article:author" content="Anirudh Negi">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:url" content="https://negiadventures.github.io/blog/claude-code-unsloth-qwen35-35b-a3b-mac-mini.html">
+    <meta name="twitter:title" content="How to Run Claude Code with Unsloth Qwen3.5-35B-A3B on a Mac mini M4 Pro | Anirudh Negi">
+    <meta name="twitter:description" content="A detailed step-by-step guide to running Claude Code with Unsloth Qwen3.5-35B-A3B on a Mac mini M4 Pro, including model choice, local inference setup, KV cache fixes, tuning, and practical tradeoffs.">
+    <meta name="twitter:image" content="data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A//www.w3.org/2000/svg%27%20viewBox%3D%270%200%201200%20630%27%3E%3Cdefs%3E%3ClinearGradient%20id%3D%27bg%27%20x1%3D%270%27%20x2%3D%271%27%20y1%3D%270%27%20y2%3D%271%27%3E%3Cstop%20offset%3D%270%25%27%20stop-color%3D%27%2308111d%27/%3E%3Cstop%20offset%3D%27100%25%27%20stop-color%3D%27%2316304a%27/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect%20width%3D%271200%27%20height%3D%27630%27%20fill%3D%27url%28%23bg%29%27/%3E%3Ccircle%20cx%3D%27990%27%20cy%3D%27125%27%20r%3D%27150%27%20fill%3D%27%2300d2ff%27%20fill-opacity%3D%270.14%27/%3E%3Ccircle%20cx%3D%27185%27%20cy%3D%27520%27%20r%3D%27195%27%20fill%3D%27%237c4dff%27%20fill-opacity%3D%270.16%27/%3E%3Crect%20x%3D%27105%27%20y%3D%2795%27%20width%3D%27990%27%20height%3D%27440%27%20rx%3D%2728%27%20fill%3D%27%230b1220%27%20stroke%3D%27%2338bdf8%27%20stroke-opacity%3D%270.35%27/%3E%3Ctext%20x%3D%27145%27%20y%3D%27205%27%20fill%3D%27white%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2746%27%20font-weight%3D%27700%27%3EClaude%20Code%20%2B%20Unsloth%3C/text%3E%3Ctext%20x%3D%27145%27%20y%3D%27278%27%20fill%3D%27%2390cdf4%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2746%27%20font-weight%3D%27700%27%3EQwen3.5-35B-A3B%3C/text%3E%3Ctext%20x%3D%27145%27%20y%3D%27352%27%20fill%3D%27%23cbd5e1%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2728%27%3EMac%20mini%20M4%20Pro%20setup%2C%20KV%20cache%20fix%2C%20local%20inference%20tuning%3C/text%3E%3Crect%20x%3D%27145%27%20y%3D%27400%27%20width%3D%27270%27%20height%3D%2752%27%20rx%3D%2714%27%20fill%3D%27%23111c2d%27%20stroke%3D%27%236ee7ff%27%20stroke-opacity%3D%270.45%27/%3E%3Ctext%20x%3D%27165%27%20y%3D%27433%27%20fill%3D%27%236ee7ff%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2724%27%3E48GB%20unified%20memory%3C/text%3E%3C/svg%3E">
+    <script type="application/ld+json">{"@context":"https://schema.org","@type":"BlogPosting","headline":"How to Run Claude Code with Unsloth Qwen3.5-35B-A3B on a Mac mini M4 Pro","description":"A detailed step-by-step guide to running Claude Code with Unsloth Qwen3.5-35B-A3B on a Mac mini M4 Pro, including model choice, local inference setup, KV cache fixes, tuning, and practical tradeoffs.","image":"data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A//www.w3.org/2000/svg%27%20viewBox%3D%270%200%201200%20630%27%3E%3Cdefs%3E%3ClinearGradient%20id%3D%27bg%27%20x1%3D%270%27%20x2%3D%271%27%20y1%3D%270%27%20y2%3D%271%27%3E%3Cstop%20offset%3D%270%25%27%20stop-color%3D%27%2308111d%27/%3E%3Cstop%20offset%3D%27100%25%27%20stop-color%3D%27%2316304a%27/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect%20width%3D%271200%27%20height%3D%27630%27%20fill%3D%27url%28%23bg%29%27/%3E%3Ccircle%20cx%3D%27990%27%20cy%3D%27125%27%20r%3D%27150%27%20fill%3D%27%2300d2ff%27%20fill-opacity%3D%270.14%27/%3E%3Ccircle%20cx%3D%27185%27%20cy%3D%27520%27%20r%3D%27195%27%20fill%3D%27%237c4dff%27%20fill-opacity%3D%270.16%27/%3E%3Crect%20x%3D%27105%27%20y%3D%2795%27%20width%3D%27990%27%20height%3D%27440%27%20rx%3D%2728%27%20fill%3D%27%230b1220%27%20stroke%3D%27%2338bdf8%27%20stroke-opacity%3D%270.35%27/%3E%3Ctext%20x%3D%27145%27%20y%3D%27205%27%20fill%3D%27white%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2746%27%20font-weight%3D%27700%27%3EClaude%20Code%20%2B%20Unsloth%3C/text%3E%3Ctext%20x%3D%27145%27%20y%3D%27278%27%20fill%3D%27%2390cdf4%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2746%27%20font-weight%3D%27700%27%3EQwen3.5-35B-A3B%3C/text%3E%3Ctext%20x%3D%27145%27%20y%3D%27352%27%20fill%3D%27%23cbd5e1%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2728%27%3EMac%20mini%20M4%20Pro%20setup%2C%20KV%20cache%20fix%2C%20local%20inference%20tuning%3C/text%3E%3Crect%20x%3D%27145%27%20y%3D%27400%27%20width%3D%27270%27%20height%3D%2752%27%20rx%3D%2714%27%20fill%3D%27%23111c2d%27%20stroke%3D%27%236ee7ff%27%20stroke-opacity%3D%270.45%27/%3E%3Ctext%20x%3D%27165%27%20y%3D%27433%27%20fill%3D%27%236ee7ff%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2724%27%3E48GB%20unified%20memory%3C/text%3E%3C/svg%3E","url":"https://negiadventures.github.io/blog/claude-code-unsloth-qwen35-35b-a3b-mac-mini.html","datePublished":"2026-04-10","author":{"@type":"Person","name":"Anirudh Negi","url":"https://negiadventures.github.io"},"publisher":{"@type":"Person","name":"Anirudh Negi","url":"https://negiadventures.github.io"}}</script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../stylesheets/stylesheet.css?v=5" media="screen">
+    <style>
+      .blog-post { max-width: 820px; margin: 0 auto; padding: 60px 20px; }
+      .blog-post-header { margin-bottom: 40px; }
+      .blog-post-nav { margin-bottom: 30px; }
+      .blog-post-nav a { color: var(--accent-strong); font-size: 0.95rem; }
+      .blog-post-title { font-size: 2.5rem; margin-bottom: 16px; }
+      .blog-post-meta { display: flex; gap: 20px; color: var(--text-muted); font-size: 0.95rem; margin-bottom: 30px; flex-wrap: wrap; }
+      .blog-post-image { width: 100%; height: 300px; object-fit: cover; border-radius: 16px; margin-bottom: 30px; border: 1px solid var(--border); }
+      .blog-post-content h2 { font-size: 1.6rem; margin-top: 40px; margin-bottom: 16px; color: var(--text-light); }
+      .blog-post-content h3 { font-size: 1.25rem; margin-top: 28px; margin-bottom: 12px; color: var(--text-light); }
+      .blog-post-content p { line-height: 1.8; margin-bottom: 16px; color: var(--text-muted); }
+      .blog-post-content ul, .blog-post-content ol { line-height: 1.8; margin-bottom: 20px; color: var(--text-muted); padding-left: 24px; }
+      .blog-post-content li { margin-bottom: 8px; }
+      .code-block { background: var(--bg-alt); border: 1px solid var(--border); border-radius: 12px; padding: 20px; margin: 20px 0; overflow-x: auto; }
+      .code-block pre { margin: 0; font-family: var(--mono); font-size: 0.9rem; line-height: 1.6; color: var(--text-light); white-space: pre-wrap; }
+      .table-wrap { overflow-x: auto; margin: 24px 0; }
+      table { width: 100%; border-collapse: collapse; font-size: 0.95rem; }
+      th, td { border: 1px solid var(--border); padding: 12px; text-align: left; vertical-align: top; }
+      th { background: var(--bg-alt); color: var(--text-light); }
+      blockquote { border-left: 4px solid var(--accent); margin: 24px 0; padding: 12px 16px; background: rgba(56,189,248,0.08); color: var(--text-muted); }
+      .blog-post-tags { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 40px; padding-top: 30px; border-top: 1px solid var(--border); }
+      .blog-post-tag { background: var(--accent-soft); color: var(--accent-strong); border-radius: 999px; padding: 6px 14px; font-size: 0.85rem; font-family: var(--mono); border: 1px solid transparent; }
+      .blog-footer { margin-top: 60px; padding-top: 30px; border-top: 1px solid var(--border); text-align: center; }
+    </style>
+  </head>
+  <body>
+    <a href="../index.html#main" class="skip-link">Skip to main content</a>
+    <header class="site-header">
+      <div class="container blog-post">
+        <div class="blog-post-nav"><a href="index.html">&larr; Back to All Posts</a></div>
+        <div class="blog-post-header">
+          <h1 class="blog-post-title">How to Run Claude Code with Unsloth Qwen3.5-35B-A3B on a Mac mini M4 Pro</h1>
+          <div class="blog-post-meta"><span>April 10, 2026</span><span>&bull;</span><span>12 min read</span></div>
+          <img src="data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A//www.w3.org/2000/svg%27%20viewBox%3D%270%200%201200%20630%27%3E%3Cdefs%3E%3ClinearGradient%20id%3D%27bg%27%20x1%3D%270%27%20x2%3D%271%27%20y1%3D%270%27%20y2%3D%271%27%3E%3Cstop%20offset%3D%270%25%27%20stop-color%3D%27%2308111d%27/%3E%3Cstop%20offset%3D%27100%25%27%20stop-color%3D%27%2316304a%27/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect%20width%3D%271200%27%20height%3D%27630%27%20fill%3D%27url%28%23bg%29%27/%3E%3Ccircle%20cx%3D%27990%27%20cy%3D%27125%27%20r%3D%27150%27%20fill%3D%27%2300d2ff%27%20fill-opacity%3D%270.14%27/%3E%3Ccircle%20cx%3D%27185%27%20cy%3D%27520%27%20r%3D%27195%27%20fill%3D%27%237c4dff%27%20fill-opacity%3D%270.16%27/%3E%3Crect%20x%3D%27105%27%20y%3D%2795%27%20width%3D%27990%27%20height%3D%27440%27%20rx%3D%2728%27%20fill%3D%27%230b1220%27%20stroke%3D%27%2338bdf8%27%20stroke-opacity%3D%270.35%27/%3E%3Ctext%20x%3D%27145%27%20y%3D%27205%27%20fill%3D%27white%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2746%27%20font-weight%3D%27700%27%3EClaude%20Code%20%2B%20Unsloth%3C/text%3E%3Ctext%20x%3D%27145%27%20y%3D%27278%27%20fill%3D%27%2390cdf4%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2746%27%20font-weight%3D%27700%27%3EQwen3.5-35B-A3B%3C/text%3E%3Ctext%20x%3D%27145%27%20y%3D%27352%27%20fill%3D%27%23cbd5e1%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2728%27%3EMac%20mini%20M4%20Pro%20setup%2C%20KV%20cache%20fix%2C%20local%20inference%20tuning%3C/text%3E%3Crect%20x%3D%27145%27%20y%3D%27400%27%20width%3D%27270%27%20height%3D%2752%27%20rx%3D%2714%27%20fill%3D%27%23111c2d%27%20stroke%3D%27%236ee7ff%27%20stroke-opacity%3D%270.45%27/%3E%3Ctext%20x%3D%27165%27%20y%3D%27433%27%20fill%3D%27%236ee7ff%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2724%27%3E48GB%20unified%20memory%3C/text%3E%3C/svg%3E" alt="How to Run Claude Code with Unsloth Qwen3.5-35B-A3B on a Mac mini M4 Pro" class="blog-post-image">
+        </div>
+        <div class="blog-post-content">
+          <p>If you want Claude Code to use a local model, the hard part is not finding a model name. The hard part is choosing the right model shape, getting the serving stack right, and avoiding the performance traps that make open models feel much slower than they should.</p>
+          <p>This guide walks through a practical setup for running Claude Code with <strong>Unsloth/Qwen3.5-35B-A3B</strong> on a <strong>Mac mini M4 Pro with 48GB of unified memory</strong>. The goal is not just to get it technically running. The goal is to get a setup that is usable for real coding sessions, especially agentic flows where latency compounds across many tool calls.</p>
+          <p>The short version is that <strong>Qwen3.5-35B-A3B is often a better local fit than the dense Qwen3.5-35B</strong> for this kind of workflow because it is designed for more efficient inference while still retaining strong coding ability. On a machine like an M4 Pro Mac mini, that difference matters.</p>
+
+          <h2>Who this guide is for</h2>
+          <ul>
+            <li>a local fallback or primary model for Claude Code</li>
+            <li>better privacy and local control than a hosted-only setup</li>
+            <li>a step-by-step macOS workflow they can copy without guessing</li>
+            <li>a coding model that is practical for repeated agentic turns, not just one-off completions</li>
+          </ul>
+
+          <h2>First fix the slowdown issue</h2>
+          <p>Before anything else, <strong>See Fixing 90% slower inference in Claude Code first to fix open models being 90% slower due to KV Cache invalidation</strong>.</p>
+          <p>This matters because many people judge an open-model setup before fixing the most obvious performance trap. If Claude Code is invalidating the KV cache too aggressively, the model can feel dramatically slower than it should, even if the model and hardware are otherwise fine.</p>
+          <ol>
+            <li>understand the KV cache issue</li>
+            <li>apply the fix or recommended configuration from the Unsloth guidance</li>
+            <li>then judge throughput and usability</li>
+          </ol>
+          <ul>
+            <li><a href="https://unsloth.ai/docs/basics/claude-code" target="_blank" rel="noreferrer">Unsloth Claude Code basics</a></li>
+            <li>If you are following Unsloth's companion notes on KV cache invalidation, do that first before benchmarking the final setup.</li>
+          </ul>
+
+          <h2>Why Qwen3.5-35B-A3B is a good fit for agentic coding</h2>
+          <p>A dense 35B model can still be very capable, but for local agentic setups you usually care about more than raw benchmark quality. You care about latency, sustained throughput across many requests, memory pressure, and whether the model remains pleasant to use when the tool loop gets long.</p>
+          <p>That is where <strong>Qwen3.5-35B-A3B</strong> gets interesting. The A3B version is optimized around a more efficient mixture-of-experts style architecture, which means you can often get better speed behavior than a dense 35B model while still keeping strong coding performance.</p>
+
+          <h2>Quick comparison</h2>
+          <div class="table-wrap">
+            <table>
+              <thead><tr><th>Model</th><th>Why you might choose it</th><th>Main downside</th><th>Best fit</th></tr></thead>
+              <tbody>
+                <tr><td>Dense Qwen3.5-35B</td><td>Strong all-around quality</td><td>Heavier, slower local feel on repeated turns</td><td>Higher-latency local use or stronger hardware</td></tr>
+                <tr><td>Unsloth/Qwen3.5-35B-A3B</td><td>Better efficiency for local inference, practical for agent loops</td><td>Still not as strong as top hosted frontier models in every scenario</td><td>Local Claude Code workflows and iterative coding</td></tr>
+                <tr><td>Smaller Qwen variants</td><td>Faster response and easier memory fit</td><td>Lower ceiling on difficult coding tasks</td><td>Lightweight local assistance</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <p>The point is not that the dense model is bad. The point is that for <strong>Claude Code-style agentic usage</strong>, where you care about many repeated calls and not just a single completion, the efficient variant is often the more practical choice.</p>
+
+          <h2>Hardware target: Mac mini M4 Pro with 48GB</h2>
+          <p>This is a strong machine for local development because the unified memory pool makes larger local model setups much more realistic than they would be on many laptops. You still have to be careful with context size, quantization choice, and server flags, but the machine is a very good fit for a serious local coding workflow.</p>
+          <ul>
+            <li>stable model loading</li>
+            <li>reasonable context size</li>
+            <li>good cache behavior</li>
+            <li>acceptable parallelism</li>
+            <li>avoiding pathological slowdowns</li>
+          </ul>
+
+          <h2>Architecture overview</h2>
+          <div class="code-block"><pre><code>Claude Code
+  -> model alias or provider shim
+  -> local llama.cpp server
+  -> Unsloth Qwen3.5-35B-A3B model
+  -> Mac mini M4 Pro (48GB unified memory)</code></pre></div>
+          <p>In practice, Claude Code talks to a model alias, that alias points to a local server, and the local server hosts the Unsloth model with the serving flags that keep latency under control.</p>
+
+          <h2>Step 1: install prerequisites on macOS</h2>
+          <div class="code-block"><pre><code>xcode-select --install
+brew install git cmake python node</code></pre></div>
+          <p>If you already have Homebrew and the developer tools, this should be quick. The point is just to make sure you have the build and runtime dependencies needed for local serving and command-line tooling.</p>
+
+          <h2>Step 2: install or build llama.cpp</h2>
+          <div class="code-block"><pre><code>git clone https://github.com/ggml-org/llama.cpp.git
+cd llama.cpp
+cmake -B build
+cmake --build build --config Release -j</code></pre></div>
+          <p>If you want the most predictable local serving path on macOS, <code>llama.cpp</code> is a good default. If you already have a working build, you can skip rebuilding it.</p>
+
+          <h2>Step 3: get the Unsloth model</h2>
+          <p>Follow the Unsloth guidance for the exact model artifact you want. Based on the reference setup, the local server is using an Unsloth-flavored Qwen3.5-35B-A3B GGUF.</p>
+          <div class="code-block"><pre><code>mkdir -p ~/models/qwen
+# place the model file here once downloaded
+ls ~/models/qwen</code></pre></div>
+          <p>The reference setup used a file name similar to <code>Qwen3.5-35B-A3B-UD-Q4_K_XL.gguf</code>. The exact name may vary depending on the quantization you choose.</p>
+
+          <h2>Step 4: launch the local inference server</h2>
+          <div class="code-block"><pre><code>cd ~/ai/llama.cpp
+./llama-server \
+  --model ~/models/qwen/Qwen3.5-35B-A3B-UD-Q4_K_XL.gguf \
+  --alias unsloth/Qwen3.5-35B-A3B \
+  --temp 0.6 \
+  --top-p 0.95 \
+  --top-k 20 \
+  --min-p 0.0 \
+  --port 8081 \
+  --parallel 4 \
+  --kv-unified \
+  --cache-type-k q8_0 --cache-type-v q8_0 \
+  --flash-attn on \
+  --ctx-size 131072</code></pre></div>
+          <p><strong>Why these flags matter:</strong> the alias gives Claude Code a stable target, parallelism helps repeated tool loops, the cache flags matter for performance consistency, flash attention improves throughput, and the context size should be tuned based on actual responsiveness rather than vanity.</p>
+
+          <h2>Step 5: connect Claude Code to the local model</h2>
+          <p>The exact integration path depends on how you are exposing the local server to Claude Code, but the key point is to make Claude Code call the local alias rather than a hosted provider model.</p>
+          <div class="code-block"><pre><code>alias claudecli='claude --model unsloth/Qwen3.5-35B-A3B --dangerously-skip-permissions'</code></pre></div>
+          <p>A reference alias from your screenshot looked like this. Use that kind of shortcut carefully. It is useful for testing, but <code>--dangerously-skip-permissions</code> is not something I would leave on blindly for everyday agentic work.</p>
+
+          <h2>Step 6: verify the model is actually in use</h2>
+          <div class="code-block"><pre><code>curl http://127.0.0.1:8081/health || true
+curl http://127.0.0.1:8081/models || true</code></pre></div>
+          <p>Then use Claude Code on a tiny repo or toy prompt first. You want to confirm the server is reachable, the alias resolves correctly, the model is not silently falling back to something else, and latency is within a usable range.</p>
+
+          <h2>The smallest version that actually works</h2>
+          <ol>
+            <li>install <code>llama.cpp</code></li>
+            <li>download the Unsloth model artifact</li>
+            <li>start the server with a moderate context size</li>
+            <li>verify the alias</li>
+            <li>fix the KV cache invalidation issue</li>
+            <li>test Claude Code on a small task</li>
+          </ol>
+          <p>That gets you to a usable baseline faster than trying to optimize everything at once.</p>
+
+          <h2>Practical tuning on an M4 Pro Mac mini</h2>
+          <h3>Context size</h3>
+          <p>A huge context window sounds attractive, but on local hardware it can hurt latency badly. Start lower if the machine feels sluggish.</p>
+          <h3>Parallelism</h3>
+          <p>If the system feels unstable or too memory-hungry, reduce <code>--parallel</code>. If it is underutilized, you can experiment upward.</p>
+          <h3>Cache precision</h3>
+          <p>The cache flags are worth keeping an eye on because they affect both memory usage and runtime behavior.</p>
+          <h3>Prompt discipline</h3>
+          <p>Agentic systems magnify token waste. Smaller, cleaner context packets help local models much more than people expect.</p>
+
+          <h2>Where most setups go wrong</h2>
+          <blockquote>Pitfall: Many people compare open local models to hosted frontier models before fixing the obvious performance killers. If KV cache invalidation or a bad server configuration is dragging the system down, you are not evaluating the model fairly. You are evaluating a broken setup.</blockquote>
+          <ul>
+            <li>using an overly large context window immediately</li>
+            <li>assuming the biggest model is automatically the best local choice</li>
+            <li>forgetting to verify that Claude Code is actually using the local alias</li>
+            <li>judging the setup on one bad run before the cache and server settings are sane</li>
+          </ul>
+
+          <h2>Best practices I would use</h2>
+          <blockquote>Best practice: optimize for responsiveness and stability first. A local model that is slightly weaker on paper but consistently fast enough for repeated coding turns is often more useful than a heavier model that drags the entire loop down.</blockquote>
+          <ul>
+            <li>fix KV cache invalidation first</li>
+            <li>start with a moderate context size</li>
+            <li>verify the alias and server health explicitly</li>
+            <li>keep one known-good server command documented</li>
+            <li>only then start chasing bigger context windows or fancier tuning</li>
+          </ul>
+
+          <h2>What I would not do</h2>
+          <p>I would not jump straight to the dense 35B variant just because it sounds more complete on paper. On a local agentic workflow, the subjective feel of the system matters a lot. If the model becomes sluggish across repeated calls, the whole setup becomes harder to use no matter how good its raw capability is.</p>
+          <p>I would also avoid treating this as a full replacement for hosted top-end Claude models in every scenario. The better framing is a hybrid one: use the local model for private, iterative, or cost-sensitive workflows, and keep hosted models for the highest-end reasoning or coding ceiling.</p>
+
+          <h2>Final checklist</h2>
+          <ul>
+            <li>Install the macOS prerequisites</li>
+            <li>Build or install <code>llama.cpp</code></li>
+            <li>Download the Unsloth Qwen3.5-35B-A3B model artifact</li>
+            <li>Start the local server with a documented command</li>
+            <li>Read the Unsloth Claude Code guide</li>
+            <li>Fix the KV cache invalidation issue first</li>
+            <li>Verify Claude Code is actually calling the local alias</li>
+            <li>Test on a small repo before using it for real work</li>
+            <li>Tune context size and parallelism for your machine</li>
+          </ul>
+
+          <h2>Conclusion</h2>
+          <p>If you want a local coding model for Claude Code on a Mac mini M4 Pro, <strong>Unsloth/Qwen3.5-35B-A3B is a very sensible choice</strong>. The reason is not just model quality. It is that the model is much more practical for repeated local agent loops than a heavier dense alternative when the rest of the stack is tuned properly.</p>
+          <p>The key is to treat the setup as a system, not just a model download. Fix the KV cache issue first, keep the serving command sane, verify the alias path end to end, and tune for repeated interactive use rather than bragging-rights context sizes.</p>
+
+          <h2>References and resources</h2>
+          <ul>
+            <li><a href="https://unsloth.ai/docs/basics/claude-code" target="_blank" rel="noreferrer">Unsloth Claude Code guide</a></li>
+            <li><a href="https://github.com/ggml-org/llama.cpp" target="_blank" rel="noreferrer">llama.cpp repository</a></li>
+            <li><a href="https://docs.anthropic.com/en/docs/claude-code" target="_blank" rel="noreferrer">Claude Code documentation</a></li>
+          </ul>
+
+          <div class="blog-post-tags">
+            <span class="blog-post-tag">Claude Code</span>
+            <span class="blog-post-tag">Unsloth</span>
+            <span class="blog-post-tag">Qwen</span>
+            <span class="blog-post-tag">Local LLMs</span>
+            <span class="blog-post-tag">Mac mini</span>
+          </div>
+        </div>
+        <div class="blog-footer">
+          <p><a href="index.html">Back to Blog</a> &bull; <a href="../index.html">Back to Portfolio</a></p>
+          <p style="margin-top: 16px; font-size: 0.9rem;"><em>Local coding models get much better once the system around them is tuned properly.</em></p>
+        </div>
+      </div>
+    </header>
+  </body>
+</html>
