@@ -180,9 +180,20 @@ alias claudecli_unsafe='claude --model unsloth/Qwen3.5-35B-A3B --dangerously-ski
 
 I would keep the safer alias as the default and only use the permissive one for deliberate local experiments.
 
-## Step 6: verify the local server is healthy
+## Step 6: reload your shell
 
-Before touching Claude Code, make sure the server itself is alive.
+Reload your shell so the new alias is actually available in the terminal you are using.
+
+```bash
+source ~/.zshrc
+which claudecli || echo "alias loaded in shell config"
+```
+
+If `claudecli` is not available after this step, stop and fix that before going further.
+
+## Step 7: verify the local server is healthy
+
+Before touching Claude Code, make sure the server itself is alive:
 
 ```bash
 curl http://127.0.0.1:8081/health || true
@@ -191,7 +202,16 @@ curl http://127.0.0.1:8081/models || true
 
 You want to confirm the server is reachable and that the model alias exists before debugging Claude Code itself.
 
-## Step 7: run Claude Code against the local model
+
+
+The point of the first run is not to do heavy work. It is to confirm that:
+
+- Claude Code starts cleanly
+- the local alias resolves
+- responses are coming from the local model path you expect
+- latency is tolerable enough for repeated agentic turns
+
+## Step 8: run Claude Code against the local model
 
 Now move into a small test repo and invoke Claude Code through the alias:
 
@@ -206,14 +226,9 @@ Use a tiny first prompt so you can validate the loop quickly. For example:
 Summarize the repo structure and suggest one safe small improvement.
 ```
 
-The point of the first run is not to do heavy work. It is to confirm that:
+The point of the first run is not to do heavy work. It is to confirm that Claude Code starts cleanly, the local alias resolves, responses are coming from the local model path you expect, and latency is tolerable enough for repeated agentic turns.
 
-- Claude Code starts cleanly
-- the local alias resolves
-- responses are coming from the local model path you expect
-- latency is tolerable enough for repeated agentic turns
-
-## Step 8: verify the model is actually in use
+## Step 9: verify the model is actually in use
 
 If anything feels wrong, keep the verification loop small. Check:
 
