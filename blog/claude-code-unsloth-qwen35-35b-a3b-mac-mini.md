@@ -220,7 +220,13 @@ cd ~/path/to/test-repo
 claudecli
 ```
 
-Use a tiny first prompt so you can validate the loop quickly. For example:
+Use a tiny first prompt so you can validate the loop quickly. Start with something like this:
+
+```text
+What model are you?
+```
+
+That quick check helps confirm the local alias is actually being used before you do any real coding work. After that, try a tiny repo prompt such as:
 
 ```text
 Summarize the repo structure and suggest one safe small improvement.
