@@ -1,0 +1,280 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="A practical guide to using Git worktrees so Claude Code, Cursor, Codex, and other AI coding agents can work in parallel without stomping on the same checkout, index, ports, or test state.">
+    <meta name="author" content="Anirudh Negi">
+    <title>Git Worktrees for Parallel AI Coding Agents Without Repo Chaos | Anirudh Negi</title>
+    <link rel="canonical" href="https://negiadventures.github.io/blog/git-worktrees-parallel-ai-agents.html">
+    <meta property="og:type" content="article">
+    <meta property="og:url" content="https://negiadventures.github.io/blog/git-worktrees-parallel-ai-agents.html">
+    <meta property="og:title" content="Git Worktrees for Parallel AI Coding Agents Without Repo Chaos | Anirudh Negi">
+    <meta property="og:description" content="A practical guide to using Git worktrees so Claude Code, Cursor, Codex, and other AI coding agents can work in parallel without stomping on the same checkout, index, ports, or test state.">
+    <meta property="og:image" content="https://negiadventures.github.io/images/profile.jpg">
+    <meta property="article:published_time" content="2026-04-10">
+    <meta property="article:author" content="Anirudh Negi">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:url" content="https://negiadventures.github.io/blog/git-worktrees-parallel-ai-agents.html">
+    <meta name="twitter:title" content="Git Worktrees for Parallel AI Coding Agents Without Repo Chaos | Anirudh Negi">
+    <meta name="twitter:description" content="A practical guide to using Git worktrees so Claude Code, Cursor, Codex, and other AI coding agents can work in parallel without stomping on the same checkout, index, ports, or test state.">
+    <meta name="twitter:image" content="https://negiadventures.github.io/images/profile.jpg">
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "BlogPosting",
+      "headline": "Git Worktrees for Parallel AI Coding Agents Without Repo Chaos",
+      "description": "A practical guide to using Git worktrees so Claude Code, Cursor, Codex, and other AI coding agents can work in parallel without stomping on the same checkout, index, ports, or test state.",
+      "image": "https://negiadventures.github.io/images/profile.jpg",
+      "url": "https://negiadventures.github.io/blog/git-worktrees-parallel-ai-agents.html",
+      "datePublished": "2026-04-10",
+      "author": {
+        "@type": "Person",
+        "name": "Anirudh Negi",
+        "url": "https://negiadventures.github.io"
+      },
+      "publisher": {
+        "@type": "Person",
+        "name": "Anirudh Negi",
+        "url": "https://negiadventures.github.io"
+      }
+    }
+    </script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../stylesheets/stylesheet.css?v=5" media="screen">
+    <style>
+      .blog-post {
+        max-width: 800px;
+        margin: 0 auto;
+        padding: 60px 20px;
+      }
+      .blog-post-header { margin-bottom: 40px; }
+      .blog-post-nav { margin-bottom: 30px; }
+      .blog-post-nav a { color: var(--accent-strong); font-size: 0.95rem; }
+      .blog-post-nav a:hover { color: var(--accent); }
+      .blog-post-title { font-size: 2.5rem; margin-bottom: 16px; }
+      .blog-post-meta { display: flex; gap: 20px; color: var(--text-muted); font-size: 0.95rem; margin-bottom: 30px; flex-wrap: wrap; }
+      .blog-post-image { width: 100%; height: 300px; object-fit: cover; border-radius: 16px; margin-bottom: 30px; border: 1px solid var(--border); background: linear-gradient(135deg, rgba(10, 16, 32, 1), rgba(19, 31, 58, 1)); }
+      .blog-post-content h2 { font-size: 1.6rem; margin-top: 40px; margin-bottom: 16px; color: var(--text-light); }
+      .blog-post-content h3 { font-size: 1.3rem; margin-top: 30px; margin-bottom: 12px; color: var(--text-light); }
+      .blog-post-content p { line-height: 1.8; margin-bottom: 16px; color: var(--text-muted); }
+      .blog-post-content ul, .blog-post-content ol { line-height: 1.8; margin-bottom: 20px; color: var(--text-muted); padding-left: 24px; }
+      .blog-post-content li { margin-bottom: 8px; }
+      .code-block { background: var(--bg-alt); border: 1px solid var(--border); border-radius: 12px; padding: 20px; margin: 20px 0; overflow-x: auto; }
+      .code-block pre { margin: 0; font-family: var(--mono); font-size: 0.9rem; line-height: 1.6; color: var(--text-light); }
+      .code-block code { color: var(--accent-strong); }
+      .blog-post-tags { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 40px; padding-top: 30px; border-top: 1px solid var(--border); }
+      .blog-post-tag { background: var(--accent-soft); color: var(--accent-strong); border-radius: 999px; padding: 6px 14px; font-size: 0.85rem; font-family: var(--mono); border: 1px solid transparent; transition: border-color 0.2s ease; }
+      .blog-post-tag:hover { border-color: var(--accent); }
+      .blog-footer { margin-top: 60px; padding-top: 30px; border-top: 1px solid var(--border); text-align: center; }
+      .blog-footer a { color: var(--accent-strong); }
+      .blog-footer a:hover { color: var(--accent); }
+      @media (max-width: 768px) {
+        .blog-post { padding: 40px 16px; }
+        .blog-post-title { font-size: 2rem; }
+        .blog-post-image { height: 200px; }
+      }
+    </style>
+  </head>
+  <body>
+    <a href="../index.html#main" class="skip-link">Skip to main content</a>
+
+    <header class="site-header">
+      <div class="container blog-post">
+        <div class="blog-post-nav">
+          <a href="index.html">&larr; Back to All Posts</a>
+        </div>
+
+        <div class="blog-post-header">
+          <h1 class="blog-post-title">Git Worktrees for Parallel AI Coding Agents Without Repo Chaos</h1>
+          <div class="blog-post-meta">
+            <span>April 10, 2026</span>
+            <span>&bull;</span>
+            <span>10 min read</span>
+          </div>
+          <img src="data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%27%20viewBox%3D%270%200%201200%20630%27%3E%3Cdefs%3E%3ClinearGradient%20id%3D%27bg%27%20x1%3D%270%27%20x2%3D%271%27%20y1%3D%270%27%20y2%3D%271%27%3E%3Cstop%20offset%3D%270%25%27%20stop-color%3D%27%2309131f%27%2F%3E%3Cstop%20offset%3D%27100%25%27%20stop-color%3D%27%23182d49%27%2F%3E%3C%2FlinearGradient%3E%3C%2Fdefs%3E%3Crect%20width%3D%271200%27%20height%3D%27630%27%20fill%3D%27url%28%23bg%29%27%2F%3E%3Ccircle%20cx%3D%27990%27%20cy%3D%27125%27%20r%3D%27150%27%20fill%3D%27%2327d3ff%27%20fill-opacity%3D%270.12%27%2F%3E%3Ccircle%20cx%3D%27175%27%20cy%3D%27520%27%20r%3D%27195%27%20fill%3D%27%238d6bff%27%20fill-opacity%3D%270.14%27%2F%3E%3Crect%20x%3D%27105%27%20y%3D%27110%27%20width%3D%27990%27%20height%3D%27410%27%20rx%3D%2728%27%20fill%3D%27%230f172a%27%20stroke%3D%27%2338bdf8%27%20stroke-opacity%3D%270.35%27%2F%3E%3Ctext%20x%3D%27150%27%20y%3D%27210%27%20fill%3D%27white%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2746%27%20font-weight%3D%27700%27%3EGit%20Worktrees%20for%20Parallel%3C%2Ftext%3E%3Ctext%20x%3D%27150%27%20y%3D%27282%27%20fill%3D%27%2390cdf4%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2746%27%20font-weight%3D%27700%27%3EAI%20Coding%20Agents%3C%2Ftext%3E%3Ctext%20x%3D%27150%27%20y%3D%27368%27%20fill%3D%27%23cbd5e1%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2728%27%3EBranch%20isolation%2C%20clean%20runtime%20boundaries%2C%20and%20calmer%20PRs%3C%2Ftext%3E%3C%2Fsvg%3E" alt="Git Worktrees for Parallel AI Coding Agents Without Repo Chaos" class="blog-post-image">
+        </div>
+
+        <div class="blog-post-content">
+          <p>AI coding agents get weird the moment you run more than one in the same checkout. One session rewrites a file, another stages something half-finished, and a third grabs <code>.git/index.lock</code> right when you want to run tests. The result is not parallelism. It is shared-state chaos.</p>
+
+          <p>Git worktrees are the cleanest fix I know for this. They let each agent keep its own working directory and index while still sharing the same repository history. That means Claude Code can work on a refactor, Cursor can patch a test failure, and Codex can draft docs, all without fighting over one folder.</p>
+
+          <p>This post covers a practical worktree workflow for multi-agent development that stays fast, reviewable, and boring in the good way.</p>
+
+          <h2>Why one checkout breaks down so quickly</h2>
+          <p>A single AI agent in a repo is manageable. Multiple agents in the same directory create several failure modes immediately:</p>
+          <ul>
+            <li>one agent edits files another agent assumed were stable</li>
+            <li>staged changes leak across tasks</li>
+            <li>shell commands run against the wrong branch state</li>
+            <li><code>.git/index.lock</code> collisions show up at the worst moment</li>
+            <li>local ports, test databases, and caches get shared accidentally</li>
+          </ul>
+
+          <p>Humans notice some of that. Agents often do not. They keep going with stale assumptions until the diff becomes painful to review.</p>
+
+          <h2>What Git worktrees actually give you</h2>
+          <p>A Git worktree is a linked working directory attached to the same repository. Each worktree has its own checked out files, <code>HEAD</code>, and staging area, while Git history and objects stay shared.</p>
+
+          <p>That balance is exactly what multi-agent workflows need:</p>
+          <ul>
+            <li><strong>separate filesystems per task</strong> so edits do not collide in place</li>
+            <li><strong>separate indexes</strong> so staging stays scoped to the task</li>
+            <li><strong>shared object database</strong> so you are not recloning the repo repeatedly</li>
+            <li><strong>cheap creation and cleanup</strong> compared with full clones</li>
+          </ul>
+
+          <p>In practice, that means you get isolation where it matters for coding, without paying the cost of duplicating the whole repository for every agent.</p>
+
+          <h2>The branch-per-agent pattern I recommend</h2>
+          <p>The simplest durable pattern is one branch and one worktree per agent task.</p>
+
+          <p>For example:</p>
+          <div class="code-block"><pre><code>git worktree add ../wt-auth-hardening -b ai/auth-hardening origin/master
+git worktree add ../wt-api-tests -b ai/api-tests origin/master
+git worktree add ../wt-docs-cleanup -b ai/docs-cleanup origin/master</code></pre></div>
+
+          <p>Then each agent session starts inside exactly one worktree:</p>
+          <ul>
+            <li><code>../wt-auth-hardening</code> for the auth task</li>
+            <li><code>../wt-api-tests</code> for test fixes</li>
+            <li><code>../wt-docs-cleanup</code> for docs and polish</li>
+          </ul>
+
+          <p>This sounds obvious, but the naming matters. If the folder name, branch name, and task title all line up, review stays much easier later.</p>
+
+          <h2>Good worktree names save real time</h2>
+          <p>A naming convention does more work than people expect. I like:</p>
+          <div class="code-block"><pre><code>wt-&lt;task&gt;
+ai/&lt;task&gt;</code></pre></div>
+          <p>Examples:</p>
+          <ul>
+            <li><code>wt-checkout-bug</code> + <code>ai/checkout-bug</code></li>
+            <li><code>wt-refactor-billing-api</code> + <code>ai/refactor-billing-api</code></li>
+            <li><code>wt-add-login-tests</code> + <code>ai/add-login-tests</code></li>
+          </ul>
+
+          <h2>Worktrees solve file conflicts, not runtime conflicts</h2>
+          <p>This is the part teams miss. Worktrees isolate the repository state, but they do not automatically isolate everything around the repository.</p>
+
+          <p>If two agents both run <code>npm run dev</code> on port 3000, one of them is still going to lose. If they both point at the same mutable test database, they can still corrupt each other’s assumptions.</p>
+
+          <p>For parallel AI work, add a few runtime rules next to worktrees:</p>
+          <ul>
+            <li>assign unique ports per worktree</li>
+            <li>use separate <code>.env</code> overlays when local config differs</li>
+            <li>isolate test databases or schemas when tests mutate data</li>
+            <li>scope caches and temp directories where tools allow it</li>
+            <li>avoid shared local state that outlives the branch</li>
+          </ul>
+
+          <p>A useful mental model is this: worktrees isolate code state, not service state.</p>
+
+          <h2>A lightweight parallel setup that works well</h2>
+          <p>For most repos, you do not need a huge orchestration layer. You just need predictable setup.</p>
+          <div class="code-block"><pre><code># create task worktrees from a clean main checkout
+git fetch origin
+git worktree add ../wt-bugfix-cart -b ai/bugfix-cart origin/master
+git worktree add ../wt-upgrade-eslint -b ai/upgrade-eslint origin/master
+
+# inspect active worktrees
+git worktree list</code></pre></div>
+
+          <p>Then inside each worktree, keep the session narrow:</p>
+          <div class="code-block"><pre><code>cd ../wt-bugfix-cart
+pnpm install
+pnpm test tests/cart.test.ts</code></pre></div>
+
+          <p>A second agent can work elsewhere without touching that state:</p>
+          <div class="code-block"><pre><code>cd ../wt-upgrade-eslint
+pnpm install
+pnpm lint</code></pre></div>
+
+          <h2>Where AI agents benefit the most</h2>
+          <p>Worktrees are especially useful when tasks are independent but still live in the same repo.</p>
+
+          <h3>1. Parallel bugfixing</h3>
+          <p>One agent can handle a production bug while another updates tests or cleans up docs. No stashing, no branch thrash, no wondering which files are safe to touch.</p>
+
+          <h3>2. Large refactors broken into reviewable chunks</h3>
+          <p>Instead of asking one agent to perform a giant rewrite, split the work into separate branches and review them independently.</p>
+
+          <h3>3. Comparison runs across tools</h3>
+          <p>You can give the same repo state to different tools, like Claude Code, Cursor, and Codex, in separate worktrees and compare outputs cleanly.</p>
+
+          <h3>4. Safer experimentation</h3>
+          <p>Detached or throwaway worktrees are handy when you want an agent to explore a risky path without contaminating a real task branch.</p>
+
+          <h2>A merge discipline that keeps the benefits</h2>
+          <p>Parallel agent output only helps if you merge it carefully. My default rules are:</p>
+          <ol>
+            <li>each worktree produces one task-scoped PR</li>
+            <li>each PR verifies against its own branch before merge</li>
+            <li>merge the lowest-risk or highest-dependency PR first</li>
+            <li>rebase or regenerate later worktrees when upstream assumptions change</li>
+          </ol>
+
+          <p>If PR A changes a core interface, PR B and PR C should not quietly pretend nothing happened. Re-sync the dependent worktrees and rerun checks.</p>
+
+          <h2>Common mistakes that make worktrees feel worse than they are</h2>
+          <h3>Reusing one branch across multiple worktrees</h3>
+          <p>That defeats the point. One task should have one branch owner.</p>
+
+          <h3>Forgetting cleanup</h3>
+          <p>When a task is merged or abandoned, remove the worktree properly:</p>
+          <div class="code-block"><pre><code>git worktree remove ../wt-bugfix-cart
+git branch -d ai/bugfix-cart</code></pre></div>
+          <p>If directories disappear manually, run <code>git worktree prune</code> from the main repo to clean stale metadata.</p>
+
+          <h3>Sharing mutable local infrastructure</h3>
+          <p>If all worktrees hit the same ports, Redis instance, or writable scratch space, you still get hidden cross-talk.</p>
+
+          <h3>Letting agent tasks overlap too much</h3>
+          <p>Worktrees help when tasks are separable. If three agents are all rewriting the same core service, you have a coordination problem, not a Git problem.</p>
+
+          <h2>A small playbook you can actually adopt</h2>
+          <ul>
+            <li>keep <code>master</code> or <code>main</code> clean and up to date</li>
+            <li>create one worktree per agent task from that clean base</li>
+            <li>name the directory and branch after the task</li>
+            <li>give each worktree its own verification commands</li>
+            <li>isolate runtime state when services or tests are mutable</li>
+            <li>merge in dependency order, not arrival order</li>
+            <li>clean up worktrees immediately after merge</li>
+          </ul>
+
+          <p>It is not fancy, but it scales much better than one shared checkout with multiple chat sessions pointed at it.</p>
+
+          <h2>References and resources</h2>
+          <ul>
+            <li><a href="https://git-scm.com/docs/git-worktree">Git worktree documentation</a></li>
+            <li><a href="https://devcenter.upsun.com/posts/git-worktrees-for-parallel-ai-coding-agents/">Git worktrees for parallel AI coding agents</a></li>
+            <li><a href="https://www.augmentcode.com/guides/git-worktrees-parallel-ai-agent-execution">Parallel AI agent execution with worktrees</a></li>
+          </ul>
+
+          <h2>Takeaways</h2>
+          <ul>
+            <li>Use one branch and one worktree per AI task</li>
+            <li>Treat runtime isolation separately from repository isolation</li>
+            <li>Keep branch names, folder names, and PR scope aligned</li>
+            <li>Clean up merged worktrees so the system stays easy to reason about</li>
+          </ul>
+        </div>
+
+        <div class="blog-post-tags">
+          <span class="blog-post-tag">Git</span>
+          <span class="blog-post-tag">Worktrees</span>
+          <span class="blog-post-tag">AI Coding</span>
+          <span class="blog-post-tag">Developer Workflow</span>
+        </div>
+
+        <footer class="blog-footer">
+          <p><a href="index.html">← Back to All Posts</a></p>
+        </footer>
+      </div>
+    </header>
+  </body>
+</html>
