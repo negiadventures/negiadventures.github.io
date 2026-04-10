@@ -166,18 +166,18 @@ ls ~/models/qwen</code></pre></div>
           <p>I would keep the safer alias as the default and only use the permissive one for deliberate local experiments.</p>
 
           <h2>Step 6: verify the local server is healthy</h2>
-          <p>Before touching Claude Code, make sure the server itself is alive.</p>
+          <p>Reload your shell so the new alias is actually available in the terminal you are using.</p>
           <div class="code-block"><pre><code>curl http://127.0.0.1:8081/health || true
 curl http://127.0.0.1:8081/models || true</code></pre></div>
-          <p>You want to confirm the server is reachable and that the model alias exists before debugging Claude Code itself.</p>
+          <p>If `claudecli` is not available after this step, stop and fix that before going further.</p>
 
           <h2>Step 7: run Claude Code against the local model</h2>
-          <p>Now move into a small test repo and invoke Claude Code through the alias:</p>
+          <p>Before touching Claude Code, make sure the server itself is alive:</p>
           <div class="code-block"><pre><code>cd ~/path/to/test-repo
 claudecli</code></pre></div>
-          <p>Use a tiny first prompt so you can validate the loop quickly. For example:</p>
+          <p>You want to confirm the server is reachable and that the model alias exists before debugging Claude Code itself.</p>
           <div class="code-block"><pre><code>Summarize the repo structure and suggest one safe small improvement.</code></pre></div>
-          <p>The point of the first run is not to do heavy work. It is to confirm that Claude Code starts cleanly, the local alias resolves, responses are coming from the local model path you expect, and latency is tolerable enough for repeated agentic turns.</p>
+          <p></p>
 
           <h2>Step 8: verify the model is actually in use</h2>
           <p>If anything feels wrong, keep the verification loop small. Check the local server logs, the model alias, whether Claude Code is silently falling back to another model, and whether the KV cache fix is actually in place. Only after that should you judge whether the setup is good enough for everyday use.</p>
