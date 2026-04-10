@@ -2,6 +2,14 @@
   "topics": [
     {
       "date": "2026-04-10",
+      "skill": "Claude Code local model setup",
+      "topic": "Running Claude Code with Unsloth Qwen3.5-35B-A3B on a Mac mini M4 Pro, including local serving, KV cache fixes, and practical tuning for agentic coding workflows",
+      "slug": "claude-code-unsloth-qwen35-35b-a3b-mac-mini",
+      "title": "How to Run Claude Code with Unsloth Qwen3.5-35B-A3B on a Mac mini M4 Pro",
+      "summary": "A detailed guide to running Claude Code with Unsloth Qwen3.5-35B-A3B on a Mac mini M4 Pro, covering why it is a better fit than dense Qwen3.5-35B for local agentic workflows and how to set it up step by step."
+    },
+    {
+      "date": "2026-04-10",
       "skill": "Git worktree workflow for AI coding agents",
       "topic": "Using Git worktrees to run Claude Code, Cursor, Codex, and similar AI coding agents in parallel with branch isolation, runtime guardrails, predictable naming, and merge discipline so concurrent sessions do not trample the same repository state",
       "slug": "git-worktrees-parallel-ai-agents",
