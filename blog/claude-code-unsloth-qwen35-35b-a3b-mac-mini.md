@@ -111,7 +111,7 @@ If you already have a working `llama.cpp`, you can skip rebuilding it.
 
 ## Step 3: get the Unsloth model
 
-Follow the Unsloth guidance for the exact model artifact you want. Based on the reference setup, the local server is using an Unsloth-flavored Qwen3.5-35B-A3B GGUF.
+Follow the Unsloth guidance for the exact model artifact you want. For a local Claude Code workflow on Apple Silicon, an Unsloth-flavored Qwen3.5-35B-A3B GGUF is the practical target here.
 
 A representative local path might look like this:
 
@@ -121,7 +121,7 @@ mkdir -p ~/models/qwen
 ls ~/models/qwen
 ```
 
-The reference setup used a path similar to:
+One practical filename pattern looks like this:
 
 ```text
 Qwen3.5-35B-A3B-UD-Q4_K_XL.gguf
@@ -131,7 +131,7 @@ The exact file name may vary depending on the published artifact and quantizatio
 
 ## Step 4: launch the local inference server
 
-A representative `llama.cpp` server command, based on the reference setup you shared, looks like this:
+A representative `llama.cpp` server command for this setup looks like this:
 
 ```bash
 cd ~/ai/llama.cpp
@@ -158,39 +158,71 @@ cd ~/ai/llama.cpp
 - `--flash-attn on` is important for throughput.
 - `--ctx-size 131072` is ambitious, so you may want to lower it if memory pressure or latency becomes ugly.
 
-## Step 5: connect Claude Code to the local model
+## Step 5: create a simple Claude Code alias
 
-The exact integration path depends on how you are exposing the local server to Claude Code, but the key point is to make Claude Code call the local alias rather than a hosted provider model.
-
-A reference alias from your screenshot looked like this:
+A simple way to test the local model with Claude Code is to create a shell alias that pins the model name directly. Add this to your shell config, such as `~/.zshrc`:
 
 ```bash
-alias claudecli='claude --model unsloth/Qwen3.5-35B-A3B --dangerously-skip-permissions'
+alias claudecli='claude --model unsloth/Qwen3.5-35B-A3B'
 ```
 
-Use that kind of shortcut carefully. It is useful for testing, but `--dangerously-skip-permissions` is not something I would leave on blindly for everyday agentic work.
+Then reload your shell:
 
-A safer mental model is:
+```bash
+source ~/.zshrc
+```
 
-1. verify the model alias works
-2. confirm Claude Code is actually hitting the local server
-3. keep permissions strict unless you intentionally need a looser local workflow
+If you are intentionally testing a permissive local workflow, you can create a second alias for that case only:
 
-## Step 6: verify the model is actually in use
+```bash
+alias claudecli_unsafe='claude --model unsloth/Qwen3.5-35B-A3B --dangerously-skip-permissions'
+```
 
-Before doing real work, run a small sanity check.
+I would keep the safer alias as the default and only use the permissive one for deliberate local experiments.
+
+## Step 6: verify the local server is healthy
+
+Before touching Claude Code, make sure the server itself is alive.
 
 ```bash
 curl http://127.0.0.1:8081/health || true
 curl http://127.0.0.1:8081/models || true
 ```
 
-Then use Claude Code on a tiny repo or toy prompt first. You want to confirm:
+You want to confirm the server is reachable and that the model alias exists before debugging Claude Code itself.
 
-- the server is reachable
-- the alias resolves correctly
-- the model is not silently falling back to something else
-- latency is within a usable range
+## Step 7: run Claude Code against the local model
+
+Now move into a small test repo and invoke Claude Code through the alias:
+
+```bash
+cd ~/path/to/test-repo
+claudecli
+```
+
+Use a tiny first prompt so you can validate the loop quickly. For example:
+
+```text
+Summarize the repo structure and suggest one safe small improvement.
+```
+
+The point of the first run is not to do heavy work. It is to confirm that:
+
+- Claude Code starts cleanly
+- the local alias resolves
+- responses are coming from the local model path you expect
+- latency is tolerable enough for repeated agentic turns
+
+## Step 8: verify the model is actually in use
+
+If anything feels wrong, keep the verification loop small. Check:
+
+- the local server logs
+- the model alias
+- whether Claude Code is silently falling back to another model
+- whether the KV cache fix is actually in place
+
+Only after that should you judge whether the setup is good enough for everyday use.
 
 ## The smallest version that actually works
 
