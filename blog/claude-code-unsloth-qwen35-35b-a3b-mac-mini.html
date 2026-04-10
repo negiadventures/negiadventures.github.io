@@ -180,7 +180,10 @@ claudecli</code></pre></div>
           <p></p>
 
           <h2>Step 8: verify the model is actually in use</h2>
-          <p>If anything feels wrong, keep the verification loop small. Check the local server logs, the model alias, whether Claude Code is silently falling back to another model, and whether the KV cache fix is actually in place. Only after that should you judge whether the setup is good enough for everyday use.</p>
+          <p>If anything feels wrong, keep the verification loop small. Check the local server logs, the model alias, whether Claude Code is silently falling back to another model, and whether the KV cache fix is actually in place. Asking a direct prompt like <code>What model are you?</code> is a quick sanity check before you spend time debugging the wrong part of the stack. Only after that should you judge whether the setup is good enough for everyday use.</p>
+
+          <h2>First-time Claude Code account note</h2>
+          <p>For many people, the very first Claude Code setup still requires logging in with a Claude account and satisfying Claude Code access requirements, including any minimum account funding requirements that apply at the time, such as a small initial credit threshold. Treat that as the bootstrap step for getting Claude Code itself working. Once Claude Code is installed, logged in, and functioning, you can then point it at the local model path described in this guide for everyday local use.</p>
 
           <h2>The smallest version that actually works</h2>
           <ol>
