@@ -1,6 +1,14 @@
 {
   "topics": [
     {
+      "date": "2026-04-10",
+      "skill": "Git worktree workflow for AI coding agents",
+      "topic": "Using Git worktrees to run Claude Code, Cursor, Codex, and similar AI coding agents in parallel with branch isolation, runtime guardrails, predictable naming, and merge discipline so concurrent sessions do not trample the same repository state",
+      "slug": "git-worktrees-parallel-ai-agents",
+      "title": "Git Worktrees for Parallel AI Coding Agents Without Repo Chaos",
+      "summary": "A practical guide to running multiple AI coding agents safely with Git worktrees, branch-per-task isolation, runtime guardrails, and merge discipline that keeps parallel work fast and reviewable."
+    },
+    {
       "date": "2026-04-09",
       "skill": "Gemini CLI debugging workflow",
       "topic": "Using Gemini CLI for terminal-first debugging with plan mode, shell tooling, focused context, command capture, and verification loops so engineers can move from failing command to reviewed fix faster",
