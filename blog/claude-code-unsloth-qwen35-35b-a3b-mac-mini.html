@@ -133,11 +133,11 @@ cmake --build build --config Release -j</code></pre></div>
           <p>If you want the most predictable local serving path on macOS, <code>llama.cpp</code> is a good default. If you already have a working build, you can skip rebuilding it.</p>
 
           <h2>Step 3: get the Unsloth model</h2>
-          <p>Follow the Unsloth guidance for the exact model artifact you want. Based on the reference setup, the local server is using an Unsloth-flavored Qwen3.5-35B-A3B GGUF.</p>
+          <p>Follow the Unsloth guidance for the exact model artifact you want. For a local Claude Code workflow on Apple Silicon, an Unsloth-flavored Qwen3.5-35B-A3B GGUF is the practical target here.</p>
           <div class="code-block"><pre><code>mkdir -p ~/models/qwen
 # place the model file here once downloaded
 ls ~/models/qwen</code></pre></div>
-          <p>The reference setup used a file name similar to <code>Qwen3.5-35B-A3B-UD-Q4_K_XL.gguf</code>. The exact name may vary depending on the quantization you choose.</p>
+          <p>One practical filename pattern looks like <code>Qwen3.5-35B-A3B-UD-Q4_K_XL.gguf</code>. The exact name may vary depending on the quantization you choose.</p>
 
           <h2>Step 4: launch the local inference server</h2>
           <div class="code-block"><pre><code>cd ~/ai/llama.cpp
@@ -156,15 +156,31 @@ ls ~/models/qwen</code></pre></div>
   --ctx-size 131072</code></pre></div>
           <p><strong>Why these flags matter:</strong> the alias gives Claude Code a stable target, parallelism helps repeated tool loops, the cache flags matter for performance consistency, flash attention improves throughput, and the context size should be tuned based on actual responsiveness rather than vanity.</p>
 
-          <h2>Step 5: connect Claude Code to the local model</h2>
-          <p>The exact integration path depends on how you are exposing the local server to Claude Code, but the key point is to make Claude Code call the local alias rather than a hosted provider model.</p>
-          <div class="code-block"><pre><code>alias claudecli='claude --model unsloth/Qwen3.5-35B-A3B --dangerously-skip-permissions'</code></pre></div>
-          <p>A reference alias from your screenshot looked like this. Use that kind of shortcut carefully. It is useful for testing, but <code>--dangerously-skip-permissions</code> is not something I would leave on blindly for everyday agentic work.</p>
+          <h2>Step 5: create a simple Claude Code alias</h2>
+          <p>A simple way to test the local model with Claude Code is to create a shell alias that pins the model name directly. Add this to your shell config, such as <code>~/.zshrc</code>:</p>
+          <div class="code-block"><pre><code>alias claudecli='claude --model unsloth/Qwen3.5-35B-A3B'</code></pre></div>
+          <p>Then reload your shell:</p>
+          <div class="code-block"><pre><code>source ~/.zshrc</code></pre></div>
+          <p>If you are intentionally testing a permissive local workflow, you can create a second alias for that case only:</p>
+          <div class="code-block"><pre><code>alias claudecli_unsafe='claude --model unsloth/Qwen3.5-35B-A3B --dangerously-skip-permissions'</code></pre></div>
+          <p>I would keep the safer alias as the default and only use the permissive one for deliberate local experiments.</p>
 
-          <h2>Step 6: verify the model is actually in use</h2>
+          <h2>Step 6: verify the local server is healthy</h2>
+          <p>Before touching Claude Code, make sure the server itself is alive.</p>
           <div class="code-block"><pre><code>curl http://127.0.0.1:8081/health || true
 curl http://127.0.0.1:8081/models || true</code></pre></div>
-          <p>Then use Claude Code on a tiny repo or toy prompt first. You want to confirm the server is reachable, the alias resolves correctly, the model is not silently falling back to something else, and latency is within a usable range.</p>
+          <p>You want to confirm the server is reachable and that the model alias exists before debugging Claude Code itself.</p>
+
+          <h2>Step 7: run Claude Code against the local model</h2>
+          <p>Now move into a small test repo and invoke Claude Code through the alias:</p>
+          <div class="code-block"><pre><code>cd ~/path/to/test-repo
+claudecli</code></pre></div>
+          <p>Use a tiny first prompt so you can validate the loop quickly. For example:</p>
+          <div class="code-block"><pre><code>Summarize the repo structure and suggest one safe small improvement.</code></pre></div>
+          <p>The point of the first run is not to do heavy work. It is to confirm that Claude Code starts cleanly, the local alias resolves, responses are coming from the local model path you expect, and latency is tolerable enough for repeated agentic turns.</p>
+
+          <h2>Step 8: verify the model is actually in use</h2>
+          <p>If anything feels wrong, keep the verification loop small. Check the local server logs, the model alias, whether Claude Code is silently falling back to another model, and whether the KV cache fix is actually in place. Only after that should you judge whether the setup is good enough for everyday use.</p>
 
           <h2>The smallest version that actually works</h2>
           <ol>
