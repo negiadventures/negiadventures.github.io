@@ -1,0 +1,259 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="A practical guide to choosing MCP transports for local and remote agents, covering stdio, HTTP, and SSE tradeoffs, auth, latency, and deployment patterns.">
+    <meta name="author" content="Anirudh Negi">
+    <title>MCP Transport Choices for Real Agent Workflows, stdio vs HTTP vs SSE | Anirudh Negi</title>
+    <link rel="canonical" href="https://negiadventures.github.io/blog/mcp-transport-comparison.html">
+    <meta property="og:type" content="article">
+    <meta property="og:url" content="https://negiadventures.github.io/blog/mcp-transport-comparison.html">
+    <meta property="og:title" content="MCP Transport Choices for Real Agent Workflows, stdio vs HTTP vs SSE | Anirudh Negi">
+    <meta property="og:description" content="A practical guide to choosing MCP transports for local and remote agents, covering stdio, HTTP, and SSE tradeoffs, auth, latency, and deployment patterns.">
+    <meta property="og:image" content="data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A//www.w3.org/2000/svg%27%20viewBox%3D%270%200%201200%20630%27%3E%3Cdefs%3E%3ClinearGradient%20id%3D%27bg%27%20x1%3D%270%27%20x2%3D%271%27%20y1%3D%270%27%20y2%3D%271%27%3E%3Cstop%20offset%3D%270%25%27%20stop-color%3D%27%2308111d%27/%3E%3Cstop%20offset%3D%27100%25%27%20stop-color%3D%27%23173454%27/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect%20width%3D%271200%27%20height%3D%27630%27%20fill%3D%27url%28%23bg%29%27/%3E%3Ccircle%20cx%3D%271030%27%20cy%3D%27110%27%20r%3D%27150%27%20fill%3D%27%2322d3ee%27%20fill-opacity%3D%270.14%27/%3E%3Ccircle%20cx%3D%27170%27%20cy%3D%27540%27%20r%3D%27200%27%20fill%3D%27%238b5cf6%27%20fill-opacity%3D%270.16%27/%3E%3Crect%20x%3D%2790%27%20y%3D%2790%27%20width%3D%271020%27%20height%3D%27450%27%20rx%3D%2730%27%20fill%3D%27%230b1220%27%20stroke%3D%27%2338bdf8%27%20stroke-opacity%3D%270.35%27/%3E%3Ctext%20x%3D%27140%27%20y%3D%27190%27%20fill%3D%27white%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2748%27%20font-weight%3D%27700%27%3EMCP%20Transport%20Choices%3C/text%3E%3Ctext%20x%3D%27140%27%20y%3D%27262%27%20fill%3D%27%2393c5fd%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2748%27%20font-weight%3D%27700%27%3Estdio%20vs%20HTTP%20vs%20SSE%3C/text%3E%3Ctext%20x%3D%27140%27%20y%3D%27346%27%20fill%3D%27%23cbd5e1%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2728%27%3EHow%20to%20pick%20the%20right%20transport%20for%20local%20tools%2C%20remote%20gateways%2C%20and%20production%20agent%20workflows%3C/text%3E%3Crect%20x%3D%27140%27%20y%3D%27395%27%20width%3D%27230%27%20height%3D%2752%27%20rx%3D%2714%27%20fill%3D%27%23111c2d%27%20stroke%3D%27%2367e8f9%27%20stroke-opacity%3D%270.45%27/%3E%3Ctext%20x%3D%27162%27%20y%3D%27429%27%20fill%3D%27%2367e8f9%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2724%27%3EPractical%20comparison%3C/text%3E%3C/svg%3E">
+    <meta property="article:published_time" content="2026-04-11">
+    <meta property="article:author" content="Anirudh Negi">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:url" content="https://negiadventures.github.io/blog/mcp-transport-comparison.html">
+    <meta name="twitter:title" content="MCP Transport Choices for Real Agent Workflows, stdio vs HTTP vs SSE | Anirudh Negi">
+    <meta name="twitter:description" content="A practical guide to choosing MCP transports for local and remote agents, covering stdio, HTTP, and SSE tradeoffs, auth, latency, and deployment patterns.">
+    <meta name="twitter:image" content="data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A//www.w3.org/2000/svg%27%20viewBox%3D%270%200%201200%20630%27%3E%3Cdefs%3E%3ClinearGradient%20id%3D%27bg%27%20x1%3D%270%27%20x2%3D%271%27%20y1%3D%270%27%20y2%3D%271%27%3E%3Cstop%20offset%3D%270%25%27%20stop-color%3D%27%2308111d%27/%3E%3Cstop%20offset%3D%27100%25%27%20stop-color%3D%27%23173454%27/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect%20width%3D%271200%27%20height%3D%27630%27%20fill%3D%27url%28%23bg%29%27/%3E%3Ccircle%20cx%3D%271030%27%20cy%3D%27110%27%20r%3D%27150%27%20fill%3D%27%2322d3ee%27%20fill-opacity%3D%270.14%27/%3E%3Ccircle%20cx%3D%27170%27%20cy%3D%27540%27%20r%3D%27200%27%20fill%3D%27%238b5cf6%27%20fill-opacity%3D%270.16%27/%3E%3Crect%20x%3D%2790%27%20y%3D%2790%27%20width%3D%271020%27%20height%3D%27450%27%20rx%3D%2730%27%20fill%3D%27%230b1220%27%20stroke%3D%27%2338bdf8%27%20stroke-opacity%3D%270.35%27/%3E%3Ctext%20x%3D%27140%27%20y%3D%27190%27%20fill%3D%27white%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2748%27%20font-weight%3D%27700%27%3EMCP%20Transport%20Choices%3C/text%3E%3Ctext%20x%3D%27140%27%20y%3D%27262%27%20fill%3D%27%2393c5fd%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2748%27%20font-weight%3D%27700%27%3Estdio%20vs%20HTTP%20vs%20SSE%3C/text%3E%3Ctext%20x%3D%27140%27%20y%3D%27346%27%20fill%3D%27%23cbd5e1%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2728%27%3EHow%20to%20pick%20the%20right%20transport%20for%20local%20tools%2C%20remote%20gateways%2C%20and%20production%20agent%20workflows%3C/text%3E%3Crect%20x%3D%27140%27%20y%3D%27395%27%20width%3D%27230%27%20height%3D%2752%27%20rx%3D%2714%27%20fill%3D%27%23111c2d%27%20stroke%3D%27%2367e8f9%27%20stroke-opacity%3D%270.45%27/%3E%3Ctext%20x%3D%27162%27%20y%3D%27429%27%20fill%3D%27%2367e8f9%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2724%27%3EPractical%20comparison%3C/text%3E%3C/svg%3E">
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "BlogPosting",
+      "headline": "MCP Transport Choices for Real Agent Workflows, stdio vs HTTP vs SSE",
+      "description": "A practical guide to choosing MCP transports for local and remote agents, covering stdio, HTTP, and SSE tradeoffs, auth, latency, and deployment patterns.",
+      "image": "data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A//www.w3.org/2000/svg%27%20viewBox%3D%270%200%201200%20630%27%3E%3Cdefs%3E%3ClinearGradient%20id%3D%27bg%27%20x1%3D%270%27%20x2%3D%271%27%20y1%3D%270%27%20y2%3D%271%27%3E%3Cstop%20offset%3D%270%25%27%20stop-color%3D%27%2308111d%27/%3E%3Cstop%20offset%3D%27100%25%27%20stop-color%3D%27%23173454%27/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect%20width%3D%271200%27%20height%3D%27630%27%20fill%3D%27url%28%23bg%29%27/%3E%3Ccircle%20cx%3D%271030%27%20cy%3D%27110%27%20r%3D%27150%27%20fill%3D%27%2322d3ee%27%20fill-opacity%3D%270.14%27/%3E%3Ccircle%20cx%3D%27170%27%20cy%3D%27540%27%20r%3D%27200%27%20fill%3D%27%238b5cf6%27%20fill-opacity%3D%270.16%27/%3E%3Crect%20x%3D%2790%27%20y%3D%2790%27%20width%3D%271020%27%20height%3D%27450%27%20rx%3D%2730%27%20fill%3D%27%230b1220%27%20stroke%3D%27%2338bdf8%27%20stroke-opacity%3D%270.35%27/%3E%3Ctext%20x%3D%27140%27%20y%3D%27190%27%20fill%3D%27white%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2748%27%20font-weight%3D%27700%27%3EMCP%20Transport%20Choices%3C/text%3E%3Ctext%20x%3D%27140%27%20y%3D%27262%27%20fill%3D%27%2393c5fd%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2748%27%20font-weight%3D%27700%27%3Estdio%20vs%20HTTP%20vs%20SSE%3C/text%3E%3Ctext%20x%3D%27140%27%20y%3D%27346%27%20fill%3D%27%23cbd5e1%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2728%27%3EHow%20to%20pick%20the%20right%20transport%20for%20local%20tools%2C%20remote%20gateways%2C%20and%20production%20agent%20workflows%3C/text%3E%3Crect%20x%3D%27140%27%20y%3D%27395%27%20width%3D%27230%27%20height%3D%2752%27%20rx%3D%2714%27%20fill%3D%27%23111c2d%27%20stroke%3D%27%2367e8f9%27%20stroke-opacity%3D%270.45%27/%3E%3Ctext%20x%3D%27162%27%20y%3D%27429%27%20fill%3D%27%2367e8f9%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2724%27%3EPractical%20comparison%3C/text%3E%3C/svg%3E",
+      "url": "https://negiadventures.github.io/blog/mcp-transport-comparison.html",
+      "datePublished": "2026-04-11",
+      "author": {
+        "@type": "Person",
+        "name": "Anirudh Negi",
+        "url": "https://negiadventures.github.io"
+      },
+      "publisher": {
+        "@type": "Person",
+        "name": "Anirudh Negi",
+        "url": "https://negiadventures.github.io"
+      }
+    }
+    </script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../stylesheets/stylesheet.css?v=5" media="screen">
+    <style>
+      .blog-post { max-width: 800px; margin: 0 auto; padding: 60px 20px; }
+      .blog-post-nav { margin-bottom: 30px; }
+      .blog-post-nav a { color: var(--accent-strong); font-size: 0.95rem; }
+      .blog-post-nav a:hover { color: var(--accent); }
+      .blog-post-title { font-size: 2.5rem; margin-bottom: 16px; }
+      .blog-post-meta { display: flex; gap: 20px; color: var(--text-muted); font-size: 0.95rem; margin-bottom: 30px; flex-wrap: wrap; }
+      .blog-post-image { width: 100%; height: auto; border-radius: 16px; margin-bottom: 30px; border: 1px solid var(--border); }
+      .blog-post-content h2 { font-size: 1.6rem; margin-top: 40px; margin-bottom: 16px; color: var(--text-light); }
+      .blog-post-content h3 { font-size: 1.2rem; margin-top: 28px; margin-bottom: 12px; color: var(--text-light); }
+      .blog-post-content p, .blog-post-content li { line-height: 1.8; color: var(--text-muted); }
+      .blog-post-content ul, .blog-post-content ol { margin-bottom: 20px; }
+      .blog-post-content ol { padding-left: 22px; }
+      .code-block { background: var(--bg-alt); border: 1px solid var(--border); border-radius: 12px; padding: 20px; margin: 20px 0; overflow-x: auto; }
+      .code-block pre { margin: 0; font-family: var(--mono); font-size: 0.9rem; line-height: 1.6; color: var(--text-light); white-space: pre-wrap; }
+      .diagram-panel { background: linear-gradient(180deg, rgba(16,24,39,0.95), rgba(10,16,28,0.95)); border: 1px solid var(--border); border-radius: 16px; padding: 18px; margin: 20px 0; overflow-x: auto; }
+      .comparison-table { width: 100%; border-collapse: collapse; margin: 24px 0; border: 1px solid var(--border); }
+      .comparison-table th, .comparison-table td { padding: 14px; border-bottom: 1px solid var(--border); text-align: left; vertical-align: top; }
+      .comparison-table th { color: var(--text-light); background: rgba(56, 189, 248, 0.08); }
+      .callout { border-radius: 14px; padding: 18px 20px; margin: 22px 0; border: 1px solid var(--border); }
+      .callout-warning { background: rgba(245, 158, 11, 0.08); }
+      .callout-success { background: rgba(34, 197, 94, 0.08); }
+      .blog-post-tags { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 40px; padding-top: 30px; border-top: 1px solid var(--border); }
+      .blog-post-tag { background: var(--accent-soft); color: var(--accent-strong); border-radius: 999px; padding: 6px 14px; font-size: 0.85rem; font-family: var(--mono); }
+      .blog-footer { margin-top: 60px; padding-top: 30px; border-top: 1px solid var(--border); text-align: center; }
+      .blog-footer a { color: var(--accent-strong); }
+      @media (max-width: 768px) { .blog-post { padding: 40px 16px; } .blog-post-title { font-size: 2rem; } }
+    </style>
+  </head>
+  <body>
+    <a href="../index.html#main" class="skip-link">Skip to main content</a>
+    <header class="site-header">
+      <div class="container blog-post">
+        <div class="blog-post-nav"><a href="index.html">&larr; Back to All Posts</a></div>
+        <div class="blog-post-header">
+          <h1 class="blog-post-title">MCP Transport Choices for Real Agent Workflows, stdio vs HTTP vs SSE</h1>
+          <div class="blog-post-meta">
+            <span>April 11, 2026</span>
+            <span>&bull;</span>
+            <span>10 min read</span>
+          </div>
+          <img src="data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A//www.w3.org/2000/svg%27%20viewBox%3D%270%200%201200%20630%27%3E%3Cdefs%3E%3ClinearGradient%20id%3D%27bg%27%20x1%3D%270%27%20x2%3D%271%27%20y1%3D%270%27%20y2%3D%271%27%3E%3Cstop%20offset%3D%270%25%27%20stop-color%3D%27%2308111d%27/%3E%3Cstop%20offset%3D%27100%25%27%20stop-color%3D%27%23173454%27/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect%20width%3D%271200%27%20height%3D%27630%27%20fill%3D%27url%28%23bg%29%27/%3E%3Ccircle%20cx%3D%271030%27%20cy%3D%27110%27%20r%3D%27150%27%20fill%3D%27%2322d3ee%27%20fill-opacity%3D%270.14%27/%3E%3Ccircle%20cx%3D%27170%27%20cy%3D%27540%27%20r%3D%27200%27%20fill%3D%27%238b5cf6%27%20fill-opacity%3D%270.16%27/%3E%3Crect%20x%3D%2790%27%20y%3D%2790%27%20width%3D%271020%27%20height%3D%27450%27%20rx%3D%2730%27%20fill%3D%27%230b1220%27%20stroke%3D%27%2338bdf8%27%20stroke-opacity%3D%270.35%27/%3E%3Ctext%20x%3D%27140%27%20y%3D%27190%27%20fill%3D%27white%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2748%27%20font-weight%3D%27700%27%3EMCP%20Transport%20Choices%3C/text%3E%3Ctext%20x%3D%27140%27%20y%3D%27262%27%20fill%3D%27%2393c5fd%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2748%27%20font-weight%3D%27700%27%3Estdio%20vs%20HTTP%20vs%20SSE%3C/text%3E%3Ctext%20x%3D%27140%27%20y%3D%27346%27%20fill%3D%27%23cbd5e1%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2728%27%3EHow%20to%20pick%20the%20right%20transport%20for%20local%20tools%2C%20remote%20gateways%2C%20and%20production%20agent%20workflows%3C/text%3E%3Crect%20x%3D%27140%27%20y%3D%27395%27%20width%3D%27230%27%20height%3D%2752%27%20rx%3D%2714%27%20fill%3D%27%23111c2d%27%20stroke%3D%27%2367e8f9%27%20stroke-opacity%3D%270.45%27/%3E%3Ctext%20x%3D%27162%27%20y%3D%27429%27%20fill%3D%27%2367e8f9%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2724%27%3EPractical%20comparison%3C/text%3E%3C/svg%3E" alt="MCP Transport Choices for Real Agent Workflows, stdio vs HTTP vs SSE" class="blog-post-image">
+        </div>
+        <div class="blog-post-content">
+          <p>Running a Model Context Protocol server over the wrong transport creates the kind of bug that wastes a whole afternoon. The tools work on your laptop, then fail behind a gateway, stall under a proxy, or quietly lose auth once multiple users show up.</p>
+          <p>That is why transport choice matters more than most MCP tutorials admit. The protocol surface is small, but the runtime shape is not. Local tools want one thing, remote agents want another, and production traffic adds a third set of constraints.</p>
+          <p>This post is the version I wish I had before wiring MCP servers into mixed local and remote agent workflows. I will walk through when to use stdio, when to move to HTTP, when SSE still makes sense, and what I would avoid.</p>
+          <h2>Why this matters</h2>
+          <p>Transport is not a cosmetic implementation detail. It changes how you authenticate users, how you supervise processes, how you debug failures, and how much operational burden lands on the team.</p>
+          <p>A local coding assistant talking to a file-system MCP server has very different needs from a hosted agent platform calling the same capability over a network boundary. If you choose a network transport too early, you add auth and exposure risk. If you stay on stdio too long, you make multi-user routing and shared infrastructure much harder than it needs to be.</p>
+          <p>The practical question is not which transport is the most elegant. It is which transport matches the trust boundary and failure mode of the workflow you are actually running.</p>
+          <h2>Architecture and workflow overview</h2>
+          <h3>The simple decision rule</h3>
+          <ul>
+            <li>Use <strong>stdio</strong> when the MCP server is launched and owned by the local client process.</li>
+            <li>Use <strong>HTTP</strong> when you need remote access, shared infrastructure, auth, and normal observability.</li>
+            <li>Use <strong>SSE</strong> only when you specifically need server-pushed events and you know the client and proxy path handle long-lived streams well.</li>
+          </ul>
+          <h3>Mermaid flow</h3>
+          <div class="diagram-panel">
+            <pre class="mermaid">flowchart LR
+    A[Agent or IDE client] --> B{Where does the tool run?}
+    B -->|Same machine, client-managed| C[stdio MCP server]
+    B -->|Shared service or remote host| D[HTTP MCP server]
+    D --> E[Auth and reverse proxy]
+    D --> F[Metrics and rate limits]
+    B -->|Need streaming events over network| G[SSE transport]
+    G --> H[Proxy timeout checks]
+    G --> I[Reconnect handling]</pre>
+          </div>
+          <h3>Deployment shapes</h3>
+          <table class="comparison-table">
+            <thead><tr><th>Workflow</th><th>Best transport</th><th>Why</th></tr></thead>
+            <tbody>
+              <tr><td>IDE launches a local tool server</td><td>stdio</td><td>Fast setup, no exposed port, easiest trust model</td></tr>
+              <tr><td>Shared internal MCP service for a team</td><td>HTTP</td><td>Normal auth, logs, proxies, and service ownership</td></tr>
+              <tr><td>Remote execution with push-style progress events</td><td>SSE</td><td>Works, but only if the network path is stream-friendly</td></tr>
+              <tr><td>Public internet exposure</td><td>HTTP</td><td>Easier TLS, auth middleware, rate limiting, and auditability</td></tr>
+              <tr><td>One-off local experiments</td><td>stdio</td><td>Lowest ceremony and quickest feedback loop</td></tr>
+            </tbody>
+          </table>
+          <h2>Implementation details</h2>
+          <h3>1. Local stdio server for tool launching</h3>
+          <p>stdio is still the right default for local developer tooling. The client spawns the server, wires stdin and stdout, and keeps the trust boundary on one machine.</p>
+          <div class="code-block"><pre>{
+  "mcpServers": {
+    "repo-tools": {
+      "command": "node",
+      "args": ["./dist/server.js"],
+      "env": {
+        "REPO_ROOT": "/workspace/project"
+      }
+    }
+  }
+}</pre></div>
+          <p>This setup is attractive because there is no port allocation, no network exposure, and no extra auth layer for a single-user local workflow. The tradeoff is that lifecycle and supervision are tightly coupled to the client session.</p>
+          <h3>2. Remote HTTP server with explicit auth</h3>
+          <p>Once the server needs to serve more than one client or live behind a gateway, I would rather move to HTTP than keep stretching stdio through wrappers.</p>
+          <div class="code-block"><pre>import express from "express";
+import { verifyToken } from "./auth";
+import { handleMcpRequest } from "./mcp-handler";
+
+const app = express();
+app.use(express.json({ limit: "1mb" }));
+
+app.post("/mcp", async (req, res) => {
+  const principal = await verifyToken(req.headers.authorization);
+  if (!principal) {
+    return res.status(401).json({ error: "unauthorized" });
+  }
+
+  const result = await handleMcpRequest({
+    principal,
+    body: req.body,
+    requestId: req.headers["x-request-id"]
+  });
+
+  res.json(result);
+});
+
+app.listen(8080);</pre></div>
+          <p>HTTP wins here because the infrastructure story is boring in a good way. Reverse proxies, TLS termination, rate limits, tracing, audit logs, and service ownership all fit normal production patterns.</p>
+          <h3>3. Reverse proxy guardrails for a networked MCP service</h3>
+          <div class="code-block"><pre>server {
+  listen 443 ssl http2;
+  server_name mcp.internal.example.com;
+
+  location /mcp {
+    proxy_pass http://127.0.0.1:8080;
+    proxy_set_header X-Request-Id $request_id;
+    proxy_set_header Authorization $http_authorization;
+    proxy_read_timeout 300s;
+    client_max_body_size 1m;
+    limit_except POST { deny all; }
+  }
+}</pre></div>
+          <p>The point is not that nginx is special. It is that HTTP gives you a clean place to enforce network policy, request limits, and identity propagation without inventing custom wrappers around a process pipe.</p>
+          <h3>4. Terminal-output style failure signal</h3>
+          <div class="code-block"><pre>$ curl -i https://mcp.internal.example.com/mcp
+HTTP/2 401
+content-type: application/json
+x-request-id: 8cb36f14a2b8
+
+{"error":"unauthorized"}</pre></div>
+          <p>That kind of failure is healthy. It is explicit, observable, and easy to debug.</p>
+          <h2>What went wrong and the tradeoffs</h2>
+          <p>Teams often start with stdio, then keep adding layers until the local process is effectively acting like a remote service. At that point, they still have process-pipe semantics, but they also have network-ish problems. That is the worst of both worlds.</p>
+          <table class="comparison-table">
+            <thead><tr><th>Concern</th><th>stdio</th><th>HTTP</th><th>SSE</th></tr></thead>
+            <tbody>
+              <tr><td>Local setup speed</td><td>Excellent</td><td>Good</td><td>Fair</td></tr>
+              <tr><td>Remote access</td><td>Weak</td><td>Excellent</td><td>Good</td></tr>
+              <tr><td>Auth integration</td><td>Minimal</td><td>Excellent</td><td>Good</td></tr>
+              <tr><td>Proxy compatibility</td><td>Not relevant</td><td>Excellent</td><td>Mixed</td></tr>
+              <tr><td>Process supervision</td><td>Client-owned</td><td>Service-owned</td><td>Service-owned</td></tr>
+              <tr><td>Streaming updates</td><td>Poor</td><td>Good with chunked responses or polling</td><td>Excellent when supported</td></tr>
+              <tr><td>Multi-user isolation</td><td>Weak</td><td>Strong</td><td>Strong</td></tr>
+              <tr><td>Debuggability</td><td>Mixed</td><td>Strong</td><td>Mixed</td></tr>
+            </tbody>
+          </table>
+          <div class="callout callout-warning">
+            <strong>Pitfalls to expect</strong>
+            <ul>
+              <li><strong>stdio deadlocks</strong> when a tool emits noisy logs to stdout instead of stderr.</li>
+              <li><strong>HTTP trust leaks</strong> when internal-only MCP endpoints are deployed without real auth because they started as local experiments.</li>
+              <li><strong>SSE timeouts</strong> when a load balancer or CDN silently closes long-lived streams.</li>
+              <li><strong>Cross-tenant confusion</strong> when a shared MCP service does not bind requests to an authenticated principal.</li>
+            </ul>
+          </div>
+          <h3>Security and reliability concerns</h3>
+          <p>A remote MCP transport should always answer three questions clearly: who is calling this tool, what resources can they touch, and how do I audit or revoke that access.</p>
+          <p>stdio can get away with lighter answers because the user and the machine are usually the same trust boundary. HTTP cannot. If the service crosses machines, users, or environments, auth and audit stop being optional.</p>
+          <p>SSE adds another concern: reconnect behavior. If the client reconnects after a stream interruption, you need an opinion on idempotency, replay, and partial tool execution. Otherwise the agent can easily repeat a side effect.</p>
+          <h3>What I would not do</h3>
+          <p>I would not expose a powerful MCP server directly to the public internet just because the protocol is simple. I would also not build a shared team service on stdio wrappers unless there is a very short migration plan to HTTP.</p>
+          <h2>Practical checklist</h2>
+          <ul>
+            <li>[ ] Is the server launched by a local client on the same machine?</li>
+            <li>[ ] Do multiple users or agents need to share the same service?</li>
+            <li>[ ] Do you need standard auth, TLS, audit logs, and reverse proxy controls?</li>
+            <li>[ ] Will the network path allow long-lived streams without buffering or timeout surprises?</li>
+            <li>[ ] Can repeated requests cause side effects if a client reconnects?</li>
+            <li>[ ] Do you have a clean ownership model for process supervision and restarts?</li>
+          </ul>
+          <div class="callout callout-success">
+            <strong>What I would do again</strong>
+            <ul>
+              <li>Start local tools on stdio so the first version stays simple.</li>
+              <li>Promote to HTTP as soon as the service becomes shared, remote, or security-sensitive.</li>
+              <li>Treat SSE as a specialized choice, not the default, because proxy behavior matters more than protocol elegance.</li>
+              <li>Design request identity and auditability before exposing any write-capable tool remotely.</li>
+            </ul>
+          </div>
+          <h2>Conclusion</h2>
+          <p>MCP transport choice is really a trust-boundary choice. stdio is excellent for local ownership. HTTP is the safest default for shared systems. SSE is useful, but only when the network path behaves the way the protocol expects.</p>
+          <p>If I were setting up a new agent stack today, I would start with stdio for local tools, move shared services to HTTP early, and treat streaming transports as an optimization that has to earn its complexity.</p>
+          <div class="blog-post-tags">
+            <span class="blog-post-tag">MCP</span>
+            <span class="blog-post-tag">AI Agents</span>
+            <span class="blog-post-tag">Developer Infrastructure</span>
+            <span class="blog-post-tag">Systems Design</span>
+            <span class="blog-post-tag">Security</span>
+          </div>
+        </div>
+        <div class="blog-footer"><a href="index.html">&larr; Back to All Posts</a></div>
+      </div>
+    </header>
+    <script type="module">
+      import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.esm.min.mjs';
+      mermaid.initialize({ startOnLoad: true, theme: 'dark' });
+    </script>
+  </body>
+</html>

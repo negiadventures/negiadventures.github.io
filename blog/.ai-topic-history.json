@@ -1,6 +1,14 @@
 {
   "topics": [
     {
+      "date": "2026-04-11",
+      "skill": "MCP transport architecture",
+      "topic": "Choosing between stdio, HTTP, and SSE transports for MCP servers in local developer tools, shared agent gateways, and production workflows, including auth boundaries, proxy behavior, and supervision tradeoffs",
+      "slug": "mcp-transport-comparison",
+      "title": "MCP Transport Choices for Real Agent Workflows, stdio vs HTTP vs SSE",
+      "summary": "A practical comparison of stdio, HTTP, and SSE transports for MCP servers, covering when each fits local or remote agent workflows and the security, debugging, and operations tradeoffs behind the choice."
+    },
+    {
       "date": "2026-04-10",
       "skill": "Claude Code local model setup",
       "topic": "Running Claude Code with Unsloth Qwen3.5-35B-A3B on a Mac mini M4 Pro, including local serving, KV cache fixes, and practical tuning for agentic coding workflows",
