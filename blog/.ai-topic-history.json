@@ -1,6 +1,14 @@
 {
   "topics": [
     {
+      "date": "2026-04-12",
+      "skill": "AI agent reliability engineering",
+      "topic": "Designing retry and recovery paths for long-running AI agent jobs with idempotency keys, leases, durable checkpoints, dead-letter queues, and operator pause states so retries do not duplicate side effects or lose progress",
+      "slug": "agent-retry-recovery",
+      "title": "Retry and Recovery Patterns for Long-Running AI Agent Jobs",
+      "summary": "A practical guide to building long-running AI agent jobs that survive timeouts and worker crashes by using idempotency keys, bounded retries, durable checkpoints, and clear human recovery paths."
+    },
+    {
       "date": "2026-04-11",
       "skill": "MCP transport architecture",
       "topic": "Choosing between stdio, HTTP, and SSE transports for MCP servers in local developer tools, shared agent gateways, and production workflows, including auth boundaries, proxy behavior, and supervision tradeoffs",

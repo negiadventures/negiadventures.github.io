@@ -1,0 +1,268 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="A practical guide to building retryable AI agent jobs with idempotency keys, checkpoints, queues, and human-safe recovery paths.">
+    <meta name="author" content="Anirudh Negi">
+    <title>Retry and Recovery Patterns for Long-Running AI Agent Jobs | Anirudh Negi</title>
+    <link rel="canonical" href="https://negiadventures.github.io/blog/agent-retry-recovery.html">
+    <meta property="og:type" content="article">
+    <meta property="og:url" content="https://negiadventures.github.io/blog/agent-retry-recovery.html">
+    <meta property="og:title" content="Retry and Recovery Patterns for Long-Running AI Agent Jobs | Anirudh Negi">
+    <meta property="og:description" content="A practical guide to building retryable AI agent jobs with idempotency keys, checkpoints, queues, and human-safe recovery paths.">
+    <meta property="og:image" content="data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A//www.w3.org/2000/svg%27%20viewBox%3D%270%200%201200%20630%27%3E%3Cdefs%3E%3ClinearGradient%20id%3D%27bg%27%20x1%3D%270%27%20x2%3D%271%27%20y1%3D%270%27%20y2%3D%271%27%3E%3Cstop%20offset%3D%270%25%27%20stop-color%3D%27%23070f1a%27/%3E%3Cstop%20offset%3D%27100%25%27%20stop-color%3D%27%2315314e%27/%3E%3C/linearGradient%3E%3ClinearGradient%20id%3D%27panel%27%20x1%3D%270%27%20x2%3D%271%27%20y1%3D%270%27%20y2%3D%271%27%3E%3Cstop%20offset%3D%270%25%27%20stop-color%3D%27%230b1220%27/%3E%3Cstop%20offset%3D%27100%25%27%20stop-color%3D%27%2310192b%27/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect%20width%3D%271200%27%20height%3D%27630%27%20fill%3D%27url%28%23bg%29%27/%3E%3Ccircle%20cx%3D%271020%27%20cy%3D%27105%27%20r%3D%27155%27%20fill%3D%27%2322d3ee%27%20fill-opacity%3D%270.14%27/%3E%3Ccircle%20cx%3D%27180%27%20cy%3D%27535%27%20r%3D%27210%27%20fill%3D%27%238b5cf6%27%20fill-opacity%3D%270.16%27/%3E%3Crect%20x%3D%2780%27%20y%3D%2785%27%20width%3D%271040%27%20height%3D%27460%27%20rx%3D%2732%27%20fill%3D%27url%28%23panel%29%27%20stroke%3D%27%2338bdf8%27%20stroke-opacity%3D%270.35%27/%3E%3Ctext%20x%3D%27135%27%20y%3D%27188%27%20fill%3D%27white%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2748%27%20font-weight%3D%27700%27%3ERetry%20and%20Recovery%3C/text%3E%3Ctext%20x%3D%27135%27%20y%3D%27260%27%20fill%3D%27%2393c5fd%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2748%27%20font-weight%3D%27700%27%3Efor%20Long-Running%20AI%20Jobs%3C/text%3E%3Ctext%20x%3D%27135%27%20y%3D%27342%27%20fill%3D%27%23cbd5e1%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2728%27%3EIdempotency%2C%20checkpoints%2C%20queues%2C%20and%20safe%20operator%20restarts%3C/text%3E%3Crect%20x%3D%27135%27%20y%3D%27392%27%20width%3D%27280%27%20height%3D%2754%27%20rx%3D%2714%27%20fill%3D%27%23111c2d%27%20stroke%3D%27%2367e8f9%27%20stroke-opacity%3D%270.45%27/%3E%3Ctext%20x%3D%27158%27%20y%3D%27427%27%20fill%3D%27%2367e8f9%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2724%27%3EProduction%20reliability%20patterns%3C/text%3E%3Cpath%20d%3D%27M770%20215h230v52H770z%27%20fill%3D%27%230c1626%27%20stroke%3D%27%2322d3ee%27%20stroke-opacity%3D%270.45%27/%3E%3Ctext%20x%3D%27807%27%20y%3D%27248%27%20fill%3D%27%23bae6fd%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2722%27%3Eenqueue%28job%29%3C/text%3E%3Cpath%20d%3D%27M770%20302h230v52H770z%27%20fill%3D%27%230c1626%27%20stroke%3D%27%2322d3ee%27%20stroke-opacity%3D%270.45%27/%3E%3Ctext%20x%3D%27795%27%20y%3D%27335%27%20fill%3D%27%23bae6fd%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2722%27%3Echeckpoint%20saved%3C/text%3E%3Cpath%20d%3D%27M770%20389h230v52H770z%27%20fill%3D%27%230c1626%27%20stroke%3D%27%23a78bfa%27%20stroke-opacity%3D%270.45%27/%3E%3Ctext%20x%3D%27833%27%20y%3D%27422%27%20fill%3D%27%23ddd6fe%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2722%27%3Eresume%28%29%3C/text%3E%3C/svg%3E">
+    <meta property="article:published_time" content="2026-04-12">
+    <meta property="article:author" content="Anirudh Negi">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:url" content="https://negiadventures.github.io/blog/agent-retry-recovery.html">
+    <meta name="twitter:title" content="Retry and Recovery Patterns for Long-Running AI Agent Jobs | Anirudh Negi">
+    <meta name="twitter:description" content="A practical guide to building retryable AI agent jobs with idempotency keys, checkpoints, queues, and human-safe recovery paths.">
+    <meta name="twitter:image" content="data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A//www.w3.org/2000/svg%27%20viewBox%3D%270%200%201200%20630%27%3E%3Cdefs%3E%3ClinearGradient%20id%3D%27bg%27%20x1%3D%270%27%20x2%3D%271%27%20y1%3D%270%27%20y2%3D%271%27%3E%3Cstop%20offset%3D%270%25%27%20stop-color%3D%27%23070f1a%27/%3E%3Cstop%20offset%3D%27100%25%27%20stop-color%3D%27%2315314e%27/%3E%3C/linearGradient%3E%3ClinearGradient%20id%3D%27panel%27%20x1%3D%270%27%20x2%3D%271%27%20y1%3D%270%27%20y2%3D%271%27%3E%3Cstop%20offset%3D%270%25%27%20stop-color%3D%27%230b1220%27/%3E%3Cstop%20offset%3D%27100%25%27%20stop-color%3D%27%2310192b%27/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect%20width%3D%271200%27%20height%3D%27630%27%20fill%3D%27url%28%23bg%29%27/%3E%3Ccircle%20cx%3D%271020%27%20cy%3D%27105%27%20r%3D%27155%27%20fill%3D%27%2322d3ee%27%20fill-opacity%3D%270.14%27/%3E%3Ccircle%20cx%3D%27180%27%20cy%3D%27535%27%20r%3D%27210%27%20fill%3D%27%238b5cf6%27%20fill-opacity%3D%270.16%27/%3E%3Crect%20x%3D%2780%27%20y%3D%2785%27%20width%3D%271040%27%20height%3D%27460%27%20rx%3D%2732%27%20fill%3D%27url%28%23panel%29%27%20stroke%3D%27%2338bdf8%27%20stroke-opacity%3D%270.35%27/%3E%3Ctext%20x%3D%27135%27%20y%3D%27188%27%20fill%3D%27white%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2748%27%20font-weight%3D%27700%27%3ERetry%20and%20Recovery%3C/text%3E%3Ctext%20x%3D%27135%27%20y%3D%27260%27%20fill%3D%27%2393c5fd%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2748%27%20font-weight%3D%27700%27%3Efor%20Long-Running%20AI%20Jobs%3C/text%3E%3Ctext%20x%3D%27135%27%20y%3D%27342%27%20fill%3D%27%23cbd5e1%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2728%27%3EIdempotency%2C%20checkpoints%2C%20queues%2C%20and%20safe%20operator%20restarts%3C/text%3E%3Crect%20x%3D%27135%27%20y%3D%27392%27%20width%3D%27280%27%20height%3D%2754%27%20rx%3D%2714%27%20fill%3D%27%23111c2d%27%20stroke%3D%27%2367e8f9%27%20stroke-opacity%3D%270.45%27/%3E%3Ctext%20x%3D%27158%27%20y%3D%27427%27%20fill%3D%27%2367e8f9%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2724%27%3EProduction%20reliability%20patterns%3C/text%3E%3Cpath%20d%3D%27M770%20215h230v52H770z%27%20fill%3D%27%230c1626%27%20stroke%3D%27%2322d3ee%27%20stroke-opacity%3D%270.45%27/%3E%3Ctext%20x%3D%27807%27%20y%3D%27248%27%20fill%3D%27%23bae6fd%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2722%27%3Eenqueue%28job%29%3C/text%3E%3Cpath%20d%3D%27M770%20302h230v52H770z%27%20fill%3D%27%230c1626%27%20stroke%3D%27%2322d3ee%27%20stroke-opacity%3D%270.45%27/%3E%3Ctext%20x%3D%27795%27%20y%3D%27335%27%20fill%3D%27%23bae6fd%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2722%27%3Echeckpoint%20saved%3C/text%3E%3Cpath%20d%3D%27M770%20389h230v52H770z%27%20fill%3D%27%230c1626%27%20stroke%3D%27%23a78bfa%27%20stroke-opacity%3D%270.45%27/%3E%3Ctext%20x%3D%27833%27%20y%3D%27422%27%20fill%3D%27%23ddd6fe%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2722%27%3Eresume%28%29%3C/text%3E%3C/svg%3E">
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "BlogPosting",
+      "headline": "Retry and Recovery Patterns for Long-Running AI Agent Jobs",
+      "description": "A practical guide to building retryable AI agent jobs with idempotency keys, checkpoints, queues, and human-safe recovery paths.",
+      "image": "data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A//www.w3.org/2000/svg%27%20viewBox%3D%270%200%201200%20630%27%3E%3Cdefs%3E%3ClinearGradient%20id%3D%27bg%27%20x1%3D%270%27%20x2%3D%271%27%20y1%3D%270%27%20y2%3D%271%27%3E%3Cstop%20offset%3D%270%25%27%20stop-color%3D%27%23070f1a%27/%3E%3Cstop%20offset%3D%27100%25%27%20stop-color%3D%27%2315314e%27/%3E%3C/linearGradient%3E%3ClinearGradient%20id%3D%27panel%27%20x1%3D%270%27%20x2%3D%271%27%20y1%3D%270%27%20y2%3D%271%27%3E%3Cstop%20offset%3D%270%25%27%20stop-color%3D%27%230b1220%27/%3E%3Cstop%20offset%3D%27100%25%27%20stop-color%3D%27%2310192b%27/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect%20width%3D%271200%27%20height%3D%27630%27%20fill%3D%27url%28%23bg%29%27/%3E%3Ccircle%20cx%3D%271020%27%20cy%3D%27105%27%20r%3D%27155%27%20fill%3D%27%2322d3ee%27%20fill-opacity%3D%270.14%27/%3E%3Ccircle%20cx%3D%27180%27%20cy%3D%27535%27%20r%3D%27210%27%20fill%3D%27%238b5cf6%27%20fill-opacity%3D%270.16%27/%3E%3Crect%20x%3D%2780%27%20y%3D%2785%27%20width%3D%271040%27%20height%3D%27460%27%20rx%3D%2732%27%20fill%3D%27url%28%23panel%29%27%20stroke%3D%27%2338bdf8%27%20stroke-opacity%3D%270.35%27/%3E%3Ctext%20x%3D%27135%27%20y%3D%27188%27%20fill%3D%27white%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2748%27%20font-weight%3D%27700%27%3ERetry%20and%20Recovery%3C/text%3E%3Ctext%20x%3D%27135%27%20y%3D%27260%27%20fill%3D%27%2393c5fd%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2748%27%20font-weight%3D%27700%27%3Efor%20Long-Running%20AI%20Jobs%3C/text%3E%3Ctext%20x%3D%27135%27%20y%3D%27342%27%20fill%3D%27%23cbd5e1%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2728%27%3EIdempotency%2C%20checkpoints%2C%20queues%2C%20and%20safe%20operator%20restarts%3C/text%3E%3Crect%20x%3D%27135%27%20y%3D%27392%27%20width%3D%27280%27%20height%3D%2754%27%20rx%3D%2714%27%20fill%3D%27%23111c2d%27%20stroke%3D%27%2367e8f9%27%20stroke-opacity%3D%270.45%27/%3E%3Ctext%20x%3D%27158%27%20y%3D%27427%27%20fill%3D%27%2367e8f9%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2724%27%3EProduction%20reliability%20patterns%3C/text%3E%3Cpath%20d%3D%27M770%20215h230v52H770z%27%20fill%3D%27%230c1626%27%20stroke%3D%27%2322d3ee%27%20stroke-opacity%3D%270.45%27/%3E%3Ctext%20x%3D%27807%27%20y%3D%27248%27%20fill%3D%27%23bae6fd%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2722%27%3Eenqueue%28job%29%3C/text%3E%3Cpath%20d%3D%27M770%20302h230v52H770z%27%20fill%3D%27%230c1626%27%20stroke%3D%27%2322d3ee%27%20stroke-opacity%3D%270.45%27/%3E%3Ctext%20x%3D%27795%27%20y%3D%27335%27%20fill%3D%27%23bae6fd%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2722%27%3Echeckpoint%20saved%3C/text%3E%3Cpath%20d%3D%27M770%20389h230v52H770z%27%20fill%3D%27%230c1626%27%20stroke%3D%27%23a78bfa%27%20stroke-opacity%3D%270.45%27/%3E%3Ctext%20x%3D%27833%27%20y%3D%27422%27%20fill%3D%27%23ddd6fe%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2722%27%3Eresume%28%29%3C/text%3E%3C/svg%3E",
+      "url": "https://negiadventures.github.io/blog/agent-retry-recovery.html",
+      "datePublished": "2026-04-12",
+      "author": {
+        "@type": "Person",
+        "name": "Anirudh Negi",
+        "url": "https://negiadventures.github.io"
+      },
+      "publisher": {
+        "@type": "Person",
+        "name": "Anirudh Negi",
+        "url": "https://negiadventures.github.io"
+      }
+    }
+    </script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../stylesheets/stylesheet.css?v=5" media="screen">
+    <style>
+      .blog-post { max-width: 800px; margin: 0 auto; padding: 60px 20px; }
+      .blog-post-nav { margin-bottom: 30px; }
+      .blog-post-nav a { color: var(--accent-strong); font-size: 0.95rem; }
+      .blog-post-nav a:hover { color: var(--accent); }
+      .blog-post-title { font-size: 2.5rem; margin-bottom: 16px; }
+      .blog-post-meta { display: flex; gap: 20px; color: var(--text-muted); font-size: 0.95rem; margin-bottom: 30px; flex-wrap: wrap; }
+      .blog-post-image { width: 100%; height: auto; border-radius: 16px; margin-bottom: 30px; border: 1px solid var(--border); }
+      .blog-post-content h2 { font-size: 1.6rem; margin-top: 40px; margin-bottom: 16px; color: var(--text-light); }
+      .blog-post-content h3 { font-size: 1.2rem; margin-top: 28px; margin-bottom: 12px; color: var(--text-light); }
+      .blog-post-content p, .blog-post-content li { line-height: 1.8; color: var(--text-muted); }
+      .blog-post-content ul, .blog-post-content ol { margin-bottom: 20px; }
+      .blog-post-content ol { padding-left: 22px; }
+      .code-block { background: var(--bg-alt); border: 1px solid var(--border); border-radius: 12px; padding: 20px; margin: 20px 0; overflow-x: auto; }
+      .code-block pre { margin: 0; font-family: var(--mono); font-size: 0.9rem; line-height: 1.6; color: var(--text-light); white-space: pre-wrap; }
+      .diagram-panel { background: linear-gradient(180deg, rgba(16,24,39,0.95), rgba(10,16,28,0.95)); border: 1px solid var(--border); border-radius: 16px; padding: 18px; margin: 20px 0; overflow-x: auto; }
+      .comparison-table { width: 100%; border-collapse: collapse; margin: 24px 0; border: 1px solid var(--border); }
+      .comparison-table th, .comparison-table td { padding: 14px; border-bottom: 1px solid var(--border); text-align: left; vertical-align: top; }
+      .comparison-table th { color: var(--text-light); background: rgba(56, 189, 248, 0.08); }
+      .callout { border-radius: 14px; padding: 18px 20px; margin: 22px 0; border: 1px solid var(--border); }
+      .callout-warning { background: rgba(245, 158, 11, 0.08); }
+      .callout-success { background: rgba(34, 197, 94, 0.08); }
+      .blog-post-tags { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 40px; padding-top: 30px; border-top: 1px solid var(--border); }
+      .blog-post-tag { background: var(--accent-soft); color: var(--accent-strong); border-radius: 999px; padding: 6px 14px; font-size: 0.85rem; font-family: var(--mono); }
+      .blog-footer { margin-top: 60px; padding-top: 30px; border-top: 1px solid var(--border); text-align: center; }
+      .blog-footer a { color: var(--accent-strong); }
+      @media (max-width: 768px) { .blog-post { padding: 40px 16px; } .blog-post-title { font-size: 2rem; } }
+    </style>
+  </head>
+  <body>
+    <a href="../index.html#main" class="skip-link">Skip to main content</a>
+    <header class="site-header">
+      <div class="container blog-post">
+        <div class="blog-post-nav"><a href="index.html">&larr; Back to All Posts</a></div>
+        <div class="blog-post-header">
+          <h1 class="blog-post-title">Retry and Recovery Patterns for Long-Running AI Agent Jobs</h1>
+          <div class="blog-post-meta">
+            <span>April 12, 2026</span>
+            <span>&bull;</span>
+            <span>10 min read</span>
+          </div>
+          <img src="data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A//www.w3.org/2000/svg%27%20viewBox%3D%270%200%201200%20630%27%3E%3Cdefs%3E%3ClinearGradient%20id%3D%27bg%27%20x1%3D%270%27%20x2%3D%271%27%20y1%3D%270%27%20y2%3D%271%27%3E%3Cstop%20offset%3D%270%25%27%20stop-color%3D%27%23070f1a%27/%3E%3Cstop%20offset%3D%27100%25%27%20stop-color%3D%27%2315314e%27/%3E%3C/linearGradient%3E%3ClinearGradient%20id%3D%27panel%27%20x1%3D%270%27%20x2%3D%271%27%20y1%3D%270%27%20y2%3D%271%27%3E%3Cstop%20offset%3D%270%25%27%20stop-color%3D%27%230b1220%27/%3E%3Cstop%20offset%3D%27100%25%27%20stop-color%3D%27%2310192b%27/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect%20width%3D%271200%27%20height%3D%27630%27%20fill%3D%27url%28%23bg%29%27/%3E%3Ccircle%20cx%3D%271020%27%20cy%3D%27105%27%20r%3D%27155%27%20fill%3D%27%2322d3ee%27%20fill-opacity%3D%270.14%27/%3E%3Ccircle%20cx%3D%27180%27%20cy%3D%27535%27%20r%3D%27210%27%20fill%3D%27%238b5cf6%27%20fill-opacity%3D%270.16%27/%3E%3Crect%20x%3D%2780%27%20y%3D%2785%27%20width%3D%271040%27%20height%3D%27460%27%20rx%3D%2732%27%20fill%3D%27url%28%23panel%29%27%20stroke%3D%27%2338bdf8%27%20stroke-opacity%3D%270.35%27/%3E%3Ctext%20x%3D%27135%27%20y%3D%27188%27%20fill%3D%27white%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2748%27%20font-weight%3D%27700%27%3ERetry%20and%20Recovery%3C/text%3E%3Ctext%20x%3D%27135%27%20y%3D%27260%27%20fill%3D%27%2393c5fd%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2748%27%20font-weight%3D%27700%27%3Efor%20Long-Running%20AI%20Jobs%3C/text%3E%3Ctext%20x%3D%27135%27%20y%3D%27342%27%20fill%3D%27%23cbd5e1%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2728%27%3EIdempotency%2C%20checkpoints%2C%20queues%2C%20and%20safe%20operator%20restarts%3C/text%3E%3Crect%20x%3D%27135%27%20y%3D%27392%27%20width%3D%27280%27%20height%3D%2754%27%20rx%3D%2714%27%20fill%3D%27%23111c2d%27%20stroke%3D%27%2367e8f9%27%20stroke-opacity%3D%270.45%27/%3E%3Ctext%20x%3D%27158%27%20y%3D%27427%27%20fill%3D%27%2367e8f9%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2724%27%3EProduction%20reliability%20patterns%3C/text%3E%3Cpath%20d%3D%27M770%20215h230v52H770z%27%20fill%3D%27%230c1626%27%20stroke%3D%27%2322d3ee%27%20stroke-opacity%3D%270.45%27/%3E%3Ctext%20x%3D%27807%27%20y%3D%27248%27%20fill%3D%27%23bae6fd%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2722%27%3Eenqueue%28job%29%3C/text%3E%3Cpath%20d%3D%27M770%20302h230v52H770z%27%20fill%3D%27%230c1626%27%20stroke%3D%27%2322d3ee%27%20stroke-opacity%3D%270.45%27/%3E%3Ctext%20x%3D%27795%27%20y%3D%27335%27%20fill%3D%27%23bae6fd%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2722%27%3Echeckpoint%20saved%3C/text%3E%3Cpath%20d%3D%27M770%20389h230v52H770z%27%20fill%3D%27%230c1626%27%20stroke%3D%27%23a78bfa%27%20stroke-opacity%3D%270.45%27/%3E%3Ctext%20x%3D%27833%27%20y%3D%27422%27%20fill%3D%27%23ddd6fe%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2722%27%3Eresume%28%29%3C/text%3E%3C/svg%3E" alt="Retry and Recovery Patterns for Long-Running AI Agent Jobs" class="blog-post-image">
+        </div>
+        <div class="blog-post-content">
+          <p>A lot of AI agent demos look reliable right up until the first timeout, model 429, or half-finished side effect. Then the job either starts over from scratch, duplicates work, or leaves an operator guessing what actually happened.</p>
+          <p>Long-running agent tasks need the same discipline as any other background system. If a job can call tools, write data, or spend money for ten minutes straight, retry logic is no longer a small implementation detail. It is the difference between a recoverable blip and a broken workflow.</p>
+          <p>This post walks through the patterns I would use to make long-running agent jobs restartable, observable, and safer to operate: idempotency keys, leases, checkpoints, bounded retries, and clean human handoff.</p>
+          <h2>Why this matters</h2>
+          <p>The failure shape of agent jobs is messy by default. A model call can time out after the tool already mutated state, a worker can die after generating a useful partial result, and a queue retry can replay the same side effect unless the job is idempotent.</p>
+          <p>That makes “just retry it” a risky answer. The system needs to know which work is safe to repeat, which work should resume from a checkpoint, and which work should stop and ask for a human.</p>
+          <h2>Architecture or workflow overview</h2>
+          <h3>The flow I want</h3>
+          <div class="diagram-panel">
+            <pre class="mermaid">flowchart TD
+    A[Job created with idempotency key] --> B[Queue stores job envelope]
+    B --> C[Worker acquires lease]
+    C --> D[Load latest checkpoint]
+    D --> E[Run next bounded step]
+    E --> F{Step result}
+    F -->|Success| G[Save checkpoint and renew lease]
+    G --> H{More steps left?}
+    H -->|Yes| E
+    H -->|No| I[Mark completed]
+    F -->|Transient failure| J[Backoff and requeue]
+    F -->|Permanent failure| K[Send to dead letter or human review]
+    F -->|Unsafe ambiguity| L[Pause for operator decision]</pre>
+          </div>
+          <h3>The design rule</h3>
+          <p>Treat the agent like a workflow engine, not a single giant prompt. Each step should be small enough to retry or resume with confidence.</p>
+          <table class="comparison-table">
+            <thead><tr><th>Concern</th><th>Good default</th><th>Why it helps</th></tr></thead>
+            <tbody>
+              <tr><td>Duplicate protection</td><td>Idempotency key per externally visible action</td><td>Stops replayed writes and duplicate PRs, tickets, or messages</td></tr>
+              <tr><td>Progress tracking</td><td>Durable checkpoint after each meaningful step</td><td>Avoids restarting the whole run after minute nine of ten</td></tr>
+              <tr><td>Worker ownership</td><td>Lease with heartbeat renewal</td><td>Prevents two workers from processing the same job</td></tr>
+              <tr><td>Retry policy</td><td>Exponential backoff plus retry budget</td><td>Handles flaky dependencies without creating infinite churn</td></tr>
+              <tr><td>Human intervention</td><td>Explicit paused state</td><td>Makes ambiguity visible instead of silently guessing</td></tr>
+            </tbody>
+          </table>
+          <h2>Implementation details</h2>
+          <h3>1. Put every job in a durable envelope</h3>
+          <p>The queue payload should carry enough state to answer three questions later: what is this job, what has it already done, and how many more times am I willing to try.</p>
+          <div class="code-block"><pre>{
+  "jobId": "blog-pr-2026-04-12-001",
+  "workflow": "daily-blog-pr",
+  "attempt": 2,
+  "maxAttempts": 5,
+  "leaseOwner": null,
+  "idempotencyKey": "daily-blog-pr:2026-04-12",
+  "checkpointVersion": 4,
+  "resumeFrom": "write_html",
+  "createdAt": "2026-04-12T11:55:02Z",
+  "visibilityTimeoutSeconds": 900
+}</pre></div>
+          <p>I like keeping the envelope boring and explicit. The agent can still have rich internal state, but the queue contract should be simple enough for operators and scripts to inspect quickly.</p>
+          <h3>2. Separate step execution from workflow control</h3>
+          <p>A worker should not blindly re-run the whole plan on every retry. It should load the latest checkpoint, execute one bounded step, persist the result, then decide whether to continue or requeue.</p>
+          <div class="code-block"><pre>async function processJob(job: JobEnvelope) {
+  const lease = await acquireLease(job.jobId, workerId, 15 * 60);
+  if (!lease.ok) return;
+
+  const checkpoint = await loadCheckpoint(job.jobId);
+  const step = nextStep(checkpoint);
+
+  try {
+    const result = await runStep(step, checkpoint.context);
+
+    await saveCheckpoint(job.jobId, {
+      ...checkpoint,
+      lastStep: step.name,
+      context: result.context,
+      completedSteps: [...checkpoint.completedSteps, step.name]
+    });
+
+    await renewLease(job.jobId, workerId);
+    await enqueueIfNeeded(job.jobId);
+  } catch (error) {
+    if (isTransient(error) && job.attempt < job.maxAttempts) {
+      await requeueWithBackoff(job, nextDelay(job.attempt + 1));
+      return;
+    }
+
+    if (isAmbiguousWrite(error)) {
+      await pauseForHuman(job.jobId, checkpoint, error);
+      return;
+    }
+
+    await moveToDeadLetter(job, error);
+  } finally {
+    await releaseLease(job.jobId, workerId);
+  }
+}</pre></div>
+          <p>The main point is that the worker owns orchestration, while <code>runStep</code> owns task logic. That split makes replay and debugging much less chaotic.</p>
+          <h3>3. Checkpoint before risky boundaries</h3>
+          <p>I would checkpoint before and after any expensive or side-effecting operation: before a long model call, before a write-capable tool, after generating an expensive artifact, and before switching from analysis to action.</p>
+          <div class="code-block"><pre>job_id: blog-pr-2026-04-12-001
+last_step: create_pr
+completed_steps:
+  - choose_topic
+  - write_markdown
+  - write_html
+artifacts:
+  branch: ai-blog/2026-04-12-agent-retry-recovery
+  commit_sha: 7d9e3ba
+  pr_url: null
+side_effects:
+  github_push:
+    done: true
+    idempotency_key: daily-blog-pr:2026-04-12:push
+  github_pr_create:
+    done: false
+context:
+  slug: agent-retry-recovery
+  title: Retry and Recovery Patterns for Long-Running AI Agent Jobs</pre></div>
+          <p>That is enough to resume from PR creation without regenerating the post or pushing another branch.</p>
+          <h3>4. Use logs that operators can actually act on</h3>
+          <div class="code-block"><pre>2026-04-12T11:58:02Z job=blog-pr-2026-04-12-001 step=create_pr attempt=1 lease=worker-3
+2026-04-12T11:58:06Z provider=github status=502 class=transient action=requeue delay=120s
+2026-04-12T12:00:07Z job=blog-pr-2026-04-12-001 step=create_pr attempt=2 checkpoint=write_html
+2026-04-12T12:00:09Z provider=github status=201 pr=142 action=complete</pre></div>
+          <p>That is much better than a single vague line saying “task failed”.</p>
+          <h2>What went wrong / tradeoffs</h2>
+          <p>Retry is not the same thing as recovery. A transient timeout on a read-only model call is a normal retry case. A timeout after sending an email or creating a pull request is different, because the system may not know whether the side effect already happened.</p>
+          <table class="comparison-table">
+            <thead><tr><th>Failure type</th><th>Example</th><th>Best response</th></tr></thead>
+            <tbody>
+              <tr><td>Transient</td><td>429, network timeout, overloaded model gateway</td><td>Retry with backoff</td></tr>
+              <tr><td>Recoverable with checkpoint</td><td>Worker restart mid-run, deploy interruption</td><td>Resume from last durable step</td></tr>
+              <tr><td>Ambiguous side effect</td><td>Request timed out after a write may have succeeded</td><td>Pause, verify externally, then resume or mark done</td></tr>
+            </tbody>
+          </table>
+          <div class="callout callout-warning">
+            <strong>Pitfalls to expect</strong>
+            <ul>
+              <li>Keeping workflow state only in memory makes queue retries dangerous after a worker restart.</li>
+              <li>Missing idempotency keys eventually creates duplicate PRs, tickets, or notifications.</li>
+              <li>Auto-retrying destructive steps can amplify damage when the first attempt actually succeeded.</li>
+              <li>Opaque logs turn a normal recovery into an operator guessing game.</li>
+            </ul>
+          </div>
+          <h3>Security and reliability concerns</h3>
+          <p>If the job can perform write actions, every replay path needs guardrails. Use idempotency keys for external APIs whenever possible, bind each checkpoint to a concrete principal, and avoid auto-retrying destructive steps unless the downstream API is explicitly idempotent.</p>
+          <h3>What I would not do</h3>
+          <p>I would not let a single agent prompt manage a 20-step workflow without durable checkpoints. I also would not auto-retry side-effecting tool calls just because the HTTP client labeled the error as retryable. In agent systems, ambiguity matters more than optimistic throughput.</p>
+          <h2>Practical checklist or decision framework</h2>
+          <div class="callout callout-success">
+            <strong>What I would do again</strong>
+            <ul>
+              <li>Give every externally visible action its own idempotency key.</li>
+              <li>Break long jobs into bounded steps with checkpointable outputs.</li>
+              <li>Use worker leases so only one runner owns a job at a time.</li>
+              <li>Keep retry budgets finite and visible in the job envelope.</li>
+              <li>Pause ambiguous writes for operator review instead of guessing.</li>
+              <li>Send dead-letter jobs somewhere an operator will actually inspect.</li>
+            </ul>
+          </div>
+          <ol>
+            <li>Can this step be repeated safely? If yes, retry.</li>
+            <li>Can this step resume from saved state? If yes, restore checkpoint and continue.</li>
+            <li>Could this step have already mutated the outside world? If yes, verify before replay.</li>
+            <li>Is the failure repeated after the retry budget is spent? Escalate to a human or dead-letter queue.</li>
+          </ol>
+          <h2>Conclusion</h2>
+          <p>Long-running agent jobs become much easier to trust once retry and recovery are treated as first-class design problems. Durable checkpoints, explicit idempotency, and honest pause states keep failures small instead of mysterious.</p>
+          <p>If I were building a new agent runner today, I would optimize less for uninterrupted happy-path execution and more for clean restarts after the inevitable messy failure. That is what makes the automation feel production-ready instead of lucky.</p>
+          <div class="blog-post-tags">
+            <span class="blog-post-tag">AI Agents</span>
+            <span class="blog-post-tag">Reliability</span>
+            <span class="blog-post-tag">Queues</span>
+            <span class="blog-post-tag">Distributed Systems</span>
+            <span class="blog-post-tag">Production Ops</span>
+          </div>
+        </div>
+        <div class="blog-footer"><a href="index.html">&larr; Back to All Posts</a></div>
+      </div>
+    </header>
+    <script type="module">
+      import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.esm.min.mjs';
+      mermaid.initialize({ startOnLoad: true, theme: 'dark' });
+    </script>
+  </body>
+</html>
