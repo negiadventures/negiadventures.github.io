@@ -1,0 +1,265 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="A practical guide to building schema-first tool contracts for AI agents with JSON Schema, runtime validation, adapter layers, and fail-closed execution paths that keep tool use reliable and reviewable.">
+    <meta name="author" content="Anirudh Negi">
+    <title>Schema-First Tool Contracts for AI Agents That Fail Closed | Anirudh Negi</title>
+    <link rel="icon" type="image/svg+xml" href="../images/favicon.svg">
+    <link rel="canonical" href="https://negiadventures.github.io/blog/schema-first-tool-contracts.html">
+    <meta property="og:type" content="article">
+    <meta property="og:url" content="https://negiadventures.github.io/blog/schema-first-tool-contracts.html">
+    <meta property="og:title" content="Schema-First Tool Contracts for AI Agents That Fail Closed | Anirudh Negi">
+    <meta property="og:description" content="A practical guide to building schema-first tool contracts for AI agents with JSON Schema, runtime validation, adapter layers, and fail-closed execution paths that keep tool use reliable and reviewable.">
+    <meta property="og:image" content="data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A//www.w3.org/2000/svg%27%20viewBox%3D%270%200%201200%20630%27%3E%0A%3Cdefs%3E%0A%20%20%3ClinearGradient%20id%3D%27bg%27%20x1%3D%270%27%20x2%3D%271%27%20y1%3D%270%27%20y2%3D%271%27%3E%0A%20%20%20%20%3Cstop%20offset%3D%270%25%27%20stop-color%3D%27%2308111d%27/%3E%0A%20%20%20%20%3Cstop%20offset%3D%27100%25%27%20stop-color%3D%27%2317314f%27/%3E%0A%20%20%3C/linearGradient%3E%0A%20%20%3ClinearGradient%20id%3D%27panel%27%20x1%3D%270%27%20x2%3D%271%27%20y1%3D%270%27%20y2%3D%271%27%3E%0A%20%20%20%20%3Cstop%20offset%3D%270%25%27%20stop-color%3D%27%230c1526%27/%3E%0A%20%20%20%20%3Cstop%20offset%3D%27100%25%27%20stop-color%3D%27%23101b30%27/%3E%0A%20%20%3C/linearGradient%3E%0A%3C/defs%3E%0A%3Crect%20width%3D%271200%27%20height%3D%27630%27%20fill%3D%27url%28%23bg%29%27/%3E%0A%3Ccircle%20cx%3D%271010%27%20cy%3D%27110%27%20r%3D%27155%27%20fill%3D%27%2322d3ee%27%20fill-opacity%3D%270.14%27/%3E%0A%3Ccircle%20cx%3D%27175%27%20cy%3D%27525%27%20r%3D%27210%27%20fill%3D%27%238b5cf6%27%20fill-opacity%3D%270.16%27/%3E%0A%3Crect%20x%3D%2778%27%20y%3D%2786%27%20width%3D%271044%27%20height%3D%27458%27%20rx%3D%2732%27%20fill%3D%27url%28%23panel%29%27%20stroke%3D%27%2338bdf8%27%20stroke-opacity%3D%270.35%27/%3E%0A%3Ctext%20x%3D%27130%27%20y%3D%27190%27%20fill%3D%27white%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2746%27%20font-weight%3D%27700%27%3ESchema-First%20Tool%20Contracts%3C/text%3E%0A%3Ctext%20x%3D%27130%27%20y%3D%27260%27%20fill%3D%27%2393c5fd%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2746%27%20font-weight%3D%27700%27%3Efor%20AI%20Agents%3C/text%3E%0A%3Ctext%20x%3D%27130%27%20y%3D%27338%27%20fill%3D%27%23cbd5e1%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2728%27%3EJSON%20Schema%2C%20runtime%20validation%2C%20adapters%2C%20and%20safer%20tool%20execution%3C/text%3E%0A%3Crect%20x%3D%27130%27%20y%3D%27390%27%20width%3D%27290%27%20height%3D%2754%27%20rx%3D%2714%27%20fill%3D%27%23111c2d%27%20stroke%3D%27%2367e8f9%27%20stroke-opacity%3D%270.45%27/%3E%0A%3Ctext%20x%3D%27154%27%20y%3D%27425%27%20fill%3D%27%2367e8f9%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2724%27%3EFail%20closed%2C%20not%20vaguely%3C/text%3E%0A%3Crect%20x%3D%27760%27%20y%3D%27180%27%20width%3D%27250%27%20height%3D%2756%27%20rx%3D%2714%27%20fill%3D%27%230d1728%27%20stroke%3D%27%2322d3ee%27%20stroke-opacity%3D%270.45%27/%3E%0A%3Ctext%20x%3D%27803%27%20y%3D%27216%27%20fill%3D%27%23bae6fd%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2723%27%3Etool_call.json%3C/text%3E%0A%3Crect%20x%3D%27760%27%20y%3D%27278%27%20width%3D%27250%27%20height%3D%2756%27%20rx%3D%2714%27%20fill%3D%27%230d1728%27%20stroke%3D%27%2322d3ee%27%20stroke-opacity%3D%270.45%27/%3E%0A%3Ctext%20x%3D%27795%27%20y%3D%27314%27%20fill%3D%27%23bae6fd%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2723%27%3Evalidated%20args%3C/text%3E%0A%3Crect%20x%3D%27760%27%20y%3D%27376%27%20width%3D%27250%27%20height%3D%2756%27%20rx%3D%2714%27%20fill%3D%27%230d1728%27%20stroke%3D%27%23a78bfa%27%20stroke-opacity%3D%270.45%27/%3E%0A%3Ctext%20x%3D%27824%27%20y%3D%27412%27%20fill%3D%27%23ddd6fe%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2723%27%3Eexecute%28%29%3C/text%3E%0A%3C/svg%3E">
+    <meta property="article:published_time" content="2026-04-13">
+    <meta property="article:author" content="Anirudh Negi">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:url" content="https://negiadventures.github.io/blog/schema-first-tool-contracts.html">
+    <meta name="twitter:title" content="Schema-First Tool Contracts for AI Agents That Fail Closed | Anirudh Negi">
+    <meta name="twitter:description" content="A practical guide to building schema-first tool contracts for AI agents with JSON Schema, runtime validation, adapter layers, and fail-closed execution paths that keep tool use reliable and reviewable.">
+    <meta name="twitter:image" content="data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A//www.w3.org/2000/svg%27%20viewBox%3D%270%200%201200%20630%27%3E%0A%3Cdefs%3E%0A%20%20%3ClinearGradient%20id%3D%27bg%27%20x1%3D%270%27%20x2%3D%271%27%20y1%3D%270%27%20y2%3D%271%27%3E%0A%20%20%20%20%3Cstop%20offset%3D%270%25%27%20stop-color%3D%27%2308111d%27/%3E%0A%20%20%20%20%3Cstop%20offset%3D%27100%25%27%20stop-color%3D%27%2317314f%27/%3E%0A%20%20%3C/linearGradient%3E%0A%20%20%3ClinearGradient%20id%3D%27panel%27%20x1%3D%270%27%20x2%3D%271%27%20y1%3D%270%27%20y2%3D%271%27%3E%0A%20%20%20%20%3Cstop%20offset%3D%270%25%27%20stop-color%3D%27%230c1526%27/%3E%0A%20%20%20%20%3Cstop%20offset%3D%27100%25%27%20stop-color%3D%27%23101b30%27/%3E%0A%20%20%3C/linearGradient%3E%0A%3C/defs%3E%0A%3Crect%20width%3D%271200%27%20height%3D%27630%27%20fill%3D%27url%28%23bg%29%27/%3E%0A%3Ccircle%20cx%3D%271010%27%20cy%3D%27110%27%20r%3D%27155%27%20fill%3D%27%2322d3ee%27%20fill-opacity%3D%270.14%27/%3E%0A%3Ccircle%20cx%3D%27175%27%20cy%3D%27525%27%20r%3D%27210%27%20fill%3D%27%238b5cf6%27%20fill-opacity%3D%270.16%27/%3E%0A%3Crect%20x%3D%2778%27%20y%3D%2786%27%20width%3D%271044%27%20height%3D%27458%27%20rx%3D%2732%27%20fill%3D%27url%28%23panel%29%27%20stroke%3D%27%2338bdf8%27%20stroke-opacity%3D%270.35%27/%3E%0A%3Ctext%20x%3D%27130%27%20y%3D%27190%27%20fill%3D%27white%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2746%27%20font-weight%3D%27700%27%3ESchema-First%20Tool%20Contracts%3C/text%3E%0A%3Ctext%20x%3D%27130%27%20y%3D%27260%27%20fill%3D%27%2393c5fd%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2746%27%20font-weight%3D%27700%27%3Efor%20AI%20Agents%3C/text%3E%0A%3Ctext%20x%3D%27130%27%20y%3D%27338%27%20fill%3D%27%23cbd5e1%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2728%27%3EJSON%20Schema%2C%20runtime%20validation%2C%20adapters%2C%20and%20safer%20tool%20execution%3C/text%3E%0A%3Crect%20x%3D%27130%27%20y%3D%27390%27%20width%3D%27290%27%20height%3D%2754%27%20rx%3D%2714%27%20fill%3D%27%23111c2d%27%20stroke%3D%27%2367e8f9%27%20stroke-opacity%3D%270.45%27/%3E%0A%3Ctext%20x%3D%27154%27%20y%3D%27425%27%20fill%3D%27%2367e8f9%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2724%27%3EFail%20closed%2C%20not%20vaguely%3C/text%3E%0A%3Crect%20x%3D%27760%27%20y%3D%27180%27%20width%3D%27250%27%20height%3D%2756%27%20rx%3D%2714%27%20fill%3D%27%230d1728%27%20stroke%3D%27%2322d3ee%27%20stroke-opacity%3D%270.45%27/%3E%0A%3Ctext%20x%3D%27803%27%20y%3D%27216%27%20fill%3D%27%23bae6fd%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2723%27%3Etool_call.json%3C/text%3E%0A%3Crect%20x%3D%27760%27%20y%3D%27278%27%20width%3D%27250%27%20height%3D%2756%27%20rx%3D%2714%27%20fill%3D%27%230d1728%27%20stroke%3D%27%2322d3ee%27%20stroke-opacity%3D%270.45%27/%3E%0A%3Ctext%20x%3D%27795%27%20y%3D%27314%27%20fill%3D%27%23bae6fd%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2723%27%3Evalidated%20args%3C/text%3E%0A%3Crect%20x%3D%27760%27%20y%3D%27376%27%20width%3D%27250%27%20height%3D%2756%27%20rx%3D%2714%27%20fill%3D%27%230d1728%27%20stroke%3D%27%23a78bfa%27%20stroke-opacity%3D%270.45%27/%3E%0A%3Ctext%20x%3D%27824%27%20y%3D%27412%27%20fill%3D%27%23ddd6fe%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2723%27%3Eexecute%28%29%3C/text%3E%0A%3C/svg%3E">
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "BlogPosting",
+      "headline": "Schema-First Tool Contracts for AI Agents That Fail Closed",
+      "description": "A practical guide to building schema-first tool contracts for AI agents with JSON Schema, runtime validation, adapter layers, and fail-closed execution paths that keep tool use reliable and reviewable.",
+      "image": "data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A//www.w3.org/2000/svg%27%20viewBox%3D%270%200%201200%20630%27%3E%0A%3Cdefs%3E%0A%20%20%3ClinearGradient%20id%3D%27bg%27%20x1%3D%270%27%20x2%3D%271%27%20y1%3D%270%27%20y2%3D%271%27%3E%0A%20%20%20%20%3Cstop%20offset%3D%270%25%27%20stop-color%3D%27%2308111d%27/%3E%0A%20%20%20%20%3Cstop%20offset%3D%27100%25%27%20stop-color%3D%27%2317314f%27/%3E%0A%20%20%3C/linearGradient%3E%0A%20%20%3ClinearGradient%20id%3D%27panel%27%20x1%3D%270%27%20x2%3D%271%27%20y1%3D%270%27%20y2%3D%271%27%3E%0A%20%20%20%20%3Cstop%20offset%3D%270%25%27%20stop-color%3D%27%230c1526%27/%3E%0A%20%20%20%20%3Cstop%20offset%3D%27100%25%27%20stop-color%3D%27%23101b30%27/%3E%0A%20%20%3C/linearGradient%3E%0A%3C/defs%3E%0A%3Crect%20width%3D%271200%27%20height%3D%27630%27%20fill%3D%27url%28%23bg%29%27/%3E%0A%3Ccircle%20cx%3D%271010%27%20cy%3D%27110%27%20r%3D%27155%27%20fill%3D%27%2322d3ee%27%20fill-opacity%3D%270.14%27/%3E%0A%3Ccircle%20cx%3D%27175%27%20cy%3D%27525%27%20r%3D%27210%27%20fill%3D%27%238b5cf6%27%20fill-opacity%3D%270.16%27/%3E%0A%3Crect%20x%3D%2778%27%20y%3D%2786%27%20width%3D%271044%27%20height%3D%27458%27%20rx%3D%2732%27%20fill%3D%27url%28%23panel%29%27%20stroke%3D%27%2338bdf8%27%20stroke-opacity%3D%270.35%27/%3E%0A%3Ctext%20x%3D%27130%27%20y%3D%27190%27%20fill%3D%27white%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2746%27%20font-weight%3D%27700%27%3ESchema-First%20Tool%20Contracts%3C/text%3E%0A%3Ctext%20x%3D%27130%27%20y%3D%27260%27%20fill%3D%27%2393c5fd%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2746%27%20font-weight%3D%27700%27%3Efor%20AI%20Agents%3C/text%3E%0A%3Ctext%20x%3D%27130%27%20y%3D%27338%27%20fill%3D%27%23cbd5e1%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2728%27%3EJSON%20Schema%2C%20runtime%20validation%2C%20adapters%2C%20and%20safer%20tool%20execution%3C/text%3E%0A%3Crect%20x%3D%27130%27%20y%3D%27390%27%20width%3D%27290%27%20height%3D%2754%27%20rx%3D%2714%27%20fill%3D%27%23111c2d%27%20stroke%3D%27%2367e8f9%27%20stroke-opacity%3D%270.45%27/%3E%0A%3Ctext%20x%3D%27154%27%20y%3D%27425%27%20fill%3D%27%2367e8f9%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2724%27%3EFail%20closed%2C%20not%20vaguely%3C/text%3E%0A%3Crect%20x%3D%27760%27%20y%3D%27180%27%20width%3D%27250%27%20height%3D%2756%27%20rx%3D%2714%27%20fill%3D%27%230d1728%27%20stroke%3D%27%2322d3ee%27%20stroke-opacity%3D%270.45%27/%3E%0A%3Ctext%20x%3D%27803%27%20y%3D%27216%27%20fill%3D%27%23bae6fd%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2723%27%3Etool_call.json%3C/text%3E%0A%3Crect%20x%3D%27760%27%20y%3D%27278%27%20width%3D%27250%27%20height%3D%2756%27%20rx%3D%2714%27%20fill%3D%27%230d1728%27%20stroke%3D%27%2322d3ee%27%20stroke-opacity%3D%270.45%27/%3E%0A%3Ctext%20x%3D%27795%27%20y%3D%27314%27%20fill%3D%27%23bae6fd%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2723%27%3Evalidated%20args%3C/text%3E%0A%3Crect%20x%3D%27760%27%20y%3D%27376%27%20width%3D%27250%27%20height%3D%2756%27%20rx%3D%2714%27%20fill%3D%27%230d1728%27%20stroke%3D%27%23a78bfa%27%20stroke-opacity%3D%270.45%27/%3E%0A%3Ctext%20x%3D%27824%27%20y%3D%27412%27%20fill%3D%27%23ddd6fe%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2723%27%3Eexecute%28%29%3C/text%3E%0A%3C/svg%3E",
+      "url": "https://negiadventures.github.io/blog/schema-first-tool-contracts.html",
+      "datePublished": "2026-04-13",
+      "author": {
+        "@type": "Person",
+        "name": "Anirudh Negi",
+        "url": "https://negiadventures.github.io"
+      },
+      "publisher": {
+        "@type": "Person",
+        "name": "Anirudh Negi",
+        "url": "https://negiadventures.github.io"
+      }
+    }
+    </script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../stylesheets/stylesheet.css?v=5" media="screen">
+    <style>
+      .blog-post { max-width: 860px; margin: 0 auto; padding: 56px 20px; }
+      .blog-post-nav { margin-bottom: 30px; }
+      .blog-post-nav a { color: var(--accent-strong); font-size: 0.95rem; }
+      .blog-post-nav a:hover { color: var(--accent); }
+      .blog-post-title { font-size: 2.6rem; margin-bottom: 16px; }
+      .blog-post-meta { display: flex; gap: 16px; flex-wrap: wrap; color: var(--text-muted); margin-bottom: 28px; }
+      .blog-post-image { width: 100%; border-radius: 18px; border: 1px solid var(--border); margin-bottom: 32px; background: var(--bg-alt); }
+      .blog-post-content h2 { font-size: 1.65rem; margin-top: 40px; margin-bottom: 14px; }
+      .blog-post-content h3 { font-size: 1.25rem; margin-top: 28px; margin-bottom: 10px; }
+      .blog-post-content p, .blog-post-content li { color: var(--text-muted); line-height: 1.8; }
+      .blog-post-content ul, .blog-post-content ol { margin-bottom: 22px; padding-left: 24px; }
+      .code-block, .terminal-block, .diagram-block, .callout { background: var(--bg-alt); border: 1px solid var(--border); border-radius: 14px; padding: 20px; margin: 22px 0; overflow-x: auto; }
+      .code-block pre, .terminal-block pre, .diagram-block pre { margin: 0; font-family: var(--mono); font-size: 0.9rem; line-height: 1.65; color: var(--text-light); white-space: pre-wrap; }
+      .callout { border-left: 4px solid var(--accent); }
+      table { width: 100%; border-collapse: collapse; margin: 24px 0; background: var(--bg-alt); border: 1px solid var(--border); border-radius: 14px; overflow: hidden; display: block; }
+      tbody, thead, tr { width: 100%; display: table; table-layout: fixed; }
+      th, td { padding: 14px; text-align: left; border-bottom: 1px solid var(--border); color: var(--text-muted); }
+      th { color: var(--text-light); background: rgba(56, 189, 248, 0.08); }
+      .blog-post-tags { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 40px; padding-top: 30px; border-top: 1px solid var(--border); }
+      .blog-post-tag { background: var(--accent-soft); color: var(--accent-strong); border-radius: 999px; padding: 6px 14px; font-size: 0.85rem; font-family: var(--mono); }
+      .blog-footer { margin-top: 56px; padding-top: 28px; border-top: 1px solid var(--border); text-align: center; }
+      .blog-footer a { color: var(--accent-strong); }
+      @media (max-width: 768px) { .blog-post { padding: 40px 16px; } .blog-post-title { font-size: 2rem; } }
+    </style>
+  </head>
+  <body>
+    <a href="../index.html#main" class="skip-link">Skip to main content</a>
+    <header class="site-header">
+      <div class="container blog-post">
+        <div class="blog-post-nav"><a href="index.html">&larr; Back to All Posts</a></div>
+        <div class="blog-post-header">
+          <h1 class="blog-post-title">Schema-First Tool Contracts for AI Agents That Fail Closed</h1>
+          <div class="blog-post-meta"><span>April 13, 2026</span><span>&bull;</span><span>10 min read</span><span>&bull;</span><span>Tool Calling</span></div>
+          <img src="data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A//www.w3.org/2000/svg%27%20viewBox%3D%270%200%201200%20630%27%3E%0A%3Cdefs%3E%0A%20%20%3ClinearGradient%20id%3D%27bg%27%20x1%3D%270%27%20x2%3D%271%27%20y1%3D%270%27%20y2%3D%271%27%3E%0A%20%20%20%20%3Cstop%20offset%3D%270%25%27%20stop-color%3D%27%2308111d%27/%3E%0A%20%20%20%20%3Cstop%20offset%3D%27100%25%27%20stop-color%3D%27%2317314f%27/%3E%0A%20%20%3C/linearGradient%3E%0A%20%20%3ClinearGradient%20id%3D%27panel%27%20x1%3D%270%27%20x2%3D%271%27%20y1%3D%270%27%20y2%3D%271%27%3E%0A%20%20%20%20%3Cstop%20offset%3D%270%25%27%20stop-color%3D%27%230c1526%27/%3E%0A%20%20%20%20%3Cstop%20offset%3D%27100%25%27%20stop-color%3D%27%23101b30%27/%3E%0A%20%20%3C/linearGradient%3E%0A%3C/defs%3E%0A%3Crect%20width%3D%271200%27%20height%3D%27630%27%20fill%3D%27url%28%23bg%29%27/%3E%0A%3Ccircle%20cx%3D%271010%27%20cy%3D%27110%27%20r%3D%27155%27%20fill%3D%27%2322d3ee%27%20fill-opacity%3D%270.14%27/%3E%0A%3Ccircle%20cx%3D%27175%27%20cy%3D%27525%27%20r%3D%27210%27%20fill%3D%27%238b5cf6%27%20fill-opacity%3D%270.16%27/%3E%0A%3Crect%20x%3D%2778%27%20y%3D%2786%27%20width%3D%271044%27%20height%3D%27458%27%20rx%3D%2732%27%20fill%3D%27url%28%23panel%29%27%20stroke%3D%27%2338bdf8%27%20stroke-opacity%3D%270.35%27/%3E%0A%3Ctext%20x%3D%27130%27%20y%3D%27190%27%20fill%3D%27white%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2746%27%20font-weight%3D%27700%27%3ESchema-First%20Tool%20Contracts%3C/text%3E%0A%3Ctext%20x%3D%27130%27%20y%3D%27260%27%20fill%3D%27%2393c5fd%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2746%27%20font-weight%3D%27700%27%3Efor%20AI%20Agents%3C/text%3E%0A%3Ctext%20x%3D%27130%27%20y%3D%27338%27%20fill%3D%27%23cbd5e1%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2728%27%3EJSON%20Schema%2C%20runtime%20validation%2C%20adapters%2C%20and%20safer%20tool%20execution%3C/text%3E%0A%3Crect%20x%3D%27130%27%20y%3D%27390%27%20width%3D%27290%27%20height%3D%2754%27%20rx%3D%2714%27%20fill%3D%27%23111c2d%27%20stroke%3D%27%2367e8f9%27%20stroke-opacity%3D%270.45%27/%3E%0A%3Ctext%20x%3D%27154%27%20y%3D%27425%27%20fill%3D%27%2367e8f9%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2724%27%3EFail%20closed%2C%20not%20vaguely%3C/text%3E%0A%3Crect%20x%3D%27760%27%20y%3D%27180%27%20width%3D%27250%27%20height%3D%2756%27%20rx%3D%2714%27%20fill%3D%27%230d1728%27%20stroke%3D%27%2322d3ee%27%20stroke-opacity%3D%270.45%27/%3E%0A%3Ctext%20x%3D%27803%27%20y%3D%27216%27%20fill%3D%27%23bae6fd%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2723%27%3Etool_call.json%3C/text%3E%0A%3Crect%20x%3D%27760%27%20y%3D%27278%27%20width%3D%27250%27%20height%3D%2756%27%20rx%3D%2714%27%20fill%3D%27%230d1728%27%20stroke%3D%27%2322d3ee%27%20stroke-opacity%3D%270.45%27/%3E%0A%3Ctext%20x%3D%27795%27%20y%3D%27314%27%20fill%3D%27%23bae6fd%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2723%27%3Evalidated%20args%3C/text%3E%0A%3Crect%20x%3D%27760%27%20y%3D%27376%27%20width%3D%27250%27%20height%3D%2756%27%20rx%3D%2714%27%20fill%3D%27%230d1728%27%20stroke%3D%27%23a78bfa%27%20stroke-opacity%3D%270.45%27/%3E%0A%3Ctext%20x%3D%27824%27%20y%3D%27412%27%20fill%3D%27%23ddd6fe%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2723%27%3Eexecute%28%29%3C/text%3E%0A%3C/svg%3E" alt="Schema-First Tool Contracts for AI Agents That Fail Closed" class="blog-post-image">
+        </div>
+        <div class="blog-post-content">
+          <p>Most agent failures I see are not model failures. They are contract failures.</p>
+          <p>The model picks the right tool in spirit, then sends one field with the wrong shape, one enum value with the wrong casing, or one half-parsed date that slips into a real side effect. If your executor is permissive, the bug moves downstream and becomes much harder to debug.</p>
+          <p>The fix is boring in a good way: make tool use schema-first. Define the tool contract once, validate at runtime, adapt provider-specific payloads at the edge, and fail closed when the request does not match the contract.</p>
+          <p>This matters because the minute an agent can create tickets, modify infra, touch customer data, or even just burn expensive API calls, loose contracts stop being a convenience problem and become a reliability problem.</p>
+
+          <h2>Why this matters</h2>
+          <p>Prompt-only tool descriptions are okay for demos, but production agents need stable boundaries. Reviewers need to know what a tool can accept. Operators need predictable failures. Security teams need confidence that a malformed request will not quietly mutate into a side effect.</p>
+          <p>Schema-first contracts solve a lot of that. They make tool use inspectable, testable, and easier to migrate when providers or downstream services change.</p>
+
+          <h2>Architecture or workflow overview</h2>
+          <div class="diagram-block"><pre>Model planner -> Tool registry -> JSON Schema -> Runtime validator
+                    |                               |
+                    | valid                         | invalid
+                    v                               v
+                 Adapter layer ----------------> Structured error
+                    |
+                    v
+                 Executor -> Audit log and metrics</pre></div>
+          <div class="code-block"><pre><code>flowchart LR
+    A[Model planner] --> B[Tool registry]
+    B --> C[JSON Schema or typed contract]
+    C --> D[Runtime validator]
+    D -->|valid| E[Adapter layer]
+    D -->|invalid| F[Structured error]
+    E --> G[Executor]
+    G --> H[Audit log and metrics]
+    F --> H</code></pre></div>
+          <ol>
+            <li><strong>Planner</strong> decides which tool to call.</li>
+            <li><strong>Registry</strong> describes allowed tools and their exact input shape.</li>
+            <li><strong>Validator</strong> rejects malformed arguments before execution.</li>
+            <li><strong>Adapter</strong> converts schema-safe arguments into provider specific calls.</li>
+            <li><strong>Executor</strong> performs the side effect and records what happened.</li>
+          </ol>
+
+          <h2>Implementation details</h2>
+          <h3>Define the contract in one place</h3>
+          <p>A minimal tool contract should be explicit about required fields, enums, bounds, and whether additional properties are allowed.</p>
+          <div class="code-block"><pre><code>{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "CreateIncidentTicket",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["service", "severity", "summary"],
+  "properties": {
+    "service": { "type": "string", "minLength": 2 },
+    "severity": { "type": "string", "enum": ["sev1", "sev2", "sev3", "sev4"] },
+    "summary": { "type": "string", "minLength": 10, "maxLength": 240 },
+    "runbook_url": { "type": "string", "format": "uri" },
+    "notify_slack": { "type": "boolean", "default": true }
+  }
+}</code></pre></div>
+          <p><code>additionalProperties: false</code> stops hallucinated fields from leaking into execution. Enums force the agent onto your operating vocabulary instead of its own.</p>
+
+          <h3>Validate before any side effect</h3>
+          <div class="code-block"><pre><code>import Ajv from "ajv";
+import addFormats from "ajv-formats";
+import schema from "./schemas/create-incident-ticket.json";
+
+const ajv = new Ajv({ allErrors: true, useDefaults: true, removeAdditional: false });
+addFormats(ajv);
+const validateCreateIncident = ajv.compile(schema);
+
+export function parseToolCall(call) {
+  if (call.name !== "create_incident_ticket") throw new Error(`unsupported tool: ${call.name}`);
+  if (!validateCreateIncident(call.arguments)) {
+    return { ok: false, error: "validation_failed", details: validateCreateIncident.errors ?? [] };
+  }
+  return { ok: true, args: call.arguments };
+}</code></pre></div>
+          <p>If validation fails, the executor never runs. That one rule removes a lot of bizarre downstream debugging.</p>
+
+          <h3>Adapt clean arguments to the downstream API</h3>
+          <div class="code-block"><pre><code>from dataclasses import dataclass
+from typing import Optional
+
+@dataclass(frozen=True)
+class CreateIncidentTicket:
+    service: str
+    severity: str
+    summary: str
+    runbook_url: Optional[str] = None
+    notify_slack: bool = True
+
+SEVERITY_MAP = {
+    "sev1": "critical",
+    "sev2": "high",
+    "sev3": "medium",
+    "sev4": "low",
+}
+
+def to_ticket_payload(cmd: CreateIncidentTicket) -> dict:
+    return {
+        "service_name": cmd.service,
+        "priority": SEVERITY_MAP[cmd.severity],
+        "title": cmd.summary,
+        "references": [cmd.runbook_url] if cmd.runbook_url else [],
+        "notify": {"slack": cmd.notify_slack},
+    }</code></pre></div>
+          <p>The adapter is where downstream API drift should live. The model-facing contract should stay stable.</p>
+
+          <h3>Return machine-readable errors back to the model</h3>
+          <div class="terminal-block"><pre>$ tool-exec create_incident_ticket
+validation_failed
+- /severity must be equal to one of: sev1, sev2, sev3, sev4
+- /summary must NOT have fewer than 10 characters</pre></div>
+          <div class="code-block"><pre><code>{
+  "ok": false,
+  "error": "validation_failed",
+  "tool": "create_incident_ticket",
+  "details": [
+    { "path": "/severity", "message": "must be equal to one of the allowed values" },
+    { "path": "/summary", "message": "must NOT have fewer than 10 characters" }
+  ]
+}</code></pre></div>
+
+          <h2>Tradeoffs</h2>
+          <table>
+            <thead>
+              <tr><th>Approach</th><th>What feels nice at first</th><th>What breaks later</th><th>Better default</th></tr>
+            </thead>
+            <tbody>
+              <tr><td>Free-form JSON arguments</td><td>Fast prototyping</td><td>Silent field drift, weak reviewability, awkward retries</td><td>Only for throwaway prototypes</td></tr>
+              <tr><td>Prompt-only tool instructions</td><td>Low setup cost</td><td>Models invent values and formats</td><td>Use only as extra guidance</td></tr>
+              <tr><td>Schema-first contracts</td><td>Slightly more upfront work</td><td>Some boilerplate</td><td>Best default for side effects</td></tr>
+              <tr><td>Schema + adapter + audit log</td><td>Highest discipline</td><td>More code to maintain</td><td>Best for production or shared agents</td></tr>
+            </tbody>
+          </table>
+
+          <h2>What went wrong</h2>
+          <h3>Trusting the provider SDK to validate enough</h3>
+          <p>A lot of SDKs validate transport shape, not business rules. A request can be syntactically valid and still operationally wrong.</p>
+          <h3>Using one schema for both planning and execution</h3>
+          <p>Your model wants a stable interface. Your downstream service wants whatever odd field names it currently uses. Keep those separate.</p>
+          <h3>Accepting best-effort coercion</h3>
+          <p>Auto-coercing <code>SEV-1</code> into <code>sev1</code> looks helpful until the same layer starts normalizing values you should have rejected.</p>
+
+          <div class="callout">
+            <strong>Pitfall:</strong> If tools accept arbitrary strings for dates, IDs, or environments, the model will eventually generate one that looks plausible and is wrong. Prefer enums, typed IDs, and narrow patterns.<br><br>
+            <strong>Security note:</strong> Schema validation is not authorization. A perfectly valid tool call can still be unauthorized for the current user, environment, or workflow step.
+          </div>
+
+          <h2>Practical checklist</h2>
+          <ul>
+            <li>Define tool inputs once in JSON Schema, Zod, Pydantic, or a similarly typed format.</li>
+            <li>Reject unknown fields unless you have a very strong migration reason not to.</li>
+            <li>Keep the model-facing contract separate from the downstream API payload.</li>
+            <li>Return structured validation errors so the agent can repair bad calls.</li>
+            <li>Log validated arguments, execution result, and error category for every run.</li>
+            <li>Add auth checks after validation and before side effects.</li>
+            <li>Add replay-safe identifiers or idempotency keys for non-read tools.</li>
+            <li>Review every enum and default value like it is part of your public API.</li>
+          </ul>
+
+          <h2>References</h2>
+          <ul>
+            <li><a href="https://platform.openai.com/docs/guides/structured-outputs">OpenAI, structured outputs</a></li>
+            <li><a href="https://docs.anthropic.com/en/docs/agents-and-tools/tool-use/overview">Anthropic, tool use</a></li>
+            <li><a href="https://json-schema.org/specification">JSON Schema specification</a></li>
+            <li><a href="https://ajv.js.org/">Ajv JSON Schema validator</a></li>
+            <li><a href="https://docs.pydantic.dev/latest/">Pydantic</a></li>
+          </ul>
+
+          <h2>Conclusion</h2>
+          <p>If an agent can touch real systems, tool calling should look more like API design and less like wishful prompting.</p>
+          <p>Schema-first contracts add a little ceremony, but they buy calmer debugging, safer retries, tighter reviews, and fewer bizarre side effects. That trade is worth it.</p>
+
+          <div class="blog-post-tags">
+            <span class="blog-post-tag">AI Agents</span>
+            <span class="blog-post-tag">Tool Calling</span>
+            <span class="blog-post-tag">JSON Schema</span>
+            <span class="blog-post-tag">Reliability</span>
+            <span class="blog-post-tag">Developer Workflow</span>
+          </div>
+
+          <div class="blog-footer"><a href="index.html">← Back to all posts</a></div>
+        </div>
+      </div>
+    </header>
+  </body>
+</html>

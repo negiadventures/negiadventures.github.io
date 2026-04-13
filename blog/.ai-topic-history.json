@@ -1,6 +1,14 @@
 {
   "topics": [
     {
+      "date": "2026-04-13",
+      "skill": "AI tool contract design",
+      "topic": "Building schema-first tool contracts for AI agents with JSON Schema, runtime validation, adapter layers, and fail-closed execution paths so malformed tool calls are repairable instead of dangerous",
+      "slug": "schema-first-tool-contracts",
+      "title": "Schema-First Tool Contracts for AI Agents That Fail Closed",
+      "summary": "A practical guide to building schema-first tool contracts for AI agents using JSON Schema, runtime validators, adapters, and structured repair loops so tool execution stays reliable and reviewable."
+    },
+    {
       "date": "2026-04-12",
       "skill": "AI agent reliability engineering",
       "topic": "Designing retry and recovery paths for long-running AI agent jobs with idempotency keys, leases, durable checkpoints, dead-letter queues, and operator pause states so retries do not duplicate side effects or lose progress",
