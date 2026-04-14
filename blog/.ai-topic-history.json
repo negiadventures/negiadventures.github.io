@@ -1,6 +1,14 @@
 {
   "topics": [
     {
+      "date": "2026-04-14",
+      "skill": "Local inference runtime selection",
+      "topic": "Choosing between Ollama, llama.cpp, and vLLM for local AI development based on hardware shape, API compatibility, quantization control, and shared-service throughput instead of one-size-fits-all benchmark claims",
+      "slug": "ollama-vs-llamacpp-vs-vllm-local-dev",
+      "title": "Ollama vs llama.cpp vs vLLM for Local AI Development",
+      "summary": "A practical comparison of Ollama, llama.cpp, and vLLM for local AI development, covering setup patterns, code examples, throughput tradeoffs, and what each runtime is actually good at."
+    },
+    {
       "date": "2026-04-13",
       "skill": "AI tool contract design",
       "topic": "Building schema-first tool contracts for AI agents with JSON Schema, runtime validation, adapter layers, and fail-closed execution paths so malformed tool calls are repairable instead of dangerous",

@@ -1,0 +1,254 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="A practical comparison of Ollama, llama.cpp, and vLLM for local AI development, with setup patterns, code examples, performance tradeoffs, and what I would actually run on laptops, workstations, and small servers.">
+    <meta name="author" content="Anirudh Negi">
+    <title>Ollama vs llama.cpp vs vLLM for Local AI Development | Anirudh Negi</title>
+    <link rel="icon" type="image/svg+xml" href="../images/favicon.svg">
+    <link rel="canonical" href="https://negiadventures.github.io/blog/ollama-vs-llamacpp-vs-vllm-local-dev.html">
+    <meta property="og:type" content="article">
+    <meta property="og:url" content="https://negiadventures.github.io/blog/ollama-vs-llamacpp-vs-vllm-local-dev.html">
+    <meta property="og:title" content="Ollama vs llama.cpp vs vLLM for Local AI Development | Anirudh Negi">
+    <meta property="og:description" content="A practical comparison of Ollama, llama.cpp, and vLLM for local AI development, with setup patterns, code examples, performance tradeoffs, and what I would actually run on laptops, workstations, and small servers.">
+    <meta property="og:image" content="data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A//www.w3.org/2000/svg%27%20viewBox%3D%270%200%201200%20630%27%3E%3Cdefs%3E%3ClinearGradient%20id%3D%27bg%27%20x1%3D%270%27%20x2%3D%271%27%20y1%3D%270%27%20y2%3D%271%27%3E%3Cstop%20offset%3D%270%25%27%20stop-color%3D%27%2308141f%27/%3E%3Cstop%20offset%3D%27100%25%27%20stop-color%3D%27%2318304b%27/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect%20width%3D%271200%27%20height%3D%27630%27%20fill%3D%27url%28%23bg%29%27/%3E%3Ccircle%20cx%3D%271000%27%20cy%3D%27110%27%20r%3D%27155%27%20fill%3D%27%2322d3ee%27%20fill-opacity%3D%270.14%27/%3E%3Ccircle%20cx%3D%27180%27%20cy%3D%27530%27%20r%3D%27205%27%20fill%3D%27%238b5cf6%27%20fill-opacity%3D%270.16%27/%3E%3Crect%20x%3D%2786%27%20y%3D%2788%27%20width%3D%271028%27%20height%3D%27454%27%20rx%3D%2730%27%20fill%3D%27%230c1526%27%20stroke%3D%27%2338bdf8%27%20stroke-opacity%3D%270.35%27/%3E%3Ctext%20x%3D%27134%27%20y%3D%27190%27%20fill%3D%27white%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2748%27%20font-weight%3D%27700%27%3EOllama%20vs%20llama.cpp%20vs%20vLLM%3C/text%3E%3Ctext%20x%3D%27134%27%20y%3D%27264%27%20fill%3D%27%2393c5fd%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2748%27%20font-weight%3D%27700%27%3Efor%20Local%20AI%20Development%3C/text%3E%3Ctext%20x%3D%27134%27%20y%3D%27344%27%20fill%3D%27%23cbd5e1%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2728%27%3EPick%20the%20right%20runtime%20for%20laptops%2C%20workstations%2C%20and%20small%20GPU%20servers%3C/text%3E%3Crect%20x%3D%27134%27%20y%3D%27396%27%20width%3D%27256%27%20height%3D%2752%27%20rx%3D%2714%27%20fill%3D%27%23111c2d%27%20stroke%3D%27%2367e8f9%27%20stroke-opacity%3D%270.45%27/%3E%3Ctext%20x%3D%27158%27%20y%3D%27430%27%20fill%3D%27%2367e8f9%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2724%27%3EAPI%20shape%20matters%20too%3C/text%3E%3C/svg%3E">
+    <meta property="article:published_time" content="2026-04-14">
+    <meta property="article:author" content="Anirudh Negi">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:url" content="https://negiadventures.github.io/blog/ollama-vs-llamacpp-vs-vllm-local-dev.html">
+    <meta name="twitter:title" content="Ollama vs llama.cpp vs vLLM for Local AI Development | Anirudh Negi">
+    <meta name="twitter:description" content="A practical comparison of Ollama, llama.cpp, and vLLM for local AI development, with setup patterns, code examples, performance tradeoffs, and what I would actually run on laptops, workstations, and small servers.">
+    <meta name="twitter:image" content="data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A//www.w3.org/2000/svg%27%20viewBox%3D%270%200%201200%20630%27%3E%3Cdefs%3E%3ClinearGradient%20id%3D%27bg%27%20x1%3D%270%27%20x2%3D%271%27%20y1%3D%270%27%20y2%3D%271%27%3E%3Cstop%20offset%3D%270%25%27%20stop-color%3D%27%2308141f%27/%3E%3Cstop%20offset%3D%27100%25%27%20stop-color%3D%27%2318304b%27/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect%20width%3D%271200%27%20height%3D%27630%27%20fill%3D%27url%28%23bg%29%27/%3E%3Ccircle%20cx%3D%271000%27%20cy%3D%27110%27%20r%3D%27155%27%20fill%3D%27%2322d3ee%27%20fill-opacity%3D%270.14%27/%3E%3Ccircle%20cx%3D%27180%27%20cy%3D%27530%27%20r%3D%27205%27%20fill%3D%27%238b5cf6%27%20fill-opacity%3D%270.16%27/%3E%3Crect%20x%3D%2786%27%20y%3D%2788%27%20width%3D%271028%27%20height%3D%27454%27%20rx%3D%2730%27%20fill%3D%27%230c1526%27%20stroke%3D%27%2338bdf8%27%20stroke-opacity%3D%270.35%27/%3E%3Ctext%20x%3D%27134%27%20y%3D%27190%27%20fill%3D%27white%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2748%27%20font-weight%3D%27700%27%3EOllama%20vs%20llama.cpp%20vs%20vLLM%3C/text%3E%3Ctext%20x%3D%27134%27%20y%3D%27264%27%20fill%3D%27%2393c5fd%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2748%27%20font-weight%3D%27700%27%3Efor%20Local%20AI%20Development%3C/text%3E%3Ctext%20x%3D%27134%27%20y%3D%27344%27%20fill%3D%27%23cbd5e1%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2728%27%3EPick%20the%20right%20runtime%20for%20laptops%2C%20workstations%2C%20and%20small%20GPU%20servers%3C/text%3E%3Crect%20x%3D%27134%27%20y%3D%27396%27%20width%3D%27256%27%20height%3D%2752%27%20rx%3D%2714%27%20fill%3D%27%23111c2d%27%20stroke%3D%27%2367e8f9%27%20stroke-opacity%3D%270.45%27/%3E%3Ctext%20x%3D%27158%27%20y%3D%27430%27%20fill%3D%27%2367e8f9%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2724%27%3EAPI%20shape%20matters%20too%3C/text%3E%3C/svg%3E">
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "BlogPosting",
+      "headline": "Ollama vs llama.cpp vs vLLM for Local AI Development",
+      "description": "A practical comparison of Ollama, llama.cpp, and vLLM for local AI development, with setup patterns, code examples, performance tradeoffs, and what I would actually run on laptops, workstations, and small servers.",
+      "image": "data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A//www.w3.org/2000/svg%27%20viewBox%3D%270%200%201200%20630%27%3E%3Cdefs%3E%3ClinearGradient%20id%3D%27bg%27%20x1%3D%270%27%20x2%3D%271%27%20y1%3D%270%27%20y2%3D%271%27%3E%3Cstop%20offset%3D%270%25%27%20stop-color%3D%27%2308141f%27/%3E%3Cstop%20offset%3D%27100%25%27%20stop-color%3D%27%2318304b%27/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect%20width%3D%271200%27%20height%3D%27630%27%20fill%3D%27url%28%23bg%29%27/%3E%3Ccircle%20cx%3D%271000%27%20cy%3D%27110%27%20r%3D%27155%27%20fill%3D%27%2322d3ee%27%20fill-opacity%3D%270.14%27/%3E%3Ccircle%20cx%3D%27180%27%20cy%3D%27530%27%20r%3D%27205%27%20fill%3D%27%238b5cf6%27%20fill-opacity%3D%270.16%27/%3E%3Crect%20x%3D%2786%27%20y%3D%2788%27%20width%3D%271028%27%20height%3D%27454%27%20rx%3D%2730%27%20fill%3D%27%230c1526%27%20stroke%3D%27%2338bdf8%27%20stroke-opacity%3D%270.35%27/%3E%3Ctext%20x%3D%27134%27%20y%3D%27190%27%20fill%3D%27white%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2748%27%20font-weight%3D%27700%27%3EOllama%20vs%20llama.cpp%20vs%20vLLM%3C/text%3E%3Ctext%20x%3D%27134%27%20y%3D%27264%27%20fill%3D%27%2393c5fd%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2748%27%20font-weight%3D%27700%27%3Efor%20Local%20AI%20Development%3C/text%3E%3Ctext%20x%3D%27134%27%20y%3D%27344%27%20fill%3D%27%23cbd5e1%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2728%27%3EPick%20the%20right%20runtime%20for%20laptops%2C%20workstations%2C%20and%20small%20GPU%20servers%3C/text%3E%3Crect%20x%3D%27134%27%20y%3D%27396%27%20width%3D%27256%27%20height%3D%2752%27%20rx%3D%2714%27%20fill%3D%27%23111c2d%27%20stroke%3D%27%2367e8f9%27%20stroke-opacity%3D%270.45%27/%3E%3Ctext%20x%3D%27158%27%20y%3D%27430%27%20fill%3D%27%2367e8f9%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2724%27%3EAPI%20shape%20matters%20too%3C/text%3E%3C/svg%3E",
+      "url": "https://negiadventures.github.io/blog/ollama-vs-llamacpp-vs-vllm-local-dev.html",
+      "datePublished": "2026-04-14",
+      "author": {
+        "@type": "Person",
+        "name": "Anirudh Negi",
+        "url": "https://negiadventures.github.io"
+      },
+      "publisher": {
+        "@type": "Person",
+        "name": "Anirudh Negi",
+        "url": "https://negiadventures.github.io"
+      }
+    }
+    </script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../stylesheets/stylesheet.css?v=5" media="screen">
+    <style>
+      .blog-post {
+        max-width: 800px;
+        margin: 0 auto;
+        padding: 60px 20px;
+      }
+      .blog-post-header { margin-bottom: 40px; }
+      .blog-post-nav { margin-bottom: 30px; }
+      .blog-post-nav a { color: var(--accent-strong); font-size: 0.95rem; }
+      .blog-post-nav a:hover { color: var(--accent); }
+      .blog-post-title { font-size: 2.5rem; margin-bottom: 16px; }
+      .blog-post-meta { display: flex; gap: 20px; color: var(--text-muted); font-size: 0.95rem; margin-bottom: 30px; flex-wrap: wrap; }
+      .blog-post-image { width: 100%; height: 300px; object-fit: cover; border-radius: 16px; margin-bottom: 30px; border: 1px solid var(--border); }
+      .blog-post-content h2 { font-size: 1.6rem; margin-top: 40px; margin-bottom: 16px; color: var(--text-light); }
+      .blog-post-content h3 { font-size: 1.25rem; margin-top: 28px; margin-bottom: 12px; color: var(--text-light); }
+      .blog-post-content p, .blog-post-content li { line-height: 1.8; color: var(--text-muted); }
+      .blog-post-content p { margin-bottom: 16px; }
+      .blog-post-content ul, .blog-post-content ol { margin-bottom: 20px; padding-left: 24px; }
+      .code-block { background: var(--bg-alt); border: 1px solid var(--border); border-radius: 12px; padding: 20px; margin: 20px 0; overflow-x: auto; }
+      .code-block pre { margin: 0; font-family: var(--mono); font-size: 0.9rem; line-height: 1.6; color: var(--text-light); }
+      .comparison-table { width: 100%; border-collapse: collapse; margin: 24px 0; font-size: 0.95rem; }
+      .comparison-table th, .comparison-table td { border: 1px solid var(--border); padding: 12px; text-align: left; vertical-align: top; }
+      .comparison-table th { color: var(--text-light); background: rgba(56, 189, 248, 0.08); }
+      .callout { border-left: 4px solid var(--accent); background: rgba(56, 189, 248, 0.08); padding: 16px 18px; border-radius: 10px; margin: 24px 0; color: var(--text-muted); }
+      .checklist { background: rgba(139, 92, 246, 0.08); border: 1px solid rgba(139, 92, 246, 0.25); border-radius: 14px; padding: 18px 20px; margin: 24px 0; }
+      .blog-post-tags { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 40px; padding-top: 30px; border-top: 1px solid var(--border); }
+      .blog-post-tag { background: var(--accent-soft); color: var(--accent-strong); border-radius: 999px; padding: 6px 14px; font-size: 0.85rem; font-family: var(--mono); border: 1px solid transparent; }
+      .blog-footer { margin-top: 60px; padding-top: 30px; border-top: 1px solid var(--border); text-align: center; }
+      .blog-footer a { color: var(--accent-strong); }
+      .blog-footer a:hover { color: var(--accent); }
+      @media (max-width: 768px) {
+        .blog-post { padding: 40px 16px; }
+        .blog-post-title { font-size: 2rem; }
+        .blog-post-image { height: 220px; }
+      }
+    </style>
+  </head>
+  <body>
+    <a href="../index.html#main" class="skip-link">Skip to main content</a>
+    <header class="site-header">
+      <div class="container blog-post">
+        <div class="blog-post-nav">
+          <a href="index.html">&larr; Back to All Posts</a>
+        </div>
+        <div class="blog-post-header">
+          <h1 class="blog-post-title">Ollama vs llama.cpp vs vLLM for Local AI Development</h1>
+          <div class="blog-post-meta">
+            <span>April 14, 2026</span>
+            <span>&bull;</span>
+            <span>11 min read</span>
+          </div>
+          <img src="data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A//www.w3.org/2000/svg%27%20viewBox%3D%270%200%201200%20630%27%3E%3Cdefs%3E%3ClinearGradient%20id%3D%27bg%27%20x1%3D%270%27%20x2%3D%271%27%20y1%3D%270%27%20y2%3D%271%27%3E%3Cstop%20offset%3D%270%25%27%20stop-color%3D%27%2308141f%27/%3E%3Cstop%20offset%3D%27100%25%27%20stop-color%3D%27%2318304b%27/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect%20width%3D%271200%27%20height%3D%27630%27%20fill%3D%27url%28%23bg%29%27/%3E%3Ccircle%20cx%3D%271000%27%20cy%3D%27110%27%20r%3D%27155%27%20fill%3D%27%2322d3ee%27%20fill-opacity%3D%270.14%27/%3E%3Ccircle%20cx%3D%27180%27%20cy%3D%27530%27%20r%3D%27205%27%20fill%3D%27%238b5cf6%27%20fill-opacity%3D%270.16%27/%3E%3Crect%20x%3D%2786%27%20y%3D%2788%27%20width%3D%271028%27%20height%3D%27454%27%20rx%3D%2730%27%20fill%3D%27%230c1526%27%20stroke%3D%27%2338bdf8%27%20stroke-opacity%3D%270.35%27/%3E%3Ctext%20x%3D%27134%27%20y%3D%27190%27%20fill%3D%27white%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2748%27%20font-weight%3D%27700%27%3EOllama%20vs%20llama.cpp%20vs%20vLLM%3C/text%3E%3Ctext%20x%3D%27134%27%20y%3D%27264%27%20fill%3D%27%2393c5fd%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2748%27%20font-weight%3D%27700%27%3Efor%20Local%20AI%20Development%3C/text%3E%3Ctext%20x%3D%27134%27%20y%3D%27344%27%20fill%3D%27%23cbd5e1%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2728%27%3EPick%20the%20right%20runtime%20for%20laptops%2C%20workstations%2C%20and%20small%20GPU%20servers%3C/text%3E%3Crect%20x%3D%27134%27%20y%3D%27396%27%20width%3D%27256%27%20height%3D%2752%27%20rx%3D%2714%27%20fill%3D%27%23111c2d%27%20stroke%3D%27%2367e8f9%27%20stroke-opacity%3D%270.45%27/%3E%3Ctext%20x%3D%27158%27%20y%3D%27430%27%20fill%3D%27%2367e8f9%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2724%27%3EAPI%20shape%20matters%20too%3C/text%3E%3C/svg%3E" alt="Ollama vs llama.cpp vs vLLM for Local AI Development" class="blog-post-image">
+        </div>
+        <div class="blog-post-content">
+          <p>Local model serving gets messy fast. A setup that feels great on a laptop can become the wrong choice the moment you need structured outputs, higher concurrency, or a clean OpenAI-compatible endpoint for tools.</p>
+          <p>The mistake I see most often is treating Ollama, llama.cpp, and vLLM as interchangeable. They are not. All three can run a model locally, but they optimize for different things: convenience, low-level control, and throughput.</p>
+          <p>If I were setting up a practical local AI stack for real developer work, I would choose based on deployment shape first, not benchmark screenshots.</p>
+
+          <h2>Why this matters</h2>
+          <p>If your local AI runtime sits behind coding tools, eval jobs, or internal automation, the serving layer becomes part of the product. Token speed matters, but so do API compatibility, memory behavior, quantization support, batching, startup time, and debuggability.</p>
+          <ul>
+            <li>the model fits, but latency is painful</li>
+            <li>the model is fast, but the API shape is awkward for tools</li>
+            <li>concurrency looks fine in a demo, then collapses under parallel requests</li>
+            <li>the system works until you switch hardware or model format</li>
+          </ul>
+
+          <h2>Architecture and workflow overview</h2>
+          <div class="code-block"><pre><code>flowchart TD
+    Need local model serving --> Hardware{What hardware do you have?}
+    Hardware -->|CPU or Apple Silicon| Simplicity{Need simple setup?}
+    Simplicity -->|Yes| Ollama[Choose Ollama]
+    Simplicity -->|No| Llama[Choose llama.cpp]
+    Hardware -->|NVIDIA GPU server| Scope{Single-user or shared service?}
+    Scope -->|Single-user| O2[Ollama can be enough]
+    Scope -->|Shared service| V[vLLM]
+</code></pre></div>
+
+          <table class="comparison-table">
+            <thead>
+              <tr>
+                <th>Runtime</th>
+                <th>Best at</th>
+                <th>Main tradeoff</th>
+                <th>Best fit</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>Ollama</td>
+                <td>Fast setup and good defaults</td>
+                <td>Less low-level control than raw runtimes</td>
+                <td>Laptop dev, local coding tools, quick prototypes</td>
+              </tr>
+              <tr>
+                <td>llama.cpp</td>
+                <td>Tight hardware control, GGUF support</td>
+                <td>More manual setup and rougher serving ergonomics</td>
+                <td>Power users, edge devices, constrained hardware</td>
+              </tr>
+              <tr>
+                <td>vLLM</td>
+                <td>GPU throughput, batching, OpenAI-style serving</td>
+                <td>Wants stronger hardware and more ops discipline</td>
+                <td>Shared services, eval farms, agent backends</td>
+              </tr>
+            </tbody>
+          </table>
+
+          <h2>Implementation details</h2>
+          <h3>Ollama, the easiest way to get to working</h3>
+          <p>Ollama is what I reach for when I want a usable endpoint in minutes. It hides a lot of model and runtime complexity behind a predictable CLI and API.</p>
+          <div class="code-block"><pre><code>curl -fsSL https://ollama.com/install.sh | sh
+ollama serve
+ollama pull qwen2.5-coder:14b
+ollama run qwen2.5-coder:14b</code></pre></div>
+          <div class="code-block"><pre><code>curl http://localhost:11434/api/generate \
+  -d '{
+    "model": "qwen2.5-coder:14b",
+    "prompt": "Write a Python function that validates a webhook signature.",
+    "stream": false
+  }'</code></pre></div>
+
+          <h3>llama.cpp, when hardware reality matters more than polish</h3>
+          <p>llama.cpp is the runtime I trust when I care about exact control. It is especially useful when I need GGUF models, aggressive quantization, or a setup that runs acceptably on weaker hardware.</p>
+          <div class="code-block"><pre><code>./llama-server \
+  -m ./models/Qwen2.5-Coder-14B-Instruct-Q4_K_M.gguf \
+  -c 8192 \
+  -ngl 999 \
+  --host 0.0.0.0 \
+  --port 8080</code></pre></div>
+          <div class="code-block"><pre><code>curl http://localhost:8080/completion \
+  -H 'Content-Type: application/json' \
+  -d '{
+    "prompt": "Summarize the security risks of exposing a local model server to a LAN.",
+    "n_predict": 220,
+    "temperature": 0.2
+  }'</code></pre></div>
+
+          <h3>vLLM, when local becomes a real service</h3>
+          <p>vLLM is the one I pick when the workload starts looking like infrastructure instead of a personal toy.</p>
+          <div class="code-block"><pre><code>python -m vllm.entrypoints.openai.api_server \
+  --model Qwen/Qwen2.5-Coder-14B-Instruct \
+  --host 0.0.0.0 \
+  --port 8000 \
+  --dtype auto \
+  --max-model-len 16384</code></pre></div>
+          <div class="code-block"><pre><code>from openai import OpenAI
+
+client = OpenAI(base_url="http://localhost:8000/v1", api_key="local-dev")
+resp = client.chat.completions.create(
+    model="Qwen/Qwen2.5-Coder-14B-Instruct",
+    messages=[
+        {"role": "system", "content": "You are a careful coding assistant."},
+        {"role": "user", "content": "Generate a bash script that rotates nginx logs safely."}
+    ],
+    temperature=0.1,
+)
+print(resp.choices[0].message.content)</code></pre></div>
+
+          <h2>What went wrong and the tradeoffs that actually matter</h2>
+          <p>Quantization is not free, API compatibility becomes a force multiplier, oversized context defaults waste memory fast, and local model servers stop being local the second you bind them to a wider network.</p>
+          <div class="callout"><strong>Pitfall:</strong> never expose a local model server to a wider network without explicit auth, network boundaries, and a clear understanding of which apps can reach it.</div>
+
+          <h2>Terminal-output style reality check</h2>
+          <div class="code-block"><pre><code>$ ollama ps
+NAME                    ID              SIZE      PROCESSOR    UNTIL
+qwen2.5-coder:14b       8f3c1f2f3d44    9.0 GB    100% GPU     4 minutes from now
+
+$ curl -s http://localhost:8000/v1/models | jq '.data[0].id'
+"Qwen/Qwen2.5-Coder-14B-Instruct"
+
+$ ./llama-bench -m ./models/qwen-coder-q4.gguf -ngl 999
+prompt eval time =  412.14 ms / 128 tokens
+generation time  = 6150.52 ms / 256 runs   (24.00 tok/s)</code></pre></div>
+
+          <h2>Best-practice checklist</h2>
+          <div class="checklist">
+            <ul>
+              <li>Pick the runtime based on deployment shape, not hype</li>
+              <li>Start with the smallest system that satisfies the workflow</li>
+              <li>Benchmark your real prompts, not generic token loops</li>
+              <li>Validate structured outputs and tool-calling behavior early</li>
+              <li>Keep context sizes conservative until proven necessary</li>
+              <li>Do not expose the server broadly without auth and network controls</li>
+              <li>Treat quantization changes as quality changes, not just memory changes</li>
+            </ul>
+          </div>
+
+          <h2>Conclusion</h2>
+          <p>Ollama, llama.cpp, and vLLM all belong in a serious local AI toolkit. For most solo developer laptops, I would start with Ollama. For constrained hardware or GGUF-heavy experimentation, I would reach for llama.cpp. For shared GPU-backed services, I would move to vLLM quickly.</p>
+
+          <div class="blog-post-tags">
+            <span class="blog-post-tag">Local LLMs</span>
+            <span class="blog-post-tag">Inference</span>
+            <span class="blog-post-tag">Developer Workflow</span>
+            <span class="blog-post-tag">Self-Hosting</span>
+            <span class="blog-post-tag">Comparisons</span>
+          </div>
+        </div>
+        <div class="blog-footer">
+          <p><a href="index.html">Browse more posts</a></p>
+        </div>
+      </div>
+    </header>
+  </body>
+</html>
