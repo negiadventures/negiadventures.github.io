@@ -1,0 +1,325 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="A practical guide to building approval workflows for AI agents that can write code, open PRs, and call tools without turning every useful action into a security incident.">
+    <meta name="author" content="Anirudh Negi">
+    <title>Approval Workflows for AI Agents That Can Actually Write Code | Anirudh Negi</title>
+    <link rel="icon" type="image/svg+xml" href="../images/favicon.svg">
+    <link rel="canonical" href="https://negiadventures.github.io/blog/ai-agent-approval-workflows.html">
+    <meta property="og:type" content="article">
+    <meta property="og:url" content="https://negiadventures.github.io/blog/ai-agent-approval-workflows.html">
+    <meta property="og:title" content="Approval Workflows for AI Agents That Can Actually Write Code | Anirudh Negi">
+    <meta property="og:description" content="A practical guide to building approval workflows for AI agents that can write code, open PRs, and call tools without turning every useful action into a security incident.">
+    <meta property="og:image" content="https://negiadventures.github.io/images/profile.jpg">
+    <meta property="article:published_time" content="2026-04-15">
+    <meta property="article:author" content="Anirudh Negi">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:url" content="https://negiadventures.github.io/blog/ai-agent-approval-workflows.html">
+    <meta name="twitter:title" content="Approval Workflows for AI Agents That Can Actually Write Code | Anirudh Negi">
+    <meta name="twitter:description" content="A practical guide to building approval workflows for AI agents that can write code, open PRs, and call tools without turning every useful action into a security incident.">
+    <meta name="twitter:image" content="https://negiadventures.github.io/images/profile.jpg">
+    <script type="application/ld+json">{
+      "@context": "https://schema.org",
+      "@type": "BlogPosting",
+      "headline": "Approval Workflows for AI Agents That Can Actually Write Code",
+      "description": "A practical guide to building approval workflows for AI agents that can write code, open PRs, and call tools without turning every useful action into a security incident.",
+      "image": "https://negiadventures.github.io/images/profile.jpg",
+      "url": "https://negiadventures.github.io/blog/ai-agent-approval-workflows.html",
+      "datePublished": "2026-04-15",
+      "author": {
+        "@type": "Person",
+        "name": "Anirudh Negi",
+        "url": "https://negiadventures.github.io"
+      },
+      "publisher": {
+        "@type": "Person",
+        "name": "Anirudh Negi",
+        "url": "https://negiadventures.github.io"
+      }
+    }</script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../stylesheets/stylesheet.css?v=5" media="screen">
+    <style>
+      .blog-post { max-width: 800px; margin: 0 auto; padding: 60px 20px; }
+      .blog-post-header { margin-bottom: 40px; }
+      .blog-post-nav { margin-bottom: 30px; }
+      .blog-post-nav a { color: var(--accent-strong); font-size: 0.95rem; }
+      .blog-post-nav a:hover { color: var(--accent); }
+      .blog-post-title { font-size: 2.5rem; margin-bottom: 16px; }
+      .blog-post-meta { display: flex; gap: 20px; color: var(--text-muted); font-size: 0.95rem; margin-bottom: 30px; flex-wrap: wrap; }
+      .blog-post-image { width: 100%; height: 300px; object-fit: cover; border-radius: 16px; margin-bottom: 30px; border: 1px solid var(--border); background: linear-gradient(135deg, rgba(15, 23, 42, 1), rgba(20, 43, 71, 1)); }
+      .blog-post-content h2 { font-size: 1.6rem; margin-top: 40px; margin-bottom: 16px; color: var(--text-light); }
+      .blog-post-content h3 { font-size: 1.25rem; margin-top: 28px; margin-bottom: 12px; color: var(--text-light); }
+      .blog-post-content p { line-height: 1.8; margin-bottom: 16px; color: var(--text-muted); }
+      .blog-post-content ul, .blog-post-content ol { line-height: 1.8; margin-bottom: 20px; color: var(--text-muted); padding-left: 24px; }
+      .blog-post-content li { margin-bottom: 8px; }
+      .code-block, .terminal-block { background: var(--bg-alt); border: 1px solid var(--border); border-radius: 12px; padding: 20px; margin: 20px 0; overflow-x: auto; }
+      .terminal-block { border-color: rgba(34, 211, 238, 0.25); box-shadow: inset 0 1px 0 rgba(34, 211, 238, 0.04); }
+      .code-block pre, .terminal-block pre { margin: 0; font-family: var(--mono); font-size: 0.9rem; line-height: 1.6; color: var(--text-light); white-space: pre-wrap; }
+      .code-block code { color: var(--accent-strong); }
+      .callout { border-radius: 14px; padding: 18px 20px; margin: 22px 0; border: 1px solid var(--border); background: rgba(15, 23, 42, 0.72); }
+      .callout strong { color: var(--text-light); }
+      .callout.warning { border-color: rgba(248, 113, 113, 0.35); background: rgba(60, 24, 24, 0.35); }
+      .callout.good { border-color: rgba(34, 197, 94, 0.3); background: rgba(20, 52, 36, 0.3); }
+      .comparison-table { width: 100%; border-collapse: collapse; margin: 24px 0; font-size: 0.95rem; }
+      .comparison-table th, .comparison-table td { border: 1px solid var(--border); padding: 14px; text-align: left; vertical-align: top; }
+      .comparison-table th { color: var(--text-light); background: rgba(15, 23, 42, 0.85); }
+      .diagram-card { margin: 22px 0; padding: 14px; border-radius: 16px; border: 1px solid var(--border); background: rgba(15, 23, 42, 0.72); overflow-x: auto; }
+      .diagram-card svg { width: 100%; height: auto; display: block; }
+      .checklist { list-style: none; padding-left: 0; }
+      .checklist li { position: relative; padding-left: 30px; margin-bottom: 10px; }
+      .checklist li::before { content: '✓'; position: absolute; left: 0; top: 0; color: var(--accent); font-weight: 700; }
+      .blog-post-tags { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 40px; padding-top: 30px; border-top: 1px solid var(--border); }
+      .blog-post-tag { background: var(--accent-soft); color: var(--accent-strong); border-radius: 999px; padding: 6px 14px; font-size: 0.85rem; font-family: var(--mono); border: 1px solid transparent; }
+      .blog-footer { margin-top: 60px; padding-top: 30px; border-top: 1px solid var(--border); text-align: center; }
+      .blog-footer a { color: var(--accent-strong); }
+      .blog-footer a:hover { color: var(--accent); }
+      @media (max-width: 768px) { .blog-post { padding: 40px 16px; } .blog-post-title { font-size: 2rem; } .blog-post-image { height: 200px; } .comparison-table { display: block; overflow-x: auto; } }
+    </style>
+  </head>
+  <body>
+    <a href="../index.html#main" class="skip-link">Skip to main content</a>
+    <header class="site-header">
+      <div class="container blog-post">
+        <div class="blog-post-nav"><a href="index.html">&larr; Back to All Posts</a></div>
+        <div class="blog-post-header">
+          <h1 class="blog-post-title">Approval Workflows for AI Agents That Can Actually Write Code</h1>
+          <div class="blog-post-meta"><span>April 15, 2026</span><span>&bull;</span><span>11 min read</span></div>
+          <img src="data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%27%20viewBox%3D%270%200%201200%20630%27%3E%3Cdefs%3E%3ClinearGradient%20id%3D%27bg%27%20x1%3D%270%27%20x2%3D%271%27%20y1%3D%270%27%20y2%3D%271%27%3E%3Cstop%20offset%3D%270%25%27%20stop-color%3D%27%2309131f%27%2F%3E%3Cstop%20offset%3D%27100%25%27%20stop-color%3D%27%23142b47%27%2F%3E%3C%2FlinearGradient%3E%3C%2Fdefs%3E%3Crect%20width%3D%271200%27%20height%3D%27630%27%20fill%3D%27url%28%23bg%29%27%2F%3E%3Ccircle%20cx%3D%271000%27%20cy%3D%27115%27%20r%3D%27155%27%20fill%3D%27%2322d3ee%27%20fill-opacity%3D%270.13%27%2F%3E%3Ccircle%20cx%3D%27190%27%20cy%3D%27530%27%20r%3D%27205%27%20fill%3D%27%238b5cf6%27%20fill-opacity%3D%270.16%27%2F%3E%3Crect%20x%3D%2786%27%20y%3D%2788%27%20width%3D%271028%27%20height%3D%27454%27%20rx%3D%2730%27%20fill%3D%27%230c1526%27%20stroke%3D%27%2338bdf8%27%20stroke-opacity%3D%270.35%27%2F%3E%3Ctext%20x%3D%27134%27%20y%3D%27186%27%20fill%3D%27white%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2748%27%20font-weight%3D%27700%27%3EApproval%20Workflows%20for%20AI%20Agents%3C%2Ftext%3E%3Ctext%20x%3D%27134%27%20y%3D%27258%27%20fill%3D%27%2393c5fd%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2748%27%20font-weight%3D%27700%27%3EThat%20Can%20Actually%20Write%20Code%3C%2Ftext%3E%3Ctext%20x%3D%27134%27%20y%3D%27340%27%20fill%3D%27%23cbd5e1%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2728%27%3EPreview%2C%20diff%2C%20approve%2C%20execute%2C%20audit%20without%20killing%20velocity%3C%2Ftext%3E%3Crect%20x%3D%27134%27%20y%3D%27392%27%20width%3D%27280%27%20height%3D%2752%27%20rx%3D%2714%27%20fill%3D%27%23111c2d%27%20stroke%3D%27%2367e8f9%27%20stroke-opacity%3D%270.45%27%2F%3E%3Ctext%20x%3D%27158%27%20y%3D%27426%27%20fill%3D%27%2367e8f9%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2724%27%3Eapprove%20only%20what%20you%20can%20inspect%3C%2Ftext%3E%3C%2Fsvg%3E" alt="Approval Workflows for AI Agents That Can Actually Write Code" class="blog-post-image">
+        </div>
+        <div class="blog-post-content">
+          <p>Most teams do not need another lecture about AI safety. They need a workflow that lets an agent do useful work without quietly turning a repo, inbox, or production system into a trust exercise.</p>
+          <p>That is the real approval problem. If approvals are too loose, the agent gets broad write power and mistakes compound fast. If approvals are too heavy, the agent becomes a glorified autocomplete with extra latency.</p>
+          <p>The sweet spot is a staged workflow: preview first, show the exact effect, require approval only for actions with real blast radius, then keep a clean audit trail. This is the pattern I would use for code-writing agents, repo workers, and tool-calling assistants.</p>
+
+          <h2>Why this matters</h2>
+          <p>Approval design becomes important the moment an agent can do more than read. Opening a pull request, modifying files, sending a message, merging a branch, or rotating a token all have different risk profiles. Treating them as one generic confirmation step usually fails both security and usability.</p>
+          <ol>
+            <li>what exactly is the agent asking to do</li>
+            <li>can a human inspect the real effect before it happens</li>
+            <li>does approval cover only this action, or a whole session</li>
+            <li>what evidence exists after the fact</li>
+          </ol>
+
+          <h2>Architecture and workflow overview</h2>
+          <p>A good approval path separates planning from execution and binds approval to a specific proposed action, not a vague intention.</p>
+          <div class="diagram-card">
+            <svg viewBox="0 0 1100 360" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Approval workflow diagram for AI agent actions">
+              <defs>
+                <linearGradient id="linebg" x1="0" x2="1" y1="0" y2="1">
+                  <stop offset="0%" stop-color="#0f172a"/>
+                  <stop offset="100%" stop-color="#13233d"/>
+                </linearGradient>
+              </defs>
+              <rect width="1100" height="360" rx="24" fill="url(#linebg)"/>
+              <g font-family="Arial, sans-serif" font-size="22" text-anchor="middle">
+                <rect x="40" y="120" width="150" height="72" rx="16" fill="#0b1220" stroke="#38bdf8" stroke-opacity="0.45"/>
+                <text x="115" y="164" fill="#e2e8f0">User request</text>
+                <rect x="240" y="120" width="150" height="72" rx="16" fill="#0b1220" stroke="#38bdf8" stroke-opacity="0.45"/>
+                <text x="315" y="164" fill="#e2e8f0">Agent plan</text>
+                <rect x="440" y="120" width="180" height="72" rx="16" fill="#0b1220" stroke="#38bdf8" stroke-opacity="0.45"/>
+                <text x="530" y="152" fill="#e2e8f0">Preview artifact</text>
+                <text x="530" y="178" fill="#93c5fd" font-size="18">diff, command, target</text>
+                <rect x="680" y="108" width="170" height="96" rx="16" fill="#111827" stroke="#a78bfa" stroke-opacity="0.5"/>
+                <text x="765" y="150" fill="#e2e8f0">Risk policy</text>
+                <text x="765" y="178" fill="#cbd5e1" font-size="18">auto / preview / high</text>
+                <rect x="910" y="40" width="150" height="64" rx="16" fill="#0b1220" stroke="#22c55e" stroke-opacity="0.5"/>
+                <text x="985" y="79" fill="#dcfce7">Execute now</text>
+                <rect x="910" y="148" width="150" height="64" rx="16" fill="#0b1220" stroke="#38bdf8" stroke-opacity="0.5"/>
+                <text x="985" y="187" fill="#dbeafe">Approval token</text>
+                <rect x="910" y="256" width="150" height="64" rx="16" fill="#0b1220" stroke="#f97316" stroke-opacity="0.55"/>
+                <text x="985" y="295" fill="#ffedd5">High-risk confirm</text>
+              </g>
+              <g stroke="#64748b" stroke-width="4" fill="none" stroke-linecap="round">
+                <path d="M190 156 H240"/>
+                <path d="M390 156 H440"/>
+                <path d="M620 156 H680"/>
+                <path d="M850 124 H910"/>
+                <path d="M850 156 H910"/>
+                <path d="M850 288 H910"/>
+              </g>
+              <g font-family="Arial, sans-serif" font-size="17" fill="#cbd5e1">
+                <text x="873" y="118">read</text>
+                <text x="865" y="150">bounded write</text>
+                <text x="871" y="282">external or destructive</text>
+              </g>
+            </svg>
+          </div>
+
+          <div class="callout good"><strong>Best practice:</strong> treat the preview as a first-class artifact. For code workflows that usually means a diff, branch, file list, and command summary. For external actions it might mean recipients, message body, or changed records.</div>
+
+          <h2>The approval model I would actually use</h2>
+          <h3>Lane 1: auto-execute for read-only and reversible low-risk actions</h3>
+          <p>Examples include listing issues, reading files inside an allowed workspace, inspecting CI logs, and rendering previews in temp directories. These actions should not ask humans to click a button every time.</p>
+
+          <h3>Lane 2: preview-bound approval for bounded writes</h3>
+          <p>Examples include editing files in an allowed repo, pushing a branch, opening a draft PR, or updating a scheduled task inside a limited namespace. These are the best candidates for human-in-the-loop approval because the real delta can be shown first.</p>
+
+          <h3>Lane 3: high-friction approval for destructive or external actions</h3>
+          <p>Examples include merging to a protected branch, deleting data, sending email or public messages, changing infra, or running elevated commands. These should require a more explicit step than a generic approve button.</p>
+
+          <h2>Implementation detail 1: classify risk before asking for approval</h2>
+          <p>The approval step should not decide risk at the UI layer. Risk classification belongs in policy code.</p>
+          <div class="code-block"><pre><code>const policyTable = {
+  read_file: { lane: 'auto', effect: 'read' },
+  list_pull_requests: { lane: 'auto', effect: 'read' },
+  edit_workspace_file: { lane: 'preview', effect: 'write' },
+  create_pull_request: { lane: 'preview', effect: 'write' },
+  merge_pull_request: { lane: 'high', effect: 'write' },
+  send_email: { lane: 'high', effect: 'external' },
+} as const;
+
+function classifyAction(toolName, args) {
+  const policy = policyTable[toolName];
+  if (!policy) throw new Error(`Tool ${toolName} is not approved`);
+  return {
+    lane: policy.lane,
+    effect: policy.effect,
+    fingerprint: stableHash({ toolName, args }),
+  };
+}</code></pre></div>
+
+          <h2>Implementation detail 2: approve the exact artifact, not a broad session</h2>
+          <p>One bad pattern is session-wide approval like “allow the agent to keep making changes.” It feels convenient, but it quietly converts a narrow review into an open-ended permission grant.</p>
+          <div class="code-block"><pre><code>type ApprovalRequest = {
+  toolName: string;
+  args: unknown;
+  summary: string;
+  fingerprint: string;
+  expiresAt: string;
+};
+
+function mintApproval(request, approverId) {
+  return signJwt({
+    sub: approverId,
+    toolName: request.toolName,
+    fingerprint: request.fingerprint,
+    expiresAt: request.expiresAt,
+  });
+}</code></pre></div>
+
+          <p>If the diff changes, the command changes, or the recipient changes, the fingerprint changes and the approval should be invalid.</p>
+
+          <h2>Implementation detail 3: previews need to be inspectable, not poetic</h2>
+          <p>A lot of agent systems generate approval summaries that sound nice but hide the real action. That is risky.</p>
+          <div class="terminal-block"><pre>Approval requested: create_pull_request
+Repo: negiadventures/negiadventures.github.io
+Branch: ai-blog/2026-04-15-ai-agent-approval-workflows
+Base: master
+Files changed:
+- blog/ai-agent-approval-workflows.html
+- blog/ai-agent-approval-workflows.md
+- blog/index.html
+- blog/.ai-topic-history.json
+- sitemap.xml
+Diff summary: add one new blog post, prepend blog card, add sitemap entry, record topic history
+Network access: required
+Elevated access: no
+Approval expires in: 15 minutes</pre></div>
+
+          <h2>Implementation detail 4: make execution fail closed after approval</h2>
+          <p>An approval system should re-check policy at execution time. Do not assume that a once-approved request remains valid forever.</p>
+          <div class="code-block"><pre><code>def execute_with_policy(request):
+    classification = classify_action(request.tool_name, request.args)
+
+    if classification["lane"] == "auto":
+        return run_tool(request.tool_name, request.args)
+
+    if request.approval_token is None:
+        raise PermissionError("Approval required before execution")
+
+    assert_approval_matches(
+        request.approval_token,
+        request.fingerprint,
+        request.tool_name,
+    )
+
+    return run_tool(request.tool_name, request.args)</code></pre></div>
+
+          <h2>Tradeoffs: the three common approval designs</h2>
+          <table class="comparison-table">
+            <thead><tr><th>Design</th><th>Good at</th><th>Breaks when</th><th>My take</th></tr></thead>
+            <tbody>
+              <tr><td>Blanket session approval</td><td>fast iteration</td><td>agent scope drifts, humans stop reading</td><td>only acceptable in tightly sandboxed personal workflows</td></tr>
+              <tr><td>Per-tool approval</td><td>simple mental model</td><td>frequent interruptions, approval fatigue</td><td>decent baseline, but noisy</td></tr>
+              <tr><td>Preview-bound approval</td><td>inspectable writes, tighter audit trail</td><td>preview generation is weak or fingerprints are unstable</td><td>best default for repo and ops workflows</td></tr>
+            </tbody>
+          </table>
+
+          <h2>What goes wrong in practice</h2>
+          <h3>Failure mode 1: approvals become meaningless because they are too frequent</h3>
+          <p>If every harmless read or reversible action asks for confirmation, people stop reading and start clicking. That is not human oversight, that is ritual.</p>
+          <h3>Failure mode 2: the preview is not the real action</h3>
+          <p>If the preview says two files but the execution can still modify five, approval is mostly theater.</p>
+          <h3>Failure mode 3: approval accidentally covers follow-up actions</h3>
+          <p>The agent edits files, then pushes, then opens a PR, then posts to chat because all of those feel related. They are related, but they are not the same action.</p>
+          <h3>Failure mode 4: policy lives only in prompts</h3>
+          <p>If the rule is “never message external recipients without approval,” that rule needs to exist in executable policy, not just in an instruction file.</p>
+
+          <div class="callout warning"><strong>Pitfall:</strong> approval is not a sandbox. Even after approval, runtimes should still enforce writable paths, branch prefixes, repo allowlists, and outbound destination rules.</div>
+
+          <h2>Security and reliability concerns that matter</h2>
+          <h3>Replay resistance</h3>
+          <p>Approval tokens should expire quickly and bind to a single action fingerprint. Otherwise a captured token can be reused for a modified request.</p>
+          <h3>Workspace and tenant boundaries</h3>
+          <p>For code-writing agents, approval alone is not enough. The runtime should still enforce allowed repos, writable paths, branch prefixes, and network restrictions.</p>
+          <h3>Auditability</h3>
+          <p>You want a durable event for request, approval, execution, and result. That matters for debugging just as much as compliance.</p>
+          <div class="code-block"><pre><code>{
+  "timestamp": "2026-04-15T12:02:00Z",
+  "session_id": "sess_blog_412",
+  "tool": "create_pull_request",
+  "lane": "preview",
+  "fingerprint": "fp_8f6f0b",
+  "approver": "user_123",
+  "status": "executed",
+  "files_changed": 5,
+  "external_destination": "github.com",
+  "duration_ms": 912
+}</code></pre></div>
+          <h3>Idempotency</h3>
+          <p>Approved writes should be safe to retry when possible. If a network call times out after approval, the system needs a way to avoid creating duplicate PRs or duplicate notifications.</p>
+
+          <h2>What I would not do</h2>
+          <ul>
+            <li>I would not give a coding agent permanent approval to run arbitrary commands in a repo just because it usually behaves.</li>
+            <li>I would not let approve-once silently upgrade into approve-all-follow-up-actions.</li>
+            <li>I would not build external message sending and local file editing behind the same generic confirm button.</li>
+          </ul>
+
+          <h2>Practical checklist</h2>
+          <ul class="checklist">
+            <li>classify tools into auto, preview, and high-risk lanes</li>
+            <li>generate a concrete preview artifact before every bounded write</li>
+            <li>bind approval to a stable fingerprint of the exact action</li>
+            <li>expire approvals quickly</li>
+            <li>re-check policy at execution time</li>
+            <li>keep follow-up actions separate unless they are explicitly approved too</li>
+            <li>log request, approval, execution, and result as distinct events</li>
+            <li>enforce branch, path, repo, and destination constraints outside the prompt</li>
+            <li>make read-only actions silent enough that people keep paying attention when approvals do appear</li>
+            <li>fail closed when preview, token, or policy state no longer matches</li>
+          </ul>
+
+          <h2>Conclusion</h2>
+          <p>Approval workflows are not there to make agents feel supervised. They are there to preserve velocity without losing inspectability.</p>
+          <p>The best pattern I know is boring in a good way: classify risk, preview the exact effect, approve only what can be inspected, execute only what was approved, and leave a clean trail behind.</p>
+
+          <h2>References</h2>
+          <ul>
+            <li><a href="https://docs.github.com/en/pull-requests/collaborating-with-pull-requests/reviewing-changes-in-pull-requests/about-pull-request-reviews" target="_blank" rel="noreferrer">GitHub Docs: About pull request reviews</a></li>
+            <li><a href="https://docs.github.com/en/repositories/configuring-branches-and-merges-in-your-repository/managing-protected-branches/about-protected-branches" target="_blank" rel="noreferrer">GitHub Docs: About protected branches</a></li>
+            <li><a href="https://genai.owasp.org/llmrisk/llm01-prompt-injection/" target="_blank" rel="noreferrer">OWASP: Prompt Injection</a></li>
+            <li><a href="https://www.anthropic.com/news/model-context-protocol" target="_blank" rel="noreferrer">Anthropic: Introducing the Model Context Protocol</a></li>
+          </ul>
+        </div>
+        <div class="blog-post-tags"><span class="blog-post-tag">AI Agents</span><span class="blog-post-tag">Approval Workflows</span><span class="blog-post-tag">Security</span><span class="blog-post-tag">Developer Workflow</span><span class="blog-post-tag">Tool Calling</span></div>
+        <div class="blog-footer"><p><a href="index.html">Browse more blog posts</a></p></div>
+      </div>
+    </header>
+  </body>
+</html>
