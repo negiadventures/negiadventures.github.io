@@ -1,6 +1,14 @@
 {
   "topics": [
     {
+      "date": "2026-04-15",
+      "skill": "AI agent approval workflow design",
+      "topic": "Designing preview-bound approval workflows for AI agents that can edit files, push branches, open pull requests, and call external tools without turning approval into either theater or constant interruption",
+      "slug": "ai-agent-approval-workflows",
+      "title": "Approval Workflows for AI Agents That Can Actually Write Code",
+      "summary": "A practical guide to approval workflows for AI agents, covering risk lanes, preview artifacts, approval fingerprints, execution guards, and the tradeoffs that keep code-writing systems both useful and reviewable."
+    },
+    {
       "date": "2026-04-14",
       "skill": "Local inference runtime selection",
       "topic": "Choosing between Ollama, llama.cpp, and vLLM for local AI development based on hardware shape, API compatibility, quantization control, and shared-service throughput instead of one-size-fits-all benchmark claims",
