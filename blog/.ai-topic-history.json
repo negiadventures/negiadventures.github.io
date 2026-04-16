@@ -1,6 +1,14 @@
 {
   "topics": [
     {
+      "date": "2026-04-16",
+      "skill": "Context engineering for AI coding agents",
+      "topic": "Building bounded context packets for engineering agents with task manifests, repo maps, relevance scoring, and packet refresh checkpoints so models edit the right files with lower token waste and better reviewability",
+      "slug": "context-packets-engineering-agents",
+      "title": "Context Packets for Engineering Agents That Actually Reduce Bad Edits",
+      "summary": "A practical guide to building context packets for engineering agents using task manifests, repo maps, evidence bundles, and lightweight relevance scoring to reduce bad edits and improve reviewability."
+    },
+    {
       "date": "2026-04-15",
       "skill": "AI agent approval workflow design",
       "topic": "Designing preview-bound approval workflows for AI agents that can edit files, push branches, open pull requests, and call external tools without turning approval into either theater or constant interruption",
