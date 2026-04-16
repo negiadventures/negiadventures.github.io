@@ -1,0 +1,226 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="A practical guide to building context packets for engineering agents with repo maps, task manifests, relevance scoring, and bounded evidence bundles that improve edit quality without dumping the whole codebase into context.">
+    <meta name="author" content="Anirudh Negi">
+    <title>Context Packets for Engineering Agents That Actually Reduce Bad Edits | Anirudh Negi</title>
+    <link rel="icon" type="image/svg+xml" href="../images/favicon.svg">
+    <link rel="canonical" href="https://negiadventures.github.io/blog/context-packets-engineering-agents.html">
+    <meta property="og:type" content="article">
+    <meta property="og:url" content="https://negiadventures.github.io/blog/context-packets-engineering-agents.html">
+    <meta property="og:title" content="Context Packets for Engineering Agents That Actually Reduce Bad Edits | Anirudh Negi">
+    <meta property="og:description" content="A practical guide to building context packets for engineering agents with repo maps, task manifests, relevance scoring, and bounded evidence bundles that improve edit quality without dumping the whole codebase into context.">
+    <meta property="og:image" content="data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A//www.w3.org/2000/svg%27%20viewBox%3D%270%200%201200%20630%27%3E%3Cdefs%3E%3ClinearGradient%20id%3D%27bg%27%20x1%3D%270%27%20x2%3D%271%27%20y1%3D%270%27%20y2%3D%271%27%3E%3Cstop%20offset%3D%270%25%27%20stop-color%3D%27%2308131f%27/%3E%3Cstop%20offset%3D%27100%25%27%20stop-color%3D%27%23162f4e%27/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect%20width%3D%271200%27%20height%3D%27630%27%20fill%3D%27url%28%23bg%29%27/%3E%3Ccircle%20cx%3D%27995%27%20cy%3D%27118%27%20r%3D%27155%27%20fill%3D%27%2322d3ee%27%20fill-opacity%3D%270.14%27/%3E%3Ccircle%20cx%3D%27185%27%20cy%3D%27520%27%20r%3D%27205%27%20fill%3D%27%238b5cf6%27%20fill-opacity%3D%270.16%27/%3E%3Crect%20x%3D%2785%27%20y%3D%2785%27%20width%3D%271030%27%20height%3D%27460%27%20rx%3D%2732%27%20fill%3D%27%230b1220%27%20stroke%3D%27%2338bdf8%27%20stroke-opacity%3D%270.35%27/%3E%3Ctext%20x%3D%27135%27%20y%3D%27188%27%20fill%3D%27white%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2746%27%20font-weight%3D%27700%27%3EContext%20Packets%20for%3C/text%3E%3Ctext%20x%3D%27135%27%20y%3D%27260%27%20fill%3D%27%2393c5fd%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2746%27%20font-weight%3D%27700%27%3EEngineering%20Agents%3C/text%3E%3Ctext%20x%3D%27135%27%20y%3D%27342%27%20fill%3D%27%23cbd5e1%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2728%27%3ERepo%20maps%2C%20task%20manifests%2C%20and%20bounded%20evidence%20bundles%3C/text%3E%3Crect%20x%3D%27135%27%20y%3D%27392%27%20width%3D%27290%27%20height%3D%2754%27%20rx%3D%2714%27%20fill%3D%27%23111c2d%27%20stroke%3D%27%2367e8f9%27%20stroke-opacity%3D%270.45%27/%3E%3Ctext%20x%3D%27158%27%20y%3D%27427%27%20fill%3D%27%2367e8f9%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2724%27%3Esmaller%20context%2C%20better%20edits%3C/text%3E%3Crect%20x%3D%27765%27%20y%3D%27175%27%20width%3D%27235%27%20height%3D%2752%27%20rx%3D%2714%27%20fill%3D%27%230d1728%27%20stroke%3D%27%2322d3ee%27%20stroke-opacity%3D%270.45%27/%3E%3Ctext%20x%3D%27820%27%20y%3D%27209%27%20fill%3D%27%23bae6fd%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2723%27%3Erepo-map.md%3C/text%3E%3Crect%20x%3D%27765%27%20y%3D%27270%27%20width%3D%27235%27%20height%3D%2752%27%20rx%3D%2714%27%20fill%3D%27%230d1728%27%20stroke%3D%27%2322d3ee%27%20stroke-opacity%3D%270.45%27/%3E%3Ctext%20x%3D%27800%27%20y%3D%27304%27%20fill%3D%27%23bae6fd%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2723%27%3Etask.yaml%3C/text%3E%3Crect%20x%3D%27765%27%20y%3D%27365%27%20width%3D%27235%27%20height%3D%2752%27%20rx%3D%2714%27%20fill%3D%27%230d1728%27%20stroke%3D%27%23a78bfa%27%20stroke-opacity%3D%270.45%27/%3E%3Ctext%20x%3D%27792%27%20y%3D%27399%27%20fill%3D%27%23ddd6fe%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2723%27%3Erelevant-files.json%3C/text%3E%3C/svg%3E">
+    <meta property="article:published_time" content="2026-04-16">
+    <meta property="article:author" content="Anirudh Negi">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:url" content="https://negiadventures.github.io/blog/context-packets-engineering-agents.html">
+    <meta name="twitter:title" content="Context Packets for Engineering Agents That Actually Reduce Bad Edits | Anirudh Negi">
+    <meta name="twitter:description" content="A practical guide to building context packets for engineering agents with repo maps, task manifests, relevance scoring, and bounded evidence bundles that improve edit quality without dumping the whole codebase into context.">
+    <meta name="twitter:image" content="data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A//www.w3.org/2000/svg%27%20viewBox%3D%270%200%201200%20630%27%3E%3Cdefs%3E%3ClinearGradient%20id%3D%27bg%27%20x1%3D%270%27%20x2%3D%271%27%20y1%3D%270%27%20y2%3D%271%27%3E%3Cstop%20offset%3D%270%25%27%20stop-color%3D%27%2308131f%27/%3E%3Cstop%20offset%3D%27100%25%27%20stop-color%3D%27%23162f4e%27/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect%20width%3D%271200%27%20height%3D%27630%27%20fill%3D%27url%28%23bg%29%27/%3E%3Ccircle%20cx%3D%27995%27%20cy%3D%27118%27%20r%3D%27155%27%20fill%3D%27%2322d3ee%27%20fill-opacity%3D%270.14%27/%3E%3Ccircle%20cx%3D%27185%27%20cy%3D%27520%27%20r%3D%27205%27%20fill%3D%27%238b5cf6%27%20fill-opacity%3D%270.16%27/%3E%3Crect%20x%3D%2785%27%20y%3D%2785%27%20width%3D%271030%27%20height%3D%27460%27%20rx%3D%2732%27%20fill%3D%27%230b1220%27%20stroke%3D%27%2338bdf8%27%20stroke-opacity%3D%270.35%27/%3E%3Ctext%20x%3D%27135%27%20y%3D%27188%27%20fill%3D%27white%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2746%27%20font-weight%3D%27700%27%3EContext%20Packets%20for%3C/text%3E%3Ctext%20x%3D%27135%27%20y%3D%27260%27%20fill%3D%27%2393c5fd%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2746%27%20font-weight%3D%27700%27%3EEngineering%20Agents%3C/text%3E%3Ctext%20x%3D%27135%27%20y%3D%27342%27%20fill%3D%27%23cbd5e1%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2728%27%3ERepo%20maps%2C%20task%20manifests%2C%20and%20bounded%20evidence%20bundles%3C/text%3E%3Crect%20x%3D%27135%27%20y%3D%27392%27%20width%3D%27290%27%20height%3D%2754%27%20rx%3D%2714%27%20fill%3D%27%23111c2d%27%20stroke%3D%27%2367e8f9%27%20stroke-opacity%3D%270.45%27/%3E%3Ctext%20x%3D%27158%27%20y%3D%27427%27%20fill%3D%27%2367e8f9%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2724%27%3Esmaller%20context%2C%20better%20edits%3C/text%3E%3Crect%20x%3D%27765%27%20y%3D%27175%27%20width%3D%27235%27%20height%3D%2752%27%20rx%3D%2714%27%20fill%3D%27%230d1728%27%20stroke%3D%27%2322d3ee%27%20stroke-opacity%3D%270.45%27/%3E%3Ctext%20x%3D%27820%27%20y%3D%27209%27%20fill%3D%27%23bae6fd%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2723%27%3Erepo-map.md%3C/text%3E%3Crect%20x%3D%27765%27%20y%3D%27270%27%20width%3D%27235%27%20height%3D%2752%27%20rx%3D%2714%27%20fill%3D%27%230d1728%27%20stroke%3D%27%2322d3ee%27%20stroke-opacity%3D%270.45%27/%3E%3Ctext%20x%3D%27800%27%20y%3D%27304%27%20fill%3D%27%23bae6fd%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2723%27%3Etask.yaml%3C/text%3E%3Crect%20x%3D%27765%27%20y%3D%27365%27%20width%3D%27235%27%20height%3D%2752%27%20rx%3D%2714%27%20fill%3D%27%230d1728%27%20stroke%3D%27%23a78bfa%27%20stroke-opacity%3D%270.45%27/%3E%3Ctext%20x%3D%27792%27%20y%3D%27399%27%20fill%3D%27%23ddd6fe%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2723%27%3Erelevant-files.json%3C/text%3E%3C/svg%3E">
+    <script type="application/ld+json">{
+      "@context": "https://schema.org",
+      "@type": "BlogPosting",
+      "headline": "Context Packets for Engineering Agents That Actually Reduce Bad Edits",
+      "description": "A practical guide to building context packets for engineering agents with repo maps, task manifests, relevance scoring, and bounded evidence bundles that improve edit quality without dumping the whole codebase into context.",
+      "image": "data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A//www.w3.org/2000/svg%27%20viewBox%3D%270%200%201200%20630%27%3E%3Cdefs%3E%3ClinearGradient%20id%3D%27bg%27%20x1%3D%270%27%20x2%3D%271%27%20y1%3D%270%27%20y2%3D%271%27%3E%3Cstop%20offset%3D%270%25%27%20stop-color%3D%27%2308131f%27/%3E%3Cstop%20offset%3D%27100%25%27%20stop-color%3D%27%23162f4e%27/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect%20width%3D%271200%27%20height%3D%27630%27%20fill%3D%27url%28%23bg%29%27/%3E%3Ccircle%20cx%3D%27995%27%20cy%3D%27118%27%20r%3D%27155%27%20fill%3D%27%2322d3ee%27%20fill-opacity%3D%270.14%27/%3E%3Ccircle%20cx%3D%27185%27%20cy%3D%27520%27%20r%3D%27205%27%20fill%3D%27%238b5cf6%27%20fill-opacity%3D%270.16%27/%3E%3Crect%20x%3D%2785%27%20y%3D%2785%27%20width%3D%271030%27%20height%3D%27460%27%20rx%3D%2732%27%20fill%3D%27%230b1220%27%20stroke%3D%27%2338bdf8%27%20stroke-opacity%3D%270.35%27/%3E%3Ctext%20x%3D%27135%27%20y%3D%27188%27%20fill%3D%27white%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2746%27%20font-weight%3D%27700%27%3EContext%20Packets%20for%3C/text%3E%3Ctext%20x%3D%27135%27%20y%3D%27260%27%20fill%3D%27%2393c5fd%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2746%27%20font-weight%3D%27700%27%3EEngineering%20Agents%3C/text%3E%3Ctext%20x%3D%27135%27%20y%3D%27342%27%20fill%3D%27%23cbd5e1%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2728%27%3ERepo%20maps%2C%20task%20manifests%2C%20and%20bounded%20evidence%20bundles%3C/text%3E%3Crect%20x%3D%27135%27%20y%3D%27392%27%20width%3D%27290%27%20height%3D%2754%27%20rx%3D%2714%27%20fill%3D%27%23111c2d%27%20stroke%3D%27%2367e8f9%27%20stroke-opacity%3D%270.45%27/%3E%3Ctext%20x%3D%27158%27%20y%3D%27427%27%20fill%3D%27%2367e8f9%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2724%27%3Esmaller%20context%2C%20better%20edits%3C/text%3E%3Crect%20x%3D%27765%27%20y%3D%27175%27%20width%3D%27235%27%20height%3D%2752%27%20rx%3D%2714%27%20fill%3D%27%230d1728%27%20stroke%3D%27%2322d3ee%27%20stroke-opacity%3D%270.45%27/%3E%3Ctext%20x%3D%27820%27%20y%3D%27209%27%20fill%3D%27%23bae6fd%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2723%27%3Erepo-map.md%3C/text%3E%3Crect%20x%3D%27765%27%20y%3D%27270%27%20width%3D%27235%27%20height%3D%2752%27%20rx%3D%2714%27%20fill%3D%27%230d1728%27%20stroke%3D%27%2322d3ee%27%20stroke-opacity%3D%270.45%27/%3E%3Ctext%20x%3D%27800%27%20y%3D%27304%27%20fill%3D%27%23bae6fd%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2723%27%3Etask.yaml%3C/text%3E%3Crect%20x%3D%27765%27%20y%3D%27365%27%20width%3D%27235%27%20height%3D%2752%27%20rx%3D%2714%27%20fill%3D%27%230d1728%27%20stroke%3D%27%23a78bfa%27%20stroke-opacity%3D%270.45%27/%3E%3Ctext%20x%3D%27792%27%20y%3D%27399%27%20fill%3D%27%23ddd6fe%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2723%27%3Erelevant-files.json%3C/text%3E%3C/svg%3E",
+      "url": "https://negiadventures.github.io/blog/context-packets-engineering-agents.html",
+      "datePublished": "2026-04-16",
+      "author": { "@type": "Person", "name": "Anirudh Negi", "url": "https://negiadventures.github.io" },
+      "publisher": { "@type": "Person", "name": "Anirudh Negi", "url": "https://negiadventures.github.io" }
+    }</script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../stylesheets/stylesheet.css?v=5" media="screen">
+    <style>
+      .blog-post { max-width: 800px; margin: 0 auto; padding: 60px 20px; }
+      .blog-post-header { margin-bottom: 40px; }
+      .blog-post-nav { margin-bottom: 30px; }
+      .blog-post-nav a { color: var(--accent-strong); font-size: 0.95rem; }
+      .blog-post-nav a:hover { color: var(--accent); }
+      .blog-post-title { font-size: 2.5rem; margin-bottom: 16px; }
+      .blog-post-meta { display: flex; gap: 20px; color: var(--text-muted); font-size: 0.95rem; margin-bottom: 30px; flex-wrap: wrap; }
+      .blog-post-image { width: 100%; height: 300px; object-fit: cover; border-radius: 16px; margin-bottom: 30px; border: 1px solid var(--border); background: linear-gradient(135deg, rgba(15, 23, 42, 1), rgba(20, 43, 71, 1)); }
+      .blog-post-content h2 { font-size: 1.6rem; margin-top: 40px; margin-bottom: 16px; color: var(--text-light); }
+      .blog-post-content h3 { font-size: 1.25rem; margin-top: 28px; margin-bottom: 12px; color: var(--text-light); }
+      .blog-post-content p { line-height: 1.8; margin-bottom: 16px; color: var(--text-muted); }
+      .blog-post-content ul, .blog-post-content ol { line-height: 1.8; margin-bottom: 20px; color: var(--text-muted); padding-left: 24px; }
+      .blog-post-content li { margin-bottom: 8px; }
+      .code-block, .terminal-block { background: var(--bg-alt); border: 1px solid var(--border); border-radius: 12px; padding: 20px; margin: 20px 0; overflow-x: auto; }
+      .terminal-block { border-color: rgba(34, 211, 238, 0.25); box-shadow: inset 0 1px 0 rgba(34, 211, 238, 0.04); }
+      .code-block pre, .terminal-block pre, pre.mermaid { margin: 0; font-family: var(--mono); font-size: 0.9rem; line-height: 1.6; color: var(--text-light); white-space: pre-wrap; }
+      .code-block code { color: var(--accent-strong); }
+      .callout { border-radius: 14px; padding: 18px 20px; margin: 22px 0; border: 1px solid var(--border); background: rgba(15, 23, 42, 0.72); }
+      .callout.warning { border-color: rgba(248, 113, 113, 0.35); background: rgba(60, 24, 24, 0.35); }
+      .callout.good { border-color: rgba(34, 197, 94, 0.3); background: rgba(20, 52, 36, 0.3); }
+      .comparison-table { width: 100%; border-collapse: collapse; margin: 24px 0; font-size: 0.95rem; }
+      .comparison-table th, .comparison-table td { border: 1px solid var(--border); padding: 14px; text-align: left; vertical-align: top; }
+      .comparison-table th { color: var(--text-light); background: rgba(15, 23, 42, 0.85); }
+      .diagram-card { margin: 22px 0; padding: 14px; border-radius: 16px; border: 1px solid var(--border); background: rgba(15, 23, 42, 0.72); overflow-x: auto; }
+      .checklist { list-style: none; padding-left: 0 !important; }
+      .checklist li { position: relative; padding-left: 30px; margin-bottom: 10px; }
+      .checklist li::before { content: '✓'; position: absolute; left: 0; top: 0; color: var(--accent); font-weight: 700; }
+      .blog-post-tags { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 40px; padding-top: 30px; border-top: 1px solid var(--border); }
+      .blog-post-tag { background: var(--accent-soft); color: var(--accent-strong); border-radius: 999px; padding: 6px 14px; font-size: 0.85rem; font-family: var(--mono); border: 1px solid transparent; }
+      .blog-footer { margin-top: 60px; padding-top: 30px; border-top: 1px solid var(--border); text-align: center; }
+      .blog-footer a { color: var(--accent-strong); }
+      .blog-footer a:hover { color: var(--accent); }
+      @media (max-width: 768px) { .blog-post { padding: 40px 16px; } .blog-post-title { font-size: 2rem; } .blog-post-image { height: 200px; } .comparison-table { display: block; overflow-x: auto; } }
+    </style>
+  </head>
+  <body>
+    <a href="../index.html#main" class="skip-link">Skip to main content</a>
+    <header class="site-header">
+      <div class="container blog-post">
+        <div class="blog-post-nav"><a href="index.html">&larr; Back to All Posts</a></div>
+        <div class="blog-post-header">
+          <h1 class="blog-post-title">Context Packets for Engineering Agents That Actually Reduce Bad Edits</h1>
+          <div class="blog-post-meta"><span>April 16, 2026</span><span>&bull;</span><span>10 min read</span></div>
+          <img src="data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A//www.w3.org/2000/svg%27%20viewBox%3D%270%200%201200%20630%27%3E%3Cdefs%3E%3ClinearGradient%20id%3D%27bg%27%20x1%3D%270%27%20x2%3D%271%27%20y1%3D%270%27%20y2%3D%271%27%3E%3Cstop%20offset%3D%270%25%27%20stop-color%3D%27%2308131f%27/%3E%3Cstop%20offset%3D%27100%25%27%20stop-color%3D%27%23162f4e%27/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect%20width%3D%271200%27%20height%3D%27630%27%20fill%3D%27url%28%23bg%29%27/%3E%3Ccircle%20cx%3D%27995%27%20cy%3D%27118%27%20r%3D%27155%27%20fill%3D%27%2322d3ee%27%20fill-opacity%3D%270.14%27/%3E%3Ccircle%20cx%3D%27185%27%20cy%3D%27520%27%20r%3D%27205%27%20fill%3D%27%238b5cf6%27%20fill-opacity%3D%270.16%27/%3E%3Crect%20x%3D%2785%27%20y%3D%2785%27%20width%3D%271030%27%20height%3D%27460%27%20rx%3D%2732%27%20fill%3D%27%230b1220%27%20stroke%3D%27%2338bdf8%27%20stroke-opacity%3D%270.35%27/%3E%3Ctext%20x%3D%27135%27%20y%3D%27188%27%20fill%3D%27white%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2746%27%20font-weight%3D%27700%27%3EContext%20Packets%20for%3C/text%3E%3Ctext%20x%3D%27135%27%20y%3D%27260%27%20fill%3D%27%2393c5fd%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2746%27%20font-weight%3D%27700%27%3EEngineering%20Agents%3C/text%3E%3Ctext%20x%3D%27135%27%20y%3D%27342%27%20fill%3D%27%23cbd5e1%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2728%27%3ERepo%20maps%2C%20task%20manifests%2C%20and%20bounded%20evidence%20bundles%3C/text%3E%3Crect%20x%3D%27135%27%20y%3D%27392%27%20width%3D%27290%27%20height%3D%2754%27%20rx%3D%2714%27%20fill%3D%27%23111c2d%27%20stroke%3D%27%2367e8f9%27%20stroke-opacity%3D%270.45%27/%3E%3Ctext%20x%3D%27158%27%20y%3D%27427%27%20fill%3D%27%2367e8f9%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2724%27%3Esmaller%20context%2C%20better%20edits%3C/text%3E%3Crect%20x%3D%27765%27%20y%3D%27175%27%20width%3D%27235%27%20height%3D%2752%27%20rx%3D%2714%27%20fill%3D%27%230d1728%27%20stroke%3D%27%2322d3ee%27%20stroke-opacity%3D%270.45%27/%3E%3Ctext%20x%3D%27820%27%20y%3D%27209%27%20fill%3D%27%23bae6fd%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2723%27%3Erepo-map.md%3C/text%3E%3Crect%20x%3D%27765%27%20y%3D%27270%27%20width%3D%27235%27%20height%3D%2752%27%20rx%3D%2714%27%20fill%3D%27%230d1728%27%20stroke%3D%27%2322d3ee%27%20stroke-opacity%3D%270.45%27/%3E%3Ctext%20x%3D%27800%27%20y%3D%27304%27%20fill%3D%27%23bae6fd%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2723%27%3Etask.yaml%3C/text%3E%3Crect%20x%3D%27765%27%20y%3D%27365%27%20width%3D%27235%27%20height%3D%2752%27%20rx%3D%2714%27%20fill%3D%27%230d1728%27%20stroke%3D%27%23a78bfa%27%20stroke-opacity%3D%270.45%27/%3E%3Ctext%20x%3D%27792%27%20y%3D%27399%27%20fill%3D%27%23ddd6fe%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2723%27%3Erelevant-files.json%3C/text%3E%3C/svg%3E" alt="Context Packets for Engineering Agents That Actually Reduce Bad Edits" class="blog-post-image">
+        </div>
+        <div class="blog-post-content">
+          <p>If an engineering agent keeps touching the wrong files, the problem is often not the model. It is the context packet.</p>
+          <p>Too many teams still hand an agent a giant repo dump, a vague task, and hope retrieval or tool use will clean it up. That works right up until the agent edits a similarly named module, misses a hidden invariant, or burns half its token budget re-reading noise.</p>
+          <p>What actually helps is a bounded packet: a task manifest, a repo map, a short evidence bundle, and a few hard constraints. This is the packet shape I would use for engineering agents that need to produce reviewable edits.</p>
+          <h2>Why this matters</h2>
+          <p>Good agents do not just need more context. They need the right context, in an order that helps them plan before they edit.</p>
+          <p>In practice, packet quality changes bad-edit rate, reviewability, latency, and how often a human has to rescue the run. That makes it one of the highest-leverage parts of an agent workflow.</p>
+          <h2>Architecture or workflow overview</h2>
+          <p>A context packet should be assembled before the first write-capable tool call, then refreshed at checkpoints when the task uncovers something materially new.</p>
+          <div class="diagram-card"><pre class="mermaid">flowchart LR
+    A[Issue or task] --> B[Task classifier]
+    B --> C[Repo map and invariant lookup]
+    C --> D[Relevant file scorer]
+    D --> E[Context packet builder]
+    E --> F[Agent plan]
+    F --> G[Edit or tool execution]
+    G --> H[Verification and packet refresh]</pre></div>
+          <div class="callout good"><strong>Best practice:</strong> keep the packet small enough that a human reviewer could skim it too. That is a good proxy for whether the agent is getting signal instead of sludge.</div>
+          <h2>Implementation details</h2>
+          <h3>Start with a task manifest, not just prose</h3>
+          <p>I like a small YAML manifest because it forces structure before the agent starts improvising.</p>
+          <div class="code-block"><pre><code>kind: engineering-task
+objective: Add retry-safe webhook delivery to the background worker
+success:
+  - duplicate webhook sends are prevented
+  - failed deliveries are retried with backoff
+  - existing metrics still emit
+constraints:
+  - do not change public API routes
+  - keep edits inside worker/ and shared/queue/
+  - add tests for retry dedupe behavior
+verify:
+  - pnpm test worker/retry.test.ts
+  - pnpm lint
+avoid:
+  - touching billing/
+  - changing database migrations</code></pre></div>
+          <p>This is boring, which is good. The agent now knows where success lives, where it should not wander, and how the result will be checked.</p>
+          <h3>Build a repo map with file roles, not raw tree dumps</h3>
+          <p>A raw directory listing is cheap to generate but not very useful. A repo map should explain what matters.</p>
+          <div class="code-block"><pre><code>{
+  "areas": [
+    {
+      "path": "worker/dispatcher.ts",
+      "role": "dequeues jobs and handles retry state transitions",
+      "editLikelihood": "high"
+    },
+    {
+      "path": "shared/queue/idempotency.ts",
+      "role": "idempotency key generation and lease checks",
+      "editLikelihood": "medium"
+    },
+    {
+      "path": "billing/",
+      "role": "separate domain, not relevant to webhook retries",
+      "editLikelihood": "forbidden"
+    }
+  ],
+  "invariants": [
+    "job attempt count is monotonic",
+    "delivery metrics use the existing queue labels",
+    "duplicate sends must fail closed"
+  ]
+}</code></pre></div>
+          <p>I would rather give an agent eight annotated files than sixty unlabelled ones.</p>
+          <h3>Score relevance before bundling source excerpts</h3>
+          <p>The packet builder should rank candidate files using cheap signals first, like import proximity, symbol overlap, test names, and issue keywords.</p>
+          <div class="code-block"><pre><code>export function scoreCandidate(file: RepoFile, task: TaskManifest): number {
+  let score = 0;
+
+  if (task.objectiveWords.some(word =&gt; file.path.includes(word))) score += 3;
+  if (file.exports.some(symbol =&gt; task.symbolHints.includes(symbol))) score += 4;
+  if (file.tags.includes('entrypoint')) score += 2;
+  if (file.tags.includes('forbidden')) score -= 100;
+  if (file.recentlyChangedWithTests) score += 2;
+
+  return score;
+}</code></pre></div>
+          <h3>Bundle evidence in layers</h3>
+          <table class="comparison-table">
+            <thead><tr><th>Layer</th><th>What goes in it</th><th>Why it exists</th><th>Failure if missing</th></tr></thead>
+            <tbody>
+              <tr><td>task</td><td>objective, constraints, verify commands</td><td>keeps the agent pointed at the actual job</td><td>vague plans and scope drift</td></tr>
+              <tr><td>map</td><td>file roles, invariants, ownership hints</td><td>gives structure before source code</td><td>edits the right concept in the wrong place</td></tr>
+              <tr><td>evidence</td><td>short excerpts from top files</td><td>provides implementation truth</td><td>agent hallucinates unseen details</td></tr>
+              <tr><td>guardrails</td><td>no-go paths, approval notes, rollout cautions</td><td>limits blast radius</td><td>locally reasonable but operationally bad actions</td></tr>
+            </tbody>
+          </table>
+          <h3>Refresh the packet after major discoveries</h3>
+          <p>The first packet is never perfect. If the agent learns a key invariant halfway through, capture it and rebuild the packet before the next write step.</p>
+          <div class="code-block"><pre><code>def refresh_packet(packet, finding):
+    if finding.kind == "invariant":
+        packet["repo_map"]["invariants"].append(finding.text)
+    if finding.kind == "new_hot_file":
+        packet["evidence_files"].append(finding.path)
+    packet["version"] += 1
+    return packet</code></pre></div>
+          <div class="terminal-block"><pre>$ packet build --task tasks/retry-webhook.yaml
+selected 7 files
+added 3 invariants
+excluded 2 forbidden paths
+packet version: 4
+estimated tokens: 6840
+verification commands: 2</pre></div>
+          <h2>What went wrong and the tradeoffs</h2>
+          <h3>Packet bloat</h3>
+          <p>Teams discover context packets, then immediately turn them into mini wikis. Once the packet becomes a dumping ground, the agent starts skipping important bits because everything looks equally important.</p>
+          <h3>Stale repo maps</h3>
+          <p>A stale map is worse than no map if it confidently points the agent at old architecture. If you keep maps in-repo, regenerate or review them when major modules move.</p>
+          <h3>Overfitting to path names</h3>
+          <p>Simple relevance scoring can be fooled by similar names. That is why invariant notes and file-role annotations matter.</p>
+          <div class="callout warning"><strong>Pitfall:</strong> do not let the packet builder include secrets, .env files, or production dumps just because they looked relevant. Packet assembly needs the same permission boundaries as the agent itself.</div>
+          <p><strong>What I would not do:</strong> I would not stuff entire files into the packet by default, I would not let the agent pick forbidden paths and justify later, and I would not trust vector retrieval alone to understand repo boundaries.</p>
+          <h2>Practical checklist</h2>
+          <ul class="checklist">
+            <li>define success criteria before selecting files</li>
+            <li>annotate allowed and forbidden paths explicitly</li>
+            <li>include 5 to 12 high-signal files, not 50 low-signal ones</li>
+            <li>attach verify commands the agent can run immediately</li>
+            <li>record invariants in plain language</li>
+            <li>rebuild the packet after major discoveries</li>
+            <li>log the packet version used for each edit batch</li>
+          </ul>
+          <h2>Conclusion</h2>
+          <p>Context packets are one of the highest-leverage boring tools in an engineering-agent stack. They reduce wasted tokens, improve edit quality, and make failures easier to explain. The main trick is staying selective. Smaller, fresher, and more explicit beats bigger almost every time.</p>
+          <div class="blog-post-tags">
+            <span class="blog-post-tag">AI Agents</span>
+            <span class="blog-post-tag">Context Engineering</span>
+            <span class="blog-post-tag">Developer Workflow</span>
+            <span class="blog-post-tag">Code Review</span>
+          </div>
+        </div>
+        <footer class="blog-footer">
+          <p>Want more practical AI engineering writeups? <a href="index.html">Browse the rest of the blog</a>.</p>
+        </footer>
+      </div>
+    </header>
+    <script type="module">
+      import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.esm.min.mjs';
+      mermaid.initialize({ startOnLoad: true, theme: 'dark' });
+    </script>
+  </body>
+</html>
