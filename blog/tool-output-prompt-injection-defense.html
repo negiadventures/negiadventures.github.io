@@ -1,0 +1,229 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="A practical guide to protecting AI agents from prompt injection through tool outputs, with trust boundaries, sanitization patterns, isolation lanes, and reviewable execution guards.">
+    <meta name="author" content="Anirudh Negi">
+    <title>Protecting AI Agents From Prompt Injection Through Tool Outputs | Anirudh Negi</title>
+    <link rel="icon" type="image/svg+xml" href="../images/favicon.svg">
+    <link rel="canonical" href="https://negiadventures.github.io/blog/tool-output-prompt-injection-defense.html">
+    <meta property="og:type" content="article">
+    <meta property="og:url" content="https://negiadventures.github.io/blog/tool-output-prompt-injection-defense.html">
+    <meta property="og:title" content="Protecting AI Agents From Prompt Injection Through Tool Outputs | Anirudh Negi">
+    <meta property="og:description" content="A practical guide to protecting AI agents from prompt injection through tool outputs, with trust boundaries, sanitization patterns, isolation lanes, and reviewable execution guards.">
+    <meta property="og:image" content="data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20viewBox%3D%220%200%201200%20630%22%3E%0A%20%20%3Cdefs%3E%0A%20%20%20%20%3ClinearGradient%20id%3D%22bg%22%20x1%3D%220%22%20x2%3D%221%22%20y1%3D%220%22%20y2%3D%221%22%3E%0A%20%20%20%20%20%20%3Cstop%20offset%3D%220%25%22%20stop-color%3D%22%2308131f%22/%3E%0A%20%20%20%20%20%20%3Cstop%20offset%3D%22100%25%22%20stop-color%3D%22%2316304d%22/%3E%0A%20%20%20%20%3C/linearGradient%3E%0A%20%20%3C/defs%3E%0A%20%20%3Crect%20width%3D%221200%22%20height%3D%22630%22%20fill%3D%22url%28%23bg%29%22/%3E%0A%20%20%3Ccircle%20cx%3D%22995%22%20cy%3D%22118%22%20r%3D%22155%22%20fill%3D%22%2322d3ee%22%20fill-opacity%3D%220.14%22/%3E%0A%20%20%3Ccircle%20cx%3D%22185%22%20cy%3D%22525%22%20r%3D%22205%22%20fill%3D%22%238b5cf6%22%20fill-opacity%3D%220.16%22/%3E%0A%20%20%3Crect%20x%3D%2282%22%20y%3D%2286%22%20width%3D%221036%22%20height%3D%22458%22%20rx%3D%2232%22%20fill%3D%22%230b1220%22%20stroke%3D%22%2338bdf8%22%20stroke-opacity%3D%220.35%22/%3E%0A%20%20%3Ctext%20x%3D%22132%22%20y%3D%22184%22%20fill%3D%22white%22%20font-family%3D%22Arial%2C%20sans-serif%22%20font-size%3D%2246%22%20font-weight%3D%22700%22%3EProtecting%20AI%20Agents%20From%3C/text%3E%0A%20%20%3Ctext%20x%3D%22132%22%20y%3D%22256%22%20fill%3D%22%2393c5fd%22%20font-family%3D%22Arial%2C%20sans-serif%22%20font-size%3D%2246%22%20font-weight%3D%22700%22%3EPrompt%20Injection%20Through%3C/text%3E%0A%20%20%3Ctext%20x%3D%22132%22%20y%3D%22328%22%20fill%3D%22%2393c5fd%22%20font-family%3D%22Arial%2C%20sans-serif%22%20font-size%3D%2246%22%20font-weight%3D%22700%22%3ETool%20Outputs%3C/text%3E%0A%20%20%3Ctext%20x%3D%22132%22%20y%3D%22408%22%20fill%3D%22%23cbd5e1%22%20font-family%3D%22Arial%2C%20sans-serif%22%20font-size%3D%2228%22%3ETaint%20labels%2C%20trust%20lanes%2C%20sanitizers%2C%20and%20safer%20execution%20boundaries%3C/text%3E%0A%20%20%3Crect%20x%3D%22132%22%20y%3D%22452%22%20width%3D%22300%22%20height%3D%2254%22%20rx%3D%2214%22%20fill%3D%22%23111c2d%22%20stroke%3D%22%2367e8f9%22%20stroke-opacity%3D%220.45%22/%3E%0A%20%20%3Ctext%20x%3D%22156%22%20y%3D%22487%22%20fill%3D%22%2367e8f9%22%20font-family%3D%22Arial%2C%20sans-serif%22%20font-size%3D%2224%22%3Etreat%20tool%20results%20as%20data%20first%3C/text%3E%0A%20%20%3Crect%20x%3D%22770%22%20y%3D%22180%22%20width%3D%22250%22%20height%3D%2256%22%20rx%3D%2214%22%20fill%3D%22%230d1728%22%20stroke%3D%22%2322d3ee%22%20stroke-opacity%3D%220.45%22/%3E%0A%20%20%3Ctext%20x%3D%22806%22%20y%3D%22216%22%20fill%3D%22%23bae6fd%22%20font-family%3D%22Arial%2C%20sans-serif%22%20font-size%3D%2223%22%3Eweb.fetch%28%29%3C/text%3E%0A%20%20%3Crect%20x%3D%22770%22%20y%3D%22278%22%20width%3D%22250%22%20height%3D%2256%22%20rx%3D%2214%22%20fill%3D%22%230d1728%22%20stroke%3D%22%2322d3ee%22%20stroke-opacity%3D%220.45%22/%3E%0A%20%20%3Ctext%20x%3D%22821%22%20y%3D%22314%22%20fill%3D%22%23bae6fd%22%20font-family%3D%22Arial%2C%20sans-serif%22%20font-size%3D%2223%22%3Esanitize%28%29%3C/text%3E%0A%20%20%3Crect%20x%3D%22770%22%20y%3D%22376%22%20width%3D%22250%22%20height%3D%2256%22%20rx%3D%2214%22%20fill%3D%22%230d1728%22%20stroke%3D%22%23a78bfa%22%20stroke-opacity%3D%220.45%22/%3E%0A%20%20%3Ctext%20x%3D%22816%22%20y%3D%22412%22%20fill%3D%22%23ddd6fe%22%20font-family%3D%22Arial%2C%20sans-serif%22%20font-size%3D%2223%22%3Eapprove%28%29%3C/text%3E%0A%3C/svg%3E">
+    <meta property="article:published_time" content="2026-04-17">
+    <meta property="article:author" content="Anirudh Negi">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:url" content="https://negiadventures.github.io/blog/tool-output-prompt-injection-defense.html">
+    <meta name="twitter:title" content="Protecting AI Agents From Prompt Injection Through Tool Outputs | Anirudh Negi">
+    <meta name="twitter:description" content="A practical guide to protecting AI agents from prompt injection through tool outputs, with trust boundaries, sanitization patterns, isolation lanes, and reviewable execution guards.">
+    <meta name="twitter:image" content="data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20viewBox%3D%220%200%201200%20630%22%3E%0A%20%20%3Cdefs%3E%0A%20%20%20%20%3ClinearGradient%20id%3D%22bg%22%20x1%3D%220%22%20x2%3D%221%22%20y1%3D%220%22%20y2%3D%221%22%3E%0A%20%20%20%20%20%20%3Cstop%20offset%3D%220%25%22%20stop-color%3D%22%2308131f%22/%3E%0A%20%20%20%20%20%20%3Cstop%20offset%3D%22100%25%22%20stop-color%3D%22%2316304d%22/%3E%0A%20%20%20%20%3C/linearGradient%3E%0A%20%20%3C/defs%3E%0A%20%20%3Crect%20width%3D%221200%22%20height%3D%22630%22%20fill%3D%22url%28%23bg%29%22/%3E%0A%20%20%3Ccircle%20cx%3D%22995%22%20cy%3D%22118%22%20r%3D%22155%22%20fill%3D%22%2322d3ee%22%20fill-opacity%3D%220.14%22/%3E%0A%20%20%3Ccircle%20cx%3D%22185%22%20cy%3D%22525%22%20r%3D%22205%22%20fill%3D%22%238b5cf6%22%20fill-opacity%3D%220.16%22/%3E%0A%20%20%3Crect%20x%3D%2282%22%20y%3D%2286%22%20width%3D%221036%22%20height%3D%22458%22%20rx%3D%2232%22%20fill%3D%22%230b1220%22%20stroke%3D%22%2338bdf8%22%20stroke-opacity%3D%220.35%22/%3E%0A%20%20%3Ctext%20x%3D%22132%22%20y%3D%22184%22%20fill%3D%22white%22%20font-family%3D%22Arial%2C%20sans-serif%22%20font-size%3D%2246%22%20font-weight%3D%22700%22%3EProtecting%20AI%20Agents%20From%3C/text%3E%0A%20%20%3Ctext%20x%3D%22132%22%20y%3D%22256%22%20fill%3D%22%2393c5fd%22%20font-family%3D%22Arial%2C%20sans-serif%22%20font-size%3D%2246%22%20font-weight%3D%22700%22%3EPrompt%20Injection%20Through%3C/text%3E%0A%20%20%3Ctext%20x%3D%22132%22%20y%3D%22328%22%20fill%3D%22%2393c5fd%22%20font-family%3D%22Arial%2C%20sans-serif%22%20font-size%3D%2246%22%20font-weight%3D%22700%22%3ETool%20Outputs%3C/text%3E%0A%20%20%3Ctext%20x%3D%22132%22%20y%3D%22408%22%20fill%3D%22%23cbd5e1%22%20font-family%3D%22Arial%2C%20sans-serif%22%20font-size%3D%2228%22%3ETaint%20labels%2C%20trust%20lanes%2C%20sanitizers%2C%20and%20safer%20execution%20boundaries%3C/text%3E%0A%20%20%3Crect%20x%3D%22132%22%20y%3D%22452%22%20width%3D%22300%22%20height%3D%2254%22%20rx%3D%2214%22%20fill%3D%22%23111c2d%22%20stroke%3D%22%2367e8f9%22%20stroke-opacity%3D%220.45%22/%3E%0A%20%20%3Ctext%20x%3D%22156%22%20y%3D%22487%22%20fill%3D%22%2367e8f9%22%20font-family%3D%22Arial%2C%20sans-serif%22%20font-size%3D%2224%22%3Etreat%20tool%20results%20as%20data%20first%3C/text%3E%0A%20%20%3Crect%20x%3D%22770%22%20y%3D%22180%22%20width%3D%22250%22%20height%3D%2256%22%20rx%3D%2214%22%20fill%3D%22%230d1728%22%20stroke%3D%22%2322d3ee%22%20stroke-opacity%3D%220.45%22/%3E%0A%20%20%3Ctext%20x%3D%22806%22%20y%3D%22216%22%20fill%3D%22%23bae6fd%22%20font-family%3D%22Arial%2C%20sans-serif%22%20font-size%3D%2223%22%3Eweb.fetch%28%29%3C/text%3E%0A%20%20%3Crect%20x%3D%22770%22%20y%3D%22278%22%20width%3D%22250%22%20height%3D%2256%22%20rx%3D%2214%22%20fill%3D%22%230d1728%22%20stroke%3D%22%2322d3ee%22%20stroke-opacity%3D%220.45%22/%3E%0A%20%20%3Ctext%20x%3D%22821%22%20y%3D%22314%22%20fill%3D%22%23bae6fd%22%20font-family%3D%22Arial%2C%20sans-serif%22%20font-size%3D%2223%22%3Esanitize%28%29%3C/text%3E%0A%20%20%3Crect%20x%3D%22770%22%20y%3D%22376%22%20width%3D%22250%22%20height%3D%2256%22%20rx%3D%2214%22%20fill%3D%22%230d1728%22%20stroke%3D%22%23a78bfa%22%20stroke-opacity%3D%220.45%22/%3E%0A%20%20%3Ctext%20x%3D%22816%22%20y%3D%22412%22%20fill%3D%22%23ddd6fe%22%20font-family%3D%22Arial%2C%20sans-serif%22%20font-size%3D%2223%22%3Eapprove%28%29%3C/text%3E%0A%3C/svg%3E">
+    <script type="application/ld+json">{
+      "@context": "https://schema.org",
+      "@type": "BlogPosting",
+      "headline": "Protecting AI Agents From Prompt Injection Through Tool Outputs",
+      "description": "A practical guide to protecting AI agents from prompt injection through tool outputs, with trust boundaries, sanitization patterns, isolation lanes, and reviewable execution guards.",
+      "image": "data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20viewBox%3D%220%200%201200%20630%22%3E%0A%20%20%3Cdefs%3E%0A%20%20%20%20%3ClinearGradient%20id%3D%22bg%22%20x1%3D%220%22%20x2%3D%221%22%20y1%3D%220%22%20y2%3D%221%22%3E%0A%20%20%20%20%20%20%3Cstop%20offset%3D%220%25%22%20stop-color%3D%22%2308131f%22/%3E%0A%20%20%20%20%20%20%3Cstop%20offset%3D%22100%25%22%20stop-color%3D%22%2316304d%22/%3E%0A%20%20%20%20%3C/linearGradient%3E%0A%20%20%3C/defs%3E%0A%20%20%3Crect%20width%3D%221200%22%20height%3D%22630%22%20fill%3D%22url%28%23bg%29%22/%3E%0A%20%20%3Ccircle%20cx%3D%22995%22%20cy%3D%22118%22%20r%3D%22155%22%20fill%3D%22%2322d3ee%22%20fill-opacity%3D%220.14%22/%3E%0A%20%20%3Ccircle%20cx%3D%22185%22%20cy%3D%22525%22%20r%3D%22205%22%20fill%3D%22%238b5cf6%22%20fill-opacity%3D%220.16%22/%3E%0A%20%20%3Crect%20x%3D%2282%22%20y%3D%2286%22%20width%3D%221036%22%20height%3D%22458%22%20rx%3D%2232%22%20fill%3D%22%230b1220%22%20stroke%3D%22%2338bdf8%22%20stroke-opacity%3D%220.35%22/%3E%0A%20%20%3Ctext%20x%3D%22132%22%20y%3D%22184%22%20fill%3D%22white%22%20font-family%3D%22Arial%2C%20sans-serif%22%20font-size%3D%2246%22%20font-weight%3D%22700%22%3EProtecting%20AI%20Agents%20From%3C/text%3E%0A%20%20%3Ctext%20x%3D%22132%22%20y%3D%22256%22%20fill%3D%22%2393c5fd%22%20font-family%3D%22Arial%2C%20sans-serif%22%20font-size%3D%2246%22%20font-weight%3D%22700%22%3EPrompt%20Injection%20Through%3C/text%3E%0A%20%20%3Ctext%20x%3D%22132%22%20y%3D%22328%22%20fill%3D%22%2393c5fd%22%20font-family%3D%22Arial%2C%20sans-serif%22%20font-size%3D%2246%22%20font-weight%3D%22700%22%3ETool%20Outputs%3C/text%3E%0A%20%20%3Ctext%20x%3D%22132%22%20y%3D%22408%22%20fill%3D%22%23cbd5e1%22%20font-family%3D%22Arial%2C%20sans-serif%22%20font-size%3D%2228%22%3ETaint%20labels%2C%20trust%20lanes%2C%20sanitizers%2C%20and%20safer%20execution%20boundaries%3C/text%3E%0A%20%20%3Crect%20x%3D%22132%22%20y%3D%22452%22%20width%3D%22300%22%20height%3D%2254%22%20rx%3D%2214%22%20fill%3D%22%23111c2d%22%20stroke%3D%22%2367e8f9%22%20stroke-opacity%3D%220.45%22/%3E%0A%20%20%3Ctext%20x%3D%22156%22%20y%3D%22487%22%20fill%3D%22%2367e8f9%22%20font-family%3D%22Arial%2C%20sans-serif%22%20font-size%3D%2224%22%3Etreat%20tool%20results%20as%20data%20first%3C/text%3E%0A%20%20%3Crect%20x%3D%22770%22%20y%3D%22180%22%20width%3D%22250%22%20height%3D%2256%22%20rx%3D%2214%22%20fill%3D%22%230d1728%22%20stroke%3D%22%2322d3ee%22%20stroke-opacity%3D%220.45%22/%3E%0A%20%20%3Ctext%20x%3D%22806%22%20y%3D%22216%22%20fill%3D%22%23bae6fd%22%20font-family%3D%22Arial%2C%20sans-serif%22%20font-size%3D%2223%22%3Eweb.fetch%28%29%3C/text%3E%0A%20%20%3Crect%20x%3D%22770%22%20y%3D%22278%22%20width%3D%22250%22%20height%3D%2256%22%20rx%3D%2214%22%20fill%3D%22%230d1728%22%20stroke%3D%22%2322d3ee%22%20stroke-opacity%3D%220.45%22/%3E%0A%20%20%3Ctext%20x%3D%22821%22%20y%3D%22314%22%20fill%3D%22%23bae6fd%22%20font-family%3D%22Arial%2C%20sans-serif%22%20font-size%3D%2223%22%3Esanitize%28%29%3C/text%3E%0A%20%20%3Crect%20x%3D%22770%22%20y%3D%22376%22%20width%3D%22250%22%20height%3D%2256%22%20rx%3D%2214%22%20fill%3D%22%230d1728%22%20stroke%3D%22%23a78bfa%22%20stroke-opacity%3D%220.45%22/%3E%0A%20%20%3Ctext%20x%3D%22816%22%20y%3D%22412%22%20fill%3D%22%23ddd6fe%22%20font-family%3D%22Arial%2C%20sans-serif%22%20font-size%3D%2223%22%3Eapprove%28%29%3C/text%3E%0A%3C/svg%3E",
+      "url": "https://negiadventures.github.io/blog/tool-output-prompt-injection-defense.html",
+      "datePublished": "2026-04-17",
+      "author": { "@type": "Person", "name": "Anirudh Negi", "url": "https://negiadventures.github.io" },
+      "publisher": { "@type": "Person", "name": "Anirudh Negi", "url": "https://negiadventures.github.io" }
+    }</script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../stylesheets/stylesheet.css?v=5" media="screen">
+    <style>
+      .blog-post { max-width: 800px; margin: 0 auto; padding: 60px 20px; }
+      .blog-post-header { margin-bottom: 40px; }
+      .blog-post-nav { margin-bottom: 30px; }
+      .blog-post-nav a { color: var(--accent-strong); font-size: 0.95rem; }
+      .blog-post-nav a:hover { color: var(--accent); }
+      .blog-post-title { font-size: 2.5rem; margin-bottom: 16px; }
+      .blog-post-meta { display: flex; gap: 20px; color: var(--text-muted); font-size: 0.95rem; margin-bottom: 30px; flex-wrap: wrap; }
+      .blog-post-image { width: 100%; height: 300px; object-fit: cover; border-radius: 16px; margin-bottom: 30px; border: 1px solid var(--border); background: linear-gradient(135deg, rgba(15, 23, 42, 1), rgba(20, 43, 71, 1)); }
+      .blog-post-content h2 { font-size: 1.6rem; margin-top: 40px; margin-bottom: 16px; color: var(--text-light); }
+      .blog-post-content h3 { font-size: 1.25rem; margin-top: 28px; margin-bottom: 12px; color: var(--text-light); }
+      .blog-post-content p { line-height: 1.8; margin-bottom: 16px; color: var(--text-muted); }
+      .blog-post-content ul, .blog-post-content ol { line-height: 1.8; margin-bottom: 20px; color: var(--text-muted); padding-left: 24px; }
+      .blog-post-content li { margin-bottom: 8px; }
+      .code-block, .terminal-block { background: var(--bg-alt); border: 1px solid var(--border); border-radius: 12px; padding: 20px; margin: 20px 0; overflow-x: auto; }
+      .terminal-block { border-color: rgba(34, 211, 238, 0.25); box-shadow: inset 0 1px 0 rgba(34, 211, 238, 0.04); }
+      .code-block pre, .terminal-block pre, pre.mermaid { margin: 0; font-family: var(--mono); font-size: 0.9rem; line-height: 1.6; color: var(--text-light); white-space: pre-wrap; }
+      .code-block code { color: var(--accent-strong); }
+      .callout { border-radius: 14px; padding: 18px 20px; margin: 22px 0; border: 1px solid var(--border); background: rgba(15, 23, 42, 0.72); }
+      .callout.warning { border-color: rgba(248, 113, 113, 0.35); background: rgba(60, 24, 24, 0.35); }
+      .callout.good { border-color: rgba(34, 197, 94, 0.3); background: rgba(20, 52, 36, 0.3); }
+      .comparison-table { width: 100%; border-collapse: collapse; margin: 24px 0; font-size: 0.95rem; }
+      .comparison-table th, .comparison-table td { border: 1px solid var(--border); padding: 14px; text-align: left; vertical-align: top; }
+      .comparison-table th { color: var(--text-light); background: rgba(15, 23, 42, 0.85); }
+      .diagram-card { margin: 22px 0; padding: 14px; border-radius: 16px; border: 1px solid var(--border); background: rgba(15, 23, 42, 0.72); overflow-x: auto; }
+      .checklist { list-style: none; padding-left: 0 !important; }
+      .checklist li { position: relative; padding-left: 30px; margin-bottom: 10px; }
+      .checklist li::before { content: '✓'; position: absolute; left: 0; top: 0; color: var(--accent); font-weight: 700; }
+      .blog-post-tags { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 40px; padding-top: 30px; border-top: 1px solid var(--border); }
+      .blog-post-tag { background: var(--accent-soft); color: var(--accent-strong); border-radius: 999px; padding: 6px 14px; font-size: 0.85rem; font-family: var(--mono); border: 1px solid transparent; }
+      .blog-footer { margin-top: 60px; padding-top: 30px; border-top: 1px solid var(--border); text-align: center; }
+      .blog-footer a { color: var(--accent-strong); }
+      .blog-footer a:hover { color: var(--accent); }
+      @media (max-width: 768px) { .blog-post { padding: 40px 16px; } .blog-post-title { font-size: 2rem; } .blog-post-image { height: 200px; } .comparison-table { display: block; overflow-x: auto; } }
+    </style>
+  </head>
+  <body>
+    <a href="../index.html#main" class="skip-link">Skip to main content</a>
+    <header class="site-header">
+      <div class="container blog-post">
+        <div class="blog-post-nav"><a href="index.html">&larr; Back to All Posts</a></div>
+        <div class="blog-post-header">
+          <h1 class="blog-post-title">Protecting AI Agents From Prompt Injection Through Tool Outputs</h1>
+          <div class="blog-post-meta"><span>April 17, 2026</span><span>&bull;</span><span>11 min read</span></div>
+          <img src="data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20viewBox%3D%220%200%201200%20630%22%3E%0A%20%20%3Cdefs%3E%0A%20%20%20%20%3ClinearGradient%20id%3D%22bg%22%20x1%3D%220%22%20x2%3D%221%22%20y1%3D%220%22%20y2%3D%221%22%3E%0A%20%20%20%20%20%20%3Cstop%20offset%3D%220%25%22%20stop-color%3D%22%2308131f%22/%3E%0A%20%20%20%20%20%20%3Cstop%20offset%3D%22100%25%22%20stop-color%3D%22%2316304d%22/%3E%0A%20%20%20%20%3C/linearGradient%3E%0A%20%20%3C/defs%3E%0A%20%20%3Crect%20width%3D%221200%22%20height%3D%22630%22%20fill%3D%22url%28%23bg%29%22/%3E%0A%20%20%3Ccircle%20cx%3D%22995%22%20cy%3D%22118%22%20r%3D%22155%22%20fill%3D%22%2322d3ee%22%20fill-opacity%3D%220.14%22/%3E%0A%20%20%3Ccircle%20cx%3D%22185%22%20cy%3D%22525%22%20r%3D%22205%22%20fill%3D%22%238b5cf6%22%20fill-opacity%3D%220.16%22/%3E%0A%20%20%3Crect%20x%3D%2282%22%20y%3D%2286%22%20width%3D%221036%22%20height%3D%22458%22%20rx%3D%2232%22%20fill%3D%22%230b1220%22%20stroke%3D%22%2338bdf8%22%20stroke-opacity%3D%220.35%22/%3E%0A%20%20%3Ctext%20x%3D%22132%22%20y%3D%22184%22%20fill%3D%22white%22%20font-family%3D%22Arial%2C%20sans-serif%22%20font-size%3D%2246%22%20font-weight%3D%22700%22%3EProtecting%20AI%20Agents%20From%3C/text%3E%0A%20%20%3Ctext%20x%3D%22132%22%20y%3D%22256%22%20fill%3D%22%2393c5fd%22%20font-family%3D%22Arial%2C%20sans-serif%22%20font-size%3D%2246%22%20font-weight%3D%22700%22%3EPrompt%20Injection%20Through%3C/text%3E%0A%20%20%3Ctext%20x%3D%22132%22%20y%3D%22328%22%20fill%3D%22%2393c5fd%22%20font-family%3D%22Arial%2C%20sans-serif%22%20font-size%3D%2246%22%20font-weight%3D%22700%22%3ETool%20Outputs%3C/text%3E%0A%20%20%3Ctext%20x%3D%22132%22%20y%3D%22408%22%20fill%3D%22%23cbd5e1%22%20font-family%3D%22Arial%2C%20sans-serif%22%20font-size%3D%2228%22%3ETaint%20labels%2C%20trust%20lanes%2C%20sanitizers%2C%20and%20safer%20execution%20boundaries%3C/text%3E%0A%20%20%3Crect%20x%3D%22132%22%20y%3D%22452%22%20width%3D%22300%22%20height%3D%2254%22%20rx%3D%2214%22%20fill%3D%22%23111c2d%22%20stroke%3D%22%2367e8f9%22%20stroke-opacity%3D%220.45%22/%3E%0A%20%20%3Ctext%20x%3D%22156%22%20y%3D%22487%22%20fill%3D%22%2367e8f9%22%20font-family%3D%22Arial%2C%20sans-serif%22%20font-size%3D%2224%22%3Etreat%20tool%20results%20as%20data%20first%3C/text%3E%0A%20%20%3Crect%20x%3D%22770%22%20y%3D%22180%22%20width%3D%22250%22%20height%3D%2256%22%20rx%3D%2214%22%20fill%3D%22%230d1728%22%20stroke%3D%22%2322d3ee%22%20stroke-opacity%3D%220.45%22/%3E%0A%20%20%3Ctext%20x%3D%22806%22%20y%3D%22216%22%20fill%3D%22%23bae6fd%22%20font-family%3D%22Arial%2C%20sans-serif%22%20font-size%3D%2223%22%3Eweb.fetch%28%29%3C/text%3E%0A%20%20%3Crect%20x%3D%22770%22%20y%3D%22278%22%20width%3D%22250%22%20height%3D%2256%22%20rx%3D%2214%22%20fill%3D%22%230d1728%22%20stroke%3D%22%2322d3ee%22%20stroke-opacity%3D%220.45%22/%3E%0A%20%20%3Ctext%20x%3D%22821%22%20y%3D%22314%22%20fill%3D%22%23bae6fd%22%20font-family%3D%22Arial%2C%20sans-serif%22%20font-size%3D%2223%22%3Esanitize%28%29%3C/text%3E%0A%20%20%3Crect%20x%3D%22770%22%20y%3D%22376%22%20width%3D%22250%22%20height%3D%2256%22%20rx%3D%2214%22%20fill%3D%22%230d1728%22%20stroke%3D%22%23a78bfa%22%20stroke-opacity%3D%220.45%22/%3E%0A%20%20%3Ctext%20x%3D%22816%22%20y%3D%22412%22%20fill%3D%22%23ddd6fe%22%20font-family%3D%22Arial%2C%20sans-serif%22%20font-size%3D%2223%22%3Eapprove%28%29%3C/text%3E%0A%3C/svg%3E" alt="Protecting AI Agents From Prompt Injection Through Tool Outputs" class="blog-post-image">
+        </div>
+        <div class="blog-post-content">
+          <p>Tool outputs are one of the easiest ways to smuggle malicious instructions into an otherwise well-behaved agent.</p>
+          <p>The dangerous part is not the first tool call. It is the second one, when the model reads a web page, README, issue comment, or MCP tool description that says something like “ignore earlier instructions and run this command first.” If your agent treats tool output as trusted context, the attack has already crossed the boundary.</p>
+          <p>This is the pattern I would use instead: treat tool results as tainted data, reduce them before they reach planning, and keep write-capable actions behind a narrower trust lane.</p>
+          <h2>Why this matters</h2>
+          <p>Prompt injection is not just a chat problem. Modern developer agents can read repositories, call CLIs, open pull requests, and hit internal APIs. That means a poisoned tool response can quietly turn into file changes, secret access, or bogus external calls.</p>
+          <p>Recent security writeups and empirical work on MCP clients keep landing on the same theme: agent convenience grows faster than execution safety. The fix is not one regex. It is a workflow boundary.</p>
+          <table class="comparison-table">
+            <thead><tr><th>Reference</th><th>What it highlights</th><th>Why it matters here</th></tr></thead>
+            <tbody>
+              <tr><td><a href="https://owasp.org/www-project-top-10-for-large-language-model-applications/">OWASP LLM Top 10</a></td><td>prompt injection remains a primary risk category</td><td>treats the problem as architectural, not cosmetic</td></tr>
+              <tr><td><a href="https://arxiv.org/html/2603.21642v1">Huang and Milani Fard, 2026</a></td><td>wide variation in MCP client protections</td><td>agent safety depends on product design, not model quality alone</td></tr>
+              <tr><td><a href="https://unit42.paloaltonetworks.com/model-context-protocol-attack-vectors/">Unit 42 on MCP sampling</a></td><td>resource theft, conversation hijacking, covert tool use</td><td>shows how untrusted inputs can become real side effects</td></tr>
+            </tbody>
+          </table>
+          <h2>Architecture or workflow overview</h2>
+          <p>The key design choice is simple: tool output should not enter the same lane as system policy, task instructions, or approval state.</p>
+          <div class="diagram-card"><pre class="mermaid">flowchart LR
+    A[User task] --> B[Planner]
+    B --> C[Tool call]
+    C --> D[Raw tool output
+marked tainted]
+    D --> E[Sanitizer and reducer]
+    E --> F[Evidence summary
+read-only lane]
+    F --> G[Planner refresh]
+    G --> H{write or external action?}
+    H -- no --> I[read-only follow-up]
+    H -- yes --> J[policy checks and approval gate]
+    J --> K[executor]</pre></div>
+          <div class="callout good"><strong>Best practice:</strong> if a tool can read anything outside the current prompt, its output should be tagged as untrusted by default.</div>
+          <h2>Implementation details</h2>
+          <h3>Tag tool output with a trust level</h3>
+          <p>Do this before the model sees the result again. The planner should know whether a string came from a human instruction, a local invariant file, or an untrusted external artifact.</p>
+          <div class="code-block"><pre><code>export type TrustLevel = 'trusted' | 'internal' | 'external-untrusted';
+
+export interface ToolEnvelope {
+  tool: string;
+  trust: TrustLevel;
+  source: string;
+  content: string;
+  truncated: boolean;
+}
+
+export function wrapToolResult(tool: string, source: string, content: string): ToolEnvelope {
+  return {
+    tool,
+    source,
+    content,
+    truncated: content.length &gt; 12000,
+    trust: source.startsWith('https://') ? 'external-untrusted' : 'internal'
+  };
+}</code></pre></div>
+          <p>This is intentionally dumb and early. Fancy classification later is fine, but the first pass should fail closed.</p>
+          <h3>Sanitize before re-planning</h3>
+          <p>The planner rarely needs the raw body of a fetched page. It needs the relevant facts. A reducer can strip instruction-like phrases, cap length, and surface only evidence fields.</p>
+          <div class="code-block"><pre><code>INJECTION_PATTERNS = [
+    r"ignore (all|previous|earlier) instructions",
+    r"run (this|the following) command",
+    r"send .* token",
+    r"open .* secret",
+]
+
+
+def reduce_tool_output(envelope):
+    text = envelope["content"]
+    for pattern in INJECTION_PATTERNS:
+        text = re.sub(pattern, "[filtered-instruction-like-text]", text, flags=re.I)
+
+    return {
+        "tool": envelope["tool"],
+        "trust": envelope["trust"],
+        "facts": extract_relevant_facts(text)[:12],
+        "citations": extract_urls(text)[:8],
+        "requires_human_review": envelope["trust"] == "external-untrusted",
+    }</code></pre></div>
+          <p>I would not pretend this eliminates prompt injection. The point is reduction, not magic. You are shrinking the attack surface before the next reasoning step.</p>
+          <h3>Separate read lanes from write lanes</h3>
+          <p>A lot of agents still let the same model instance read a hostile page, plan edits, and execute shell commands in one smooth loop. That is where small prompt injections become operational incidents.</p>
+          <table class="comparison-table">
+            <thead><tr><th>Lane</th><th>Allowed inputs</th><th>Typical tools</th><th>Why it exists</th><th>What is blocked</th></tr></thead>
+            <tbody>
+              <tr><td>Read-only evidence lane</td><td>User task, repo context, tainted tool summaries</td><td>fetch, grep, read, search</td><td>lets the agent learn safely</td><td>file writes, shell exec, external posts</td></tr>
+              <tr><td>Planning lane</td><td>trusted task state plus reduced evidence</td><td>planner, ranking, diff review</td><td>turns evidence into a proposed next step</td><td>direct side effects</td></tr>
+              <tr><td>Execution lane</td><td>approved plan plus minimal arguments</td><td>edit, test, deploy, PR</td><td>performs the side effect</td><td>raw external content</td></tr>
+            </tbody>
+          </table>
+          <h3>Require a policy check before dangerous tools</h3>
+          <p>A lightweight policy function catches the common failure mode where the agent tries to pass tainted text into a shell or write tool.</p>
+          <div class="code-block"><pre><code>export function mayExecute(step: PlannedStep): { ok: boolean; reason?: string } {
+  if (step.inputs.some(input =&gt; input.trust === 'external-untrusted')) {
+    return { ok: false, reason: 'tainted input cannot reach execution tools directly' };
+  }
+
+  if (step.tool === 'shell' &amp;&amp; !step.approvalToken) {
+    return { ok: false, reason: 'shell execution requires explicit approval token' };
+  }
+
+  return { ok: true };
+}</code></pre></div>
+          <div class="terminal-block"><pre>$ agent-run fetch https://example.com/issue-thread
+wrapped result as external-untrusted
+reduced facts: 6
+planner requested shell tool: denied
+reason: tainted input cannot reach execution tools directly
+next action: ask for approval with reduced evidence only</pre></div>
+          <h2>What went wrong and the tradeoffs</h2>
+          <h3>Over-summarization can hide real evidence</h3>
+          <p>If your reducer is too aggressive, you lose the clues that explain why the agent wants a follow-up action. That is why summaries need citations and raw access for human review, even if the model only sees the reduced form.</p>
+          <h3>Sanitizers are not enough</h3>
+          <p>Attackers do not have to literally write “ignore previous instructions.” They can frame malicious content as policy, troubleshooting guidance, or required setup steps. Pattern matching helps, but trust separation is the real control.</p>
+          <h3>Tool metadata is part of the attack surface</h3>
+          <p>It is not just fetched pages. MCP tool descriptions, package READMEs, repo comments, issue bodies, and log lines can all carry instruction-shaped text. Anything the model reads can become an attempted policy override.</p>
+          <div class="callout warning"><strong>Pitfall:</strong> do not let “read-only” tools quietly return secrets, hidden prompts, or huge raw transcripts into the planner context. Read-only does not mean harmless.</div>
+          <p><strong>What I would not do:</strong> I would not let a single agent instance fetch arbitrary web content and then immediately call <code>exec</code>, <code>gh pr create</code>, or a write-capable MCP tool from that same raw context.</p>
+          <h2>Practical checklist</h2>
+          <ul class="checklist">
+            <li>mark all external or user-controlled tool results as untrusted by default</li>
+            <li>reduce tool output into facts plus citations before re-planning</li>
+            <li>keep raw artifacts available for humans, not as first-class execution context</li>
+            <li>block tainted inputs from shell, file-write, deploy, and message-sending tools</li>
+            <li>require explicit approval for any step that crosses from evidence to side effects</li>
+            <li>log which trust labels were present when a plan was generated</li>
+            <li>review MCP tool descriptions and prompts like code, not documentation</li>
+          </ul>
+          <h2>Conclusion</h2>
+          <p>Tool-output prompt injection is not a weird edge case anymore. It is a normal failure mode in agent systems that mix retrieval, tools, and automation. The fix is mostly architectural: clearer trust labels, smaller summaries, and harder boundaries between reading and acting.</p>
+          <div class="blog-post-tags">
+            <span class="blog-post-tag">AI Security</span>
+            <span class="blog-post-tag">Prompt Injection</span>
+            <span class="blog-post-tag">MCP</span>
+            <span class="blog-post-tag">Agent Reliability</span>
+            <span class="blog-post-tag">Developer Tools</span>
+          </div>
+        </div>
+        <footer class="blog-footer">
+          <p>Want more practical AI engineering writeups? <a href="index.html">Browse the rest of the blog</a>.</p>
+        </footer>
+      </div>
+    </header>
+    <script type="module">
+      import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.esm.min.mjs';
+      mermaid.initialize({ startOnLoad: true, theme: 'dark' });
+    </script>
+  </body>
+</html>

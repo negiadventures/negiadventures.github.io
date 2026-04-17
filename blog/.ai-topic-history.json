@@ -1,6 +1,14 @@
 {
   "topics": [
     {
+      "date": "2026-04-17",
+      "skill": "Tool output prompt-injection defense for AI agents",
+      "topic": "Protecting AI agents from prompt injection through tool outputs with taint labels, sanitization passes, trust-lane routing, tool result reduction, and approval boundaries so external content cannot quietly escalate into command execution",
+      "slug": "tool-output-prompt-injection-defense",
+      "title": "Protecting AI Agents From Prompt Injection Through Tool Outputs",
+      "summary": "A practical guide to stopping prompt injection through tool outputs by treating external content as tainted data, using trust lanes, sanitizers, execution guards, and human review boundaries."
+    },
+    {
       "date": "2026-04-16",
       "skill": "Context engineering for AI coding agents",
       "topic": "Building bounded context packets for engineering agents with task manifests, repo maps, relevance scoring, and packet refresh checkpoints so models edit the right files with lower token waste and better reviewability",
