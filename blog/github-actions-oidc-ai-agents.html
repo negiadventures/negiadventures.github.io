@@ -1,0 +1,275 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="A practical guide to using GitHub Actions OIDC for AI agents so CI jobs can deploy, evaluate, and run ops tasks with short-lived cloud credentials instead of stored secrets.">
+    <meta name="author" content="Anirudh Negi">
+    <title>Using GitHub Actions OIDC for AI Agents Without Long-Lived Cloud Keys | Anirudh Negi</title>
+    <link rel="icon" type="image/svg+xml" href="../images/favicon.svg">
+    <link rel="canonical" href="https://negiadventures.github.io/blog/github-actions-oidc-ai-agents.html">
+    <meta property="og:type" content="article">
+    <meta property="og:url" content="https://negiadventures.github.io/blog/github-actions-oidc-ai-agents.html">
+    <meta property="og:title" content="Using GitHub Actions OIDC for AI Agents Without Long-Lived Cloud Keys | Anirudh Negi">
+    <meta property="og:description" content="A practical guide to using GitHub Actions OIDC for AI agents so CI jobs can deploy, evaluate, and run ops tasks with short-lived cloud credentials instead of stored secrets.">
+    <meta property="og:image" content="data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A//www.w3.org/2000/svg%27%20viewBox%3D%270%200%201200%20630%27%3E%0A%20%20%3Cdefs%3E%0A%20%20%20%20%3ClinearGradient%20id%3D%27bg%27%20x1%3D%270%27%20x2%3D%271%27%20y1%3D%270%27%20y2%3D%271%27%3E%0A%20%20%20%20%20%20%3Cstop%20offset%3D%270%25%27%20stop-color%3D%27%2308131f%27/%3E%0A%20%20%20%20%20%20%3Cstop%20offset%3D%27100%25%27%20stop-color%3D%27%2318314d%27/%3E%0A%20%20%20%20%3C/linearGradient%3E%0A%20%20%3C/defs%3E%0A%20%20%3Crect%20width%3D%271200%27%20height%3D%27630%27%20fill%3D%27url%28%23bg%29%27/%3E%0A%20%20%3Ccircle%20cx%3D%271005%27%20cy%3D%27118%27%20r%3D%27155%27%20fill%3D%27%2322d3ee%27%20fill-opacity%3D%270.14%27/%3E%0A%20%20%3Ccircle%20cx%3D%27175%27%20cy%3D%27525%27%20r%3D%27210%27%20fill%3D%27%238b5cf6%27%20fill-opacity%3D%270.16%27/%3E%0A%20%20%3Crect%20x%3D%2782%27%20y%3D%2784%27%20width%3D%271036%27%20height%3D%27462%27%20rx%3D%2732%27%20fill%3D%27%230b1220%27%20stroke%3D%27%2338bdf8%27%20stroke-opacity%3D%270.35%27/%3E%0A%20%20%3Ctext%20x%3D%27132%27%20y%3D%27180%27%20fill%3D%27white%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2744%27%20font-weight%3D%27700%27%3EGitHub%20Actions%20OIDC%20for%20AI%20Agents%3C/text%3E%0A%20%20%3Ctext%20x%3D%27132%27%20y%3D%27250%27%20fill%3D%27%2393c5fd%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2744%27%20font-weight%3D%27700%27%3EWithout%20Long-Lived%20Cloud%20Keys%3C/text%3E%0A%20%20%3Ctext%20x%3D%27132%27%20y%3D%27328%27%20fill%3D%27%23cbd5e1%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2728%27%3EShort-lived%20roles%20for%20deploys%2C%20eval%20runs%2C%20and%20safer%20automation%3C/text%3E%0A%20%20%3Crect%20x%3D%27132%27%20y%3D%27386%27%20width%3D%27300%27%20height%3D%2754%27%20rx%3D%2714%27%20fill%3D%27%23111c2d%27%20stroke%3D%27%2367e8f9%27%20stroke-opacity%3D%270.45%27/%3E%0A%20%20%3Ctext%20x%3D%27158%27%20y%3D%27421%27%20fill%3D%27%2367e8f9%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2724%27%3Etrust%20the%20workflow%2C%20not%20a%20static%20key%3C/text%3E%0A%20%20%3Crect%20x%3D%27760%27%20y%3D%27178%27%20width%3D%27250%27%20height%3D%2756%27%20rx%3D%2714%27%20fill%3D%27%230d1728%27%20stroke%3D%27%2322d3ee%27%20stroke-opacity%3D%270.45%27/%3E%0A%20%20%3Ctext%20x%3D%27798%27%20y%3D%27214%27%20fill%3D%27%23bae6fd%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2723%27%3Etoken.actions...%3C/text%3E%0A%20%20%3Crect%20x%3D%27760%27%20y%3D%27276%27%20width%3D%27250%27%20height%3D%2756%27%20rx%3D%2714%27%20fill%3D%27%230d1728%27%20stroke%3D%27%2322d3ee%27%20stroke-opacity%3D%270.45%27/%3E%0A%20%20%3Ctext%20x%3D%27819%27%20y%3D%27312%27%20fill%3D%27%23bae6fd%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2723%27%3Ests%3AAssumeRole%3C/text%3E%0A%20%20%3Crect%20x%3D%27760%27%20y%3D%27374%27%20width%3D%27250%27%20height%3D%2756%27%20rx%3D%2714%27%20fill%3D%27%230d1728%27%20stroke%3D%27%23a78bfa%27%20stroke-opacity%3D%270.45%27/%3E%0A%20%20%3Ctext%20x%3D%27828%27%20y%3D%27410%27%20fill%3D%27%23ddd6fe%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2723%27%3Edeploy%28%29%3C/text%3E%0A%3C/svg%3E">
+    <meta property="article:published_time" content="2026-04-18">
+    <meta property="article:author" content="Anirudh Negi">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:url" content="https://negiadventures.github.io/blog/github-actions-oidc-ai-agents.html">
+    <meta name="twitter:title" content="Using GitHub Actions OIDC for AI Agents Without Long-Lived Cloud Keys | Anirudh Negi">
+    <meta name="twitter:description" content="A practical guide to using GitHub Actions OIDC for AI agents so CI jobs can deploy, evaluate, and run ops tasks with short-lived cloud credentials instead of stored secrets.">
+    <meta name="twitter:image" content="data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A//www.w3.org/2000/svg%27%20viewBox%3D%270%200%201200%20630%27%3E%0A%20%20%3Cdefs%3E%0A%20%20%20%20%3ClinearGradient%20id%3D%27bg%27%20x1%3D%270%27%20x2%3D%271%27%20y1%3D%270%27%20y2%3D%271%27%3E%0A%20%20%20%20%20%20%3Cstop%20offset%3D%270%25%27%20stop-color%3D%27%2308131f%27/%3E%0A%20%20%20%20%20%20%3Cstop%20offset%3D%27100%25%27%20stop-color%3D%27%2318314d%27/%3E%0A%20%20%20%20%3C/linearGradient%3E%0A%20%20%3C/defs%3E%0A%20%20%3Crect%20width%3D%271200%27%20height%3D%27630%27%20fill%3D%27url%28%23bg%29%27/%3E%0A%20%20%3Ccircle%20cx%3D%271005%27%20cy%3D%27118%27%20r%3D%27155%27%20fill%3D%27%2322d3ee%27%20fill-opacity%3D%270.14%27/%3E%0A%20%20%3Ccircle%20cx%3D%27175%27%20cy%3D%27525%27%20r%3D%27210%27%20fill%3D%27%238b5cf6%27%20fill-opacity%3D%270.16%27/%3E%0A%20%20%3Crect%20x%3D%2782%27%20y%3D%2784%27%20width%3D%271036%27%20height%3D%27462%27%20rx%3D%2732%27%20fill%3D%27%230b1220%27%20stroke%3D%27%2338bdf8%27%20stroke-opacity%3D%270.35%27/%3E%0A%20%20%3Ctext%20x%3D%27132%27%20y%3D%27180%27%20fill%3D%27white%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2744%27%20font-weight%3D%27700%27%3EGitHub%20Actions%20OIDC%20for%20AI%20Agents%3C/text%3E%0A%20%20%3Ctext%20x%3D%27132%27%20y%3D%27250%27%20fill%3D%27%2393c5fd%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2744%27%20font-weight%3D%27700%27%3EWithout%20Long-Lived%20Cloud%20Keys%3C/text%3E%0A%20%20%3Ctext%20x%3D%27132%27%20y%3D%27328%27%20fill%3D%27%23cbd5e1%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2728%27%3EShort-lived%20roles%20for%20deploys%2C%20eval%20runs%2C%20and%20safer%20automation%3C/text%3E%0A%20%20%3Crect%20x%3D%27132%27%20y%3D%27386%27%20width%3D%27300%27%20height%3D%2754%27%20rx%3D%2714%27%20fill%3D%27%23111c2d%27%20stroke%3D%27%2367e8f9%27%20stroke-opacity%3D%270.45%27/%3E%0A%20%20%3Ctext%20x%3D%27158%27%20y%3D%27421%27%20fill%3D%27%2367e8f9%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2724%27%3Etrust%20the%20workflow%2C%20not%20a%20static%20key%3C/text%3E%0A%20%20%3Crect%20x%3D%27760%27%20y%3D%27178%27%20width%3D%27250%27%20height%3D%2756%27%20rx%3D%2714%27%20fill%3D%27%230d1728%27%20stroke%3D%27%2322d3ee%27%20stroke-opacity%3D%270.45%27/%3E%0A%20%20%3Ctext%20x%3D%27798%27%20y%3D%27214%27%20fill%3D%27%23bae6fd%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2723%27%3Etoken.actions...%3C/text%3E%0A%20%20%3Crect%20x%3D%27760%27%20y%3D%27276%27%20width%3D%27250%27%20height%3D%2756%27%20rx%3D%2714%27%20fill%3D%27%230d1728%27%20stroke%3D%27%2322d3ee%27%20stroke-opacity%3D%270.45%27/%3E%0A%20%20%3Ctext%20x%3D%27819%27%20y%3D%27312%27%20fill%3D%27%23bae6fd%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2723%27%3Ests%3AAssumeRole%3C/text%3E%0A%20%20%3Crect%20x%3D%27760%27%20y%3D%27374%27%20width%3D%27250%27%20height%3D%2756%27%20rx%3D%2714%27%20fill%3D%27%230d1728%27%20stroke%3D%27%23a78bfa%27%20stroke-opacity%3D%270.45%27/%3E%0A%20%20%3Ctext%20x%3D%27828%27%20y%3D%27410%27%20fill%3D%27%23ddd6fe%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2723%27%3Edeploy%28%29%3C/text%3E%0A%3C/svg%3E">
+    <script type="application/ld+json">{
+      "@context": "https://schema.org",
+      "@type": "BlogPosting",
+      "headline": "Using GitHub Actions OIDC for AI Agents Without Long-Lived Cloud Keys",
+      "description": "A practical guide to using GitHub Actions OIDC for AI agents so CI jobs can deploy, evaluate, and run ops tasks with short-lived cloud credentials instead of stored secrets.",
+      "image": "data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A//www.w3.org/2000/svg%27%20viewBox%3D%270%200%201200%20630%27%3E%0A%20%20%3Cdefs%3E%0A%20%20%20%20%3ClinearGradient%20id%3D%27bg%27%20x1%3D%270%27%20x2%3D%271%27%20y1%3D%270%27%20y2%3D%271%27%3E%0A%20%20%20%20%20%20%3Cstop%20offset%3D%270%25%27%20stop-color%3D%27%2308131f%27/%3E%0A%20%20%20%20%20%20%3Cstop%20offset%3D%27100%25%27%20stop-color%3D%27%2318314d%27/%3E%0A%20%20%20%20%3C/linearGradient%3E%0A%20%20%3C/defs%3E%0A%20%20%3Crect%20width%3D%271200%27%20height%3D%27630%27%20fill%3D%27url%28%23bg%29%27/%3E%0A%20%20%3Ccircle%20cx%3D%271005%27%20cy%3D%27118%27%20r%3D%27155%27%20fill%3D%27%2322d3ee%27%20fill-opacity%3D%270.14%27/%3E%0A%20%20%3Ccircle%20cx%3D%27175%27%20cy%3D%27525%27%20r%3D%27210%27%20fill%3D%27%238b5cf6%27%20fill-opacity%3D%270.16%27/%3E%0A%20%20%3Crect%20x%3D%2782%27%20y%3D%2784%27%20width%3D%271036%27%20height%3D%27462%27%20rx%3D%2732%27%20fill%3D%27%230b1220%27%20stroke%3D%27%2338bdf8%27%20stroke-opacity%3D%270.35%27/%3E%0A%20%20%3Ctext%20x%3D%27132%27%20y%3D%27180%27%20fill%3D%27white%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2744%27%20font-weight%3D%27700%27%3EGitHub%20Actions%20OIDC%20for%20AI%20Agents%3C/text%3E%0A%20%20%3Ctext%20x%3D%27132%27%20y%3D%27250%27%20fill%3D%27%2393c5fd%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2744%27%20font-weight%3D%27700%27%3EWithout%20Long-Lived%20Cloud%20Keys%3C/text%3E%0A%20%20%3Ctext%20x%3D%27132%27%20y%3D%27328%27%20fill%3D%27%23cbd5e1%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2728%27%3EShort-lived%20roles%20for%20deploys%2C%20eval%20runs%2C%20and%20safer%20automation%3C/text%3E%0A%20%20%3Crect%20x%3D%27132%27%20y%3D%27386%27%20width%3D%27300%27%20height%3D%2754%27%20rx%3D%2714%27%20fill%3D%27%23111c2d%27%20stroke%3D%27%2367e8f9%27%20stroke-opacity%3D%270.45%27/%3E%0A%20%20%3Ctext%20x%3D%27158%27%20y%3D%27421%27%20fill%3D%27%2367e8f9%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2724%27%3Etrust%20the%20workflow%2C%20not%20a%20static%20key%3C/text%3E%0A%20%20%3Crect%20x%3D%27760%27%20y%3D%27178%27%20width%3D%27250%27%20height%3D%2756%27%20rx%3D%2714%27%20fill%3D%27%230d1728%27%20stroke%3D%27%2322d3ee%27%20stroke-opacity%3D%270.45%27/%3E%0A%20%20%3Ctext%20x%3D%27798%27%20y%3D%27214%27%20fill%3D%27%23bae6fd%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2723%27%3Etoken.actions...%3C/text%3E%0A%20%20%3Crect%20x%3D%27760%27%20y%3D%27276%27%20width%3D%27250%27%20height%3D%2756%27%20rx%3D%2714%27%20fill%3D%27%230d1728%27%20stroke%3D%27%2322d3ee%27%20stroke-opacity%3D%270.45%27/%3E%0A%20%20%3Ctext%20x%3D%27819%27%20y%3D%27312%27%20fill%3D%27%23bae6fd%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2723%27%3Ests%3AAssumeRole%3C/text%3E%0A%20%20%3Crect%20x%3D%27760%27%20y%3D%27374%27%20width%3D%27250%27%20height%3D%2756%27%20rx%3D%2714%27%20fill%3D%27%230d1728%27%20stroke%3D%27%23a78bfa%27%20stroke-opacity%3D%270.45%27/%3E%0A%20%20%3Ctext%20x%3D%27828%27%20y%3D%27410%27%20fill%3D%27%23ddd6fe%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2723%27%3Edeploy%28%29%3C/text%3E%0A%3C/svg%3E",
+      "url": "https://negiadventures.github.io/blog/github-actions-oidc-ai-agents.html",
+      "datePublished": "2026-04-18",
+      "author": {
+        "@type": "Person",
+        "name": "Anirudh Negi",
+        "url": "https://negiadventures.github.io"
+      },
+      "publisher": {
+        "@type": "Person",
+        "name": "Anirudh Negi",
+        "url": "https://negiadventures.github.io"
+      }
+    }</script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../stylesheets/stylesheet.css?v=5" media="screen">
+    <style>
+      .blog-post { max-width: 860px; margin: 0 auto; padding: 60px 20px; }
+      .blog-post-nav { margin-bottom: 30px; }
+      .blog-post-nav a, .blog-footer a { color: var(--accent-strong); }
+      .blog-post-nav a:hover, .blog-footer a:hover { color: var(--accent); }
+      .blog-post-title { font-size: 2.5rem; margin-bottom: 16px; }
+      .blog-post-meta { display: flex; gap: 16px; flex-wrap: wrap; color: var(--text-muted); margin-bottom: 26px; }
+      .blog-post-image { width: 100%; height: auto; border-radius: 16px; border: 1px solid var(--border); margin-bottom: 30px; background: var(--bg-alt); }
+      .blog-post-content p, .blog-post-content li { line-height: 1.8; color: var(--text-muted); }
+      .blog-post-content h2 { font-size: 1.65rem; margin: 40px 0 16px; }
+      .blog-post-content h3 { font-size: 1.25rem; margin: 28px 0 12px; }
+      .code-block { background: var(--bg-alt); border: 1px solid var(--border); border-radius: 12px; padding: 20px; margin: 20px 0; overflow-x: auto; }
+      .code-block pre { margin: 0; font-family: var(--mono); font-size: 0.9rem; line-height: 1.6; color: var(--text-light); white-space: pre-wrap; }
+      .diagram-block { background: linear-gradient(180deg, rgba(34,211,238,0.08), rgba(139,92,246,0.08)); border: 1px solid var(--border); border-radius: 16px; padding: 20px; margin: 24px 0; }
+      .callout { border-left: 4px solid var(--accent); background: rgba(56, 189, 248, 0.08); padding: 18px 18px 18px 20px; border-radius: 12px; margin: 22px 0; }
+      .callout.pitfall { border-left-color: #f59e0b; background: rgba(245, 158, 11, 0.08); }
+      .callout ul { margin-bottom: 0; }
+      table { width: 100%; border-collapse: collapse; margin: 24px 0; }
+      th, td { border: 1px solid var(--border); padding: 14px; text-align: left; vertical-align: top; }
+      th { background: rgba(56, 189, 248, 0.08); color: var(--text-light); }
+      td { color: var(--text-muted); }
+      .checklist { background: var(--bg-alt); border: 1px solid var(--border); border-radius: 16px; padding: 18px 22px; margin: 28px 0; }
+      .checklist li { list-style: none; margin-left: 0; }
+      .checklist li::before { content: '☑ '; color: var(--accent-strong); }
+      .blog-post-tags { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 40px; padding-top: 30px; border-top: 1px solid var(--border); }
+      .blog-post-tag { background: var(--accent-soft); color: var(--accent-strong); border-radius: 999px; padding: 6px 14px; font-size: 0.85rem; font-family: var(--mono); }
+      .blog-footer { margin-top: 60px; padding-top: 30px; border-top: 1px solid var(--border); text-align: center; }
+      @media (max-width: 768px) { .blog-post { padding: 40px 16px; } .blog-post-title { font-size: 2rem; } }
+    </style>
+  </head>
+  <body>
+    <a href="../index.html#main" class="skip-link">Skip to main content</a>
+    <header class="site-header">
+      <div class="container blog-post">
+        <div class="blog-post-nav"><a href="index.html">&larr; Back to All Posts</a></div>
+        <div class="blog-post-header">
+          <h1 class="blog-post-title">Using GitHub Actions OIDC for AI Agents Without Long-Lived Cloud Keys</h1>
+          <div class="blog-post-meta"><span>April 18, 2026</span><span>&bull;</span><span>10 min read</span><span>&bull;</span><span>AI Security</span></div>
+          <img src="data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A//www.w3.org/2000/svg%27%20viewBox%3D%270%200%201200%20630%27%3E%0A%20%20%3Cdefs%3E%0A%20%20%20%20%3ClinearGradient%20id%3D%27bg%27%20x1%3D%270%27%20x2%3D%271%27%20y1%3D%270%27%20y2%3D%271%27%3E%0A%20%20%20%20%20%20%3Cstop%20offset%3D%270%25%27%20stop-color%3D%27%2308131f%27/%3E%0A%20%20%20%20%20%20%3Cstop%20offset%3D%27100%25%27%20stop-color%3D%27%2318314d%27/%3E%0A%20%20%20%20%3C/linearGradient%3E%0A%20%20%3C/defs%3E%0A%20%20%3Crect%20width%3D%271200%27%20height%3D%27630%27%20fill%3D%27url%28%23bg%29%27/%3E%0A%20%20%3Ccircle%20cx%3D%271005%27%20cy%3D%27118%27%20r%3D%27155%27%20fill%3D%27%2322d3ee%27%20fill-opacity%3D%270.14%27/%3E%0A%20%20%3Ccircle%20cx%3D%27175%27%20cy%3D%27525%27%20r%3D%27210%27%20fill%3D%27%238b5cf6%27%20fill-opacity%3D%270.16%27/%3E%0A%20%20%3Crect%20x%3D%2782%27%20y%3D%2784%27%20width%3D%271036%27%20height%3D%27462%27%20rx%3D%2732%27%20fill%3D%27%230b1220%27%20stroke%3D%27%2338bdf8%27%20stroke-opacity%3D%270.35%27/%3E%0A%20%20%3Ctext%20x%3D%27132%27%20y%3D%27180%27%20fill%3D%27white%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2744%27%20font-weight%3D%27700%27%3EGitHub%20Actions%20OIDC%20for%20AI%20Agents%3C/text%3E%0A%20%20%3Ctext%20x%3D%27132%27%20y%3D%27250%27%20fill%3D%27%2393c5fd%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2744%27%20font-weight%3D%27700%27%3EWithout%20Long-Lived%20Cloud%20Keys%3C/text%3E%0A%20%20%3Ctext%20x%3D%27132%27%20y%3D%27328%27%20fill%3D%27%23cbd5e1%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2728%27%3EShort-lived%20roles%20for%20deploys%2C%20eval%20runs%2C%20and%20safer%20automation%3C/text%3E%0A%20%20%3Crect%20x%3D%27132%27%20y%3D%27386%27%20width%3D%27300%27%20height%3D%2754%27%20rx%3D%2714%27%20fill%3D%27%23111c2d%27%20stroke%3D%27%2367e8f9%27%20stroke-opacity%3D%270.45%27/%3E%0A%20%20%3Ctext%20x%3D%27158%27%20y%3D%27421%27%20fill%3D%27%2367e8f9%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2724%27%3Etrust%20the%20workflow%2C%20not%20a%20static%20key%3C/text%3E%0A%20%20%3Crect%20x%3D%27760%27%20y%3D%27178%27%20width%3D%27250%27%20height%3D%2756%27%20rx%3D%2714%27%20fill%3D%27%230d1728%27%20stroke%3D%27%2322d3ee%27%20stroke-opacity%3D%270.45%27/%3E%0A%20%20%3Ctext%20x%3D%27798%27%20y%3D%27214%27%20fill%3D%27%23bae6fd%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2723%27%3Etoken.actions...%3C/text%3E%0A%20%20%3Crect%20x%3D%27760%27%20y%3D%27276%27%20width%3D%27250%27%20height%3D%2756%27%20rx%3D%2714%27%20fill%3D%27%230d1728%27%20stroke%3D%27%2322d3ee%27%20stroke-opacity%3D%270.45%27/%3E%0A%20%20%3Ctext%20x%3D%27819%27%20y%3D%27312%27%20fill%3D%27%23bae6fd%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2723%27%3Ests%3AAssumeRole%3C/text%3E%0A%20%20%3Crect%20x%3D%27760%27%20y%3D%27374%27%20width%3D%27250%27%20height%3D%2756%27%20rx%3D%2714%27%20fill%3D%27%230d1728%27%20stroke%3D%27%23a78bfa%27%20stroke-opacity%3D%270.45%27/%3E%0A%20%20%3Ctext%20x%3D%27828%27%20y%3D%27410%27%20fill%3D%27%23ddd6fe%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2723%27%3Edeploy%28%29%3C/text%3E%0A%3C/svg%3E" alt="Using GitHub Actions OIDC for AI Agents Without Long-Lived Cloud Keys" class="blog-post-image">
+        </div>
+        <div class="blog-post-content">
+          <p>Most teams that bolt AI agents into CI eventually make the same bad shortcut. They give the workflow a long-lived cloud key, store it in GitHub Secrets, and hope review plus branch protection is enough.</p>
+          <p>That works right up until the wrong workflow runs, a forked change finds a path around the guardrails, or nobody remembers where else that key was reused.</p>
+          <p>For agentic systems, that trade is worse. A model can chain many actions quickly, so a leaked credential can do the same. GitHub Actions OIDC is the cleaner pattern: the workflow proves who it is at runtime, gets a short-lived cloud role, and the privilege disappears when the run ends.</p>
+
+          <h2>Why this matters</h2>
+          <p>If an AI workflow can open PRs, run evaluations, push artifacts, or trigger deployments, then credential shape matters as much as prompt shape. Static keys create silent blast radius, weak reviewability, and miserable rotation habits. OIDC moves the trust boundary into cloud IAM, where you can actually constrain repo, branch, workflow, and environment.</p>
+
+          <h2>Architecture or workflow overview</h2>
+          <div class="diagram-block">
+            <div class="code-block"><pre><code>flowchart LR
+    A[Pull request or deploy workflow] --> B[GitHub Actions runner]
+    B --> C[Request OIDC token]
+    C --> D[Cloud STS / workload identity]
+    D --> E[Short-lived role credentials]
+    E --> F[Agent job: eval, deploy, migrate]
+    F --> G[Logs, artifacts, approvals]</code></pre></div>
+            <p>The key design choice is that the agent never starts with a stored cloud secret. It earns a short-lived role from the cloud control plane after GitHub asserts the workflow identity.</p>
+          </div>
+
+          <h3>Recommended trust shape</h3>
+          <ol>
+            <li>Give only the credentialed job <code>id-token: write</code>.</li>
+            <li>Match on repo plus workflow path, not repo alone.</li>
+            <li>Split eval and deploy into separate roles.</li>
+            <li>Put production behind environments, approvals, or both.</li>
+            <li>Log caller identity before any write step.</li>
+          </ol>
+
+          <h2>Implementation details</h2>
+          <h3>Minimal GitHub Actions workflow</h3>
+          <p>This setup is a good fit for AI-driven deploy or eval jobs because the credential only exists after GitHub attests the workflow identity.</p>
+          <div class="code-block"><pre><code>name: ai-eval-and-deploy
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [master]
+
+permissions:
+  contents: read
+  id-token: write
+
+jobs:
+  eval:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Configure AWS credentials via OIDC
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: arn:aws:iam::123456789012:role/github-ai-eval
+          aws-region: us-east-1
+      - name: Run agent evaluation suite
+        run: |
+          python scripts/run_eval.py \
+            --dataset evals/release.json \
+            --output artifacts/eval-report.json
+
+  deploy:
+    needs: eval
+    environment: production
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Configure deploy role via OIDC
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: arn:aws:iam::123456789012:role/github-ai-deploy
+          aws-region: us-east-1
+      - name: Deploy bounded release
+        run: ./scripts/deploy.sh</code></pre></div>
+          <p>Two details are doing most of the work here. The deploy job is separated from eval, and production is attached to an environment so a human approval gate can exist outside the model loop.</p>
+
+          <h3>AWS trust policy that actually constrains the workflow</h3>
+          <p>A lot of OIDC tutorials prove login, but not safety. This is the part that makes the role meaningfully bounded.</p>
+          <div class="code-block"><pre><code>{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Effect": "Allow",
+      "Principal": {
+        "Federated": "arn:aws:iam::123456789012:oidc-provider/token.actions.githubusercontent.com"
+      },
+      "Action": "sts:AssumeRoleWithWebIdentity",
+      "Condition": {
+        "StringEquals": {
+          "token.actions.githubusercontent.com:aud": "sts.amazonaws.com"
+        },
+        "StringLike": {
+          "token.actions.githubusercontent.com:sub": [
+            "repo:negiadventures/negiadventures.github.io:ref:refs/heads/master",
+            "repo:negiadventures/negiadventures.github.io:environment:production"
+          ],
+          "token.actions.githubusercontent.com:job_workflow_ref": "negiadventures/negiadventures.github.io/.github/workflows/ai-eval-and-deploy.yml@refs/heads/master"
+        }
+      }
+    }
+  ]
+}</code></pre></div>
+          <p>If you skip workflow-path matching, any other workflow in the repo may inherit the same cloud power. That is the failure I see most often.</p>
+
+          <h3>Optional session policy trim</h3>
+          <p>Even with a decent role, trimming permissions per run keeps the agent inside a smaller box.</p>
+          <div class="code-block"><pre><code>aws sts assume-role \
+  --role-arn arn:aws:iam::123456789012:role/github-ai-deploy \
+  --role-session-name pr-ship-1842 \
+  --policy '{
+    "Version":"2012-10-17",
+    "Statement":[{
+      "Effect":"Allow",
+      "Action":["s3:PutObject","cloudfront:CreateInvalidation"],
+      "Resource":[
+        "arn:aws:s3:::my-site-bucket/*",
+        "arn:aws:cloudfront::123456789012:distribution/E123ABC456DEF"
+      ]
+    }]
+  }'</code></pre></div>
+          <p>This matters when the same base role is used for multiple release paths, but a given run only needs one narrow write shape.</p>
+
+          <h3>Terminal proof that the run is using ephemeral credentials</h3>
+          <div class="code-block"><pre><code>$ aws sts get-caller-identity
+{
+  "UserId": "AROAXXXXXXXX:GitHubActions",
+  "Account": "123456789012",
+  "Arn": "arn:aws:sts::123456789012:assumed-role/github-ai-deploy/GitHubActions"
+}
+
+$ aws configure list
+      Name                    Value             Type    Location
+      ----                    -----             ----    --------
+   access_key     ****************ABCD temporary-credentials-file
+   secret_key     ****************wxyz temporary-credentials-file
+       region                us-east-1         env    AWS_REGION</code></pre></div>
+          <p>If the caller identity looks like a normal IAM user, you are not getting the benefit you think you are.</p>
+
+          <h2>Tradeoffs and what went wrong</h2>
+          <table>
+            <thead>
+              <tr><th>Approach</th><th>Security posture</th><th>Operational pain</th><th>Best fit</th><th>What I would not do</th></tr>
+            </thead>
+            <tbody>
+              <tr><td>Static cloud keys in GitHub Secrets</td><td>Weak, long-lived blast radius</td><td>Easy at first, painful later</td><td>Legacy pipelines you are retiring</td><td>New agent workflows</td></tr>
+              <tr><td>GitHub OIDC to cloud role</td><td>Strong, short-lived, auditable</td><td>Medium setup, low ongoing pain</td><td>Deploys, eval jobs, bounded writes</td><td>Wildcard trust policies</td></tr>
+              <tr><td>Self-hosted runner machine identity</td><td>Mixed, depends on host hardening</td><td>High ops burden</td><td>Internal-only specialized networks</td><td>Public repos or lightly managed hosts</td></tr>
+            </tbody>
+          </table>
+
+          <div class="callout">
+            <strong>Best practices</strong>
+            <ul>
+              <li>Use separate roles for eval, deploy, and read-only inspection jobs.</li>
+              <li>Bind trust to the workflow path as well as the repo.</li>
+              <li>Prefer environment-gated production roles.</li>
+              <li>Keep cloud IAM permissions narrower than the workflow permissions.</li>
+            </ul>
+          </div>
+
+          <div class="callout pitfall">
+            <strong>Pitfalls</strong>
+            <ul>
+              <li><code>pull_request_target</code> can quietly widen your threat model.</li>
+              <li>Reusable workflows deserve their own trust review.</li>
+              <li>Self-hosted runners can turn a credential issue into a host issue.</li>
+              <li>Artifact upload and production deploy should not share the same role by default.</li>
+            </ul>
+          </div>
+
+          <h2>Practical checklist</h2>
+          <ul class="checklist">
+            <li>No long-lived cloud keys stored in GitHub for this workflow</li>
+            <li>Workflow requests <code>id-token: write</code> only where needed</li>
+            <li>Trust policy checks repo, branch or environment, and workflow path</li>
+            <li>Eval and deploy jobs use separate roles</li>
+            <li>Production path requires environment approval or equivalent guardrail</li>
+            <li>Logs prove the run used an assumed role session</li>
+            <li>Session policies or narrow IAM policies limit write scope</li>
+          </ul>
+
+          <h2>Conclusion</h2>
+          <p>If an AI agent can touch cloud systems, give it credentials that expire fast and only exist when the workflow proves who it is. GitHub Actions OIDC is one of the few changes that improves both security and day-two operations instead of making you choose.</p>
+
+          <div class="blog-post-tags"><span class="blog-post-tag">GitHub Actions</span><span class="blog-post-tag">OIDC</span><span class="blog-post-tag">AI Agents</span><span class="blog-post-tag">Cloud Security</span><span class="blog-post-tag">CI/CD</span></div>
+        </div>
+
+        <div class="blog-footer"><p><a href="index.html">← Back to all posts</a></p></div>
+      </div>
+    </header>
+  </body>
+</html>
