@@ -1,6 +1,14 @@
 {
   "topics": [
     {
+      "date": "2026-04-18",
+      "skill": "GitHub Actions OIDC for AI agents",
+      "topic": "Using GitHub Actions OIDC to give AI-powered CI jobs short-lived cloud credentials for deploys, evals, and controlled automation instead of storing long-lived secrets in GitHub",
+      "slug": "github-actions-oidc-ai-agents",
+      "title": "Using GitHub Actions OIDC for AI Agents Without Long-Lived Cloud Keys",
+      "summary": "A practical guide to using GitHub Actions OIDC for AI agents so CI jobs can assume short-lived cloud roles for deploys, eval runs, and controlled automation without storing long-lived cloud secrets."
+    },
+    {
       "date": "2026-04-17",
       "skill": "Tool output prompt-injection defense for AI agents",
       "topic": "Protecting AI agents from prompt injection through tool outputs with taint labels, sanitization passes, trust-lane routing, tool result reduction, and approval boundaries so external content cannot quietly escalate into command execution",
