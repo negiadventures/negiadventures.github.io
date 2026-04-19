@@ -1,6 +1,14 @@
 {
   "topics": [
     {
+      "date": "2026-04-19",
+      "skill": "Eval harnesses for AI coding agents",
+      "topic": "Building repository-level eval harnesses for AI coding agents with task manifests, invariant checks, sandboxed verification, and reviewability scorecards so patch quality is measured by safe outcomes instead of flashy demos",
+      "slug": "agent-evals-code-patches",
+      "title": "Eval Harnesses for AI Coding Agents That Actually Catch Bad Patches",
+      "summary": "A practical guide to building eval harnesses for AI coding agents with patch tasks, invariant checks, sandboxed verification, and scorecards that expose bad fixes before they hit code review."
+    },
+    {
       "date": "2026-04-18",
       "skill": "GitHub Actions OIDC for AI agents",
       "topic": "Using GitHub Actions OIDC to give AI-powered CI jobs short-lived cloud credentials for deploys, evals, and controlled automation instead of storing long-lived secrets in GitHub",
