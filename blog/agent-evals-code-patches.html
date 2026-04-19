@@ -1,0 +1,244 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="A practical guide to building eval harnesses for AI coding agents using patch-level tasks, invariant checks, execution sandboxes, and scorecards that catch bad fixes before they reach review.">
+    <meta name="author" content="Anirudh Negi">
+    <title>Eval Harnesses for AI Coding Agents That Actually Catch Bad Patches | Anirudh Negi</title>
+    <link rel="icon" type="image/svg+xml" href="../images/favicon.svg">
+    <link rel="canonical" href="https://negiadventures.github.io/blog/agent-evals-code-patches.html">
+    <meta property="og:type" content="article">
+    <meta property="og:url" content="https://negiadventures.github.io/blog/agent-evals-code-patches.html">
+    <meta property="og:title" content="Eval Harnesses for AI Coding Agents That Actually Catch Bad Patches | Anirudh Negi">
+    <meta property="og:description" content="A practical guide to building eval harnesses for AI coding agents using patch-level tasks, invariant checks, execution sandboxes, and scorecards that catch bad fixes before they reach review.">
+    <meta property="og:image" content="data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A//www.w3.org/2000/svg%27%20viewBox%3D%270%200%201200%20630%27%3E%0A%20%20%3Cdefs%3E%0A%20%20%20%20%3ClinearGradient%20id%3D%27bg%27%20x1%3D%270%27%20x2%3D%271%27%20y1%3D%270%27%20y2%3D%271%27%3E%0A%20%20%20%20%20%20%3Cstop%20offset%3D%270%25%27%20stop-color%3D%27%2308131f%27/%3E%0A%20%20%20%20%20%20%3Cstop%20offset%3D%27100%25%27%20stop-color%3D%27%2318314d%27/%3E%0A%20%20%20%20%3C/linearGradient%3E%0A%20%20%3C/defs%3E%0A%20%20%3Crect%20width%3D%271200%27%20height%3D%27630%27%20fill%3D%27url%28%23bg%29%27/%3E%0A%20%20%3Ccircle%20cx%3D%271005%27%20cy%3D%27118%27%20r%3D%27155%27%20fill%3D%27%2322d3ee%27%20fill-opacity%3D%270.14%27/%3E%0A%20%20%3Ccircle%20cx%3D%27175%27%20cy%3D%27525%27%20r%3D%27210%27%20fill%3D%27%238b5cf6%27%20fill-opacity%3D%270.16%27/%3E%0A%20%20%3Crect%20x%3D%2782%27%20y%3D%2784%27%20width%3D%271036%27%20height%3D%27462%27%20rx%3D%2732%27%20fill%3D%27%230b1220%27%20stroke%3D%27%2338bdf8%27%20stroke-opacity%3D%270.35%27/%3E%0A%20%20%3Ctext%20x%3D%27132%27%20y%3D%27178%27%20fill%3D%27white%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2744%27%20font-weight%3D%27700%27%3EEval%20Harnesses%20for%20AI%20Coding%20Agents%3C/text%3E%0A%20%20%3Ctext%20x%3D%27132%27%20y%3D%27246%27%20fill%3D%27%2393c5fd%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2744%27%20font-weight%3D%27700%27%3EThat%20Actually%20Catch%20Bad%20Patches%3C/text%3E%0A%20%20%3Ctext%20x%3D%27132%27%20y%3D%27324%27%20fill%3D%27%23cbd5e1%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2728%27%3EPatch%20tasks%2C%20invariant%20checks%2C%20sandbox%20runs%2C%20and%20scorecards%20that%20beat%20vague%20demos%3C/text%3E%0A%20%20%3Crect%20x%3D%27132%27%20y%3D%27384%27%20width%3D%27312%27%20height%3D%2754%27%20rx%3D%2714%27%20fill%3D%27%23111c2d%27%20stroke%3D%27%2367e8f9%27%20stroke-opacity%3D%270.45%27/%3E%0A%20%20%3Ctext%20x%3D%27156%27%20y%3D%27419%27%20fill%3D%27%2367e8f9%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2724%27%3Egrade%20the%20diff%2C%20not%20the%20vibes%3C/text%3E%0A%20%20%3Crect%20x%3D%27760%27%20y%3D%27178%27%20width%3D%27250%27%20height%3D%2756%27%20rx%3D%2714%27%20fill%3D%27%230d1728%27%20stroke%3D%27%2322d3ee%27%20stroke-opacity%3D%270.45%27/%3E%0A%20%20%3Ctext%20x%3D%27803%27%20y%3D%27214%27%20fill%3D%27%23bae6fd%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2723%27%3Etask.yaml%3C/text%3E%0A%20%20%3Crect%20x%3D%27760%27%20y%3D%27276%27%20width%3D%27250%27%20height%3D%2756%27%20rx%3D%2714%27%20fill%3D%27%230d1728%27%20stroke%3D%27%2322d3ee%27%20stroke-opacity%3D%270.45%27/%3E%0A%20%20%3Ctext%20x%3D%27815%27%20y%3D%27312%27%20fill%3D%27%23bae6fd%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2723%27%3Epytest%20-q%3C/text%3E%0A%20%20%3Crect%20x%3D%27760%27%20y%3D%27374%27%20width%3D%27250%27%20height%3D%2756%27%20rx%3D%2714%27%20fill%3D%27%230d1728%27%20stroke%3D%27%23a78bfa%27%20stroke-opacity%3D%270.45%27/%3E%0A%20%20%3Ctext%20x%3D%27818%27%20y%3D%27410%27%20fill%3D%27%23ddd6fe%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2723%27%3Escore.json%3C/text%3E%0A%3C/svg%3E">
+    <meta property="article:published_time" content="2026-04-19">
+    <meta property="article:author" content="Anirudh Negi">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:url" content="https://negiadventures.github.io/blog/agent-evals-code-patches.html">
+    <meta name="twitter:title" content="Eval Harnesses for AI Coding Agents That Actually Catch Bad Patches | Anirudh Negi">
+    <meta name="twitter:description" content="A practical guide to building eval harnesses for AI coding agents using patch-level tasks, invariant checks, execution sandboxes, and scorecards that catch bad fixes before they reach review.">
+    <meta name="twitter:image" content="data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A//www.w3.org/2000/svg%27%20viewBox%3D%270%200%201200%20630%27%3E%0A%20%20%3Cdefs%3E%0A%20%20%20%20%3ClinearGradient%20id%3D%27bg%27%20x1%3D%270%27%20x2%3D%271%27%20y1%3D%270%27%20y2%3D%271%27%3E%0A%20%20%20%20%20%20%3Cstop%20offset%3D%270%25%27%20stop-color%3D%27%2308131f%27/%3E%0A%20%20%20%20%20%20%3Cstop%20offset%3D%27100%25%27%20stop-color%3D%27%2318314d%27/%3E%0A%20%20%20%20%3C/linearGradient%3E%0A%20%20%3C/defs%3E%0A%20%20%3Crect%20width%3D%271200%27%20height%3D%27630%27%20fill%3D%27url%28%23bg%29%27/%3E%0A%20%20%3Ccircle%20cx%3D%271005%27%20cy%3D%27118%27%20r%3D%27155%27%20fill%3D%27%2322d3ee%27%20fill-opacity%3D%270.14%27/%3E%0A%20%20%3Ccircle%20cx%3D%27175%27%20cy%3D%27525%27%20r%3D%27210%27%20fill%3D%27%238b5cf6%27%20fill-opacity%3D%270.16%27/%3E%0A%20%20%3Crect%20x%3D%2782%27%20y%3D%2784%27%20width%3D%271036%27%20height%3D%27462%27%20rx%3D%2732%27%20fill%3D%27%230b1220%27%20stroke%3D%27%2338bdf8%27%20stroke-opacity%3D%270.35%27/%3E%0A%20%20%3Ctext%20x%3D%27132%27%20y%3D%27178%27%20fill%3D%27white%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2744%27%20font-weight%3D%27700%27%3EEval%20Harnesses%20for%20AI%20Coding%20Agents%3C/text%3E%0A%20%20%3Ctext%20x%3D%27132%27%20y%3D%27246%27%20fill%3D%27%2393c5fd%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2744%27%20font-weight%3D%27700%27%3EThat%20Actually%20Catch%20Bad%20Patches%3C/text%3E%0A%20%20%3Ctext%20x%3D%27132%27%20y%3D%27324%27%20fill%3D%27%23cbd5e1%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2728%27%3EPatch%20tasks%2C%20invariant%20checks%2C%20sandbox%20runs%2C%20and%20scorecards%20that%20beat%20vague%20demos%3C/text%3E%0A%20%20%3Crect%20x%3D%27132%27%20y%3D%27384%27%20width%3D%27312%27%20height%3D%2754%27%20rx%3D%2714%27%20fill%3D%27%23111c2d%27%20stroke%3D%27%2367e8f9%27%20stroke-opacity%3D%270.45%27/%3E%0A%20%20%3Ctext%20x%3D%27156%27%20y%3D%27419%27%20fill%3D%27%2367e8f9%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2724%27%3Egrade%20the%20diff%2C%20not%20the%20vibes%3C/text%3E%0A%20%20%3Crect%20x%3D%27760%27%20y%3D%27178%27%20width%3D%27250%27%20height%3D%2756%27%20rx%3D%2714%27%20fill%3D%27%230d1728%27%20stroke%3D%27%2322d3ee%27%20stroke-opacity%3D%270.45%27/%3E%0A%20%20%3Ctext%20x%3D%27803%27%20y%3D%27214%27%20fill%3D%27%23bae6fd%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2723%27%3Etask.yaml%3C/text%3E%0A%20%20%3Crect%20x%3D%27760%27%20y%3D%27276%27%20width%3D%27250%27%20height%3D%2756%27%20rx%3D%2714%27%20fill%3D%27%230d1728%27%20stroke%3D%27%2322d3ee%27%20stroke-opacity%3D%270.45%27/%3E%0A%20%20%3Ctext%20x%3D%27815%27%20y%3D%27312%27%20fill%3D%27%23bae6fd%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2723%27%3Epytest%20-q%3C/text%3E%0A%20%20%3Crect%20x%3D%27760%27%20y%3D%27374%27%20width%3D%27250%27%20height%3D%2756%27%20rx%3D%2714%27%20fill%3D%27%230d1728%27%20stroke%3D%27%23a78bfa%27%20stroke-opacity%3D%270.45%27/%3E%0A%20%20%3Ctext%20x%3D%27818%27%20y%3D%27410%27%20fill%3D%27%23ddd6fe%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2723%27%3Escore.json%3C/text%3E%0A%3C/svg%3E">
+    <script type="application/ld+json">{
+      "@context": "https://schema.org",
+      "@type": "BlogPosting",
+      "headline": "Eval Harnesses for AI Coding Agents That Actually Catch Bad Patches",
+      "description": "A practical guide to building eval harnesses for AI coding agents using patch-level tasks, invariant checks, execution sandboxes, and scorecards that catch bad fixes before they reach review.",
+      "image": "data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A//www.w3.org/2000/svg%27%20viewBox%3D%270%200%201200%20630%27%3E%0A%20%20%3Cdefs%3E%0A%20%20%20%20%3ClinearGradient%20id%3D%27bg%27%20x1%3D%270%27%20x2%3D%271%27%20y1%3D%270%27%20y2%3D%271%27%3E%0A%20%20%20%20%20%20%3Cstop%20offset%3D%270%25%27%20stop-color%3D%27%2308131f%27/%3E%0A%20%20%20%20%20%20%3Cstop%20offset%3D%27100%25%27%20stop-color%3D%27%2318314d%27/%3E%0A%20%20%20%20%3C/linearGradient%3E%0A%20%20%3C/defs%3E%0A%20%20%3Crect%20width%3D%271200%27%20height%3D%27630%27%20fill%3D%27url%28%23bg%29%27/%3E%0A%20%20%3Ccircle%20cx%3D%271005%27%20cy%3D%27118%27%20r%3D%27155%27%20fill%3D%27%2322d3ee%27%20fill-opacity%3D%270.14%27/%3E%0A%20%20%3Ccircle%20cx%3D%27175%27%20cy%3D%27525%27%20r%3D%27210%27%20fill%3D%27%238b5cf6%27%20fill-opacity%3D%270.16%27/%3E%0A%20%20%3Crect%20x%3D%2782%27%20y%3D%2784%27%20width%3D%271036%27%20height%3D%27462%27%20rx%3D%2732%27%20fill%3D%27%230b1220%27%20stroke%3D%27%2338bdf8%27%20stroke-opacity%3D%270.35%27/%3E%0A%20%20%3Ctext%20x%3D%27132%27%20y%3D%27178%27%20fill%3D%27white%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2744%27%20font-weight%3D%27700%27%3EEval%20Harnesses%20for%20AI%20Coding%20Agents%3C/text%3E%0A%20%20%3Ctext%20x%3D%27132%27%20y%3D%27246%27%20fill%3D%27%2393c5fd%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2744%27%20font-weight%3D%27700%27%3EThat%20Actually%20Catch%20Bad%20Patches%3C/text%3E%0A%20%20%3Ctext%20x%3D%27132%27%20y%3D%27324%27%20fill%3D%27%23cbd5e1%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2728%27%3EPatch%20tasks%2C%20invariant%20checks%2C%20sandbox%20runs%2C%20and%20scorecards%20that%20beat%20vague%20demos%3C/text%3E%0A%20%20%3Crect%20x%3D%27132%27%20y%3D%27384%27%20width%3D%27312%27%20height%3D%2754%27%20rx%3D%2714%27%20fill%3D%27%23111c2d%27%20stroke%3D%27%2367e8f9%27%20stroke-opacity%3D%270.45%27/%3E%0A%20%20%3Ctext%20x%3D%27156%27%20y%3D%27419%27%20fill%3D%27%2367e8f9%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2724%27%3Egrade%20the%20diff%2C%20not%20the%20vibes%3C/text%3E%0A%20%20%3Crect%20x%3D%27760%27%20y%3D%27178%27%20width%3D%27250%27%20height%3D%2756%27%20rx%3D%2714%27%20fill%3D%27%230d1728%27%20stroke%3D%27%2322d3ee%27%20stroke-opacity%3D%270.45%27/%3E%0A%20%20%3Ctext%20x%3D%27803%27%20y%3D%27214%27%20fill%3D%27%23bae6fd%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2723%27%3Etask.yaml%3C/text%3E%0A%20%20%3Crect%20x%3D%27760%27%20y%3D%27276%27%20width%3D%27250%27%20height%3D%2756%27%20rx%3D%2714%27%20fill%3D%27%230d1728%27%20stroke%3D%27%2322d3ee%27%20stroke-opacity%3D%270.45%27/%3E%0A%20%20%3Ctext%20x%3D%27815%27%20y%3D%27312%27%20fill%3D%27%23bae6fd%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2723%27%3Epytest%20-q%3C/text%3E%0A%20%20%3Crect%20x%3D%27760%27%20y%3D%27374%27%20width%3D%27250%27%20height%3D%2756%27%20rx%3D%2714%27%20fill%3D%27%230d1728%27%20stroke%3D%27%23a78bfa%27%20stroke-opacity%3D%270.45%27/%3E%0A%20%20%3Ctext%20x%3D%27818%27%20y%3D%27410%27%20fill%3D%27%23ddd6fe%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2723%27%3Escore.json%3C/text%3E%0A%3C/svg%3E",
+      "url": "https://negiadventures.github.io/blog/agent-evals-code-patches.html",
+      "datePublished": "2026-04-19",
+      "author": {
+        "@type": "Person",
+        "name": "Anirudh Negi",
+        "url": "https://negiadventures.github.io"
+      },
+      "publisher": {
+        "@type": "Person",
+        "name": "Anirudh Negi",
+        "url": "https://negiadventures.github.io"
+      }
+    }</script>
+    <script type="module">
+      import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.esm.min.mjs';
+      mermaid.initialize({ startOnLoad: true, theme: 'dark' });
+    </script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../stylesheets/stylesheet.css?v=5" media="screen">
+    <style>
+      .blog-post { max-width: 860px; margin: 0 auto; padding: 60px 20px; }
+      .blog-post-nav { margin-bottom: 30px; }
+      .blog-post-nav a { color: var(--accent-strong); font-size: 0.95rem; }
+      .blog-post-nav a:hover { color: var(--accent); }
+      .blog-post-title { font-size: 2.5rem; margin-bottom: 16px; }
+      .blog-post-meta { display: flex; gap: 20px; color: var(--text-muted); font-size: 0.95rem; margin-bottom: 30px; flex-wrap: wrap; }
+      .blog-post-image { width: 100%; height: 300px; object-fit: cover; border-radius: 16px; margin-bottom: 30px; border: 1px solid var(--border); background: var(--bg-alt); }
+      .blog-post-content h2 { font-size: 1.65rem; margin-top: 40px; margin-bottom: 16px; color: var(--text-light); }
+      .blog-post-content h3 { font-size: 1.25rem; margin-top: 28px; margin-bottom: 12px; color: var(--text-light); }
+      .blog-post-content p, .blog-post-content li { line-height: 1.8; color: var(--text-muted); }
+      .blog-post-content ul { margin-bottom: 20px; }
+      .code-block, .terminal-block, .mermaid-wrap { background: var(--bg-alt); border: 1px solid var(--border); border-radius: 14px; padding: 20px; margin: 20px 0; overflow-x: auto; }
+      .code-block pre, .terminal-block pre { margin: 0; font-family: var(--mono); font-size: 0.9rem; line-height: 1.6; color: var(--text-light); white-space: pre-wrap; }
+      .code-block code { color: var(--accent-strong); }
+      .comparison-table { width: 100%; border-collapse: collapse; margin: 22px 0; background: var(--bg-alt); border: 1px solid var(--border); border-radius: 14px; overflow: hidden; }
+      .comparison-table th, .comparison-table td { padding: 14px; border-bottom: 1px solid var(--border); text-align: left; vertical-align: top; }
+      .comparison-table th { color: var(--text-light); background: rgba(56, 189, 248, 0.08); }
+      .callout { border-radius: 14px; padding: 18px 20px; margin: 22px 0; border: 1px solid var(--border); }
+      .callout-warning { background: rgba(251, 191, 36, 0.08); border-color: rgba(251, 191, 36, 0.35); }
+      .callout-success { background: rgba(34, 197, 94, 0.08); border-color: rgba(34, 197, 94, 0.35); }
+      .blog-post-tags { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 40px; padding-top: 30px; border-top: 1px solid var(--border); }
+      .blog-post-tag { background: var(--accent-soft); color: var(--accent-strong); border-radius: 999px; padding: 6px 14px; font-size: 0.85rem; font-family: var(--mono); border: 1px solid transparent; }
+      .blog-footer { margin-top: 60px; padding-top: 30px; border-top: 1px solid var(--border); text-align: center; }
+      .blog-footer a { color: var(--accent-strong); }
+      @media (max-width: 768px) { .blog-post { padding: 40px 16px; } .blog-post-title { font-size: 2rem; } .blog-post-image { height: 210px; } }
+    </style>
+  </head>
+  <body>
+    <a href="../index.html#main" class="skip-link">Skip to main content</a>
+    <header class="site-header">
+      <div class="container blog-post">
+        <div class="blog-post-nav"><a href="index.html">&larr; Back to All Posts</a></div>
+        <div class="blog-post-header">
+          <h1 class="blog-post-title">Eval Harnesses for AI Coding Agents That Actually Catch Bad Patches</h1>
+          <div class="blog-post-meta"><span>April 19, 2026</span><span>&bull;</span><span>10 min read</span></div>
+          <img src="data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A//www.w3.org/2000/svg%27%20viewBox%3D%270%200%201200%20630%27%3E%0A%20%20%3Cdefs%3E%0A%20%20%20%20%3ClinearGradient%20id%3D%27bg%27%20x1%3D%270%27%20x2%3D%271%27%20y1%3D%270%27%20y2%3D%271%27%3E%0A%20%20%20%20%20%20%3Cstop%20offset%3D%270%25%27%20stop-color%3D%27%2308131f%27/%3E%0A%20%20%20%20%20%20%3Cstop%20offset%3D%27100%25%27%20stop-color%3D%27%2318314d%27/%3E%0A%20%20%20%20%3C/linearGradient%3E%0A%20%20%3C/defs%3E%0A%20%20%3Crect%20width%3D%271200%27%20height%3D%27630%27%20fill%3D%27url%28%23bg%29%27/%3E%0A%20%20%3Ccircle%20cx%3D%271005%27%20cy%3D%27118%27%20r%3D%27155%27%20fill%3D%27%2322d3ee%27%20fill-opacity%3D%270.14%27/%3E%0A%20%20%3Ccircle%20cx%3D%27175%27%20cy%3D%27525%27%20r%3D%27210%27%20fill%3D%27%238b5cf6%27%20fill-opacity%3D%270.16%27/%3E%0A%20%20%3Crect%20x%3D%2782%27%20y%3D%2784%27%20width%3D%271036%27%20height%3D%27462%27%20rx%3D%2732%27%20fill%3D%27%230b1220%27%20stroke%3D%27%2338bdf8%27%20stroke-opacity%3D%270.35%27/%3E%0A%20%20%3Ctext%20x%3D%27132%27%20y%3D%27178%27%20fill%3D%27white%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2744%27%20font-weight%3D%27700%27%3EEval%20Harnesses%20for%20AI%20Coding%20Agents%3C/text%3E%0A%20%20%3Ctext%20x%3D%27132%27%20y%3D%27246%27%20fill%3D%27%2393c5fd%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2744%27%20font-weight%3D%27700%27%3EThat%20Actually%20Catch%20Bad%20Patches%3C/text%3E%0A%20%20%3Ctext%20x%3D%27132%27%20y%3D%27324%27%20fill%3D%27%23cbd5e1%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2728%27%3EPatch%20tasks%2C%20invariant%20checks%2C%20sandbox%20runs%2C%20and%20scorecards%20that%20beat%20vague%20demos%3C/text%3E%0A%20%20%3Crect%20x%3D%27132%27%20y%3D%27384%27%20width%3D%27312%27%20height%3D%2754%27%20rx%3D%2714%27%20fill%3D%27%23111c2d%27%20stroke%3D%27%2367e8f9%27%20stroke-opacity%3D%270.45%27/%3E%0A%20%20%3Ctext%20x%3D%27156%27%20y%3D%27419%27%20fill%3D%27%2367e8f9%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2724%27%3Egrade%20the%20diff%2C%20not%20the%20vibes%3C/text%3E%0A%20%20%3Crect%20x%3D%27760%27%20y%3D%27178%27%20width%3D%27250%27%20height%3D%2756%27%20rx%3D%2714%27%20fill%3D%27%230d1728%27%20stroke%3D%27%2322d3ee%27%20stroke-opacity%3D%270.45%27/%3E%0A%20%20%3Ctext%20x%3D%27803%27%20y%3D%27214%27%20fill%3D%27%23bae6fd%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2723%27%3Etask.yaml%3C/text%3E%0A%20%20%3Crect%20x%3D%27760%27%20y%3D%27276%27%20width%3D%27250%27%20height%3D%2756%27%20rx%3D%2714%27%20fill%3D%27%230d1728%27%20stroke%3D%27%2322d3ee%27%20stroke-opacity%3D%270.45%27/%3E%0A%20%20%3Ctext%20x%3D%27815%27%20y%3D%27312%27%20fill%3D%27%23bae6fd%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2723%27%3Epytest%20-q%3C/text%3E%0A%20%20%3Crect%20x%3D%27760%27%20y%3D%27374%27%20width%3D%27250%27%20height%3D%2756%27%20rx%3D%2714%27%20fill%3D%27%230d1728%27%20stroke%3D%27%23a78bfa%27%20stroke-opacity%3D%270.45%27/%3E%0A%20%20%3Ctext%20x%3D%27818%27%20y%3D%27410%27%20fill%3D%27%23ddd6fe%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2723%27%3Escore.json%3C/text%3E%0A%3C/svg%3E" alt="Eval Harnesses for AI Coding Agents That Actually Catch Bad Patches" class="blog-post-image">
+        </div>
+        <div class="blog-post-content">
+          <p>Most AI coding demos still fail the same test: the patch looks plausible, but it quietly breaks something off-camera. The model updates the file you expected, misses the adjacent invariant, and the reviewer only notices after CI fails or a customer does.</p>
+          <p>If you want coding agents to improve, you need an eval harness that grades real repository work instead of prompt beauty contests. That means task manifests, sandboxed verification, invariant checks, and scorecards that separate <em>made a diff</em> from <em>produced a safe fix</em>.</p>
+          <p>This is the harness shape I would actually use for patch-level agent evaluation.</p>
+          <h2>Why this matters</h2>
+          <p>A coding agent is rarely judged on one thing. In practice you care about task success, file accuracy, invariant safety, reviewability, and cost. Generic benchmark scores do not give you that mix, but a repo-local harness can.</p>
+          <ul>
+            <li>did it edit the right files?</li>
+            <li>did the verify commands pass?</li>
+            <li>did it preserve non-obvious behavior?</li>
+            <li>did it avoid risky shortcuts?</li>
+            <li>is the patch something a reviewer can merge calmly?</li>
+          </ul>
+          <p>Useful references: <a href="https://github.com/openai/evals">OpenAI Evals</a>, <a href="https://www.swebench.com/">SWE-bench</a>, <a href="https://opentelemetry.io/">OpenTelemetry</a>, and <a href="https://docs.smith.langchain.com/evaluation">LangSmith evaluations</a>.</p>
+          <h2>Architecture or workflow overview</h2>
+          <p>A useful harness has four stages: prepare a task, run the agent in isolation, verify the patch, and score the result.</p>
+          <div class="mermaid-wrap">
+            <pre class="mermaid">flowchart LR
+    A[Task manifest
+repo state + prompt + allowed paths] --> B[Agent runner
+branch or worktree sandbox]
+    B --> C[Verification lane
+pytest, lint, invariant checks, policy scans]
+    C --> D[Scorecard
+pass rate, file accuracy, risk flags, review quality]
+    D --> E[Report
+json + html summary + failing evidence]</pre>
+          </div>
+          <h3>Task packet</h3>
+          <p>I like task manifests that are explicit enough to replay later and small enough to diff in code review.</p>
+          <div class="code-block"><pre><code>id: auth-refresh-token-regression
+base_commit: 6bbda18
+repo: github.com/acme/api
+prompt: |
+  Fix the bug where refresh tokens remain valid after password reset.
+  Preserve the mobile login flow and do not change public API schemas.
+allowed_paths:
+  - services/auth/**
+  - tests/auth/**
+verify:
+  - pytest tests/auth -q
+  - ruff check services/auth tests/auth
+  - python scripts/check_invariants.py --task auth-refresh-token-regression
+invariants:
+  - password reset must revoke outstanding refresh tokens
+  - existing session audit logging must stay intact
+risk_flags:
+  - auth
+  - session-management</code></pre></div>
+          <h3>Runner evidence</h3>
+          <p>The runner should save more than a final diff. It should capture changed files, checks, trace output, runtime, and risk flags so failures are explainable.</p>
+          <div class="code-block"><pre><code>from dataclasses import dataclass
+from pathlib import Path
+import subprocess
+import time
+
+@dataclass
+class EvalResult:
+    task_id: str
+    exit_code: int
+    changed_files: list[str]
+    runtime_seconds: float
+    checks: dict
+    risk_flags: list[str]
+
+
+def run_check(command: str, cwd: Path) -> dict:
+    started = time.time()
+    proc = subprocess.run(command, cwd=cwd, shell=True, text=True, capture_output=True)
+    return {
+        "command": command,
+        "ok": proc.returncode == 0,
+        "exit_code": proc.returncode,
+        "stdout": proc.stdout[-6000:],
+        "stderr": proc.stderr[-6000:],
+        "runtime_seconds": round(time.time() - started, 2),
+    }</code></pre></div>
+          <h2>Implementation details</h2>
+          <p>The highest-value harnesses do not collapse everything into one magic number. They keep a small scorecard that maps to how humans actually review patches.</p>
+          <table class="comparison-table">
+            <thead>
+              <tr><th>Dimension</th><th>What it measures</th><th>Good signal</th><th>Failure smell</th></tr>
+            </thead>
+            <tbody>
+              <tr><td>Task success</td><td>Whether required checks passed</td><td>Targeted tests green</td><td>Suite skipped or weakened</td></tr>
+              <tr><td>File accuracy</td><td>Whether edits stayed in scope</td><td>Only expected files changed</td><td>Unrelated churn across repo</td></tr>
+              <tr><td>Invariant safety</td><td>Whether critical behavior stayed true</td><td>Custom checks pass</td><td>Auth, billing, or data-loss regressions</td></tr>
+              <tr><td>Reviewability</td><td>Whether a human can inspect the patch quickly</td><td>Clear diff, small scope</td><td>Giant generated rewrite</td></tr>
+              <tr><td>Efficiency</td><td>Whether runtime and cost stay bounded</td><td>Stable runtime</td><td>Looping retries and token waste</td></tr>
+            </tbody>
+          </table>
+          <h3>Invariant checks</h3>
+          <p>A lot of bad patches pass focused tests because the original tests were incomplete. A second verification lane catches cheap wins that would otherwise pollute your benchmark.</p>
+          <div class="code-block"><pre><code>from pathlib import Path
+import re
+
+DIFF = Path('.git/invariant.patch')
+
+def invariant_auth_logging(diff_text: str) -> bool:
+    return 'audit.log_security_event' in diff_text
+
+
+def invariant_no_test_downgrade(diff_text: str) -> bool:
+    forbidden = [r'-\\s*assert .*is False', r'\\bskip\\(', r'xfail']
+    return not any(re.search(pattern, diff_text) for pattern in forbidden)</code></pre></div>
+          <div class="terminal-block"><pre>$ python run_eval.py --task auth-refresh-token-regression --model local-qwen-coder
+[agent] plan: inspect auth service, patch token revocation, run focused tests
+[verify] pytest tests/auth -q .................................... PASSED
+[verify] ruff check services/auth tests/auth ..................... PASSED
+[verify] python scripts/check_invariants.py ...................... FAILED
+[score] task_success=0.75 file_accuracy=1.00 invariant_safety=0.00 reviewability=0.92
+[hint] audit.log_security_event disappeared from services/auth/reset.py</pre></div>
+          <h2>What went wrong and the tradeoffs</h2>
+          <h3>Failure mode 1, you overfit to your harness</h3>
+          <p>If tasks stay static, the model starts learning the grading routine instead of the engineering problem. Hidden holdout tasks and rotated prompts help a lot.</p>
+          <h3>Failure mode 2, patch success hides review pain</h3>
+          <p>A patch can pass tests and still be miserable to merge because it rewrites too much or smuggles in unrelated cleanup. Reviewability deserves its own score.</p>
+          <h3>Failure mode 3, security-sensitive repos need harsher weighting</h3>
+          <p>In auth, payments, infra, and deletion flows, passing tests should not outweigh broken invariants or forbidden patterns.</p>
+          <div class="callout callout-warning"><strong>Pitfall:</strong> do not grade only success-path tests. Models will absolutely preserve the demo while quietly weakening the guardrails around it.</div>
+          <table class="comparison-table">
+            <thead>
+              <tr><th>Eval style</th><th>Fast to set up</th><th>Useful for coding agents</th><th>Main weakness</th></tr>
+            </thead>
+            <tbody>
+              <tr><td>Prompt-response grading</td><td>Yes</td><td>Low</td><td>Ignores repo state and execution</td></tr>
+              <tr><td>Golden diff matching</td><td>Medium</td><td>Medium</td><td>Punishes valid alternate fixes</td></tr>
+              <tr><td>Test-only grading</td><td>Yes</td><td>Medium</td><td>Misses unsafe shortcuts</td></tr>
+              <tr><td>Patch + invariants + review score</td><td>No</td><td>High</td><td>More setup and maintenance</td></tr>
+            </tbody>
+          </table>
+          <h2>Practical checklist</h2>
+          <div class="callout callout-success"><strong>Best practice:</strong> keep the harness boring and deterministic. The model can be creative. The grader should not be.</div>
+          <ul>
+            <li>define task manifests with base commit, prompt, allowed paths, and verify commands</li>
+            <li>run each task in a fresh branch, worktree, or container</li>
+            <li>score both success and blast radius</li>
+            <li>add at least one invariant check for every high-risk task family</li>
+            <li>save structured artifacts, not just pass or fail</li>
+            <li>maintain a hidden holdout set before changing prompts or models</li>
+            <li>inspect a sample of passing patches manually every week</li>
+          </ul>
+          <h2>Conclusion</h2>
+          <p>If you want better coding agents, stop asking whether the model can produce a patch and start asking whether the patch survives verification, preserves invariants, and stays mergeable. A good eval harness turns that question into data instead of guesswork.</p>
+          <div class="blog-post-tags">
+            <span class="blog-post-tag">AI Evaluation</span>
+            <span class="blog-post-tag">Coding Agents</span>
+            <span class="blog-post-tag">Reliability</span>
+            <span class="blog-post-tag">Developer Workflows</span>
+            <span class="blog-post-tag">Benchmarks</span>
+          </div>
+        </div>
+        <div class="blog-footer"><p>Want more practical AI engineering notes? <a href="index.html">Browse the rest of the blog</a>.</p></div>
+      </div>
+    </header>
+  </body>
+</html>
