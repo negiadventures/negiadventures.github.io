@@ -1,6 +1,14 @@
 {
   "topics": [
     {
+      "date": "2026-04-20",
+      "skill": "Session isolation for long-lived AI agents",
+      "topic": "Designing session isolation for long-lived AI agents with scoped memory, per-task worktrees, tool capability lanes, and approval resets so one run cannot quietly contaminate the next",
+      "slug": "session-isolation-long-lived-agents",
+      "title": "Session Isolation Patterns for Long-Lived AI Agents",
+      "summary": "A practical guide to isolating long-lived AI agents with session-scoped memory, per-task worktrees, tool lanes, and approval boundaries so one task cannot quietly contaminate another."
+    },
+    {
       "date": "2026-04-19",
       "skill": "Eval harnesses for AI coding agents",
       "topic": "Building repository-level eval harnesses for AI coding agents with task manifests, invariant checks, sandboxed verification, and reviewability scorecards so patch quality is measured by safe outcomes instead of flashy demos",

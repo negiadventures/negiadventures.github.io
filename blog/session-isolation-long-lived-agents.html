@@ -1,0 +1,233 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="A practical guide to isolating long-lived AI agents with session-scoped memory, worktrees, tool lanes, and approval boundaries so one task cannot quietly contaminate another.">
+    <meta name="author" content="Anirudh Negi">
+    <title>Session Isolation Patterns for Long-Lived AI Agents | Anirudh Negi</title>
+    <link rel="icon" type="image/svg+xml" href="../images/favicon.svg">
+    <link rel="canonical" href="https://negiadventures.github.io/blog/session-isolation-long-lived-agents.html">
+    <meta property="og:type" content="article">
+    <meta property="og:url" content="https://negiadventures.github.io/blog/session-isolation-long-lived-agents.html">
+    <meta property="og:title" content="Session Isolation Patterns for Long-Lived AI Agents | Anirudh Negi">
+    <meta property="og:description" content="A practical guide to isolating long-lived AI agents with session-scoped memory, worktrees, tool lanes, and approval boundaries so one task cannot quietly contaminate another.">
+    <meta property="og:image" content="data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A//www.w3.org/2000/svg%27%20viewBox%3D%270%200%201200%20630%27%3E%0A%20%20%3Cdefs%3E%0A%20%20%20%20%3ClinearGradient%20id%3D%27bg%27%20x1%3D%270%27%20x2%3D%271%27%20y1%3D%270%27%20y2%3D%271%27%3E%0A%20%20%20%20%20%20%3Cstop%20offset%3D%270%25%27%20stop-color%3D%27%2308131f%27/%3E%0A%20%20%20%20%20%20%3Cstop%20offset%3D%27100%25%27%20stop-color%3D%27%2319334f%27/%3E%0A%20%20%20%20%3C/linearGradient%3E%0A%20%20%3C/defs%3E%0A%20%20%3Crect%20width%3D%271200%27%20height%3D%27630%27%20fill%3D%27url%28%23bg%29%27/%3E%0A%20%20%3Ccircle%20cx%3D%271010%27%20cy%3D%27110%27%20r%3D%27155%27%20fill%3D%27%2322d3ee%27%20fill-opacity%3D%270.14%27/%3E%0A%20%20%3Ccircle%20cx%3D%27180%27%20cy%3D%27525%27%20r%3D%27210%27%20fill%3D%27%238b5cf6%27%20fill-opacity%3D%270.16%27/%3E%0A%20%20%3Crect%20x%3D%2782%27%20y%3D%2784%27%20width%3D%271036%27%20height%3D%27462%27%20rx%3D%2732%27%20fill%3D%27%230b1220%27%20stroke%3D%27%2338bdf8%27%20stroke-opacity%3D%270.35%27/%3E%0A%20%20%3Ctext%20x%3D%27132%27%20y%3D%27178%27%20fill%3D%27white%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2744%27%20font-weight%3D%27700%27%3ESession%20Isolation%20Patterns%3C/text%3E%0A%20%20%3Ctext%20x%3D%27132%27%20y%3D%27246%27%20fill%3D%27%2393c5fd%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2744%27%20font-weight%3D%27700%27%3Efor%20Long-Lived%20AI%20Agents%3C/text%3E%0A%20%20%3Ctext%20x%3D%27132%27%20y%3D%27324%27%20fill%3D%27%23cbd5e1%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2728%27%3EScoped%20memory%2C%20per-task%20worktrees%2C%20tool%20lanes%2C%20and%20approval%20boundaries%3C/text%3E%0A%20%20%3Crect%20x%3D%27132%27%20y%3D%27384%27%20width%3D%27290%27%20height%3D%2754%27%20rx%3D%2714%27%20fill%3D%27%23111c2d%27%20stroke%3D%27%2367e8f9%27%20stroke-opacity%3D%270.45%27/%3E%0A%20%20%3Ctext%20x%3D%27156%27%20y%3D%27419%27%20fill%3D%27%2367e8f9%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2724%27%3Ekeep%20one%20run%20from%20poisoning%20the%20next%3C/text%3E%0A%20%20%3Crect%20x%3D%27770%27%20y%3D%27180%27%20width%3D%27250%27%20height%3D%2756%27%20rx%3D%2714%27%20fill%3D%27%230d1728%27%20stroke%3D%27%2322d3ee%27%20stroke-opacity%3D%270.45%27/%3E%0A%20%20%3Ctext%20x%3D%27806%27%20y%3D%27216%27%20fill%3D%27%23bae6fd%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2723%27%3Esession.db%3C/text%3E%0A%20%20%3Crect%20x%3D%27770%27%20y%3D%27278%27%20width%3D%27250%27%20height%3D%2756%27%20rx%3D%2714%27%20fill%3D%27%230d1728%27%20stroke%3D%27%2322d3ee%27%20stroke-opacity%3D%270.45%27/%3E%0A%20%20%3Ctext%20x%3D%27804%27%20y%3D%27314%27%20fill%3D%27%23bae6fd%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2723%27%3Eworktree/task-42%3C/text%3E%0A%20%20%3Crect%20x%3D%27770%27%20y%3D%27376%27%20width%3D%27250%27%20height%3D%2756%27%20rx%3D%2714%27%20fill%3D%27%230d1728%27%20stroke%3D%27%23a78bfa%27%20stroke-opacity%3D%270.45%27/%3E%0A%20%20%3Ctext%20x%3D%27821%27%20y%3D%27412%27%20fill%3D%27%23ddd6fe%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2723%27%3Eapprove%28%29%3C/text%3E%0A%3C/svg%3E">
+    <meta property="article:published_time" content="2026-04-20">
+    <meta property="article:author" content="Anirudh Negi">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:url" content="https://negiadventures.github.io/blog/session-isolation-long-lived-agents.html">
+    <meta name="twitter:title" content="Session Isolation Patterns for Long-Lived AI Agents | Anirudh Negi">
+    <meta name="twitter:description" content="A practical guide to isolating long-lived AI agents with session-scoped memory, worktrees, tool lanes, and approval boundaries so one task cannot quietly contaminate another.">
+    <meta name="twitter:image" content="data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A//www.w3.org/2000/svg%27%20viewBox%3D%270%200%201200%20630%27%3E%0A%20%20%3Cdefs%3E%0A%20%20%20%20%3ClinearGradient%20id%3D%27bg%27%20x1%3D%270%27%20x2%3D%271%27%20y1%3D%270%27%20y2%3D%271%27%3E%0A%20%20%20%20%20%20%3Cstop%20offset%3D%270%25%27%20stop-color%3D%27%2308131f%27/%3E%0A%20%20%20%20%20%20%3Cstop%20offset%3D%27100%25%27%20stop-color%3D%27%2319334f%27/%3E%0A%20%20%20%20%3C/linearGradient%3E%0A%20%20%3C/defs%3E%0A%20%20%3Crect%20width%3D%271200%27%20height%3D%27630%27%20fill%3D%27url%28%23bg%29%27/%3E%0A%20%20%3Ccircle%20cx%3D%271010%27%20cy%3D%27110%27%20r%3D%27155%27%20fill%3D%27%2322d3ee%27%20fill-opacity%3D%270.14%27/%3E%0A%20%20%3Ccircle%20cx%3D%27180%27%20cy%3D%27525%27%20r%3D%27210%27%20fill%3D%27%238b5cf6%27%20fill-opacity%3D%270.16%27/%3E%0A%20%20%3Crect%20x%3D%2782%27%20y%3D%2784%27%20width%3D%271036%27%20height%3D%27462%27%20rx%3D%2732%27%20fill%3D%27%230b1220%27%20stroke%3D%27%2338bdf8%27%20stroke-opacity%3D%270.35%27/%3E%0A%20%20%3Ctext%20x%3D%27132%27%20y%3D%27178%27%20fill%3D%27white%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2744%27%20font-weight%3D%27700%27%3ESession%20Isolation%20Patterns%3C/text%3E%0A%20%20%3Ctext%20x%3D%27132%27%20y%3D%27246%27%20fill%3D%27%2393c5fd%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2744%27%20font-weight%3D%27700%27%3Efor%20Long-Lived%20AI%20Agents%3C/text%3E%0A%20%20%3Ctext%20x%3D%27132%27%20y%3D%27324%27%20fill%3D%27%23cbd5e1%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2728%27%3EScoped%20memory%2C%20per-task%20worktrees%2C%20tool%20lanes%2C%20and%20approval%20boundaries%3C/text%3E%0A%20%20%3Crect%20x%3D%27132%27%20y%3D%27384%27%20width%3D%27290%27%20height%3D%2754%27%20rx%3D%2714%27%20fill%3D%27%23111c2d%27%20stroke%3D%27%2367e8f9%27%20stroke-opacity%3D%270.45%27/%3E%0A%20%20%3Ctext%20x%3D%27156%27%20y%3D%27419%27%20fill%3D%27%2367e8f9%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2724%27%3Ekeep%20one%20run%20from%20poisoning%20the%20next%3C/text%3E%0A%20%20%3Crect%20x%3D%27770%27%20y%3D%27180%27%20width%3D%27250%27%20height%3D%2756%27%20rx%3D%2714%27%20fill%3D%27%230d1728%27%20stroke%3D%27%2322d3ee%27%20stroke-opacity%3D%270.45%27/%3E%0A%20%20%3Ctext%20x%3D%27806%27%20y%3D%27216%27%20fill%3D%27%23bae6fd%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2723%27%3Esession.db%3C/text%3E%0A%20%20%3Crect%20x%3D%27770%27%20y%3D%27278%27%20width%3D%27250%27%20height%3D%2756%27%20rx%3D%2714%27%20fill%3D%27%230d1728%27%20stroke%3D%27%2322d3ee%27%20stroke-opacity%3D%270.45%27/%3E%0A%20%20%3Ctext%20x%3D%27804%27%20y%3D%27314%27%20fill%3D%27%23bae6fd%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2723%27%3Eworktree/task-42%3C/text%3E%0A%20%20%3Crect%20x%3D%27770%27%20y%3D%27376%27%20width%3D%27250%27%20height%3D%2756%27%20rx%3D%2714%27%20fill%3D%27%230d1728%27%20stroke%3D%27%23a78bfa%27%20stroke-opacity%3D%270.45%27/%3E%0A%20%20%3Ctext%20x%3D%27821%27%20y%3D%27412%27%20fill%3D%27%23ddd6fe%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2723%27%3Eapprove%28%29%3C/text%3E%0A%3C/svg%3E">
+    <script type="application/ld+json">{
+      "@context": "https://schema.org",
+      "@type": "BlogPosting",
+      "headline": "Session Isolation Patterns for Long-Lived AI Agents",
+      "description": "A practical guide to isolating long-lived AI agents with session-scoped memory, worktrees, tool lanes, and approval boundaries so one task cannot quietly contaminate another.",
+      "image": "data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A//www.w3.org/2000/svg%27%20viewBox%3D%270%200%201200%20630%27%3E%0A%20%20%3Cdefs%3E%0A%20%20%20%20%3ClinearGradient%20id%3D%27bg%27%20x1%3D%270%27%20x2%3D%271%27%20y1%3D%270%27%20y2%3D%271%27%3E%0A%20%20%20%20%20%20%3Cstop%20offset%3D%270%25%27%20stop-color%3D%27%2308131f%27/%3E%0A%20%20%20%20%20%20%3Cstop%20offset%3D%27100%25%27%20stop-color%3D%27%2319334f%27/%3E%0A%20%20%20%20%3C/linearGradient%3E%0A%20%20%3C/defs%3E%0A%20%20%3Crect%20width%3D%271200%27%20height%3D%27630%27%20fill%3D%27url%28%23bg%29%27/%3E%0A%20%20%3Ccircle%20cx%3D%271010%27%20cy%3D%27110%27%20r%3D%27155%27%20fill%3D%27%2322d3ee%27%20fill-opacity%3D%270.14%27/%3E%0A%20%20%3Ccircle%20cx%3D%27180%27%20cy%3D%27525%27%20r%3D%27210%27%20fill%3D%27%238b5cf6%27%20fill-opacity%3D%270.16%27/%3E%0A%20%20%3Crect%20x%3D%2782%27%20y%3D%2784%27%20width%3D%271036%27%20height%3D%27462%27%20rx%3D%2732%27%20fill%3D%27%230b1220%27%20stroke%3D%27%2338bdf8%27%20stroke-opacity%3D%270.35%27/%3E%0A%20%20%3Ctext%20x%3D%27132%27%20y%3D%27178%27%20fill%3D%27white%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2744%27%20font-weight%3D%27700%27%3ESession%20Isolation%20Patterns%3C/text%3E%0A%20%20%3Ctext%20x%3D%27132%27%20y%3D%27246%27%20fill%3D%27%2393c5fd%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2744%27%20font-weight%3D%27700%27%3Efor%20Long-Lived%20AI%20Agents%3C/text%3E%0A%20%20%3Ctext%20x%3D%27132%27%20y%3D%27324%27%20fill%3D%27%23cbd5e1%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2728%27%3EScoped%20memory%2C%20per-task%20worktrees%2C%20tool%20lanes%2C%20and%20approval%20boundaries%3C/text%3E%0A%20%20%3Crect%20x%3D%27132%27%20y%3D%27384%27%20width%3D%27290%27%20height%3D%2754%27%20rx%3D%2714%27%20fill%3D%27%23111c2d%27%20stroke%3D%27%2367e8f9%27%20stroke-opacity%3D%270.45%27/%3E%0A%20%20%3Ctext%20x%3D%27156%27%20y%3D%27419%27%20fill%3D%27%2367e8f9%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2724%27%3Ekeep%20one%20run%20from%20poisoning%20the%20next%3C/text%3E%0A%20%20%3Crect%20x%3D%27770%27%20y%3D%27180%27%20width%3D%27250%27%20height%3D%2756%27%20rx%3D%2714%27%20fill%3D%27%230d1728%27%20stroke%3D%27%2322d3ee%27%20stroke-opacity%3D%270.45%27/%3E%0A%20%20%3Ctext%20x%3D%27806%27%20y%3D%27216%27%20fill%3D%27%23bae6fd%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2723%27%3Esession.db%3C/text%3E%0A%20%20%3Crect%20x%3D%27770%27%20y%3D%27278%27%20width%3D%27250%27%20height%3D%2756%27%20rx%3D%2714%27%20fill%3D%27%230d1728%27%20stroke%3D%27%2322d3ee%27%20stroke-opacity%3D%270.45%27/%3E%0A%20%20%3Ctext%20x%3D%27804%27%20y%3D%27314%27%20fill%3D%27%23bae6fd%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2723%27%3Eworktree/task-42%3C/text%3E%0A%20%20%3Crect%20x%3D%27770%27%20y%3D%27376%27%20width%3D%27250%27%20height%3D%2756%27%20rx%3D%2714%27%20fill%3D%27%230d1728%27%20stroke%3D%27%23a78bfa%27%20stroke-opacity%3D%270.45%27/%3E%0A%20%20%3Ctext%20x%3D%27821%27%20y%3D%27412%27%20fill%3D%27%23ddd6fe%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2723%27%3Eapprove%28%29%3C/text%3E%0A%3C/svg%3E",
+      "url": "https://negiadventures.github.io/blog/session-isolation-long-lived-agents.html",
+      "datePublished": "2026-04-20",
+      "author": {
+        "@type": "Person",
+        "name": "Anirudh Negi",
+        "url": "https://negiadventures.github.io"
+      },
+      "publisher": {
+        "@type": "Person",
+        "name": "Anirudh Negi",
+        "url": "https://negiadventures.github.io"
+      }
+    }</script>
+    <script type="module">
+      import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.esm.min.mjs';
+      mermaid.initialize({ startOnLoad: true, theme: 'dark' });
+    </script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../stylesheets/stylesheet.css?v=5" media="screen">
+    <style>
+      .blog-post { max-width: 860px; margin: 0 auto; padding: 60px 20px; }
+      .blog-post-nav { margin-bottom: 30px; }
+      .blog-post-nav a { color: var(--accent-strong); font-size: 0.95rem; }
+      .blog-post-nav a:hover { color: var(--accent); }
+      .blog-post-title { font-size: 2.5rem; margin-bottom: 16px; }
+      .blog-post-meta { display: flex; gap: 20px; color: var(--text-muted); font-size: 0.95rem; margin-bottom: 30px; flex-wrap: wrap; }
+      .blog-post-image { width: 100%; height: 300px; object-fit: cover; border-radius: 16px; margin-bottom: 30px; border: 1px solid var(--border); background: var(--bg-alt); }
+      .blog-post-content h2 { font-size: 1.65rem; margin-top: 40px; margin-bottom: 16px; color: var(--text-light); }
+      .blog-post-content h3 { font-size: 1.25rem; margin-top: 28px; margin-bottom: 12px; color: var(--text-light); }
+      .blog-post-content p, .blog-post-content li { line-height: 1.8; color: var(--text-muted); }
+      .blog-post-content ul, .blog-post-content ol { margin-bottom: 20px; }
+      .code-block, .terminal-block, .mermaid-wrap { background: var(--bg-alt); border: 1px solid var(--border); border-radius: 14px; padding: 20px; margin: 20px 0; overflow-x: auto; }
+      .code-block pre, .terminal-block pre { margin: 0; font-family: var(--mono); font-size: 0.9rem; line-height: 1.6; color: var(--text-light); white-space: pre-wrap; }
+      .code-block code { color: var(--accent-strong); }
+      .comparison-table { width: 100%; border-collapse: collapse; margin: 22px 0; background: var(--bg-alt); border: 1px solid var(--border); border-radius: 14px; overflow: hidden; }
+      .comparison-table th, .comparison-table td { padding: 14px; border-bottom: 1px solid var(--border); text-align: left; vertical-align: top; }
+      .comparison-table th { color: var(--text-light); background: rgba(56, 189, 248, 0.08); }
+      .callout { border-radius: 14px; padding: 18px 20px; margin: 22px 0; border: 1px solid var(--border); }
+      .callout-warning { background: rgba(251, 191, 36, 0.08); border-color: rgba(251, 191, 36, 0.35); }
+      .callout-success { background: rgba(34, 197, 94, 0.08); border-color: rgba(34, 197, 94, 0.35); }
+      .blog-post-tags { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 40px; padding-top: 30px; border-top: 1px solid var(--border); }
+      .blog-post-tag { background: var(--accent-soft); color: var(--accent-strong); border-radius: 999px; padding: 6px 14px; font-size: 0.85rem; font-family: var(--mono); border: 1px solid transparent; }
+      .blog-footer { margin-top: 60px; padding-top: 30px; border-top: 1px solid var(--border); text-align: center; }
+      .blog-footer a { color: var(--accent-strong); }
+      @media (max-width: 768px) { .blog-post { padding: 40px 16px; } .blog-post-title { font-size: 2rem; } .blog-post-image { height: 210px; } }
+    </style>
+  </head>
+  <body>
+    <a href="../index.html#main" class="skip-link">Skip to main content</a>
+    <header class="site-header">
+      <div class="container blog-post">
+        <div class="blog-post-nav"><a href="index.html">&larr; Back to All Posts</a></div>
+        <div class="blog-post-header">
+          <h1 class="blog-post-title">Session Isolation Patterns for Long-Lived AI Agents</h1>
+          <div class="blog-post-meta"><span>April 20, 2026</span><span>&bull;</span><span>11 min read</span></div>
+          <img src="data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A//www.w3.org/2000/svg%27%20viewBox%3D%270%200%201200%20630%27%3E%0A%20%20%3Cdefs%3E%0A%20%20%20%20%3ClinearGradient%20id%3D%27bg%27%20x1%3D%270%27%20x2%3D%271%27%20y1%3D%270%27%20y2%3D%271%27%3E%0A%20%20%20%20%20%20%3Cstop%20offset%3D%270%25%27%20stop-color%3D%27%2308131f%27/%3E%0A%20%20%20%20%20%20%3Cstop%20offset%3D%27100%25%27%20stop-color%3D%27%2319334f%27/%3E%0A%20%20%20%20%3C/linearGradient%3E%0A%20%20%3C/defs%3E%0A%20%20%3Crect%20width%3D%271200%27%20height%3D%27630%27%20fill%3D%27url%28%23bg%29%27/%3E%0A%20%20%3Ccircle%20cx%3D%271010%27%20cy%3D%27110%27%20r%3D%27155%27%20fill%3D%27%2322d3ee%27%20fill-opacity%3D%270.14%27/%3E%0A%20%20%3Ccircle%20cx%3D%27180%27%20cy%3D%27525%27%20r%3D%27210%27%20fill%3D%27%238b5cf6%27%20fill-opacity%3D%270.16%27/%3E%0A%20%20%3Crect%20x%3D%2782%27%20y%3D%2784%27%20width%3D%271036%27%20height%3D%27462%27%20rx%3D%2732%27%20fill%3D%27%230b1220%27%20stroke%3D%27%2338bdf8%27%20stroke-opacity%3D%270.35%27/%3E%0A%20%20%3Ctext%20x%3D%27132%27%20y%3D%27178%27%20fill%3D%27white%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2744%27%20font-weight%3D%27700%27%3ESession%20Isolation%20Patterns%3C/text%3E%0A%20%20%3Ctext%20x%3D%27132%27%20y%3D%27246%27%20fill%3D%27%2393c5fd%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2744%27%20font-weight%3D%27700%27%3Efor%20Long-Lived%20AI%20Agents%3C/text%3E%0A%20%20%3Ctext%20x%3D%27132%27%20y%3D%27324%27%20fill%3D%27%23cbd5e1%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2728%27%3EScoped%20memory%2C%20per-task%20worktrees%2C%20tool%20lanes%2C%20and%20approval%20boundaries%3C/text%3E%0A%20%20%3Crect%20x%3D%27132%27%20y%3D%27384%27%20width%3D%27290%27%20height%3D%2754%27%20rx%3D%2714%27%20fill%3D%27%23111c2d%27%20stroke%3D%27%2367e8f9%27%20stroke-opacity%3D%270.45%27/%3E%0A%20%20%3Ctext%20x%3D%27156%27%20y%3D%27419%27%20fill%3D%27%2367e8f9%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2724%27%3Ekeep%20one%20run%20from%20poisoning%20the%20next%3C/text%3E%0A%20%20%3Crect%20x%3D%27770%27%20y%3D%27180%27%20width%3D%27250%27%20height%3D%2756%27%20rx%3D%2714%27%20fill%3D%27%230d1728%27%20stroke%3D%27%2322d3ee%27%20stroke-opacity%3D%270.45%27/%3E%0A%20%20%3Ctext%20x%3D%27806%27%20y%3D%27216%27%20fill%3D%27%23bae6fd%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2723%27%3Esession.db%3C/text%3E%0A%20%20%3Crect%20x%3D%27770%27%20y%3D%27278%27%20width%3D%27250%27%20height%3D%2756%27%20rx%3D%2714%27%20fill%3D%27%230d1728%27%20stroke%3D%27%2322d3ee%27%20stroke-opacity%3D%270.45%27/%3E%0A%20%20%3Ctext%20x%3D%27804%27%20y%3D%27314%27%20fill%3D%27%23bae6fd%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2723%27%3Eworktree/task-42%3C/text%3E%0A%20%20%3Crect%20x%3D%27770%27%20y%3D%27376%27%20width%3D%27250%27%20height%3D%2756%27%20rx%3D%2714%27%20fill%3D%27%230d1728%27%20stroke%3D%27%23a78bfa%27%20stroke-opacity%3D%270.45%27/%3E%0A%20%20%3Ctext%20x%3D%27821%27%20y%3D%27412%27%20fill%3D%27%23ddd6fe%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2723%27%3Eapprove%28%29%3C/text%3E%0A%3C/svg%3E" alt="Session Isolation Patterns for Long-Lived AI Agents" class="blog-post-image">
+        </div>
+        <div class="blog-post-content">
+          <p>Long-lived agents fail in a very specific way. The first task goes fine, the second inherits too much context, and by the third run you are debugging stale memory, dirty filesystem state, and tool permissions that no longer match the job in front of you.</p>
+          <p>That drift is not just annoying. It turns small mistakes into cross-task contamination. An agent that should be editing one repo starts referencing another ticket, another branch, or another user's data because the session boundary was never real in the first place.</p>
+          <p>If you want agents to stay useful for hours or days, you need isolation that is stronger than start a new chat when it feels weird. This is the pattern I would use: session-scoped memory, per-task worktrees, narrow tool lanes, and explicit approval resets.</p>
+          <h2>Why this matters</h2>
+          <p>A long-lived agent is really several state machines pretending to be one worker:</p>
+          <ul>
+            <li>conversational state</li>
+            <li>repo or filesystem state</li>
+            <li>tool credentials and write permissions</li>
+            <li>queued tasks and retries</li>
+            <li>user-specific memory or notes</li>
+          </ul>
+          <p>If those states share the same bucket, you get the classic failures people blame on model unreliability even when the architecture caused them.</p>
+          <p>Useful references: <a href="https://openai.github.io/openai-agents-python/">OpenAI Agents SDK</a>, <a href="https://opentelemetry.io/">OpenTelemetry</a>, <a href="https://git-scm.com/docs/git-worktree">git worktree</a>, and <a href="https://modelcontextprotocol.io/introduction">Model Context Protocol</a>.</p>
+          <h2>Architecture or workflow overview</h2>
+          <p>I like a four-layer isolation model: conversation state, task workspace, tool lane, and approval gate.</p>
+          <div class="mermaid-wrap"><pre class="mermaid">flowchart LR
+    A[User or scheduler] --> B[Session router
+choose tenant + memory scope]
+    B --> C[Task capsule
+worktree, env, allowed tools]
+    C --> D[Agent run
+read, plan, act]
+    D --> E[Verification + approval
+checks, diff preview, policy]
+    E --> F[Persist only safe artifacts
+summary, trace, explicit memory writes]</pre></div>
+          <h3>Isolation boundaries I actually care about</h3>
+          <ol>
+            <li><strong>Session memory boundary</strong> so one user's notes do not bleed into another task.</li>
+            <li><strong>Workspace boundary</strong> so each task gets its own branch or worktree.</li>
+            <li><strong>Tool boundary</strong> so read tools, write tools, and external actions are separated.</li>
+            <li><strong>Approval boundary</strong> so permission granted for one action is not silently reused later.</li>
+          </ol>
+          <h2>Implementation details</h2>
+          <h3>1. Keep memory scoped and typed</h3>
+          <p>I do not want a single blob of agent memory. I want separate stores for working context, explicit durable facts, and task-local scratch data.</p>
+          <div class="code-block"><pre><code>session_id: sess_01HV7M
+user_scope: anirudh
+memory:
+  working_set_ttl_minutes: 90
+  durable_fact_store: memory/profile.json
+  task_scratchpad: runs/sess_01HV7M/task_42/scratch.md
+write_policy:
+  durable_requires_explicit_signal: true
+  redact_secrets_before_persist: true
+  max_summary_tokens: 400</code></pre></div>
+          <p>That split matters because most long-lived failures come from writing too much too early. Durable memory should be slow, opinionated, and reviewable. Scratch state should be cheap to throw away.</p>
+          <h3>2. Give every task its own filesystem capsule</h3>
+          <p>A clean worktree is one of the best isolation wins per minute. It makes cleanup easy, keeps diffs scoped, and gives retries a deterministic base.</p>
+          <div class="code-block"><pre><code>git worktree add ../tasks/task-42 origin/master
+cd ../tasks/task-42
+python -m venv .venv
+source .venv/bin/activate
+pytest -q</code></pre></div>
+          <p>If the task fails badly, you can delete the entire capsule instead of trying to repair a polluted directory. I would avoid shared mutable repos for long-lived agent workers unless the task is strictly read-only.</p>
+          <h3>3. Route tools through capability lanes</h3>
+          <p>The agent should not see every tool as equally available. I prefer capability lanes that can be attached to a run.</p>
+          <div class="code-block"><pre><code>from dataclasses import dataclass
+
+@dataclass
+class ToolLane:
+    name: str
+    read_tools: list[str]
+    write_tools: list[str]
+    external_tools: list[str]
+    approval_required: bool
+
+repo_fix_lane = ToolLane(
+    name='repo-fix',
+    read_tools=['read_file', 'search_code', 'git_diff'],
+    write_tools=['edit_file', 'git_commit'],
+    external_tools=['gh_pr_create'],
+    approval_required=True,
+)</code></pre></div>
+          <p>This structure does two useful things. First, it stops accidental tool escalation. Second, it makes auditing simple because every run can be tagged with the lane it used.</p>
+          <h3>4. Persist only safe outputs after verification</h3>
+          <p>I want post-run persistence to be selective. Save the summary, diff stats, trace metadata, and approved durable notes. Do not blindly roll the entire conversation forward.</p>
+          <div class="code-block"><pre><code>{
+  "task_id": "task-42",
+  "session_id": "sess_01HV7M",
+  "result": "needs_review",
+  "artifacts": {
+    "diff": "artifacts/task-42.patch",
+    "checks": "artifacts/checks.json",
+    "trace": "artifacts/trace.json"
+  },
+  "persist": {
+    "working_summary": true,
+    "durable_memory": false,
+    "approval_token_reusable": false
+  }
+}</code></pre></div>
+          <p>That last field is important. I would not let approval tokens survive across materially different actions.</p>
+          <div class="terminal-block"><pre>$ run-agent --session sess_01HV7M --task fix-login-timeout
+[router] scope=user:anirudh lane=repo-fix
+[capsule] worktree=../tasks/task-42 base=origin/master
+[agent] touched files: api/auth.py, tests/test_auth.py
+[verify] pytest tests/test_auth.py -q ................ PASS
+[verify] policy check: external write requested ...... HOLD
+[persist] summary saved, durable memory skipped, approval reset</pre></div>
+          <h2>What went wrong and the tradeoffs</h2>
+          <h3>Failure mode 1, the memory layer becomes a junk drawer</h3>
+          <p>If every summary gets promoted to durable memory, the agent starts retrieving stale preferences, outdated repo state, or task-specific hacks as if they were truths.</p>
+          <p><strong>What I would not do:</strong> auto-save every important-looking sentence. Make durable writes explicit and sparse.</p>
+          <h3>Failure mode 2, shared workspaces create ghost bugs</h3>
+          <p>When several tasks share one checkout, you can get impossible-to-explain behavior: leftover generated files, mismatched dependencies, or edits from a prior task that look like the model hallucinated them. It is usually not hallucination. It is contamination.</p>
+          <h3>Failure mode 3, approval scope quietly expands</h3>
+          <p>This one worries me the most. A user approves one push or one external API call, then the agent assumes it can keep doing adjacent actions. Approval needs a fingerprint tied to the exact command, artifact, or target.</p>
+          <div class="callout callout-warning"><strong>Pitfall:</strong> same session is not a security boundary. If the task changed, the approval and tool scope should usually change too.</div>
+          <table class="comparison-table">
+            <thead><tr><th>Pattern</th><th>Operational cost</th><th>Reliability gain</th><th>Main downside</th></tr></thead>
+            <tbody>
+              <tr><td>Shared session + shared repo</td><td>Low</td><td>Low</td><td>drift compounds fast</td></tr>
+              <tr><td>Fresh chat only</td><td>Low</td><td>Medium</td><td>filesystem and tool state still leak</td></tr>
+              <tr><td>Per-task worktree + scoped memory</td><td>Medium</td><td>High</td><td>more setup and cleanup</td></tr>
+              <tr><td>Full container or microVM per task</td><td>High</td><td>Very high</td><td>slower and heavier for local workflows</td></tr>
+            </tbody>
+          </table>
+          <h2>Practical checklist</h2>
+          <div class="callout callout-success"><strong>Best practice:</strong> make the cleanup path a first-class feature. If a task capsule cannot be reset in seconds, it will eventually poison the next run.</div>
+          <ul>
+            <li>separate working memory, durable memory, and throwaway scratch state</li>
+            <li>create a fresh worktree or sandbox per write-capable task</li>
+            <li>tag each run with a capability lane instead of exposing every tool</li>
+            <li>expire approvals after the exact approved action</li>
+            <li>persist summaries and artifacts, not entire raw contexts by default</li>
+            <li>trace task id, session id, tool lane, and changed files for debugging</li>
+            <li>add a one-command teardown path for failed runs</li>
+          </ul>
+          <h2>Conclusion</h2>
+          <p>Long-lived agents are not unreliable because they stay alive too long. They become unreliable when we let memory, files, tools, and approvals share one fuzzy boundary. Tighten those boundaries and the same model suddenly looks a lot more production-ready.</p>
+          <div class="blog-post-tags">
+            <span class="blog-post-tag">Agent Architecture</span>
+            <span class="blog-post-tag">Session Isolation</span>
+            <span class="blog-post-tag">Reliability</span>
+            <span class="blog-post-tag">Security</span>
+            <span class="blog-post-tag">Developer Workflows</span>
+          </div>
+        </div>
+        <div class="blog-footer"><p>Want more practical AI engineering notes? <a href="index.html">Browse the rest of the blog</a>.</p></div>
+      </div>
+    </header>
+  </body>
+</html>
