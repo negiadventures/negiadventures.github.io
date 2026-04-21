@@ -1,6 +1,14 @@
 {
   "topics": [
     {
+      "date": "2026-04-21",
+      "skill": "Cron-based AI automation",
+      "topic": "Running scheduled AI workflows with narrow cron payloads, isolated run capsules, idempotency ledgers, and approval-aware delivery so recurring automation does useful work without duplicating side effects or accumulating hidden state",
+      "slug": "cron-automation-ai-workflows",
+      "title": "Cron-Based AI Automation That Does Not Become a Mess",
+      "summary": "A practical guide to scheduled AI workflows with small payloads, fresh run isolation, idempotency guards, and delivery stages that prevent duplicate side effects and background-job drift."
+    },
+    {
       "date": "2026-04-20",
       "skill": "Session isolation for long-lived AI agents",
       "topic": "Designing session isolation for long-lived AI agents with scoped memory, per-task worktrees, tool capability lanes, and approval resets so one run cannot quietly contaminate the next",
