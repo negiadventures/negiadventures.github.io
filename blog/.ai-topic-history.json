@@ -1,6 +1,14 @@
 {
   "topics": [
     {
+      "date": "2026-04-22",
+      "skill": "Planner-executor multi-agent workflow design",
+      "topic": "Designing planner-executor handoffs for AI agents with bounded task manifests, claim checks, verifier stages, and execution ledgers so multi-agent systems stay reviewable instead of turning into ambiguous chains of delegated guesses",
+      "slug": "planner-executor-handoffs",
+      "title": "Planner-Executor Handoffs for AI Agents That Stay Reviewable",
+      "summary": "A practical guide to planner-executor handoffs for AI agents using task manifests, claim checks, verifier stages, and execution records that keep multi-agent workflows understandable under real load."
+    },
+    {
       "date": "2026-04-21",
       "skill": "Cron-based AI automation",
       "topic": "Running scheduled AI workflows with narrow cron payloads, isolated run capsules, idempotency ledgers, and approval-aware delivery so recurring automation does useful work without duplicating side effects or accumulating hidden state",

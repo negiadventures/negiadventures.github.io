@@ -1,0 +1,231 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="A practical guide to planner-executor handoffs for AI agents using task manifests, claim checks, verification gates, and rollback-friendly execution so multi-agent workflows stay understandable under real load.">
+    <meta name="author" content="Anirudh Negi">
+    <title>Planner-Executor Handoffs for AI Agents That Stay Reviewable | Anirudh Negi</title>
+    <link rel="icon" type="image/svg+xml" href="../images/favicon.svg">
+    <link rel="canonical" href="https://negiadventures.github.io/blog/planner-executor-handoffs.html">
+    <meta property="og:type" content="article">
+    <meta property="og:url" content="https://negiadventures.github.io/blog/planner-executor-handoffs.html">
+    <meta property="og:title" content="Planner-Executor Handoffs for AI Agents That Stay Reviewable | Anirudh Negi">
+    <meta property="og:description" content="A practical guide to planner-executor handoffs for AI agents using task manifests, claim checks, verification gates, and rollback-friendly execution so multi-agent workflows stay understandable under real load.">
+    <meta property="og:image" content="data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A//www.w3.org/2000/svg%27%20viewBox%3D%270%200%201200%20630%27%3E%0A%20%20%3Cdefs%3E%0A%20%20%20%20%3ClinearGradient%20id%3D%27bg%27%20x1%3D%270%27%20x2%3D%271%27%20y1%3D%270%27%20y2%3D%271%27%3E%0A%20%20%20%20%20%20%3Cstop%20offset%3D%270%25%27%20stop-color%3D%27%2308121e%27/%3E%0A%20%20%20%20%20%20%3Cstop%20offset%3D%27100%25%27%20stop-color%3D%27%2319334e%27/%3E%0A%20%20%20%20%3C/linearGradient%3E%0A%20%20%3C/defs%3E%0A%20%20%3Crect%20width%3D%271200%27%20height%3D%27630%27%20fill%3D%27url%28%23bg%29%27/%3E%0A%20%20%3Ccircle%20cx%3D%271020%27%20cy%3D%27110%27%20r%3D%27155%27%20fill%3D%27%2322d3ee%27%20fill-opacity%3D%270.14%27/%3E%0A%20%20%3Ccircle%20cx%3D%27180%27%20cy%3D%27520%27%20r%3D%27205%27%20fill%3D%27%238b5cf6%27%20fill-opacity%3D%270.16%27/%3E%0A%20%20%3Crect%20x%3D%2784%27%20y%3D%2786%27%20width%3D%271032%27%20height%3D%27456%27%20rx%3D%2730%27%20fill%3D%27%230b1220%27%20stroke%3D%27%2338bdf8%27%20stroke-opacity%3D%270.35%27/%3E%0A%20%20%3Ctext%20x%3D%27134%27%20y%3D%27184%27%20fill%3D%27white%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2746%27%20font-weight%3D%27700%27%3EPlanner-Executor%20Handoffs%3C/text%3E%0A%20%20%3Ctext%20x%3D%27134%27%20y%3D%27256%27%20fill%3D%27%2393c5fd%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2746%27%20font-weight%3D%27700%27%3Efor%20AI%20Agents%3C/text%3E%0A%20%20%3Ctext%20x%3D%27134%27%20y%3D%27334%27%20fill%3D%27%23cbd5e1%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2728%27%3ETask%20manifests%2C%20claim%20checks%2C%20verification%2C%20and%20clean%20execution%20boundaries%3C/text%3E%0A%20%20%3Crect%20x%3D%27134%27%20y%3D%27390%27%20width%3D%27304%27%20height%3D%2752%27%20rx%3D%2714%27%20fill%3D%27%23111c2d%27%20stroke%3D%27%2367e8f9%27%20stroke-opacity%3D%270.45%27/%3E%0A%20%20%3Ctext%20x%3D%27158%27%20y%3D%27424%27%20fill%3D%27%2367e8f9%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2724%27%3Eseparate%20thinking%20from%20doing%3C/text%3E%0A%20%20%3Crect%20x%3D%27758%27%20y%3D%27182%27%20width%3D%27252%27%20height%3D%2754%27%20rx%3D%2714%27%20fill%3D%27%230d1728%27%20stroke%3D%27%2322d3ee%27%20stroke-opacity%3D%270.45%27/%3E%0A%20%20%3Ctext%20x%3D%27804%27%20y%3D%27217%27%20fill%3D%27%23bae6fd%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2723%27%3Eplan.yaml%3C/text%3E%0A%20%20%3Crect%20x%3D%27758%27%20y%3D%27278%27%20width%3D%27252%27%20height%3D%2754%27%20rx%3D%2714%27%20fill%3D%27%230d1728%27%20stroke%3D%27%2322d3ee%27%20stroke-opacity%3D%270.45%27/%3E%0A%20%20%3Ctext%20x%3D%27786%27%20y%3D%27313%27%20fill%3D%27%23bae6fd%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2723%27%3Eclaim-check.json%3C/text%3E%0A%20%20%3Crect%20x%3D%27758%27%20y%3D%27374%27%20width%3D%27252%27%20height%3D%2754%27%20rx%3D%2714%27%20fill%3D%27%230d1728%27%20stroke%3D%27%23a78bfa%27%20stroke-opacity%3D%270.45%27/%3E%0A%20%20%3Ctext%20x%3D%27818%27%20y%3D%27409%27%20fill%3D%27%23ddd6fe%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2723%27%3Eexecute%28%29%3C/text%3E%0A%3C/svg%3E">
+    <meta property="article:published_time" content="2026-04-22">
+    <meta property="article:author" content="Anirudh Negi">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:url" content="https://negiadventures.github.io/blog/planner-executor-handoffs.html">
+    <meta name="twitter:title" content="Planner-Executor Handoffs for AI Agents That Stay Reviewable | Anirudh Negi">
+    <meta name="twitter:description" content="A practical guide to planner-executor handoffs for AI agents using task manifests, claim checks, verification gates, and rollback-friendly execution so multi-agent workflows stay understandable under real load.">
+    <meta name="twitter:image" content="data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A//www.w3.org/2000/svg%27%20viewBox%3D%270%200%201200%20630%27%3E%0A%20%20%3Cdefs%3E%0A%20%20%20%20%3ClinearGradient%20id%3D%27bg%27%20x1%3D%270%27%20x2%3D%271%27%20y1%3D%270%27%20y2%3D%271%27%3E%0A%20%20%20%20%20%20%3Cstop%20offset%3D%270%25%27%20stop-color%3D%27%2308121e%27/%3E%0A%20%20%20%20%20%20%3Cstop%20offset%3D%27100%25%27%20stop-color%3D%27%2319334e%27/%3E%0A%20%20%20%20%3C/linearGradient%3E%0A%20%20%3C/defs%3E%0A%20%20%3Crect%20width%3D%271200%27%20height%3D%27630%27%20fill%3D%27url%28%23bg%29%27/%3E%0A%20%20%3Ccircle%20cx%3D%271020%27%20cy%3D%27110%27%20r%3D%27155%27%20fill%3D%27%2322d3ee%27%20fill-opacity%3D%270.14%27/%3E%0A%20%20%3Ccircle%20cx%3D%27180%27%20cy%3D%27520%27%20r%3D%27205%27%20fill%3D%27%238b5cf6%27%20fill-opacity%3D%270.16%27/%3E%0A%20%20%3Crect%20x%3D%2784%27%20y%3D%2786%27%20width%3D%271032%27%20height%3D%27456%27%20rx%3D%2730%27%20fill%3D%27%230b1220%27%20stroke%3D%27%2338bdf8%27%20stroke-opacity%3D%270.35%27/%3E%0A%20%20%3Ctext%20x%3D%27134%27%20y%3D%27184%27%20fill%3D%27white%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2746%27%20font-weight%3D%27700%27%3EPlanner-Executor%20Handoffs%3C/text%3E%0A%20%20%3Ctext%20x%3D%27134%27%20y%3D%27256%27%20fill%3D%27%2393c5fd%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2746%27%20font-weight%3D%27700%27%3Efor%20AI%20Agents%3C/text%3E%0A%20%20%3Ctext%20x%3D%27134%27%20y%3D%27334%27%20fill%3D%27%23cbd5e1%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2728%27%3ETask%20manifests%2C%20claim%20checks%2C%20verification%2C%20and%20clean%20execution%20boundaries%3C/text%3E%0A%20%20%3Crect%20x%3D%27134%27%20y%3D%27390%27%20width%3D%27304%27%20height%3D%2752%27%20rx%3D%2714%27%20fill%3D%27%23111c2d%27%20stroke%3D%27%2367e8f9%27%20stroke-opacity%3D%270.45%27/%3E%0A%20%20%3Ctext%20x%3D%27158%27%20y%3D%27424%27%20fill%3D%27%2367e8f9%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2724%27%3Eseparate%20thinking%20from%20doing%3C/text%3E%0A%20%20%3Crect%20x%3D%27758%27%20y%3D%27182%27%20width%3D%27252%27%20height%3D%2754%27%20rx%3D%2714%27%20fill%3D%27%230d1728%27%20stroke%3D%27%2322d3ee%27%20stroke-opacity%3D%270.45%27/%3E%0A%20%20%3Ctext%20x%3D%27804%27%20y%3D%27217%27%20fill%3D%27%23bae6fd%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2723%27%3Eplan.yaml%3C/text%3E%0A%20%20%3Crect%20x%3D%27758%27%20y%3D%27278%27%20width%3D%27252%27%20height%3D%2754%27%20rx%3D%2714%27%20fill%3D%27%230d1728%27%20stroke%3D%27%2322d3ee%27%20stroke-opacity%3D%270.45%27/%3E%0A%20%20%3Ctext%20x%3D%27786%27%20y%3D%27313%27%20fill%3D%27%23bae6fd%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2723%27%3Eclaim-check.json%3C/text%3E%0A%20%20%3Crect%20x%3D%27758%27%20y%3D%27374%27%20width%3D%27252%27%20height%3D%2754%27%20rx%3D%2714%27%20fill%3D%27%230d1728%27%20stroke%3D%27%23a78bfa%27%20stroke-opacity%3D%270.45%27/%3E%0A%20%20%3Ctext%20x%3D%27818%27%20y%3D%27409%27%20fill%3D%27%23ddd6fe%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2723%27%3Eexecute%28%29%3C/text%3E%0A%3C/svg%3E">
+    <script type="application/ld+json">{
+      "@context": "https://schema.org",
+      "@type": "BlogPosting",
+      "headline": "Planner-Executor Handoffs for AI Agents That Stay Reviewable",
+      "description": "A practical guide to planner-executor handoffs for AI agents using task manifests, claim checks, verification gates, and rollback-friendly execution so multi-agent workflows stay understandable under real load.",
+      "image": "data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A//www.w3.org/2000/svg%27%20viewBox%3D%270%200%201200%20630%27%3E%0A%20%20%3Cdefs%3E%0A%20%20%20%20%3ClinearGradient%20id%3D%27bg%27%20x1%3D%270%27%20x2%3D%271%27%20y1%3D%270%27%20y2%3D%271%27%3E%0A%20%20%20%20%20%20%3Cstop%20offset%3D%270%25%27%20stop-color%3D%27%2308121e%27/%3E%0A%20%20%20%20%20%20%3Cstop%20offset%3D%27100%25%27%20stop-color%3D%27%2319334e%27/%3E%0A%20%20%20%20%3C/linearGradient%3E%0A%20%20%3C/defs%3E%0A%20%20%3Crect%20width%3D%271200%27%20height%3D%27630%27%20fill%3D%27url%28%23bg%29%27/%3E%0A%20%20%3Ccircle%20cx%3D%271020%27%20cy%3D%27110%27%20r%3D%27155%27%20fill%3D%27%2322d3ee%27%20fill-opacity%3D%270.14%27/%3E%0A%20%20%3Ccircle%20cx%3D%27180%27%20cy%3D%27520%27%20r%3D%27205%27%20fill%3D%27%238b5cf6%27%20fill-opacity%3D%270.16%27/%3E%0A%20%20%3Crect%20x%3D%2784%27%20y%3D%2786%27%20width%3D%271032%27%20height%3D%27456%27%20rx%3D%2730%27%20fill%3D%27%230b1220%27%20stroke%3D%27%2338bdf8%27%20stroke-opacity%3D%270.35%27/%3E%0A%20%20%3Ctext%20x%3D%27134%27%20y%3D%27184%27%20fill%3D%27white%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2746%27%20font-weight%3D%27700%27%3EPlanner-Executor%20Handoffs%3C/text%3E%0A%20%20%3Ctext%20x%3D%27134%27%20y%3D%27256%27%20fill%3D%27%2393c5fd%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2746%27%20font-weight%3D%27700%27%3Efor%20AI%20Agents%3C/text%3E%0A%20%20%3Ctext%20x%3D%27134%27%20y%3D%27334%27%20fill%3D%27%23cbd5e1%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2728%27%3ETask%20manifests%2C%20claim%20checks%2C%20verification%2C%20and%20clean%20execution%20boundaries%3C/text%3E%0A%20%20%3Crect%20x%3D%27134%27%20y%3D%27390%27%20width%3D%27304%27%20height%3D%2752%27%20rx%3D%2714%27%20fill%3D%27%23111c2d%27%20stroke%3D%27%2367e8f9%27%20stroke-opacity%3D%270.45%27/%3E%0A%20%20%3Ctext%20x%3D%27158%27%20y%3D%27424%27%20fill%3D%27%2367e8f9%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2724%27%3Eseparate%20thinking%20from%20doing%3C/text%3E%0A%20%20%3Crect%20x%3D%27758%27%20y%3D%27182%27%20width%3D%27252%27%20height%3D%2754%27%20rx%3D%2714%27%20fill%3D%27%230d1728%27%20stroke%3D%27%2322d3ee%27%20stroke-opacity%3D%270.45%27/%3E%0A%20%20%3Ctext%20x%3D%27804%27%20y%3D%27217%27%20fill%3D%27%23bae6fd%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2723%27%3Eplan.yaml%3C/text%3E%0A%20%20%3Crect%20x%3D%27758%27%20y%3D%27278%27%20width%3D%27252%27%20height%3D%2754%27%20rx%3D%2714%27%20fill%3D%27%230d1728%27%20stroke%3D%27%2322d3ee%27%20stroke-opacity%3D%270.45%27/%3E%0A%20%20%3Ctext%20x%3D%27786%27%20y%3D%27313%27%20fill%3D%27%23bae6fd%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2723%27%3Eclaim-check.json%3C/text%3E%0A%20%20%3Crect%20x%3D%27758%27%20y%3D%27374%27%20width%3D%27252%27%20height%3D%2754%27%20rx%3D%2714%27%20fill%3D%27%230d1728%27%20stroke%3D%27%23a78bfa%27%20stroke-opacity%3D%270.45%27/%3E%0A%20%20%3Ctext%20x%3D%27818%27%20y%3D%27409%27%20fill%3D%27%23ddd6fe%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2723%27%3Eexecute%28%29%3C/text%3E%0A%3C/svg%3E",
+      "url": "https://negiadventures.github.io/blog/planner-executor-handoffs.html",
+      "datePublished": "2026-04-22",
+      "author": { "@type": "Person", "name": "Anirudh Negi", "url": "https://negiadventures.github.io" },
+      "publisher": { "@type": "Person", "name": "Anirudh Negi", "url": "https://negiadventures.github.io" }
+    }</script>
+    <script type="module">
+      import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.esm.min.mjs';
+      mermaid.initialize({ startOnLoad: true, theme: 'dark' });
+    </script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../stylesheets/stylesheet.css?v=5" media="screen">
+    <style>
+      .blog-post { max-width: 860px; margin: 0 auto; padding: 60px 20px; }
+      .blog-post-nav { margin-bottom: 30px; }
+      .blog-post-nav a { color: var(--accent-strong); font-size: 0.95rem; }
+      .blog-post-nav a:hover { color: var(--accent); }
+      .blog-post-title { font-size: 2.5rem; margin-bottom: 16px; }
+      .blog-post-meta { display: flex; gap: 20px; color: var(--text-muted); font-size: 0.95rem; margin-bottom: 30px; flex-wrap: wrap; }
+      .blog-post-image { width: 100%; height: 300px; object-fit: cover; border-radius: 16px; margin-bottom: 30px; border: 1px solid var(--border); background: var(--bg-alt); }
+      .blog-post-content h2 { font-size: 1.65rem; margin-top: 40px; margin-bottom: 16px; color: var(--text-light); }
+      .blog-post-content h3 { font-size: 1.25rem; margin-top: 28px; margin-bottom: 12px; color: var(--text-light); }
+      .blog-post-content p, .blog-post-content li { line-height: 1.8; color: var(--text-muted); }
+      .blog-post-content ul, .blog-post-content ol { margin-bottom: 20px; }
+      .code-block, .terminal-block, .mermaid-wrap { background: var(--bg-alt); border: 1px solid var(--border); border-radius: 14px; padding: 20px; margin: 20px 0; overflow-x: auto; }
+      .code-block pre, .terminal-block pre, pre.mermaid { margin: 0; font-family: var(--mono); font-size: 0.9rem; line-height: 1.6; color: var(--text-light); white-space: pre-wrap; }
+      .code-block code { color: var(--accent-strong); }
+      table { width: 100%; border-collapse: collapse; margin: 22px 0; background: var(--bg-alt); border: 1px solid var(--border); border-radius: 14px; overflow: hidden; }
+      th, td { padding: 14px; border-bottom: 1px solid var(--border); text-align: left; vertical-align: top; }
+      th { color: var(--text-light); background: rgba(56, 189, 248, 0.08); }
+      .callout { border-radius: 14px; padding: 18px 20px; margin: 22px 0; border: 1px solid var(--border); }
+      .callout-warning { background: rgba(251, 191, 36, 0.08); border-color: rgba(251, 191, 36, 0.35); }
+      .callout-success { background: rgba(34, 197, 94, 0.08); border-color: rgba(34, 197, 94, 0.35); }
+      .blog-post-tags { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 40px; padding-top: 30px; border-top: 1px solid var(--border); }
+      .blog-post-tag { background: var(--accent-soft); color: var(--accent-strong); border-radius: 999px; padding: 6px 14px; font-size: 0.85rem; font-family: var(--mono); border: 1px solid transparent; }
+      .blog-footer { margin-top: 60px; padding-top: 30px; border-top: 1px solid var(--border); text-align: center; }
+      .blog-footer a { color: var(--accent-strong); }
+      @media (max-width: 768px) { .blog-post { padding: 40px 16px; } .blog-post-title { font-size: 2rem; } .blog-post-image { height: 210px; } }
+    </style>
+  </head>
+  <body>
+    <a href="../index.html#main" class="skip-link">Skip to main content</a>
+    <header class="site-header">
+      <div class="container blog-post">
+        <div class="blog-post-nav"><a href="index.html">&larr; Back to All Posts</a></div>
+        <div class="blog-post-header">
+          <h1 class="blog-post-title">Planner-Executor Handoffs for AI Agents That Stay Reviewable</h1>
+          <div class="blog-post-meta"><span>April 22, 2026</span><span>&bull;</span><span>9 min read</span></div>
+          <img src="data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A//www.w3.org/2000/svg%27%20viewBox%3D%270%200%201200%20630%27%3E%0A%20%20%3Cdefs%3E%0A%20%20%20%20%3ClinearGradient%20id%3D%27bg%27%20x1%3D%270%27%20x2%3D%271%27%20y1%3D%270%27%20y2%3D%271%27%3E%0A%20%20%20%20%20%20%3Cstop%20offset%3D%270%25%27%20stop-color%3D%27%2308121e%27/%3E%0A%20%20%20%20%20%20%3Cstop%20offset%3D%27100%25%27%20stop-color%3D%27%2319334e%27/%3E%0A%20%20%20%20%3C/linearGradient%3E%0A%20%20%3C/defs%3E%0A%20%20%3Crect%20width%3D%271200%27%20height%3D%27630%27%20fill%3D%27url%28%23bg%29%27/%3E%0A%20%20%3Ccircle%20cx%3D%271020%27%20cy%3D%27110%27%20r%3D%27155%27%20fill%3D%27%2322d3ee%27%20fill-opacity%3D%270.14%27/%3E%0A%20%20%3Ccircle%20cx%3D%27180%27%20cy%3D%27520%27%20r%3D%27205%27%20fill%3D%27%238b5cf6%27%20fill-opacity%3D%270.16%27/%3E%0A%20%20%3Crect%20x%3D%2784%27%20y%3D%2786%27%20width%3D%271032%27%20height%3D%27456%27%20rx%3D%2730%27%20fill%3D%27%230b1220%27%20stroke%3D%27%2338bdf8%27%20stroke-opacity%3D%270.35%27/%3E%0A%20%20%3Ctext%20x%3D%27134%27%20y%3D%27184%27%20fill%3D%27white%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2746%27%20font-weight%3D%27700%27%3EPlanner-Executor%20Handoffs%3C/text%3E%0A%20%20%3Ctext%20x%3D%27134%27%20y%3D%27256%27%20fill%3D%27%2393c5fd%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2746%27%20font-weight%3D%27700%27%3Efor%20AI%20Agents%3C/text%3E%0A%20%20%3Ctext%20x%3D%27134%27%20y%3D%27334%27%20fill%3D%27%23cbd5e1%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2728%27%3ETask%20manifests%2C%20claim%20checks%2C%20verification%2C%20and%20clean%20execution%20boundaries%3C/text%3E%0A%20%20%3Crect%20x%3D%27134%27%20y%3D%27390%27%20width%3D%27304%27%20height%3D%2752%27%20rx%3D%2714%27%20fill%3D%27%23111c2d%27%20stroke%3D%27%2367e8f9%27%20stroke-opacity%3D%270.45%27/%3E%0A%20%20%3Ctext%20x%3D%27158%27%20y%3D%27424%27%20fill%3D%27%2367e8f9%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2724%27%3Eseparate%20thinking%20from%20doing%3C/text%3E%0A%20%20%3Crect%20x%3D%27758%27%20y%3D%27182%27%20width%3D%27252%27%20height%3D%2754%27%20rx%3D%2714%27%20fill%3D%27%230d1728%27%20stroke%3D%27%2322d3ee%27%20stroke-opacity%3D%270.45%27/%3E%0A%20%20%3Ctext%20x%3D%27804%27%20y%3D%27217%27%20fill%3D%27%23bae6fd%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2723%27%3Eplan.yaml%3C/text%3E%0A%20%20%3Crect%20x%3D%27758%27%20y%3D%27278%27%20width%3D%27252%27%20height%3D%2754%27%20rx%3D%2714%27%20fill%3D%27%230d1728%27%20stroke%3D%27%2322d3ee%27%20stroke-opacity%3D%270.45%27/%3E%0A%20%20%3Ctext%20x%3D%27786%27%20y%3D%27313%27%20fill%3D%27%23bae6fd%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2723%27%3Eclaim-check.json%3C/text%3E%0A%20%20%3Crect%20x%3D%27758%27%20y%3D%27374%27%20width%3D%27252%27%20height%3D%2754%27%20rx%3D%2714%27%20fill%3D%27%230d1728%27%20stroke%3D%27%23a78bfa%27%20stroke-opacity%3D%270.45%27/%3E%0A%20%20%3Ctext%20x%3D%27818%27%20y%3D%27409%27%20fill%3D%27%23ddd6fe%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2723%27%3Eexecute%28%29%3C/text%3E%0A%3C/svg%3E" alt="Planner-Executor Handoffs for AI Agents That Stay Reviewable" class="blog-post-image">
+        </div>
+        <div class="blog-post-content">
+          <p>Multi-agent demos usually fail in one boring place, the handoff. The planner writes a beautiful task list, the executor improvises past it, and by the time a reviewer looks at the diff nobody can tell what was intended versus what was guessed.</p>
+          <p>This gets worse under real load. Long prompts turn into soft contracts, retries re-run half-complete work, and two agents quietly operate on different assumptions about allowed files, budgets, or verification.</p>
+          <p>The fix is not more agent cleverness. It is a better handoff contract. If the planner emits a small manifest, the executor claims one task at a time, and verification gates are explicit, the system becomes much easier to debug and trust.</p>
+          <h2>Why this matters</h2>
+          <p>The planner-executor split is attractive because it gives each agent a narrower job:</p>
+          <ul>
+            <li>the planner decomposes work</li>
+            <li>the executor edits code or runs commands</li>
+            <li>a verifier checks whether the result actually satisfied the contract</li>
+          </ul>
+          <p>That separation only helps if the handoff is strong enough to survive model drift, retries, and human review. Otherwise you get more moving parts and less accountability.</p>
+          <p>Useful references: <a href="https://www.anthropic.com/engineering/building-effective-agents">Anthropic on building effective agents</a>, <a href="https://opentelemetry.io/">OpenTelemetry</a>, and <a href="https://docs.aws.amazon.com/step-functions/latest/dg/connect-to-resource.html">AWS Step Functions task tokens</a>.</p>
+          <h2>Architecture or workflow overview</h2>
+          <p>I like a four-artifact handoff: plan, claim check, execution record, and verification result.</p>
+          <div class="mermaid-wrap"><pre class="mermaid">flowchart LR
+    A[Planner] --> B[Task manifest
+objective, files, constraints, checks]
+    B --> C[Claim check
+task id, owner, ttl, attempt]
+    C --> D[Executor
+edit, run, summarize]
+    D --> E[Verifier
+tests, invariants, diff review]
+    E --> F[Ledger
+status, rollback note, trace id]</pre></div>
+          <h3>The contract I actually want</h3>
+          <ol>
+            <li><strong>Manifest</strong> with one bounded task, not a novel.</li>
+            <li><strong>Allowed surface area</strong> listing files, tools, and write scope.</li>
+            <li><strong>Verification gates</strong> that must pass before completion.</li>
+            <li><strong>Claim check</strong> so only one executor owns the task at a time.</li>
+            <li><strong>Execution summary</strong> that says what changed and what remains risky.</li>
+          </ol>
+          <h2>Implementation details</h2>
+          <h3>1. Make the planner write a real task manifest</h3>
+          <p>If the planner hands over prose, the executor will fill in missing rules from vibes. A manifest gives you something reviewable.</p>
+          <div class="code-block"><pre><code>task_id: repo-142
+objective: Add rate-limit backoff to the GitHub sync worker
+allowed_paths:
+  - src/github_sync.py
+  - tests/test_github_sync.py
+constraints:
+  - Do not change API response schemas
+  - Keep max retry delay under 30 seconds
+verification:
+  - pytest tests/test_github_sync.py -q
+  - python -m scripts.smoke_github_sync
+handoff_notes:
+  - Existing failures come from 429 handling
+  - Prefer jittered exponential backoff</code></pre></div>
+          <p>The planner should not pre-write the entire patch. It should define the boundary, the success checks, and the danger zones.</p>
+          <h3>2. Use a claim check before execution starts</h3>
+          <p>This is the part teams skip, and then they wonder why two executors stamped on the same task.</p>
+          <div class="code-block"><pre><code>from dataclasses import dataclass
+from datetime import datetime, timedelta
+
+@dataclass
+class ClaimCheck:
+    task_id: str
+    owner: str
+    expires_at: datetime
+    attempt: int
+
+    @classmethod
+    def create(cls, task_id: str, owner: str, minutes: int = 20, attempt: int = 1):
+        return cls(
+            task_id=task_id,
+            owner=owner,
+            expires_at=datetime.utcnow() + timedelta(minutes=minutes),
+            attempt=attempt,
+        )
+
+    def expired(self) -> bool:
+        return datetime.utcnow() >= self.expires_at</code></pre></div>
+          <p>A claim check is not fancy. It just prevents accidental parallelism and gives you a clean retry story.</p>
+          <h3>3. Keep executor output structured</h3>
+          <p>I do not want the executor returning only "done". I want a compact record a human or verifier can inspect.</p>
+          <div class="code-block"><pre><code>{
+  "task_id": "repo-142",
+  "status": "needs_review",
+  "files_changed": [
+    "src/github_sync.py",
+    "tests/test_github_sync.py"
+  ],
+  "commands_run": [
+    "pytest tests/test_github_sync.py -q",
+    "python -m scripts.smoke_github_sync"
+  ],
+  "risks": [
+    "Backoff constants tuned for current API rate window"
+  ],
+  "next_step": "Review retry cap before merging"
+}</code></pre></div>
+          <p>That record becomes the bridge between execution and review. It also makes it easier to build audit trails later.</p>
+          <h3>4. Put verification outside the executor loop</h3>
+          <p>The executor should propose work. The verifier should decide whether the work satisfied the contract.</p>
+          <div class="terminal-block"><pre>$ agent-run execute repo-142
+[claim] task=repo-142 owner=executor-3 ttl=20m
+[edit] src/github_sync.py updated
+[test] pytest tests/test_github_sync.py -q ........ PASS
+[smoke] python -m scripts.smoke_github_sync ...... PASS
+[summary] status=needs_review files=2 risks=1
+[verify] waiting on diff and invariant checks</pre></div>
+          <p>This split matters because otherwise the same model that made the change is also grading its own homework.</p>
+          <h2>What went wrong and the tradeoffs</h2>
+          <h3>Failure mode 1, the planner over-specifies the implementation</h3>
+          <p>A planner that writes twenty tiny steps plus code-level instructions usually just pushes complexity downstream. The executor either ignores the plan or follows it so literally that better options are missed.</p>
+          <p><strong>What I would not do:</strong> make the planner dictate exact code when the real need is a boundary and a verification target.</p>
+          <h3>Failure mode 2, the executor escapes the manifest</h3>
+          <p>If allowed paths are not explicit, the executor will eventually wander into config files, shared utilities, or formatting churn. Then review scope explodes.</p>
+          <h3>Failure mode 3, retries lose ownership state</h3>
+          <p>Without claim expiry and attempt counts, a crashed executor leaves behind a zombie task. The next worker cannot tell whether to resume, retry, or stop.</p>
+          <div class="callout callout-warning"><strong>Pitfall:</strong> a planner-executor split does not magically create reliability. It usually adds one more place where ambiguous state can hide unless the handoff is explicit.</div>
+          <table>
+            <thead>
+              <tr><th>Pattern</th><th>Why it feels good initially</th><th>What breaks later</th><th>Better default</th></tr>
+            </thead>
+            <tbody>
+              <tr><td>Planner writes long prose</td><td>Easy to prompt</td><td>Soft constraints, hidden assumptions</td><td>Small manifest with bounded fields</td></tr>
+              <tr><td>No claim ownership</td><td>Fewer moving parts</td><td>Duplicate execution</td><td>Claim check with TTL and attempt</td></tr>
+              <tr><td>Executor self-verifies</td><td>Fast loop</td><td>Self-grading bias</td><td>Separate verifier or invariant stage</td></tr>
+              <tr><td>Open-ended file access</td><td>More flexibility</td><td>Review blast radius grows</td><td>Allowed path list</td></tr>
+            </tbody>
+          </table>
+          <p>One tradeoff is real, though. Stronger handoffs add a bit of friction. For very small tasks, a single well-bounded agent may be simpler. I only split planner and executor when the task has enough complexity that reviewability matters more than pure speed.</p>
+          <h2>Practical checklist or decision framework</h2>
+          <div class="callout callout-success"><strong>Best practice:</strong> if a human reviewer cannot understand the task from the manifest plus execution record, the handoff is still too fuzzy.</div>
+          <ul>
+            <li>write manifests with objective, allowed paths, constraints, and verification commands</li>
+            <li>issue claim checks before any write-capable work starts</li>
+            <li>keep one executor per task at a time, with ttl and attempt count</li>
+            <li>require executor summaries that list files changed, commands run, and remaining risks</li>
+            <li>separate verification from generation whenever the task can affect code, infra, or external state</li>
+            <li>prefer a single agent for tiny tasks and a planner-executor split for higher-risk or multi-file work</li>
+            <li>store ledger events so retries and postmortems are explainable later</li>
+          </ul>
+          <h2>Conclusion</h2>
+          <p>Planner-executor systems stay useful when the handoff looks more like a small workflow contract and less like a motivational speech. Keep the manifest tight, claim work explicitly, verify outside the edit loop, and make every run easy to inspect. Then multi-agent architecture stops being theater and starts being operationally sane.</p>
+          <div class="blog-post-tags">
+            <span class="blog-post-tag">Multi-Agent Systems</span>
+            <span class="blog-post-tag">AI Agents</span>
+            <span class="blog-post-tag">Workflow Design</span>
+            <span class="blog-post-tag">Reliability</span>
+            <span class="blog-post-tag">Reviewability</span>
+          </div>
+        </div>
+        <div class="blog-footer"><p>Want more practical AI engineering notes? <a href="index.html">Browse the rest of the blog</a>.</p></div>
+      </div>
+    </header>
+  </body>
+</html>
