@@ -1,6 +1,14 @@
 {
   "topics": [
     {
+      "date": "2026-04-23",
+      "skill": "Database migration workflow for AI coding agents",
+      "topic": "Using expand-contract database migrations with additive schema changes, dual writes, bounded backfills, verification queries, and delayed contract steps so AI-assisted schema work stays rollback-friendly instead of turning neat diffs into production damage",
+      "slug": "agent-safe-db-migrations",
+      "title": "Agent-Safe Database Migrations with Expand-Contract and Rollback Checkpoints",
+      "summary": "A practical guide to database changes with AI coding agents using additive migrations, dual writes, resumable backfills, verification SQL, and delayed cleanup so schema evolution stays safe under real production constraints."
+    },
+    {
       "date": "2026-04-22",
       "skill": "Planner-executor multi-agent workflow design",
       "topic": "Designing planner-executor handoffs for AI agents with bounded task manifests, claim checks, verifier stages, and execution ledgers so multi-agent systems stay reviewable instead of turning into ambiguous chains of delegated guesses",
