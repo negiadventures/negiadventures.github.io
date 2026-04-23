@@ -1,0 +1,274 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="A practical guide to shipping database changes with AI coding agents using expand-contract migrations, schema guards, dual writes, and rollback checkpoints.">
+    <meta name="author" content="Anirudh Negi">
+    <title>Agent-Safe Database Migrations with Expand-Contract and Rollback Checkpoints | Anirudh Negi</title>
+    <link rel="icon" type="image/svg+xml" href="../images/favicon.svg">
+    <link rel="canonical" href="https://negiadventures.github.io/blog/agent-safe-db-migrations.html">
+    <meta property="og:type" content="article">
+    <meta property="og:url" content="https://negiadventures.github.io/blog/agent-safe-db-migrations.html">
+    <meta property="og:title" content="Agent-Safe Database Migrations with Expand-Contract and Rollback Checkpoints | Anirudh Negi">
+    <meta property="og:description" content="A practical guide to shipping database changes with AI coding agents using expand-contract migrations, schema guards, dual writes, and rollback checkpoints.">
+    <meta property="og:image" content="data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A//www.w3.org/2000/svg%27%20viewBox%3D%270%200%201200%20630%27%3E%3Cdefs%3E%3ClinearGradient%20id%3D%27bg%27%20x1%3D%270%27%20x2%3D%271%27%20y1%3D%270%27%20y2%3D%271%27%3E%3Cstop%20offset%3D%270%25%27%20stop-color%3D%27%23070f1c%27/%3E%3Cstop%20offset%3D%27100%25%27%20stop-color%3D%27%2318314d%27/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect%20width%3D%271200%27%20height%3D%27630%27%20fill%3D%27url%28%23bg%29%27/%3E%3Ccircle%20cx%3D%271000%27%20cy%3D%27120%27%20r%3D%27160%27%20fill%3D%27%2322d3ee%27%20fill-opacity%3D%270.14%27/%3E%3Ccircle%20cx%3D%27190%27%20cy%3D%27520%27%20r%3D%27210%27%20fill%3D%27%238b5cf6%27%20fill-opacity%3D%270.16%27/%3E%3Crect%20x%3D%2782%27%20y%3D%2786%27%20width%3D%271036%27%20height%3D%27458%27%20rx%3D%2732%27%20fill%3D%27%230b1220%27%20stroke%3D%27%2338bdf8%27%20stroke-opacity%3D%270.35%27/%3E%3Ctext%20x%3D%27130%27%20y%3D%27186%27%20fill%3D%27white%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2744%27%20font-weight%3D%27700%27%3EAgent-Safe%20Database%20Migrations%3C/text%3E%3Ctext%20x%3D%27130%27%20y%3D%27256%27%20fill%3D%27%2393c5fd%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2744%27%20font-weight%3D%27700%27%3Ewith%20Expand-Contract%3C/text%3E%3Ctext%20x%3D%27130%27%20y%3D%27334%27%20fill%3D%27%23cbd5e1%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2728%27%3EDual%20writes%2C%20schema%20guards%2C%20and%20rollback%20checkpoints%20for%20AI-assisted%20changes%3C/text%3E%3Crect%20x%3D%27130%27%20y%3D%27388%27%20width%3D%27336%27%20height%3D%2754%27%20rx%3D%2714%27%20fill%3D%27%23111c2d%27%20stroke%3D%27%2367e8f9%27%20stroke-opacity%3D%270.45%27/%3E%3Ctext%20x%3D%27154%27%20y%3D%27423%27%20fill%3D%27%2367e8f9%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2724%27%3Enever%20let%20the%20model%20drop%20the%20old%20column%20first%3C/text%3E%3Crect%20x%3D%27758%27%20y%3D%27182%27%20width%3D%27252%27%20height%3D%2756%27%20rx%3D%2714%27%20fill%3D%27%230d1728%27%20stroke%3D%27%2322d3ee%27%20stroke-opacity%3D%270.45%27/%3E%3Ctext%20x%3D%27810%27%20y%3D%27218%27%20fill%3D%27%23bae6fd%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2723%27%3Emigration.sql%3C/text%3E%3Crect%20x%3D%27758%27%20y%3D%27280%27%20width%3D%27252%27%20height%3D%2756%27%20rx%3D%2714%27%20fill%3D%27%230d1728%27%20stroke%3D%27%2322d3ee%27%20stroke-opacity%3D%270.45%27/%3E%3Ctext%20x%3D%27806%27%20y%3D%27316%27%20fill%3D%27%23bae6fd%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2723%27%3Ebackfill.ts%3C/text%3E%3Crect%20x%3D%27758%27%20y%3D%27378%27%20width%3D%27252%27%20height%3D%2756%27%20rx%3D%2714%27%20fill%3D%27%230d1728%27%20stroke%3D%27%23a78bfa%27%20stroke-opacity%3D%270.45%27/%3E%3Ctext%20x%3D%27818%27%20y%3D%27414%27%20fill%3D%27%23ddd6fe%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2723%27%3Everify%28%29%3C/text%3E%3C/svg%3E">
+    <meta property="article:published_time" content="2026-04-23T12:04:00Z">
+    <meta property="article:author" content="Anirudh Negi">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:url" content="https://negiadventures.github.io/blog/agent-safe-db-migrations.html">
+    <meta name="twitter:title" content="Agent-Safe Database Migrations with Expand-Contract and Rollback Checkpoints | Anirudh Negi">
+    <meta name="twitter:description" content="A practical guide to shipping database changes with AI coding agents using expand-contract migrations, schema guards, dual writes, and rollback checkpoints.">
+    <meta name="twitter:image" content="data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A//www.w3.org/2000/svg%27%20viewBox%3D%270%200%201200%20630%27%3E%3Cdefs%3E%3ClinearGradient%20id%3D%27bg%27%20x1%3D%270%27%20x2%3D%271%27%20y1%3D%270%27%20y2%3D%271%27%3E%3Cstop%20offset%3D%270%25%27%20stop-color%3D%27%23070f1c%27/%3E%3Cstop%20offset%3D%27100%25%27%20stop-color%3D%27%2318314d%27/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect%20width%3D%271200%27%20height%3D%27630%27%20fill%3D%27url%28%23bg%29%27/%3E%3Ccircle%20cx%3D%271000%27%20cy%3D%27120%27%20r%3D%27160%27%20fill%3D%27%2322d3ee%27%20fill-opacity%3D%270.14%27/%3E%3Ccircle%20cx%3D%27190%27%20cy%3D%27520%27%20r%3D%27210%27%20fill%3D%27%238b5cf6%27%20fill-opacity%3D%270.16%27/%3E%3Crect%20x%3D%2782%27%20y%3D%2786%27%20width%3D%271036%27%20height%3D%27458%27%20rx%3D%2732%27%20fill%3D%27%230b1220%27%20stroke%3D%27%2338bdf8%27%20stroke-opacity%3D%270.35%27/%3E%3Ctext%20x%3D%27130%27%20y%3D%27186%27%20fill%3D%27white%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2744%27%20font-weight%3D%27700%27%3EAgent-Safe%20Database%20Migrations%3C/text%3E%3Ctext%20x%3D%27130%27%20y%3D%27256%27%20fill%3D%27%2393c5fd%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2744%27%20font-weight%3D%27700%27%3Ewith%20Expand-Contract%3C/text%3E%3Ctext%20x%3D%27130%27%20y%3D%27334%27%20fill%3D%27%23cbd5e1%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2728%27%3EDual%20writes%2C%20schema%20guards%2C%20and%20rollback%20checkpoints%20for%20AI-assisted%20changes%3C/text%3E%3Crect%20x%3D%27130%27%20y%3D%27388%27%20width%3D%27336%27%20height%3D%2754%27%20rx%3D%2714%27%20fill%3D%27%23111c2d%27%20stroke%3D%27%2367e8f9%27%20stroke-opacity%3D%270.45%27/%3E%3Ctext%20x%3D%27154%27%20y%3D%27423%27%20fill%3D%27%2367e8f9%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2724%27%3Enever%20let%20the%20model%20drop%20the%20old%20column%20first%3C/text%3E%3Crect%20x%3D%27758%27%20y%3D%27182%27%20width%3D%27252%27%20height%3D%2756%27%20rx%3D%2714%27%20fill%3D%27%230d1728%27%20stroke%3D%27%2322d3ee%27%20stroke-opacity%3D%270.45%27/%3E%3Ctext%20x%3D%27810%27%20y%3D%27218%27%20fill%3D%27%23bae6fd%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2723%27%3Emigration.sql%3C/text%3E%3Crect%20x%3D%27758%27%20y%3D%27280%27%20width%3D%27252%27%20height%3D%2756%27%20rx%3D%2714%27%20fill%3D%27%230d1728%27%20stroke%3D%27%2322d3ee%27%20stroke-opacity%3D%270.45%27/%3E%3Ctext%20x%3D%27806%27%20y%3D%27316%27%20fill%3D%27%23bae6fd%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2723%27%3Ebackfill.ts%3C/text%3E%3Crect%20x%3D%27758%27%20y%3D%27378%27%20width%3D%27252%27%20height%3D%2756%27%20rx%3D%2714%27%20fill%3D%27%230d1728%27%20stroke%3D%27%23a78bfa%27%20stroke-opacity%3D%270.45%27/%3E%3Ctext%20x%3D%27818%27%20y%3D%27414%27%20fill%3D%27%23ddd6fe%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2723%27%3Everify%28%29%3C/text%3E%3C/svg%3E">
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "BlogPosting",
+      "headline": "Agent-Safe Database Migrations with Expand-Contract and Rollback Checkpoints",
+      "description": "A practical guide to shipping database changes with AI coding agents using expand-contract migrations, schema guards, dual writes, and rollback checkpoints.",
+      "image": "data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A//www.w3.org/2000/svg%27%20viewBox%3D%270%200%201200%20630%27%3E%3Cdefs%3E%3ClinearGradient%20id%3D%27bg%27%20x1%3D%270%27%20x2%3D%271%27%20y1%3D%270%27%20y2%3D%271%27%3E%3Cstop%20offset%3D%270%25%27%20stop-color%3D%27%23070f1c%27/%3E%3Cstop%20offset%3D%27100%25%27%20stop-color%3D%27%2318314d%27/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect%20width%3D%271200%27%20height%3D%27630%27%20fill%3D%27url%28%23bg%29%27/%3E%3Ccircle%20cx%3D%271000%27%20cy%3D%27120%27%20r%3D%27160%27%20fill%3D%27%2322d3ee%27%20fill-opacity%3D%270.14%27/%3E%3Ccircle%20cx%3D%27190%27%20cy%3D%27520%27%20r%3D%27210%27%20fill%3D%27%238b5cf6%27%20fill-opacity%3D%270.16%27/%3E%3Crect%20x%3D%2782%27%20y%3D%2786%27%20width%3D%271036%27%20height%3D%27458%27%20rx%3D%2732%27%20fill%3D%27%230b1220%27%20stroke%3D%27%2338bdf8%27%20stroke-opacity%3D%270.35%27/%3E%3Ctext%20x%3D%27130%27%20y%3D%27186%27%20fill%3D%27white%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2744%27%20font-weight%3D%27700%27%3EAgent-Safe%20Database%20Migrations%3C/text%3E%3Ctext%20x%3D%27130%27%20y%3D%27256%27%20fill%3D%27%2393c5fd%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2744%27%20font-weight%3D%27700%27%3Ewith%20Expand-Contract%3C/text%3E%3Ctext%20x%3D%27130%27%20y%3D%27334%27%20fill%3D%27%23cbd5e1%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2728%27%3EDual%20writes%2C%20schema%20guards%2C%20and%20rollback%20checkpoints%20for%20AI-assisted%20changes%3C/text%3E%3Crect%20x%3D%27130%27%20y%3D%27388%27%20width%3D%27336%27%20height%3D%2754%27%20rx%3D%2714%27%20fill%3D%27%23111c2d%27%20stroke%3D%27%2367e8f9%27%20stroke-opacity%3D%270.45%27/%3E%3Ctext%20x%3D%27154%27%20y%3D%27423%27%20fill%3D%27%2367e8f9%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2724%27%3Enever%20let%20the%20model%20drop%20the%20old%20column%20first%3C/text%3E%3Crect%20x%3D%27758%27%20y%3D%27182%27%20width%3D%27252%27%20height%3D%2756%27%20rx%3D%2714%27%20fill%3D%27%230d1728%27%20stroke%3D%27%2322d3ee%27%20stroke-opacity%3D%270.45%27/%3E%3Ctext%20x%3D%27810%27%20y%3D%27218%27%20fill%3D%27%23bae6fd%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2723%27%3Emigration.sql%3C/text%3E%3Crect%20x%3D%27758%27%20y%3D%27280%27%20width%3D%27252%27%20height%3D%2756%27%20rx%3D%2714%27%20fill%3D%27%230d1728%27%20stroke%3D%27%2322d3ee%27%20stroke-opacity%3D%270.45%27/%3E%3Ctext%20x%3D%27806%27%20y%3D%27316%27%20fill%3D%27%23bae6fd%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2723%27%3Ebackfill.ts%3C/text%3E%3Crect%20x%3D%27758%27%20y%3D%27378%27%20width%3D%27252%27%20height%3D%2756%27%20rx%3D%2714%27%20fill%3D%27%230d1728%27%20stroke%3D%27%23a78bfa%27%20stroke-opacity%3D%270.45%27/%3E%3Ctext%20x%3D%27818%27%20y%3D%27414%27%20fill%3D%27%23ddd6fe%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2723%27%3Everify%28%29%3C/text%3E%3C/svg%3E",
+      "url": "https://negiadventures.github.io/blog/agent-safe-db-migrations.html",
+      "datePublished": "2026-04-23T12:04:00Z",
+      "author": {
+        "@type": "Person",
+        "name": "Anirudh Negi",
+        "url": "https://negiadventures.github.io"
+      },
+      "publisher": {
+        "@type": "Person",
+        "name": "Anirudh Negi",
+        "url": "https://negiadventures.github.io"
+      },
+      "keywords": ["AI Agents", "Database Migrations", "Expand Contract", "Reliability", "DevOps"]
+    }
+    </script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../stylesheets/stylesheet.css?v=5" media="screen">
+    <style>
+      .blog-post { max-width: 860px; margin: 0 auto; padding: 60px 20px; }
+      .blog-post-nav { margin-bottom: 30px; }
+      .blog-post-nav a, .blog-post-content a { color: var(--accent-strong); }
+      .blog-post-nav a:hover, .blog-post-content a:hover { color: var(--accent); }
+      .blog-post-title { font-size: 2.5rem; margin-bottom: 16px; }
+      .blog-post-meta { display: flex; gap: 20px; color: var(--text-muted); font-size: 0.95rem; margin-bottom: 30px; flex-wrap: wrap; }
+      .blog-post-image { width: 100%; height: auto; border-radius: 16px; margin-bottom: 30px; border: 1px solid var(--border); background: var(--bg-alt); }
+      .blog-post-content h2 { font-size: 1.6rem; margin-top: 40px; margin-bottom: 16px; color: var(--text-light); }
+      .blog-post-content h3 { font-size: 1.25rem; margin-top: 28px; margin-bottom: 12px; color: var(--text-light); }
+      .blog-post-content p, .blog-post-content li { line-height: 1.8; color: var(--text-muted); }
+      .blog-post-content ul, .blog-post-content ol { margin-bottom: 20px; padding-left: 24px; }
+      .code-block, .terminal-block, .mermaid-block { background: var(--bg-alt); border: 1px solid var(--border); border-radius: 12px; padding: 20px; margin: 20px 0; overflow-x: auto; }
+      .code-block pre, .terminal-block pre, .mermaid-block pre { margin: 0; font-family: var(--mono); font-size: 0.9rem; line-height: 1.6; color: var(--text-light); }
+      .callout { border-radius: 14px; padding: 18px 20px; margin: 22px 0; border: 1px solid var(--border); }
+      .callout strong { color: var(--text-light); }
+      .callout.warn { background: rgba(251, 191, 36, 0.08); border-color: rgba(251, 191, 36, 0.28); }
+      .callout.best { background: rgba(34, 211, 238, 0.08); border-color: rgba(34, 211, 238, 0.28); }
+      .diagram-grid { display: grid; gap: 14px; grid-template-columns: repeat(3, 1fr); margin: 24px 0; }
+      .diagram-box { background: linear-gradient(180deg, rgba(13, 23, 40, 0.96), rgba(9, 17, 30, 0.96)); border: 1px solid var(--border); border-radius: 16px; padding: 18px; }
+      .diagram-box h4 { margin: 0 0 8px; color: var(--text-light); font-size: 1rem; }
+      .diagram-box p { margin: 0; font-size: 0.95rem; }
+      .compare-table { width: 100%; border-collapse: collapse; margin: 24px 0; font-size: 0.95rem; }
+      .compare-table th, .compare-table td { border: 1px solid var(--border); padding: 12px 14px; text-align: left; vertical-align: top; }
+      .compare-table th { color: var(--text-light); background: rgba(34, 211, 238, 0.08); }
+      .checklist { background: rgba(139, 92, 246, 0.07); border: 1px solid rgba(139, 92, 246, 0.24); border-radius: 16px; padding: 20px 22px; margin-top: 24px; }
+      .blog-post-tags { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 40px; padding-top: 30px; border-top: 1px solid var(--border); }
+      .blog-post-tag { background: var(--accent-soft); color: var(--accent-strong); border-radius: 999px; padding: 6px 14px; font-size: 0.85rem; font-family: var(--mono); }
+      .blog-footer { margin-top: 60px; padding-top: 30px; border-top: 1px solid var(--border); text-align: center; }
+      @media (max-width: 768px) { .blog-post { padding: 40px 16px; } .blog-post-title { font-size: 2rem; } .diagram-grid { grid-template-columns: 1fr; } }
+    </style>
+  </head>
+  <body>
+    <a href="../index.html#main" class="skip-link">Skip to main content</a>
+    <header class="site-header">
+      <div class="container blog-post">
+        <div class="blog-post-nav"><a href="index.html">&larr; Back to All Posts</a></div>
+        <div class="blog-post-header">
+          <h1 class="blog-post-title">Agent-Safe Database Migrations with Expand-Contract and Rollback Checkpoints</h1>
+          <div class="blog-post-meta">
+            <span>April 23, 2026</span>
+            <span>&bull;</span>
+            <span>10 min read</span>
+            <span>&bull;</span>
+            <span>Production Reliability</span>
+          </div>
+          <img src="data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A//www.w3.org/2000/svg%27%20viewBox%3D%270%200%201200%20630%27%3E%3Cdefs%3E%3ClinearGradient%20id%3D%27bg%27%20x1%3D%270%27%20x2%3D%271%27%20y1%3D%270%27%20y2%3D%271%27%3E%3Cstop%20offset%3D%270%25%27%20stop-color%3D%27%23070f1c%27/%3E%3Cstop%20offset%3D%27100%25%27%20stop-color%3D%27%2318314d%27/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect%20width%3D%271200%27%20height%3D%27630%27%20fill%3D%27url%28%23bg%29%27/%3E%3Ccircle%20cx%3D%271000%27%20cy%3D%27120%27%20r%3D%27160%27%20fill%3D%27%2322d3ee%27%20fill-opacity%3D%270.14%27/%3E%3Ccircle%20cx%3D%27190%27%20cy%3D%27520%27%20r%3D%27210%27%20fill%3D%27%238b5cf6%27%20fill-opacity%3D%270.16%27/%3E%3Crect%20x%3D%2782%27%20y%3D%2786%27%20width%3D%271036%27%20height%3D%27458%27%20rx%3D%2732%27%20fill%3D%27%230b1220%27%20stroke%3D%27%2338bdf8%27%20stroke-opacity%3D%270.35%27/%3E%3Ctext%20x%3D%27130%27%20y%3D%27186%27%20fill%3D%27white%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2744%27%20font-weight%3D%27700%27%3EAgent-Safe%20Database%20Migrations%3C/text%3E%3Ctext%20x%3D%27130%27%20y%3D%27256%27%20fill%3D%27%2393c5fd%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2744%27%20font-weight%3D%27700%27%3Ewith%20Expand-Contract%3C/text%3E%3Ctext%20x%3D%27130%27%20y%3D%27334%27%20fill%3D%27%23cbd5e1%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2728%27%3EDual%20writes%2C%20schema%20guards%2C%20and%20rollback%20checkpoints%20for%20AI-assisted%20changes%3C/text%3E%3Crect%20x%3D%27130%27%20y%3D%27388%27%20width%3D%27336%27%20height%3D%2754%27%20rx%3D%2714%27%20fill%3D%27%23111c2d%27%20stroke%3D%27%2367e8f9%27%20stroke-opacity%3D%270.45%27/%3E%3Ctext%20x%3D%27154%27%20y%3D%27423%27%20fill%3D%27%2367e8f9%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2724%27%3Enever%20let%20the%20model%20drop%20the%20old%20column%20first%3C/text%3E%3Crect%20x%3D%27758%27%20y%3D%27182%27%20width%3D%27252%27%20height%3D%2756%27%20rx%3D%2714%27%20fill%3D%27%230d1728%27%20stroke%3D%27%2322d3ee%27%20stroke-opacity%3D%270.45%27/%3E%3Ctext%20x%3D%27810%27%20y%3D%27218%27%20fill%3D%27%23bae6fd%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2723%27%3Emigration.sql%3C/text%3E%3Crect%20x%3D%27758%27%20y%3D%27280%27%20width%3D%27252%27%20height%3D%2756%27%20rx%3D%2714%27%20fill%3D%27%230d1728%27%20stroke%3D%27%2322d3ee%27%20stroke-opacity%3D%270.45%27/%3E%3Ctext%20x%3D%27806%27%20y%3D%27316%27%20fill%3D%27%23bae6fd%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2723%27%3Ebackfill.ts%3C/text%3E%3Crect%20x%3D%27758%27%20y%3D%27378%27%20width%3D%27252%27%20height%3D%2756%27%20rx%3D%2714%27%20fill%3D%27%230d1728%27%20stroke%3D%27%23a78bfa%27%20stroke-opacity%3D%270.45%27/%3E%3Ctext%20x%3D%27818%27%20y%3D%27414%27%20fill%3D%27%23ddd6fe%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2723%27%3Everify%28%29%3C/text%3E%3C/svg%3E" alt="Agent-Safe Database Migrations with Expand-Contract and Rollback Checkpoints" class="blog-post-image">
+        </div>
+
+        <div class="blog-post-content">
+          <p>A lot of AI coding agents are surprisingly decent at adding a column, updating an ORM model, and wiring a feature flag. They are much worse at respecting the ugly part of schema changes, which is that production data outlives code suggestions.</p>
+          <p>The failure mode is predictable. The model sees a rename, generates a destructive migration, updates the app code, and moves on. Meanwhile, background workers, cached binaries, old jobs, BI queries, and rollback paths still depend on the old shape.</p>
+          <p>If you want AI assistance on database changes without turning every migration into a trust exercise, you need a workflow that is hard to do unsafely. This is the one I keep coming back to.</p>
+
+          <h2>Why this matters</h2>
+          <p>Schema changes are one of the easiest places for an AI coding workflow to look correct in review while still being operationally unsafe. A text diff can hide the blast radius, especially when the generated patch touches migrations, app code, workers, and dashboards in the same PR.</p>
+          <p>The right question is not whether the model can generate SQL. It usually can. The right question is whether the system can survive partial rollout, retries, stale readers, and rollback.</p>
+
+          <div class="callout warn"><strong>Pitfall:</strong> if the first generated step is a rename or a drop in a production table, treat that as a smell. The model is optimizing for a neat patch, not operational reality.</div>
+
+          <h2>Architecture or workflow overview</h2>
+          <div class="diagram-grid">
+            <div class="diagram-box"><h4>1. Expand</h4><p>Add the new column or table without breaking old readers.</p></div>
+            <div class="diagram-box"><h4>2. Dual-write</h4><p>Deploy app code that writes both shapes and reads safely.</p></div>
+            <div class="diagram-box"><h4>3. Backfill + verify</h4><p>Move old data in batches, then prove counts and drift are clean.</p></div>
+          </div>
+
+          <div class="mermaid-block"><pre>flowchart LR
+  A[Agent plan] --&gt; B[Expand schema]
+  B --&gt; C[Deploy dual-read and dual-write app]
+  C --&gt; D[Run bounded backfill job]
+  D --&gt; E[Verify counts and null drift]
+  E --&gt; F[Flip reads to new column]
+  F --&gt; G[Contract old schema later]</pre></div>
+
+          <ol>
+            <li>Expand the schema with additive changes only.</li>
+            <li>Deploy code that tolerates both the old and new shapes.</li>
+            <li>Backfill in bounded chunks with observable progress.</li>
+            <li>Verify counts, drift, and read-path correctness.</li>
+            <li>Flip reads behind a flag.</li>
+            <li>Contract the old schema later, never in the same rush.</li>
+          </ol>
+
+          <h2>Implementation details</h2>
+          <h3>Start with an additive migration</h3>
+          <p>If an AI agent proposes a direct rename in production, I would reject it by default.</p>
+          <div class="code-block"><pre><code>-- 20260423_expand_users_display_name.sql
+ALTER TABLE users
+  ADD COLUMN display_name TEXT;
+
+CREATE INDEX CONCURRENTLY IF NOT EXISTS idx_users_display_name
+  ON users (display_name);</code></pre></div>
+          <p>This keeps rollback options alive. Old code still works. New code can write the new field. Analysts do not wake up to a broken dashboard just because the app diff looked tidy.</p>
+
+          <h3>Force a dual-write period</h3>
+          <p>The dual-write window is the part AI-generated patches most often skip.</p>
+          <div class="code-block"><pre><code>export async function updateProfile(userId: string, input: { fullName?: string }) {
+  const displayName = normalizeDisplayName(input.fullName ?? null);
+
+  await db.user.update({
+    where: { id: userId },
+    data: {
+      full_name: input.fullName,
+      display_name: displayName,
+    },
+  });
+}
+
+export function readPreferredDisplayName(user: {
+  display_name: string | null;
+  full_name: string | null;
+}) {
+  return user.display_name ?? user.full_name ?? "Anonymous";
+}</code></pre></div>
+          <p>Reads should prefer the new field but tolerate the old one. Writes should keep both fields aligned until backfill and rollout are proven clean.</p>
+
+          <h3>Backfill in bounded chunks</h3>
+          <p>A one-shot backfill is exactly the kind of thing a model writes when nobody forces it to think about locks, retryability, or pause points.</p>
+          <div class="code-block"><pre><code>const BATCH_SIZE = 1000;
+
+export async function backfillDisplayNames() {
+  let cursor: string | null = null;
+
+  while (true) {
+    const rows = await db.$queryRaw&lt;Array&lt;{ id: string; full_name: string | null }&gt;&gt;`
+      SELECT id, full_name
+      FROM users
+      WHERE display_name IS NULL
+        AND (${cursor}::uuid IS NULL OR id &gt; ${cursor}::uuid)
+      ORDER BY id
+      LIMIT ${BATCH_SIZE}
+    `;
+
+    if (rows.length === 0) break;
+
+    for (const row of rows) {
+      await db.user.update({
+        where: { id: row.id },
+        data: { display_name: normalizeDisplayName(row.full_name) },
+      });
+    }
+
+    cursor = rows[rows.length - 1].id;
+  }
+}</code></pre></div>
+
+          <h3>Leave behind verification queries</h3>
+          <div class="code-block"><pre><code>SELECT
+  COUNT(*) AS total_users,
+  COUNT(*) FILTER (WHERE display_name IS NULL) AS missing_display_name,
+  COUNT(*) FILTER (
+    WHERE COALESCE(display_name, '') &lt;&gt; COALESCE(full_name, '')
+  ) AS drifted_rows
+FROM users;</code></pre></div>
+
+          <div class="terminal-block"><pre>$ pnpm tsx scripts/backfill-display-name.ts
+processed=1000 remaining=42120 rate=910 rows/s
+processed=1000 remaining=41120 rate=928 rows/s
+processed=1000 remaining=40120 rate=905 rows/s
+verification total_users=982144 missing_display_name=0 drifted_rows=0</pre></div>
+
+          <p>If the PR does not tell reviewers how to verify migration success, it is incomplete.</p>
+
+          <h2>What went wrong, and the tradeoffs</h2>
+          <ul>
+            <li><strong>Destructive first step:</strong> the agent renames or drops before compatibility code ships.</li>
+            <li><strong>Unbounded backfill:</strong> one giant update creates lock pressure or replica lag.</li>
+            <li><strong>Half migration:</strong> writers update both fields, but readers still hardcode the old one.</li>
+            <li><strong>Rollback illusion:</strong> code rollback works, but the schema is now in an awkward intermediate state.</li>
+            <li><strong>Hidden dependency drift:</strong> dashboards, exports, and sidecar jobs keep reading the old field.</li>
+          </ul>
+
+          <table class="compare-table">
+            <thead>
+              <tr><th>Strategy</th><th>Speed</th><th>Rollback safety</th><th>Operational load</th><th>Good fit</th></tr>
+            </thead>
+            <tbody>
+              <tr><td>Direct rename/drop</td><td>High</td><td>Poor</td><td>Low at first, high later</td><td>Local or dev only</td></tr>
+              <tr><td>Expand-contract</td><td>Medium</td><td>Strong</td><td>Medium</td><td>Most production apps</td></tr>
+              <tr><td>Shadow table copy</td><td>Low</td><td>Strongest</td><td>High</td><td>Very large or high-risk rewrites</td></tr>
+            </tbody>
+          </table>
+
+          <div class="callout best"><strong>Best practice:</strong> if an AI agent helped author a production schema change, treat expand-contract as the default unless you can explain clearly why a faster destructive path is actually safe.</div>
+
+          <h2>References</h2>
+          <ul>
+            <li><a href="https://martinfowler.com/bliki/ParallelChange.html">Martin Fowler, Parallel Change</a></li>
+            <li><a href="https://docs.github.com/en/code-security/code-scanning/managing-your-code-scanning-configuration/about-code-scanning-alerts">GitHub code scanning and protected review patterns</a></li>
+            <li><a href="https://www.postgresql.org/docs/current/sql-altertable.html">PostgreSQL ALTER TABLE documentation</a></li>
+          </ul>
+
+          <h2>Practical checklist</h2>
+          <div class="checklist">
+            <ul>
+              <li>[ ] Keep the first migration additive only.</li>
+              <li>[ ] Make the app read both shapes before switching fully.</li>
+              <li>[ ] Dual-write during the transition window.</li>
+              <li>[ ] Backfill in resumable chunks with visible progress.</li>
+              <li>[ ] Add verification SQL directly in the PR.</li>
+              <li>[ ] Delay the contract step until after a clean release cycle.</li>
+              <li>[ ] Treat AI-generated migration plans as drafts, not authority.</li>
+            </ul>
+          </div>
+
+          <h2>Conclusion</h2>
+          <p>AI coding agents can help with database work, but only when the workflow is opinionated enough to resist the model’s tendency toward short, clean, unsafe patches.</p>
+          <p>Use expand-contract, make the dual-write period explicit, require verification artifacts, and postpone destructive cleanup. The safest migration is usually the one that looks slightly overcautious in review and pleasantly boring in production.</p>
+
+          <div class="blog-post-tags">
+            <span class="blog-post-tag">AI Agents</span>
+            <span class="blog-post-tag">Database Migrations</span>
+            <span class="blog-post-tag">Reliability</span>
+            <span class="blog-post-tag">DevOps</span>
+            <span class="blog-post-tag">Production Engineering</span>
+          </div>
+        </div>
+
+        <div class="blog-footer">
+          <p><a href="index.html">← Back to all posts</a></p>
+        </div>
+      </div>
+    </header>
+  </body>
+</html>
