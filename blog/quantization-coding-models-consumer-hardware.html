@@ -1,0 +1,324 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="A practical guide to choosing 4-bit, 6-bit, 8-bit, and mixed quantization for coding models on consumer hardware, with concrete runtime tradeoffs for Ollama, llama.cpp, and vLLM.">
+    <meta name="author" content="Anirudh Negi">
+    <title>Quantization Tradeoffs for Coding Models on Consumer Hardware | Anirudh Negi</title>
+    <link rel="icon" type="image/svg+xml" href="../images/favicon.svg">
+    <link rel="canonical" href="https://negiadventures.github.io/blog/quantization-coding-models-consumer-hardware.html">
+    <meta property="og:type" content="article">
+    <meta property="og:url" content="https://negiadventures.github.io/blog/quantization-coding-models-consumer-hardware.html">
+    <meta property="og:title" content="Quantization Tradeoffs for Coding Models on Consumer Hardware | Anirudh Negi">
+    <meta property="og:description" content="A practical guide to choosing 4-bit, 6-bit, 8-bit, and mixed quantization for coding models on consumer hardware, with concrete runtime tradeoffs for Ollama, llama.cpp, and vLLM.">
+    <meta property="og:image" content="data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A//www.w3.org/2000/svg%27%20viewBox%3D%270%200%201200%20630%27%3E%0A%20%20%3Cdefs%3E%0A%20%20%20%20%3ClinearGradient%20id%3D%27bg%27%20x1%3D%270%27%20x2%3D%271%27%20y1%3D%270%27%20y2%3D%271%27%3E%0A%20%20%20%20%20%20%3Cstop%20offset%3D%270%25%27%20stop-color%3D%27%2307111d%27/%3E%0A%20%20%20%20%20%20%3Cstop%20offset%3D%27100%25%27%20stop-color%3D%27%2318324d%27/%3E%0A%20%20%20%20%3C/linearGradient%3E%0A%20%20%3C/defs%3E%0A%20%20%3Crect%20width%3D%271200%27%20height%3D%27630%27%20fill%3D%27url%28%23bg%29%27/%3E%0A%20%20%3Ccircle%20cx%3D%271010%27%20cy%3D%27110%27%20r%3D%27160%27%20fill%3D%27%2322d3ee%27%20fill-opacity%3D%270.14%27/%3E%0A%20%20%3Ccircle%20cx%3D%27180%27%20cy%3D%27525%27%20r%3D%27205%27%20fill%3D%27%238b5cf6%27%20fill-opacity%3D%270.16%27/%3E%0A%20%20%3Crect%20x%3D%2782%27%20y%3D%2786%27%20width%3D%271036%27%20height%3D%27458%27%20rx%3D%2732%27%20fill%3D%27%230b1220%27%20stroke%3D%27%2338bdf8%27%20stroke-opacity%3D%270.35%27/%3E%0A%20%20%3Ctext%20x%3D%27132%27%20y%3D%27180%27%20fill%3D%27white%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2746%27%20font-weight%3D%27700%27%3EQuantization%20Tradeoffs%20for%3C/text%3E%0A%20%20%3Ctext%20x%3D%27132%27%20y%3D%27252%27%20fill%3D%27%2393c5fd%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2746%27%20font-weight%3D%27700%27%3ECoding%20Models%20on%20Consumer%20Hardware%3C/text%3E%0A%20%20%3Ctext%20x%3D%27132%27%20y%3D%27332%27%20fill%3D%27%23cbd5e1%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2728%27%3EWhen%204-bit%20helps%2C%20when%208-bit%20is%20worth%20it%2C%20and%20where%20latency%20falls%20apart%3C/text%3E%0A%20%20%3Crect%20x%3D%27132%27%20y%3D%27386%27%20width%3D%27298%27%20height%3D%2754%27%20rx%3D%2714%27%20fill%3D%27%23111c2d%27%20stroke%3D%27%2367e8f9%27%20stroke-opacity%3D%270.45%27/%3E%0A%20%20%3Ctext%20x%3D%27156%27%20y%3D%27421%27%20fill%3D%27%2367e8f9%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2724%27%3Ememory%20saved%20is%20not%20always%20time%20saved%3C/text%3E%0A%20%20%3Crect%20x%3D%27770%27%20y%3D%27176%27%20width%3D%27252%27%20height%3D%2756%27%20rx%3D%2714%27%20fill%3D%27%230d1728%27%20stroke%3D%27%2322d3ee%27%20stroke-opacity%3D%270.45%27/%3E%0A%20%20%3Ctext%20x%3D%27830%27%20y%3D%27212%27%20fill%3D%27%23bae6fd%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2723%27%3EQ4_K_M%3C/text%3E%0A%20%20%3Crect%20x%3D%27770%27%20y%3D%27274%27%20width%3D%27252%27%20height%3D%2756%27%20rx%3D%2714%27%20fill%3D%27%230d1728%27%20stroke%3D%27%2322d3ee%27%20stroke-opacity%3D%270.45%27/%3E%0A%20%20%3Ctext%20x%3D%27838%27%20y%3D%27310%27%20fill%3D%27%23bae6fd%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2723%27%3EAWQ%3C/text%3E%0A%20%20%3Crect%20x%3D%27770%27%20y%3D%27372%27%20width%3D%27252%27%20height%3D%2756%27%20rx%3D%2714%27%20fill%3D%27%230d1728%27%20stroke%3D%27%23a78bfa%27%20stroke-opacity%3D%270.45%27/%3E%0A%20%20%3Ctext%20x%3D%27834%27%20y%3D%27408%27%20fill%3D%27%23ddd6fe%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2723%27%3EINT8%3C/text%3E%0A%3C/svg%3E">
+    <meta property="article:published_time" content="2026-04-24">
+    <meta property="article:author" content="Anirudh Negi">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:url" content="https://negiadventures.github.io/blog/quantization-coding-models-consumer-hardware.html">
+    <meta name="twitter:title" content="Quantization Tradeoffs for Coding Models on Consumer Hardware | Anirudh Negi">
+    <meta name="twitter:description" content="A practical guide to choosing 4-bit, 6-bit, 8-bit, and mixed quantization for coding models on consumer hardware, with concrete runtime tradeoffs for Ollama, llama.cpp, and vLLM.">
+    <meta name="twitter:image" content="data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A//www.w3.org/2000/svg%27%20viewBox%3D%270%200%201200%20630%27%3E%0A%20%20%3Cdefs%3E%0A%20%20%20%20%3ClinearGradient%20id%3D%27bg%27%20x1%3D%270%27%20x2%3D%271%27%20y1%3D%270%27%20y2%3D%271%27%3E%0A%20%20%20%20%20%20%3Cstop%20offset%3D%270%25%27%20stop-color%3D%27%2307111d%27/%3E%0A%20%20%20%20%20%20%3Cstop%20offset%3D%27100%25%27%20stop-color%3D%27%2318324d%27/%3E%0A%20%20%20%20%3C/linearGradient%3E%0A%20%20%3C/defs%3E%0A%20%20%3Crect%20width%3D%271200%27%20height%3D%27630%27%20fill%3D%27url%28%23bg%29%27/%3E%0A%20%20%3Ccircle%20cx%3D%271010%27%20cy%3D%27110%27%20r%3D%27160%27%20fill%3D%27%2322d3ee%27%20fill-opacity%3D%270.14%27/%3E%0A%20%20%3Ccircle%20cx%3D%27180%27%20cy%3D%27525%27%20r%3D%27205%27%20fill%3D%27%238b5cf6%27%20fill-opacity%3D%270.16%27/%3E%0A%20%20%3Crect%20x%3D%2782%27%20y%3D%2786%27%20width%3D%271036%27%20height%3D%27458%27%20rx%3D%2732%27%20fill%3D%27%230b1220%27%20stroke%3D%27%2338bdf8%27%20stroke-opacity%3D%270.35%27/%3E%0A%20%20%3Ctext%20x%3D%27132%27%20y%3D%27180%27%20fill%3D%27white%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2746%27%20font-weight%3D%27700%27%3EQuantization%20Tradeoffs%20for%3C/text%3E%0A%20%20%3Ctext%20x%3D%27132%27%20y%3D%27252%27%20fill%3D%27%2393c5fd%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2746%27%20font-weight%3D%27700%27%3ECoding%20Models%20on%20Consumer%20Hardware%3C/text%3E%0A%20%20%3Ctext%20x%3D%27132%27%20y%3D%27332%27%20fill%3D%27%23cbd5e1%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2728%27%3EWhen%204-bit%20helps%2C%20when%208-bit%20is%20worth%20it%2C%20and%20where%20latency%20falls%20apart%3C/text%3E%0A%20%20%3Crect%20x%3D%27132%27%20y%3D%27386%27%20width%3D%27298%27%20height%3D%2754%27%20rx%3D%2714%27%20fill%3D%27%23111c2d%27%20stroke%3D%27%2367e8f9%27%20stroke-opacity%3D%270.45%27/%3E%0A%20%20%3Ctext%20x%3D%27156%27%20y%3D%27421%27%20fill%3D%27%2367e8f9%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2724%27%3Ememory%20saved%20is%20not%20always%20time%20saved%3C/text%3E%0A%20%20%3Crect%20x%3D%27770%27%20y%3D%27176%27%20width%3D%27252%27%20height%3D%2756%27%20rx%3D%2714%27%20fill%3D%27%230d1728%27%20stroke%3D%27%2322d3ee%27%20stroke-opacity%3D%270.45%27/%3E%0A%20%20%3Ctext%20x%3D%27830%27%20y%3D%27212%27%20fill%3D%27%23bae6fd%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2723%27%3EQ4_K_M%3C/text%3E%0A%20%20%3Crect%20x%3D%27770%27%20y%3D%27274%27%20width%3D%27252%27%20height%3D%2756%27%20rx%3D%2714%27%20fill%3D%27%230d1728%27%20stroke%3D%27%2322d3ee%27%20stroke-opacity%3D%270.45%27/%3E%0A%20%20%3Ctext%20x%3D%27838%27%20y%3D%27310%27%20fill%3D%27%23bae6fd%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2723%27%3EAWQ%3C/text%3E%0A%20%20%3Crect%20x%3D%27770%27%20y%3D%27372%27%20width%3D%27252%27%20height%3D%2756%27%20rx%3D%2714%27%20fill%3D%27%230d1728%27%20stroke%3D%27%23a78bfa%27%20stroke-opacity%3D%270.45%27/%3E%0A%20%20%3Ctext%20x%3D%27834%27%20y%3D%27408%27%20fill%3D%27%23ddd6fe%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2723%27%3EINT8%3C/text%3E%0A%3C/svg%3E">
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "BlogPosting",
+      "headline": "Quantization Tradeoffs for Coding Models on Consumer Hardware",
+      "description": "A practical guide to choosing 4-bit, 6-bit, 8-bit, and mixed quantization for coding models on consumer hardware, with concrete runtime tradeoffs for Ollama, llama.cpp, and vLLM.",
+      "image": "data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A//www.w3.org/2000/svg%27%20viewBox%3D%270%200%201200%20630%27%3E%0A%20%20%3Cdefs%3E%0A%20%20%20%20%3ClinearGradient%20id%3D%27bg%27%20x1%3D%270%27%20x2%3D%271%27%20y1%3D%270%27%20y2%3D%271%27%3E%0A%20%20%20%20%20%20%3Cstop%20offset%3D%270%25%27%20stop-color%3D%27%2307111d%27/%3E%0A%20%20%20%20%20%20%3Cstop%20offset%3D%27100%25%27%20stop-color%3D%27%2318324d%27/%3E%0A%20%20%20%20%3C/linearGradient%3E%0A%20%20%3C/defs%3E%0A%20%20%3Crect%20width%3D%271200%27%20height%3D%27630%27%20fill%3D%27url%28%23bg%29%27/%3E%0A%20%20%3Ccircle%20cx%3D%271010%27%20cy%3D%27110%27%20r%3D%27160%27%20fill%3D%27%2322d3ee%27%20fill-opacity%3D%270.14%27/%3E%0A%20%20%3Ccircle%20cx%3D%27180%27%20cy%3D%27525%27%20r%3D%27205%27%20fill%3D%27%238b5cf6%27%20fill-opacity%3D%270.16%27/%3E%0A%20%20%3Crect%20x%3D%2782%27%20y%3D%2786%27%20width%3D%271036%27%20height%3D%27458%27%20rx%3D%2732%27%20fill%3D%27%230b1220%27%20stroke%3D%27%2338bdf8%27%20stroke-opacity%3D%270.35%27/%3E%0A%20%20%3Ctext%20x%3D%27132%27%20y%3D%27180%27%20fill%3D%27white%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2746%27%20font-weight%3D%27700%27%3EQuantization%20Tradeoffs%20for%3C/text%3E%0A%20%20%3Ctext%20x%3D%27132%27%20y%3D%27252%27%20fill%3D%27%2393c5fd%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2746%27%20font-weight%3D%27700%27%3ECoding%20Models%20on%20Consumer%20Hardware%3C/text%3E%0A%20%20%3Ctext%20x%3D%27132%27%20y%3D%27332%27%20fill%3D%27%23cbd5e1%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2728%27%3EWhen%204-bit%20helps%2C%20when%208-bit%20is%20worth%20it%2C%20and%20where%20latency%20falls%20apart%3C/text%3E%0A%20%20%3Crect%20x%3D%27132%27%20y%3D%27386%27%20width%3D%27298%27%20height%3D%2754%27%20rx%3D%2714%27%20fill%3D%27%23111c2d%27%20stroke%3D%27%2367e8f9%27%20stroke-opacity%3D%270.45%27/%3E%0A%20%20%3Ctext%20x%3D%27156%27%20y%3D%27421%27%20fill%3D%27%2367e8f9%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2724%27%3Ememory%20saved%20is%20not%20always%20time%20saved%3C/text%3E%0A%20%20%3Crect%20x%3D%27770%27%20y%3D%27176%27%20width%3D%27252%27%20height%3D%2756%27%20rx%3D%2714%27%20fill%3D%27%230d1728%27%20stroke%3D%27%2322d3ee%27%20stroke-opacity%3D%270.45%27/%3E%0A%20%20%3Ctext%20x%3D%27830%27%20y%3D%27212%27%20fill%3D%27%23bae6fd%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2723%27%3EQ4_K_M%3C/text%3E%0A%20%20%3Crect%20x%3D%27770%27%20y%3D%27274%27%20width%3D%27252%27%20height%3D%2756%27%20rx%3D%2714%27%20fill%3D%27%230d1728%27%20stroke%3D%27%2322d3ee%27%20stroke-opacity%3D%270.45%27/%3E%0A%20%20%3Ctext%20x%3D%27838%27%20y%3D%27310%27%20fill%3D%27%23bae6fd%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2723%27%3EAWQ%3C/text%3E%0A%20%20%3Crect%20x%3D%27770%27%20y%3D%27372%27%20width%3D%27252%27%20height%3D%2756%27%20rx%3D%2714%27%20fill%3D%27%230d1728%27%20stroke%3D%27%23a78bfa%27%20stroke-opacity%3D%270.45%27/%3E%0A%20%20%3Ctext%20x%3D%27834%27%20y%3D%27408%27%20fill%3D%27%23ddd6fe%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2723%27%3EINT8%3C/text%3E%0A%3C/svg%3E",
+      "url": "https://negiadventures.github.io/blog/quantization-coding-models-consumer-hardware.html",
+      "datePublished": "2026-04-24",
+      "dateModified": "2026-04-24",
+      "author": {
+        "@type": "Person",
+        "name": "Anirudh Negi",
+        "url": "https://negiadventures.github.io"
+      },
+      "publisher": {
+        "@type": "Person",
+        "name": "Anirudh Negi",
+        "url": "https://negiadventures.github.io"
+      },
+      "keywords": ["Quantization", "Local LLMs", "Ollama", "llama.cpp", "vLLM"]
+    }
+    </script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../stylesheets/stylesheet.css?v=5" media="screen">
+    <style>
+      .blog-post { max-width: 860px; margin: 0 auto; padding: 60px 20px; }
+      .blog-post-nav { margin-bottom: 30px; }
+      .blog-post-nav a { color: var(--accent-strong); font-size: 0.95rem; }
+      .blog-post-nav a:hover { color: var(--accent); }
+      .blog-post-title { font-size: 2.5rem; margin-bottom: 16px; }
+      .blog-post-meta { display: flex; gap: 20px; color: var(--text-muted); font-size: 0.95rem; margin-bottom: 30px; flex-wrap: wrap; }
+      .blog-post-image { width: 100%; height: 300px; object-fit: cover; border-radius: 16px; margin-bottom: 30px; border: 1px solid var(--border); }
+      .blog-post-content h2 { font-size: 1.65rem; margin-top: 40px; margin-bottom: 16px; color: var(--text-light); }
+      .blog-post-content h3 { font-size: 1.25rem; margin-top: 28px; margin-bottom: 12px; color: var(--text-light); }
+      .blog-post-content p, .blog-post-content ul, .blog-post-content ol { line-height: 1.8; color: var(--text-muted); }
+      .blog-post-content ul, .blog-post-content ol { margin-bottom: 20px; padding-left: 22px; }
+      .blog-post-content li { margin-bottom: 8px; }
+      .code-block, .terminal-block, .diagram-block { background: var(--bg-alt); border: 1px solid var(--border); border-radius: 14px; padding: 20px; margin: 20px 0; overflow-x: auto; }
+      .terminal-block { border-color: rgba(103,232,249,0.24); box-shadow: inset 0 1px 0 rgba(103,232,249,0.08); }
+      .code-block pre, .terminal-block pre, .diagram-block pre { margin: 0; font-family: var(--mono); font-size: 0.9rem; line-height: 1.65; color: var(--text-light); white-space: pre-wrap; }
+      .comparison-table { width: 100%; border-collapse: collapse; margin: 24px 0; font-size: 0.95rem; }
+      .comparison-table th, .comparison-table td { border: 1px solid var(--border); padding: 14px; text-align: left; vertical-align: top; }
+      .comparison-table th { background: rgba(34, 211, 238, 0.08); color: var(--text-light); }
+      .callout { border-radius: 14px; padding: 18px 20px; margin: 22px 0; border: 1px solid var(--border); }
+      .callout-warning { background: rgba(251, 191, 36, 0.08); border-color: rgba(251, 191, 36, 0.25); }
+      .callout-success { background: rgba(34, 197, 94, 0.08); border-color: rgba(34, 197, 94, 0.24); }
+      .visual-plan-note { background: rgba(139, 92, 246, 0.08); border: 1px solid rgba(139, 92, 246, 0.22); border-radius: 14px; padding: 18px 20px; margin: 18px 0 26px; }
+      .blog-post-tags { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 40px; padding-top: 30px; border-top: 1px solid var(--border); }
+      .blog-post-tag { background: var(--accent-soft); color: var(--accent-strong); border-radius: 999px; padding: 6px 14px; font-size: 0.85rem; font-family: var(--mono); border: 1px solid transparent; }
+      .blog-post-tag:hover { border-color: var(--accent); }
+      .blog-footer { margin-top: 60px; padding-top: 30px; border-top: 1px solid var(--border); text-align: center; }
+      .blog-footer a { color: var(--accent-strong); }
+      .blog-footer a:hover { color: var(--accent); }
+      @media (max-width: 768px) { .blog-post { padding: 40px 16px; } .blog-post-title { font-size: 2rem; } .blog-post-image { height: 220px; } .comparison-table { display: block; overflow-x: auto; } }
+    </style>
+  </head>
+  <body>
+    <a href="../index.html#main" class="skip-link">Skip to main content</a>
+    <header class="site-header">
+      <div class="container blog-post">
+        <div class="blog-post-nav">
+          <a href="index.html">&larr; Back to All Posts</a>
+        </div>
+        <div class="blog-post-header">
+          <h1 class="blog-post-title">Quantization Tradeoffs for Coding Models on Consumer Hardware</h1>
+          <div class="blog-post-meta">
+            <span>April 24, 2026</span>
+            <span>&bull;</span>
+            <span>13 min read</span>
+            <span>&bull;</span>
+            <span>Local LLMs</span>
+          </div>
+          <img src="data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A//www.w3.org/2000/svg%27%20viewBox%3D%270%200%201200%20630%27%3E%0A%20%20%3Cdefs%3E%0A%20%20%20%20%3ClinearGradient%20id%3D%27bg%27%20x1%3D%270%27%20x2%3D%271%27%20y1%3D%270%27%20y2%3D%271%27%3E%0A%20%20%20%20%20%20%3Cstop%20offset%3D%270%25%27%20stop-color%3D%27%2307111d%27/%3E%0A%20%20%20%20%20%20%3Cstop%20offset%3D%27100%25%27%20stop-color%3D%27%2318324d%27/%3E%0A%20%20%20%20%3C/linearGradient%3E%0A%20%20%3C/defs%3E%0A%20%20%3Crect%20width%3D%271200%27%20height%3D%27630%27%20fill%3D%27url%28%23bg%29%27/%3E%0A%20%20%3Ccircle%20cx%3D%271010%27%20cy%3D%27110%27%20r%3D%27160%27%20fill%3D%27%2322d3ee%27%20fill-opacity%3D%270.14%27/%3E%0A%20%20%3Ccircle%20cx%3D%27180%27%20cy%3D%27525%27%20r%3D%27205%27%20fill%3D%27%238b5cf6%27%20fill-opacity%3D%270.16%27/%3E%0A%20%20%3Crect%20x%3D%2782%27%20y%3D%2786%27%20width%3D%271036%27%20height%3D%27458%27%20rx%3D%2732%27%20fill%3D%27%230b1220%27%20stroke%3D%27%2338bdf8%27%20stroke-opacity%3D%270.35%27/%3E%0A%20%20%3Ctext%20x%3D%27132%27%20y%3D%27180%27%20fill%3D%27white%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2746%27%20font-weight%3D%27700%27%3EQuantization%20Tradeoffs%20for%3C/text%3E%0A%20%20%3Ctext%20x%3D%27132%27%20y%3D%27252%27%20fill%3D%27%2393c5fd%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2746%27%20font-weight%3D%27700%27%3ECoding%20Models%20on%20Consumer%20Hardware%3C/text%3E%0A%20%20%3Ctext%20x%3D%27132%27%20y%3D%27332%27%20fill%3D%27%23cbd5e1%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2728%27%3EWhen%204-bit%20helps%2C%20when%208-bit%20is%20worth%20it%2C%20and%20where%20latency%20falls%20apart%3C/text%3E%0A%20%20%3Crect%20x%3D%27132%27%20y%3D%27386%27%20width%3D%27298%27%20height%3D%2754%27%20rx%3D%2714%27%20fill%3D%27%23111c2d%27%20stroke%3D%27%2367e8f9%27%20stroke-opacity%3D%270.45%27/%3E%0A%20%20%3Ctext%20x%3D%27156%27%20y%3D%27421%27%20fill%3D%27%2367e8f9%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2724%27%3Ememory%20saved%20is%20not%20always%20time%20saved%3C/text%3E%0A%20%20%3Crect%20x%3D%27770%27%20y%3D%27176%27%20width%3D%27252%27%20height%3D%2756%27%20rx%3D%2714%27%20fill%3D%27%230d1728%27%20stroke%3D%27%2322d3ee%27%20stroke-opacity%3D%270.45%27/%3E%0A%20%20%3Ctext%20x%3D%27830%27%20y%3D%27212%27%20fill%3D%27%23bae6fd%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2723%27%3EQ4_K_M%3C/text%3E%0A%20%20%3Crect%20x%3D%27770%27%20y%3D%27274%27%20width%3D%27252%27%20height%3D%2756%27%20rx%3D%2714%27%20fill%3D%27%230d1728%27%20stroke%3D%27%2322d3ee%27%20stroke-opacity%3D%270.45%27/%3E%0A%20%20%3Ctext%20x%3D%27838%27%20y%3D%27310%27%20fill%3D%27%23bae6fd%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2723%27%3EAWQ%3C/text%3E%0A%20%20%3Crect%20x%3D%27770%27%20y%3D%27372%27%20width%3D%27252%27%20height%3D%2756%27%20rx%3D%2714%27%20fill%3D%27%230d1728%27%20stroke%3D%27%23a78bfa%27%20stroke-opacity%3D%270.45%27/%3E%0A%20%20%3Ctext%20x%3D%27834%27%20y%3D%27408%27%20fill%3D%27%23ddd6fe%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2723%27%3EINT8%3C/text%3E%0A%3C/svg%3E" alt="Quantization Tradeoffs for Coding Models on Consumer Hardware" class="blog-post-image">
+        </div>
+        <div class="blog-post-content">
+          <p>Running a coding model locally usually fails for one boring reason first: memory. The second failure is more annoying. You squeeze the model hard enough to fit, then autocomplete quality drops, long diffs get sloppy, and the model starts feeling dumber exactly when you need it for real engineering work.</p>
+          <p>That is why quantization decisions matter more than people admit. Picking 4-bit versus 8-bit is not just a storage choice. It changes what fits in VRAM, how much context you can keep hot, what runtime you can use, and whether the model is still good enough for code edits instead of toy prompts.</p>
+          <p>This is the practical version of the decision. I will focus on coding models running through Ollama, llama.cpp, and vLLM, and the tradeoffs I would make on laptops, gaming GPUs, and small home servers.</p>
+
+          <h2>Why this matters</h2>
+          <p>For coding workflows, the model is rarely doing one short reply. It is summarizing a repository, diffing files, generating patches, and staying coherent across many turns. That pushes on weight memory, KV cache growth, throughput, and output stability at the same time.</p>
+          <p>Useful rule of thumb: the best quant is the smallest one that still preserves reviewable coding behavior at your target context length. Not the smallest one that merely loads.</p>
+
+          <h2>Architecture and workflow overview</h2>
+          <div class="visual-plan-note">
+            <strong>Visual plan</strong>
+            <ul>
+              <li><strong>Hero:</strong> dark benchmark-style banner with Q4, AWQ, and INT8 tiles</li>
+              <li><strong>Diagram:</strong> decision flow from hardware budget to runtime and quant format</li>
+              <li><strong>Terminal visual:</strong> sample llama-server startup and runtime fit signals</li>
+              <li><strong>Comparison table:</strong> runtime-by-format tradeoffs for coding workloads</li>
+              <li><strong>Tags:</strong> Quantization, Local LLMs, Ollama, llama.cpp, vLLM</li>
+              <li><strong>Code sections:</strong> Ollama Modelfile import, llama.cpp server launch, vLLM quantized serve config</li>
+            </ul>
+          </div>
+          <div class="diagram-block"><pre><code>flowchart LR
+    A[Pick coding model] --> B[Measure available RAM or VRAM]
+    B --> C{Single-user local tool or shared server?}
+    C -->|Laptop or desktop| D[Ollama or llama.cpp]
+    C -->|Shared API server| E[vLLM]
+    D --> F{Need maximum fit or offline use?}
+    F -->|Yes| G[GGUF 4-bit or 5-bit]
+    F -->|No| H[Q6 or Q8 for better code quality]
+    E --> I{Need Tensor Core friendly serving?}
+    I -->|Yes| J[AWQ or GPTQ]
+    I -->|No| K[FP16 or BF16 if memory allows]
+    G --> L[Test long-context repo tasks]
+    H --> L
+    J --> L
+    K --> L
+    L --> M[Keep the smallest quant that still passes coding checks]</code></pre></div>
+          <p>The workflow I like is boring on purpose: choose the runtime first, choose the quant format that runtime handles well, test on real coding tasks, and only then optimize for smaller memory.</p>
+
+          <h2>Implementation details</h2>
+          <h3>Step 1, match the quant format to the runtime</h3>
+          <table class="comparison-table">
+            <thead>
+              <tr>
+                <th>Runtime</th>
+                <th>Best fit</th>
+                <th>What it is good at</th>
+                <th>What I would avoid</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>Ollama</td>
+                <td>GGUF imports and packaged local models</td>
+                <td>Fast setup, good developer UX, easy local API</td>
+                <td>Treating it like a high-throughput multi-user inference server</td>
+              </tr>
+              <tr>
+                <td>llama.cpp</td>
+                <td>GGUF, especially 4-bit to 8-bit variants</td>
+                <td>Tight memory budgets, CPU or mixed CPU/GPU offload, broad hardware support</td>
+                <td>Assuming the smallest GGUF is automatically fastest</td>
+              </tr>
+              <tr>
+                <td>vLLM</td>
+                <td>FP16 or BF16, AWQ, GPTQ, bitsandbytes depending on model support</td>
+                <td>Shared serving, batching, strong throughput on GPUs</td>
+                <td>Forcing every exotic quant into production without checking support and kernel quality</td>
+              </tr>
+            </tbody>
+          </table>
+          <p>The practical split is simple:</p>
+          <ul>
+            <li>Use <a href="https://ollama.com/library" target="_blank" rel="noopener noreferrer">Ollama</a> when you want the easiest local coding setup.</li>
+            <li>Use <a href="https://github.com/ggml-org/llama.cpp" target="_blank" rel="noopener noreferrer">llama.cpp</a> when the box is constrained and you need precise control over offload, context, and GGUF choices.</li>
+            <li>Use <a href="https://docs.vllm.ai/" target="_blank" rel="noopener noreferrer">vLLM</a> when the model is serving multiple clients and batching matters more than tiny memory wins.</li>
+          </ul>
+
+          <h3>Step 2, import or build the model the way the runtime expects</h3>
+          <p>For Ollama, I like being explicit about the source artifact and context window instead of relying on whatever default tag happens to exist.</p>
+          <div class="code-block"><pre><code>FROM ./DeepSeek-Coder-V2-Lite-Instruct-Q4_K_M.gguf
+TEMPLATE """{{ if .System }}&lt;|system|&gt;
+{{ .System }}&lt;|end|&gt;
+{{ end }}{{ if .Prompt }}&lt;|user|&gt;
+{{ .Prompt }}&lt;|end|&gt;
+{{ end }}&lt;|assistant|&gt;
+"""
+PARAMETER num_ctx 16384
+PARAMETER temperature 0.1
+PARAMETER repeat_penalty 1.05</code></pre></div>
+          <div class="code-block"><pre><code>ollama create coder-q4km -f Modelfile
+ollama run coder-q4km</code></pre></div>
+          <p>For llama.cpp, the important thing is to separate fit from performance. A model can fit only because most layers stay on CPU, and that often feels awful for coding latency.</p>
+          <div class="code-block"><pre><code>./llama-server \
+  --model ./models/coder-q6_k.gguf \
+  --ctx-size 16384 \
+  --n-gpu-layers 999 \
+  --batch-size 1024 \
+  --threads 8 \
+  --host 0.0.0.0 \
+  --port 8080</code></pre></div>
+          <p>If you have to reduce <code>--n-gpu-layers</code> heavily to fit, you may be better off dropping to a smaller base model before dropping another quantization level.</p>
+          <div class="code-block"><pre><code>vllm serve Qwen/Qwen2.5-Coder-14B-Instruct-AWQ \
+  --quantization awq \
+  --dtype half \
+  --max-model-len 16384 \
+  --gpu-memory-utilization 0.92 \
+  --served-model-name qwen-coder-awq</code></pre></div>
+          <p>That setup usually makes sense when you have a real GPU and multiple clients, not when you just want a private editor companion on one machine.</p>
+
+          <h3>Step 3, test the workload that actually matters</h3>
+          <p>I care less about generic benchmark scores and more about whether the quantized model can survive repository tasks without inventing APIs, losing naming consistency, or generating fragile tests.</p>
+          <div class="code-block"><pre><code>TASKS = [
+    "Summarize the auth middleware and list its side effects.",
+    "Write a unit test for retry jitter edge cases.",
+    "Refactor this function without changing behavior.",
+]
+
+for task in TASKS:
+    result = run_model(task, repo_snapshot="./fixtures/repo_map.txt")
+    score = review_patch(result)
+    print(task, score)</code></pre></div>
+          <p>This is where aggressive 3-bit or weak 4-bit settings often fail first. They still answer. They just answer with less stable code.</p>
+
+          <h3>A rough decision framework I actually use</h3>
+          <table class="comparison-table">
+            <thead>
+              <tr>
+                <th>Hardware shape</th>
+                <th>Quant I would try first</th>
+                <th>Why</th>
+                <th>Backup move</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>16 GB unified memory laptop</td>
+                <td>4-bit GGUF or small AWQ model</td>
+                <td>Best chance of fitting a useful coder with some context</td>
+                <td>Move to a smaller model before going below solid 4-bit</td>
+              </tr>
+              <tr>
+                <td>24 GB consumer GPU</td>
+                <td>AWQ 4-bit or strong GGUF Q5 or Q6 depending on runtime</td>
+                <td>Good balance of fit and code quality</td>
+                <td>Reduce context length before dropping to lower bits</td>
+              </tr>
+              <tr>
+                <td>48 GB workstation or dual-purpose server</td>
+                <td>BF16 or 8-bit first, AWQ if needed</td>
+                <td>Coding quality usually benefits from less aggressive compression</td>
+                <td>Only quantize harder if concurrency forces it</td>
+              </tr>
+              <tr>
+                <td>CPU-heavy home server</td>
+                <td>GGUF Q4_K_M or Q5_K_M in llama.cpp</td>
+                <td>CPU-friendly deployment with predictable memory</td>
+                <td>Accept lower throughput and keep prompts narrower</td>
+              </tr>
+            </tbody>
+          </table>
+
+          <h2>Terminal reality check</h2>
+          <div class="terminal-block"><pre><code>$ ./llama-server --model coder-q4_k_m.gguf --ctx-size 16384 --n-gpu-layers 999
+llama_model_loader: loaded meta data with 33 key-value pairs
+llama_context: n_ctx = 16384
+llama_context: KV self size  = 4096.00 MiB
+llama_model_load: offloaded 43/43 layers to GPU
+server is listening on http://0.0.0.0:8080</code></pre></div>
+          <p>If the KV cache is already eating several gigabytes, chasing a smaller weight quant may not solve the real problem. Long-context coding sessions are often KV-cache-bound before they are weight-bound.</p>
+
+          <h2>What went wrong and the tradeoffs</h2>
+          <div class="callout callout-warning">
+            <strong>Pitfalls I keep seeing</strong>
+            <ul>
+              <li>Choosing the smallest quant that loads, then blaming the model when code quality collapses.</li>
+              <li>Ignoring KV cache growth and only comparing model file sizes.</li>
+              <li>Using a quantization mode that the runtime technically supports but does not optimize well on that hardware.</li>
+              <li>Measuring on short prompts even though the real workflow uses 8k to 32k context.</li>
+            </ul>
+          </div>
+          <p><strong>Smaller weights do not guarantee better latency.</strong> On some setups, a slightly larger quant that stays on GPU beats a smaller quant that spills more work to CPU.</p>
+          <p><strong>Code quality degrades before chat quality does.</strong> A quantized model may still sound smart while quietly getting worse at bracket matching, indentation stability, exact symbol reuse, and structured edits across multiple files.</p>
+          <p><strong>Security and reliability still matter.</strong> Local serving feels safe, but it is still software listening on a port and loading large binary artifacts.</p>
+          <p>I would not expose a local inference port to the public internet without auth and rate limits, pull random GGUF or AWQ artifacts without verifying provenance, or let an editor agent auto-upgrade models during a coding session.</p>
+          <ul>
+            <li><a href="https://huggingface.co/docs/hub/gguf" target="_blank" rel="noopener noreferrer">Hugging Face GGUF format guide</a></li>
+            <li><a href="https://github.com/ggml-org/llama.cpp/blob/master/tools/quantize/README.md" target="_blank" rel="noopener noreferrer">llama.cpp quantization notes</a></li>
+            <li><a href="https://github.com/ollama/ollama/blob/main/docs/modelfile.md" target="_blank" rel="noopener noreferrer">Ollama Modelfile docs</a></li>
+            <li><a href="https://docs.vllm.ai/en/latest/features/quantization/" target="_blank" rel="noopener noreferrer">vLLM quantization support</a></li>
+            <li><a href="https://huggingface.co/docs/transformers/quantization/bitsandbytes" target="_blank" rel="noopener noreferrer">bitsandbytes quantization docs</a></li>
+          </ul>
+
+          <h2>Practical checklist</h2>
+          <div class="callout callout-success">
+            <strong>What I would do again</strong>
+            <ul>
+              <li>Pick the runtime first, because runtime support narrows the useful quant choices fast.</li>
+              <li>Test at the context length you really need for repository work.</li>
+              <li>Prefer Q5, Q6, AWQ, or 8-bit when the hardware allows it for code-heavy tasks.</li>
+              <li>Drop model size before dropping to an extremely aggressive quant.</li>
+              <li>Record latency, fit, and patch quality together instead of optimizing one metric in isolation.</li>
+            </ul>
+          </div>
+          <p>My default recommendation is simple: for a private local coding assistant, start with Ollama or llama.cpp and a strong 4-bit or 5-bit GGUF. For a shared GPU server, start with vLLM and AWQ or BF16.</p>
+
+          <h2>Conclusion</h2>
+          <p>Quantization is not just a compression trick. It is part of the product decision for your local coding stack. The right choice is the one that still feels dependable when the model is reading a real repo, proposing a real patch, and staying coherent over a long session.</p>
+          <p>If I only had one rule, it would be this: optimize for trustworthy coding behavior first, then squeeze memory.</p>
+
+          <div class="blog-post-tags">
+            <span class="blog-post-tag">Quantization</span>
+            <span class="blog-post-tag">Local LLMs</span>
+            <span class="blog-post-tag">Ollama</span>
+            <span class="blog-post-tag">llama.cpp</span>
+            <span class="blog-post-tag">vLLM</span>
+          </div>
+        </div>
+        <div class="blog-footer">
+          <p><a href="index.html">Back to all posts</a></p>
+        </div>
+      </div>
+    </header>
+  </body>
+</html>
