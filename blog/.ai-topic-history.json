@@ -1,6 +1,14 @@
 {
   "topics": [
     {
+      "date": "2026-04-24",
+      "skill": "Quantization strategy for local coding models",
+      "topic": "Choosing between 4-bit GGUF, AWQ, 8-bit, and less aggressive quantization for coding models on consumer hardware, including runtime fit across Ollama, llama.cpp, and vLLM plus the practical tradeoffs between memory savings, latency, KV cache pressure, and code quality",
+      "slug": "quantization-coding-models-consumer-hardware",
+      "title": "Quantization Tradeoffs for Coding Models on Consumer Hardware",
+      "summary": "A practical guide to choosing 4-bit, 6-bit, 8-bit, and AWQ-style quantization for coding models on consumer hardware, with concrete runtime tradeoffs for Ollama, llama.cpp, and vLLM."
+    },
+    {
       "date": "2026-04-23",
       "skill": "Database migration workflow for AI coding agents",
       "topic": "Using expand-contract database migrations with additive schema changes, dual writes, bounded backfills, verification queries, and delayed contract steps so AI-assisted schema work stays rollback-friendly instead of turning neat diffs into production damage",
