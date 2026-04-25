@@ -1,6 +1,14 @@
 {
   "topics": [
     {
+      "date": "2026-04-25",
+      "skill": "Hybrid code retrieval for AI coding agents",
+      "topic": "Combining embeddings, tree-sitter symbol maps, ripgrep exact search, and reranking to build smaller, more accurate context packets for AI coding agents instead of stuffing whole repositories into the prompt",
+      "slug": "hybrid-code-retrieval-agents",
+      "title": "Hybrid Code Retrieval for AI Coding Agents That Beats Full-Repo Prompt Stuffing",
+      "summary": "A practical guide to hybrid code retrieval for AI coding agents using embeddings, syntax-aware symbol indexing, exact search, and reranking to improve edit accuracy while keeping prompts smaller and easier to review."
+    },
+    {
       "date": "2026-04-24",
       "skill": "Quantization strategy for local coding models",
       "topic": "Choosing between 4-bit GGUF, AWQ, 8-bit, and less aggressive quantization for coding models on consumer hardware, including runtime fit across Ollama, llama.cpp, and vLLM plus the practical tradeoffs between memory savings, latency, KV cache pressure, and code quality",
