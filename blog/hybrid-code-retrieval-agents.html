@@ -1,0 +1,393 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="A practical guide to hybrid code retrieval for AI coding agents using embeddings, tree-sitter structure, ripgrep fallback, and reranking so prompts stay smaller and edits stay more accurate.">
+    <meta name="author" content="Anirudh Negi">
+    <title>Hybrid Code Retrieval for AI Coding Agents That Beats Full-Repo Prompt Stuffing | Anirudh Negi</title>
+    <link rel="icon" type="image/svg+xml" href="../images/favicon.svg">
+    <link rel="canonical" href="https://negiadventures.github.io/blog/hybrid-code-retrieval-agents.html">
+    <meta property="og:type" content="article">
+    <meta property="og:url" content="https://negiadventures.github.io/blog/hybrid-code-retrieval-agents.html">
+    <meta property="og:title" content="Hybrid Code Retrieval for AI Coding Agents That Beats Full-Repo Prompt Stuffing | Anirudh Negi">
+    <meta property="og:description" content="A practical guide to hybrid code retrieval for AI coding agents using embeddings, tree-sitter structure, ripgrep fallback, and reranking so prompts stay smaller and edits stay more accurate.">
+    <meta property="og:image" content="data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A//www.w3.org/2000/svg%27%20viewBox%3D%270%200%201200%20630%27%3E%0A%20%20%3Cdefs%3E%0A%20%20%20%20%3ClinearGradient%20id%3D%27bg%27%20x1%3D%270%27%20x2%3D%271%27%20y1%3D%270%27%20y2%3D%271%27%3E%0A%20%20%20%20%20%20%3Cstop%20offset%3D%270%25%27%20stop-color%3D%27%2307111d%27/%3E%0A%20%20%20%20%20%20%3Cstop%20offset%3D%27100%25%27%20stop-color%3D%27%2318324d%27/%3E%0A%20%20%20%20%3C/linearGradient%3E%0A%20%20%3C/defs%3E%0A%20%20%3Crect%20width%3D%271200%27%20height%3D%27630%27%20fill%3D%27url%28%23bg%29%27/%3E%0A%20%20%3Ccircle%20cx%3D%271010%27%20cy%3D%27110%27%20r%3D%27160%27%20fill%3D%27%2322d3ee%27%20fill-opacity%3D%270.14%27/%3E%0A%20%20%3Ccircle%20cx%3D%27180%27%20cy%3D%27525%27%20r%3D%27205%27%20fill%3D%27%238b5cf6%27%20fill-opacity%3D%270.16%27/%3E%0A%20%20%3Crect%20x%3D%2782%27%20y%3D%2786%27%20width%3D%271036%27%20height%3D%27458%27%20rx%3D%2732%27%20fill%3D%27%230b1220%27%20stroke%3D%27%2338bdf8%27%20stroke-opacity%3D%270.35%27/%3E%0A%20%20%3Ctext%20x%3D%27132%27%20y%3D%27174%27%20fill%3D%27white%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2744%27%20font-weight%3D%27700%27%3EHybrid%20Code%20Retrieval%20for%3C/text%3E%0A%20%20%3Ctext%20x%3D%27132%27%20y%3D%27242%27%20fill%3D%27%2393c5fd%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2744%27%20font-weight%3D%27700%27%3EAI%20Coding%20Agents%3C/text%3E%0A%20%20%3Ctext%20x%3D%27132%27%20y%3D%27318%27%20fill%3D%27%23cbd5e1%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2728%27%3EEmbeddings%2C%20tree-sitter%2C%20ripgrep%20fallback%2C%20and%20reranking%3C/text%3E%0A%20%20%3Crect%20x%3D%27132%27%20y%3D%27376%27%20width%3D%27338%27%20height%3D%2754%27%20rx%3D%2714%27%20fill%3D%27%23111c2d%27%20stroke%3D%27%2367e8f9%27%20stroke-opacity%3D%270.45%27/%3E%0A%20%20%3Ctext%20x%3D%27156%27%20y%3D%27411%27%20fill%3D%27%2367e8f9%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2724%27%3Estop%20shoving%20whole%20repos%20into%20the%20prompt%3C/text%3E%0A%20%20%3Crect%20x%3D%27770%27%20y%3D%27176%27%20width%3D%27252%27%20height%3D%2756%27%20rx%3D%2714%27%20fill%3D%27%230d1728%27%20stroke%3D%27%2322d3ee%27%20stroke-opacity%3D%270.45%27/%3E%0A%20%20%3Ctext%20x%3D%27840%27%20y%3D%27212%27%20fill%3D%27%23bae6fd%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2723%27%3Eembed%28%29%3C/text%3E%0A%20%20%3Crect%20x%3D%27770%27%20y%3D%27274%27%20width%3D%27252%27%20height%3D%2756%27%20rx%3D%2714%27%20fill%3D%27%230d1728%27%20stroke%3D%27%2322d3ee%27%20stroke-opacity%3D%270.45%27/%3E%0A%20%20%3Ctext%20x%3D%27814%27%20y%3D%27310%27%20fill%3D%27%23bae6fd%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2723%27%3Etree-sitter%3C/text%3E%0A%20%20%3Crect%20x%3D%27770%27%20y%3D%27372%27%20width%3D%27252%27%20height%3D%2756%27%20rx%3D%2714%27%20fill%3D%27%230d1728%27%20stroke%3D%27%23a78bfa%27%20stroke-opacity%3D%270.45%27/%3E%0A%20%20%3Ctext%20x%3D%27840%27%20y%3D%27408%27%20fill%3D%27%23ddd6fe%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2723%27%3Erg%3C/text%3E%0A%3C/svg%3E">
+    <meta property="article:published_time" content="2026-04-25">
+    <meta property="article:author" content="Anirudh Negi">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:url" content="https://negiadventures.github.io/blog/hybrid-code-retrieval-agents.html">
+    <meta name="twitter:title" content="Hybrid Code Retrieval for AI Coding Agents That Beats Full-Repo Prompt Stuffing | Anirudh Negi">
+    <meta name="twitter:description" content="A practical guide to hybrid code retrieval for AI coding agents using embeddings, tree-sitter structure, ripgrep fallback, and reranking so prompts stay smaller and edits stay more accurate.">
+    <meta name="twitter:image" content="data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A//www.w3.org/2000/svg%27%20viewBox%3D%270%200%201200%20630%27%3E%0A%20%20%3Cdefs%3E%0A%20%20%20%20%3ClinearGradient%20id%3D%27bg%27%20x1%3D%270%27%20x2%3D%271%27%20y1%3D%270%27%20y2%3D%271%27%3E%0A%20%20%20%20%20%20%3Cstop%20offset%3D%270%25%27%20stop-color%3D%27%2307111d%27/%3E%0A%20%20%20%20%20%20%3Cstop%20offset%3D%27100%25%27%20stop-color%3D%27%2318324d%27/%3E%0A%20%20%20%20%3C/linearGradient%3E%0A%20%20%3C/defs%3E%0A%20%20%3Crect%20width%3D%271200%27%20height%3D%27630%27%20fill%3D%27url%28%23bg%29%27/%3E%0A%20%20%3Ccircle%20cx%3D%271010%27%20cy%3D%27110%27%20r%3D%27160%27%20fill%3D%27%2322d3ee%27%20fill-opacity%3D%270.14%27/%3E%0A%20%20%3Ccircle%20cx%3D%27180%27%20cy%3D%27525%27%20r%3D%27205%27%20fill%3D%27%238b5cf6%27%20fill-opacity%3D%270.16%27/%3E%0A%20%20%3Crect%20x%3D%2782%27%20y%3D%2786%27%20width%3D%271036%27%20height%3D%27458%27%20rx%3D%2732%27%20fill%3D%27%230b1220%27%20stroke%3D%27%2338bdf8%27%20stroke-opacity%3D%270.35%27/%3E%0A%20%20%3Ctext%20x%3D%27132%27%20y%3D%27174%27%20fill%3D%27white%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2744%27%20font-weight%3D%27700%27%3EHybrid%20Code%20Retrieval%20for%3C/text%3E%0A%20%20%3Ctext%20x%3D%27132%27%20y%3D%27242%27%20fill%3D%27%2393c5fd%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2744%27%20font-weight%3D%27700%27%3EAI%20Coding%20Agents%3C/text%3E%0A%20%20%3Ctext%20x%3D%27132%27%20y%3D%27318%27%20fill%3D%27%23cbd5e1%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2728%27%3EEmbeddings%2C%20tree-sitter%2C%20ripgrep%20fallback%2C%20and%20reranking%3C/text%3E%0A%20%20%3Crect%20x%3D%27132%27%20y%3D%27376%27%20width%3D%27338%27%20height%3D%2754%27%20rx%3D%2714%27%20fill%3D%27%23111c2d%27%20stroke%3D%27%2367e8f9%27%20stroke-opacity%3D%270.45%27/%3E%0A%20%20%3Ctext%20x%3D%27156%27%20y%3D%27411%27%20fill%3D%27%2367e8f9%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2724%27%3Estop%20shoving%20whole%20repos%20into%20the%20prompt%3C/text%3E%0A%20%20%3Crect%20x%3D%27770%27%20y%3D%27176%27%20width%3D%27252%27%20height%3D%2756%27%20rx%3D%2714%27%20fill%3D%27%230d1728%27%20stroke%3D%27%2322d3ee%27%20stroke-opacity%3D%270.45%27/%3E%0A%20%20%3Ctext%20x%3D%27840%27%20y%3D%27212%27%20fill%3D%27%23bae6fd%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2723%27%3Eembed%28%29%3C/text%3E%0A%20%20%3Crect%20x%3D%27770%27%20y%3D%27274%27%20width%3D%27252%27%20height%3D%2756%27%20rx%3D%2714%27%20fill%3D%27%230d1728%27%20stroke%3D%27%2322d3ee%27%20stroke-opacity%3D%270.45%27/%3E%0A%20%20%3Ctext%20x%3D%27814%27%20y%3D%27310%27%20fill%3D%27%23bae6fd%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2723%27%3Etree-sitter%3C/text%3E%0A%20%20%3Crect%20x%3D%27770%27%20y%3D%27372%27%20width%3D%27252%27%20height%3D%2756%27%20rx%3D%2714%27%20fill%3D%27%230d1728%27%20stroke%3D%27%23a78bfa%27%20stroke-opacity%3D%270.45%27/%3E%0A%20%20%3Ctext%20x%3D%27840%27%20y%3D%27408%27%20fill%3D%27%23ddd6fe%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2723%27%3Erg%3C/text%3E%0A%3C/svg%3E">
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "BlogPosting",
+      "headline": "Hybrid Code Retrieval for AI Coding Agents That Beats Full-Repo Prompt Stuffing",
+      "description": "A practical guide to hybrid code retrieval for AI coding agents using embeddings, tree-sitter structure, ripgrep fallback, and reranking so prompts stay smaller and edits stay more accurate.",
+      "image": "data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A//www.w3.org/2000/svg%27%20viewBox%3D%270%200%201200%20630%27%3E%0A%20%20%3Cdefs%3E%0A%20%20%20%20%3ClinearGradient%20id%3D%27bg%27%20x1%3D%270%27%20x2%3D%271%27%20y1%3D%270%27%20y2%3D%271%27%3E%0A%20%20%20%20%20%20%3Cstop%20offset%3D%270%25%27%20stop-color%3D%27%2307111d%27/%3E%0A%20%20%20%20%20%20%3Cstop%20offset%3D%27100%25%27%20stop-color%3D%27%2318324d%27/%3E%0A%20%20%20%20%3C/linearGradient%3E%0A%20%20%3C/defs%3E%0A%20%20%3Crect%20width%3D%271200%27%20height%3D%27630%27%20fill%3D%27url%28%23bg%29%27/%3E%0A%20%20%3Ccircle%20cx%3D%271010%27%20cy%3D%27110%27%20r%3D%27160%27%20fill%3D%27%2322d3ee%27%20fill-opacity%3D%270.14%27/%3E%0A%20%20%3Ccircle%20cx%3D%27180%27%20cy%3D%27525%27%20r%3D%27205%27%20fill%3D%27%238b5cf6%27%20fill-opacity%3D%270.16%27/%3E%0A%20%20%3Crect%20x%3D%2782%27%20y%3D%2786%27%20width%3D%271036%27%20height%3D%27458%27%20rx%3D%2732%27%20fill%3D%27%230b1220%27%20stroke%3D%27%2338bdf8%27%20stroke-opacity%3D%270.35%27/%3E%0A%20%20%3Ctext%20x%3D%27132%27%20y%3D%27174%27%20fill%3D%27white%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2744%27%20font-weight%3D%27700%27%3EHybrid%20Code%20Retrieval%20for%3C/text%3E%0A%20%20%3Ctext%20x%3D%27132%27%20y%3D%27242%27%20fill%3D%27%2393c5fd%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2744%27%20font-weight%3D%27700%27%3EAI%20Coding%20Agents%3C/text%3E%0A%20%20%3Ctext%20x%3D%27132%27%20y%3D%27318%27%20fill%3D%27%23cbd5e1%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2728%27%3EEmbeddings%2C%20tree-sitter%2C%20ripgrep%20fallback%2C%20and%20reranking%3C/text%3E%0A%20%20%3Crect%20x%3D%27132%27%20y%3D%27376%27%20width%3D%27338%27%20height%3D%2754%27%20rx%3D%2714%27%20fill%3D%27%23111c2d%27%20stroke%3D%27%2367e8f9%27%20stroke-opacity%3D%270.45%27/%3E%0A%20%20%3Ctext%20x%3D%27156%27%20y%3D%27411%27%20fill%3D%27%2367e8f9%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2724%27%3Estop%20shoving%20whole%20repos%20into%20the%20prompt%3C/text%3E%0A%20%20%3Crect%20x%3D%27770%27%20y%3D%27176%27%20width%3D%27252%27%20height%3D%2756%27%20rx%3D%2714%27%20fill%3D%27%230d1728%27%20stroke%3D%27%2322d3ee%27%20stroke-opacity%3D%270.45%27/%3E%0A%20%20%3Ctext%20x%3D%27840%27%20y%3D%27212%27%20fill%3D%27%23bae6fd%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2723%27%3Eembed%28%29%3C/text%3E%0A%20%20%3Crect%20x%3D%27770%27%20y%3D%27274%27%20width%3D%27252%27%20height%3D%2756%27%20rx%3D%2714%27%20fill%3D%27%230d1728%27%20stroke%3D%27%2322d3ee%27%20stroke-opacity%3D%270.45%27/%3E%0A%20%20%3Ctext%20x%3D%27814%27%20y%3D%27310%27%20fill%3D%27%23bae6fd%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2723%27%3Etree-sitter%3C/text%3E%0A%20%20%3Crect%20x%3D%27770%27%20y%3D%27372%27%20width%3D%27252%27%20height%3D%2756%27%20rx%3D%2714%27%20fill%3D%27%230d1728%27%20stroke%3D%27%23a78bfa%27%20stroke-opacity%3D%270.45%27/%3E%0A%20%20%3Ctext%20x%3D%27840%27%20y%3D%27408%27%20fill%3D%27%23ddd6fe%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2723%27%3Erg%3C/text%3E%0A%3C/svg%3E",
+      "url": "https://negiadventures.github.io/blog/hybrid-code-retrieval-agents.html",
+      "datePublished": "2026-04-25",
+      "author": {
+        "@type": "Person",
+        "name": "Anirudh Negi",
+        "url": "https://negiadventures.github.io"
+      },
+      "publisher": {
+        "@type": "Person",
+        "name": "Anirudh Negi",
+        "url": "https://negiadventures.github.io"
+      }
+    }
+    </script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../stylesheets/stylesheet.css?v=5" media="screen">
+    <script type="module">import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.esm.min.mjs'; mermaid.initialize({ startOnLoad: true, theme: 'dark' });</script>
+    <style>
+      .blog-post {
+        max-width: 800px;
+        margin: 0 auto;
+        padding: 60px 20px;
+      }
+      .blog-post-header {
+        margin-bottom: 40px;
+      }
+      .blog-post-nav {
+        margin-bottom: 30px;
+      }
+      .blog-post-nav a {
+        color: var(--accent-strong);
+        font-size: 0.95rem;
+      }
+      .blog-post-nav a:hover,
+      .blog-post-content a:hover,
+      .blog-footer a:hover {
+        color: var(--accent);
+      }
+      .blog-post-title {
+        font-size: 2.5rem;
+        margin-bottom: 16px;
+      }
+      .blog-post-meta {
+        display: flex;
+        gap: 20px;
+        color: var(--text-muted);
+        font-size: 0.95rem;
+        margin-bottom: 30px;
+        flex-wrap: wrap;
+      }
+      .blog-post-image {
+        width: 100%;
+        height: 300px;
+        object-fit: cover;
+        border-radius: 16px;
+        margin-bottom: 30px;
+        border: 1px solid var(--border);
+        background: linear-gradient(135deg, rgba(8, 18, 31, 1), rgba(24, 39, 69, 1));
+      }
+      .blog-post-content h2 {
+        font-size: 1.6rem;
+        margin-top: 40px;
+        margin-bottom: 16px;
+        color: var(--text-light);
+      }
+      .blog-post-content h3 {
+        font-size: 1.25rem;
+        margin-top: 28px;
+        margin-bottom: 12px;
+        color: var(--text-light);
+      }
+      .blog-post-content p {
+        line-height: 1.8;
+        margin-bottom: 16px;
+        color: var(--text-muted);
+      }
+      .blog-post-content ul,
+      .blog-post-content ol {
+        line-height: 1.8;
+        margin-bottom: 20px;
+        color: var(--text-muted);
+        padding-left: 24px;
+      }
+      .blog-post-content li {
+        margin-bottom: 8px;
+      }
+      .blog-post-content a {
+        color: var(--accent-strong);
+      }
+      .code-block,
+      .diagram-block,
+      .callout,
+      table {
+        background: var(--bg-alt);
+        border: 1px solid var(--border);
+        border-radius: 12px;
+      }
+      .code-block {
+        padding: 20px;
+        margin: 20px 0;
+        overflow-x: auto;
+      }
+      .code-block pre {
+        margin: 0;
+        font-family: var(--mono);
+        font-size: 0.9rem;
+        line-height: 1.6;
+        color: var(--text-light);
+      }
+      .diagram-block {
+        padding: 20px;
+        margin: 24px 0;
+        overflow-x: auto;
+      }
+      .callout {
+        padding: 18px 20px;
+        margin: 22px 0;
+      }
+      .callout strong {
+        color: var(--text-light);
+      }
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        margin: 22px 0;
+        overflow: hidden;
+      }
+      th,
+      td {
+        border-bottom: 1px solid var(--border);
+        padding: 14px 16px;
+        text-align: left;
+        color: var(--text-muted);
+        vertical-align: top;
+      }
+      th {
+        color: var(--text-light);
+        background: rgba(255,255,255,0.03);
+      }
+      .checklist {
+        background: var(--bg-alt);
+        border: 1px solid var(--border);
+        border-radius: 12px;
+        padding: 18px 22px;
+      }
+      .blog-post-tags {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        margin-top: 40px;
+        padding-top: 30px;
+        border-top: 1px solid var(--border);
+      }
+      .blog-post-tag {
+        background: var(--accent-soft);
+        color: var(--accent-strong);
+        border-radius: 999px;
+        padding: 6px 14px;
+        font-size: 0.85rem;
+        font-family: var(--mono);
+        border: 1px solid transparent;
+      }
+      .blog-footer {
+        margin-top: 60px;
+        padding-top: 30px;
+        border-top: 1px solid var(--border);
+        text-align: center;
+      }
+      @media (max-width: 768px) {
+        .blog-post {
+          padding: 40px 16px;
+        }
+        .blog-post-title {
+          font-size: 2rem;
+        }
+        .blog-post-image {
+          height: 200px;
+        }
+        table,
+        th,
+        td {
+          font-size: 0.95rem;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <a href="../index.html#main" class="skip-link">Skip to main content</a>
+    <header class="site-header">
+      <div class="container blog-post">
+        <div class="blog-post-nav"><a href="index.html">&larr; Back to All Posts</a></div>
+        <div class="blog-post-header">
+          <h1 class="blog-post-title">Hybrid Code Retrieval for AI Coding Agents That Beats Full-Repo Prompt Stuffing</h1>
+          <div class="blog-post-meta">
+            <span>April 25, 2026</span>
+            <span>&bull;</span>
+            <span>9 min read</span>
+          </div>
+          <img src="data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A//www.w3.org/2000/svg%27%20viewBox%3D%270%200%201200%20630%27%3E%0A%20%20%3Cdefs%3E%0A%20%20%20%20%3ClinearGradient%20id%3D%27bg%27%20x1%3D%270%27%20x2%3D%271%27%20y1%3D%270%27%20y2%3D%271%27%3E%0A%20%20%20%20%20%20%3Cstop%20offset%3D%270%25%27%20stop-color%3D%27%2307111d%27/%3E%0A%20%20%20%20%20%20%3Cstop%20offset%3D%27100%25%27%20stop-color%3D%27%2318324d%27/%3E%0A%20%20%20%20%3C/linearGradient%3E%0A%20%20%3C/defs%3E%0A%20%20%3Crect%20width%3D%271200%27%20height%3D%27630%27%20fill%3D%27url%28%23bg%29%27/%3E%0A%20%20%3Ccircle%20cx%3D%271010%27%20cy%3D%27110%27%20r%3D%27160%27%20fill%3D%27%2322d3ee%27%20fill-opacity%3D%270.14%27/%3E%0A%20%20%3Ccircle%20cx%3D%27180%27%20cy%3D%27525%27%20r%3D%27205%27%20fill%3D%27%238b5cf6%27%20fill-opacity%3D%270.16%27/%3E%0A%20%20%3Crect%20x%3D%2782%27%20y%3D%2786%27%20width%3D%271036%27%20height%3D%27458%27%20rx%3D%2732%27%20fill%3D%27%230b1220%27%20stroke%3D%27%2338bdf8%27%20stroke-opacity%3D%270.35%27/%3E%0A%20%20%3Ctext%20x%3D%27132%27%20y%3D%27174%27%20fill%3D%27white%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2744%27%20font-weight%3D%27700%27%3EHybrid%20Code%20Retrieval%20for%3C/text%3E%0A%20%20%3Ctext%20x%3D%27132%27%20y%3D%27242%27%20fill%3D%27%2393c5fd%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2744%27%20font-weight%3D%27700%27%3EAI%20Coding%20Agents%3C/text%3E%0A%20%20%3Ctext%20x%3D%27132%27%20y%3D%27318%27%20fill%3D%27%23cbd5e1%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2728%27%3EEmbeddings%2C%20tree-sitter%2C%20ripgrep%20fallback%2C%20and%20reranking%3C/text%3E%0A%20%20%3Crect%20x%3D%27132%27%20y%3D%27376%27%20width%3D%27338%27%20height%3D%2754%27%20rx%3D%2714%27%20fill%3D%27%23111c2d%27%20stroke%3D%27%2367e8f9%27%20stroke-opacity%3D%270.45%27/%3E%0A%20%20%3Ctext%20x%3D%27156%27%20y%3D%27411%27%20fill%3D%27%2367e8f9%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2724%27%3Estop%20shoving%20whole%20repos%20into%20the%20prompt%3C/text%3E%0A%20%20%3Crect%20x%3D%27770%27%20y%3D%27176%27%20width%3D%27252%27%20height%3D%2756%27%20rx%3D%2714%27%20fill%3D%27%230d1728%27%20stroke%3D%27%2322d3ee%27%20stroke-opacity%3D%270.45%27/%3E%0A%20%20%3Ctext%20x%3D%27840%27%20y%3D%27212%27%20fill%3D%27%23bae6fd%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2723%27%3Eembed%28%29%3C/text%3E%0A%20%20%3Crect%20x%3D%27770%27%20y%3D%27274%27%20width%3D%27252%27%20height%3D%2756%27%20rx%3D%2714%27%20fill%3D%27%230d1728%27%20stroke%3D%27%2322d3ee%27%20stroke-opacity%3D%270.45%27/%3E%0A%20%20%3Ctext%20x%3D%27814%27%20y%3D%27310%27%20fill%3D%27%23bae6fd%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2723%27%3Etree-sitter%3C/text%3E%0A%20%20%3Crect%20x%3D%27770%27%20y%3D%27372%27%20width%3D%27252%27%20height%3D%2756%27%20rx%3D%2714%27%20fill%3D%27%230d1728%27%20stroke%3D%27%23a78bfa%27%20stroke-opacity%3D%270.45%27/%3E%0A%20%20%3Ctext%20x%3D%27840%27%20y%3D%27408%27%20fill%3D%27%23ddd6fe%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2723%27%3Erg%3C/text%3E%0A%3C/svg%3E" alt="Hybrid Code Retrieval for AI Coding Agents That Beats Full-Repo Prompt Stuffing" class="blog-post-image">
+        </div>
+
+        <div class="blog-post-content">
+          <p>Most AI coding mistakes are retrieval mistakes wearing a generation costume. The model edits the wrong file, misses the helper that already exists, or rewrites an API because the only thing it saw was a vague prompt plus a pile of repo text.</p>
+          <p>The fix is usually not a bigger context window. It is better retrieval. In this post I will show the hybrid setup I would use for a real coding agent: embeddings for semantic recall, tree-sitter for code structure, ripgrep for exact matches, and a lightweight reranker before anything reaches the prompt.</p>
+          <p>This matters because smaller, more relevant context tends to improve both accuracy and reviewability. It also makes failures easier to debug when the model still gets it wrong.</p>
+
+          <h2>Why this matters</h2>
+          <p>If your agent only has one retrieval move, it will fail in predictable ways. Embeddings miss exact symbol names, keyword search misses semantically related helpers, and whole-file stuffing buries the useful lines under noise.</p>
+          <p>For code, retrieval has to do three jobs at once: find the right files, find the right symbols inside those files, and deliver a compact packet the model can actually use. That is why a hybrid stack works better than any single index.</p>
+          <ul>
+            <li><a href="https://tree-sitter.github.io/tree-sitter/">tree-sitter</a> for syntax-aware parsing and symbol extraction</li>
+            <li><a href="https://github.com/BurntSushi/ripgrep">ripgrep</a> for exact symbol and literal search</li>
+            <li><a href="https://github.com/pgvector/pgvector">pgvector</a> if you want a practical embeddings store in Postgres</li>
+            <li><a href="https://opentelemetry.io/">OpenTelemetry</a> if you want to trace retrieval latency and failure modes</li>
+          </ul>
+
+          <h2>Architecture or workflow overview</h2>
+          <div class="diagram-block">
+            <div class="mermaid">flowchart LR
+              A[User task] --> B[Intent classifier]
+              B --> C[Embedding recall]
+              B --> D[tree-sitter symbol index]
+              B --> E[ripgrep exact match]
+              C --> F[Candidate merge]
+              D --> F
+              E --> F
+              F --> G[Reranker]
+              G --> H[Context packet builder]
+              H --> I[Agent edit or answer]
+              I --> J[Verifier and tests]
+            </div>
+          </div>
+          <div class="callout"><strong>Best practice:</strong> embeddings should retrieve chunks, tree-sitter should retrieve symbols, ripgrep should retrieve literals, and the prompt builder should enforce a hard budget instead of accepting every match.</div>
+
+          <h2>Implementation details</h2>
+          <h3>Build a symbol-aware index, not just file chunks</h3>
+          <p>A flat embedding index over random 800-token code chunks is better than nothing, but it loses too much structure. I prefer indexing symbols and selected surrounding spans.</p>
+          <div class="code-block"><pre><code>import Parser from 'tree-sitter';
+import TypeScript from 'tree-sitter-typescript';
+
+const parser = new Parser();
+parser.setLanguage(TypeScript.typescript);
+
+export function extractSymbols(source: string, path: string) {
+  const tree = parser.parse(source);
+  const symbols = [];
+
+  function walk(node) {
+    if ([
+      'function_declaration',
+      'class_declaration',
+      'method_definition',
+      'interface_declaration',
+      'type_alias_declaration'
+    ].includes(node.type)) {
+      const nameNode = node.childForFieldName('name');
+      symbols.push({
+        path,
+        name: nameNode?.text ?? 'anonymous',
+        kind: node.type,
+        start: node.startIndex,
+        end: node.endIndex
+      });
+    }
+
+    for (const child of node.children) walk(child);
+  }
+
+  walk(tree.rootNode);
+  return symbols;
+}</code></pre></div>
+          <p>The useful trick is that the chunk boundary follows code structure. Later, when the agent asks about <code>buildContextPacket</code>, you can fetch the function body, its imports, and a nearby helper instead of two pages of unrelated code.</p>
+
+          <h3>Keep keyword search as a first-class retrieval path</h3>
+          <p>Exact search is still the best tool for some jobs. If a model mentions <code>X-Request-Id</code>, <code>FEATURE_FLAG_AGENT_MODE</code>, or a stack-trace symbol, I do not want to hope embeddings figure it out.</p>
+          <div class="code-block"><pre><code>rg -n --hidden --glob '!node_modules' --glob '!dist' \
+  'buildContextPacket|ContextBudget|FEATURE_FLAG_AGENT_MODE' .</code></pre></div>
+          <p>I usually treat ripgrep hits as high-confidence candidates when the query includes exact symbols, references a stack trace, or targets config keys that semantic search often underweights.</p>
+
+          <h3>Merge candidates, then rerank before prompt assembly</h3>
+          <p>Once you have candidates from different channels, score them together. Embeddings alone will overvalue semantically similar but operationally irrelevant files.</p>
+          <div class="code-block"><pre><code>retrieval:
+  maxCandidates: 40
+  finalContextFiles: 8
+  strategies:
+    - name: embeddings
+      weight: 0.45
+    - name: tree_sitter_symbol_match
+      weight: 0.35
+    - name: ripgrep_exact_match
+      weight: 0.20
+  rerank:
+    enabled: true
+    model: cross-encoder-mini
+    keepTopK: 12</code></pre></div>
+          <p>My rule of thumb is simple: retrieve broadly, rerank aggressively, prompt narrowly.</p>
+
+          <h3>Build context packets that are reviewable by humans too</h3>
+          <p>A good context packet is not just model food. It should be readable enough that a human reviewer can inspect the evidence later.</p>
+          <div class="code-block"><pre><code>{
+  "task": "Add retry jitter to the GitHub webhook worker",
+  "files": [
+    { "path": "src/workers/githubWebhook.ts", "reason": "Primary retry loop lives here" },
+    { "path": "src/lib/backoff.ts", "reason": "Existing delay helpers already used by adjacent workers" }
+  ],
+  "symbols": ["processWebhookEvent", "computeBackoffMs", "RetryPolicy"],
+  "tests": ["tests/githubWebhook.test.ts"]
+}</code></pre></div>
+          <p>That shape tends to produce better edits because the agent receives a compact map instead of an undifferentiated text dump.</p>
+
+          <h2>What went wrong / tradeoffs</h2>
+          <div class="callout"><strong>Pitfall:</strong> the most common production bug is stale embeddings after a refactor. If your semantic index is not tied to a commit SHA, the model can edit dead code with full confidence.</div>
+          <p>Tree-sitter is great, but only where you actually have grammars and clean parse paths. In mixed repos you will still hit YAML, SQL, shell, generated SDKs, and templates, so your retrieval layer needs graceful degradation instead of pretending the structural index is complete.</p>
+          <p>Retrieval recall and prompt usefulness are also not the same thing. More files can reduce answer quality by making the task ambiguous.</p>
+
+          <table>
+            <thead>
+              <tr><th>Choice</th><th>Benefit</th><th>Cost</th><th>When I would use it</th></tr>
+            </thead>
+            <tbody>
+              <tr><td>Large top-k recall</td><td>Better coverage</td><td>More noise and latency</td><td>Early exploration and offline evals</td></tr>
+              <tr><td>Aggressive reranking</td><td>Smaller prompt, better focus</td><td>Can hide edge-case files</td><td>Normal coding tasks</td></tr>
+              <tr><td>Whole-file inclusion</td><td>More surrounding context</td><td>Token bloat</td><td>Tiny files or config files</td></tr>
+              <tr><td>Symbol-level excerpts</td><td>High precision</td><td>Needs indexing work</td><td>Most application code</td></tr>
+            </tbody>
+          </table>
+
+          <p>Two things are easy to miss. First, prompt injection can ride in through retrieved docs or copied issue text, so external content should be treated as tainted. Second, retrieval is part of your correctness boundary. If the wrong file makes the packet, the model can be perfectly obedient and still ship the wrong patch.</p>
+
+          <h2>Practical checklist</h2>
+          <div class="checklist">
+            <ul>
+              <li>[ ] embeddings are built from symbol-aware chunks, not random megachunks</li>
+              <li>[ ] exact search exists and is not hidden behind a failure path</li>
+              <li>[ ] every packet records why each file was included</li>
+              <li>[ ] retrieval is tied to a repo SHA or change counter</li>
+              <li>[ ] final context has a hard token budget and hard file-count budget</li>
+              <li>[ ] tests and adjacent config files are eligible retrieval targets</li>
+              <li>[ ] you can inspect retrieval latency and false-positive rates in traces</li>
+            </ul>
+          </div>
+
+          <h2>Conclusion</h2>
+          <p>If I were building this today, I would start embarrassingly simple: ripgrep, tree-sitter symbol extraction, embeddings in a small local store, one reranker, and a packet builder with explicit budgets.</p>
+          <p>I would not start with a giant vector pipeline and five clever heuristics. Most teams do not have a generation problem first. They have a retrieval discipline problem.</p>
+
+          <div class="blog-post-tags">
+            <span class="blog-post-tag">AI Agents</span>
+            <span class="blog-post-tag">Code Retrieval</span>
+            <span class="blog-post-tag">Tree-sitter</span>
+            <span class="blog-post-tag">Embeddings</span>
+            <span class="blog-post-tag">Developer Tools</span>
+          </div>
+        </div>
+
+        <div class="blog-footer">
+          <p><a href="index.html">Read more posts</a> or <a href="../index.html">go back to the portfolio</a>.</p>
+        </div>
+      </div>
+    </header>
+  </body>
+</html>
