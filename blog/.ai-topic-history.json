@@ -1,6 +1,14 @@
 {
   "topics": [
     {
+      "date": "2026-04-30",
+      "skill": "AI-generated tests",
+      "topic": "Using AI to generate unit and integration tests with fixture discipline, mutation checks, invariant assertions, and review rules so teams get faster coverage without merging tests that only replay the implementation",
+      "slug": "ai-generated-tests-weak-spots",
+      "title": "AI-Generated Tests That Actually Help, and Where They Quietly Fail",
+      "summary": "A practical guide to using AI-generated tests for fast coverage gains without trusting them blindly, including golden paths, mutation checks, flaky-test traps, and review rules that expose weak assertions."
+    },
+    {
       "date": "2026-04-25",
       "skill": "Hybrid code retrieval for AI coding agents",
       "topic": "Combining embeddings, tree-sitter symbol maps, ripgrep exact search, and reranking to build smaller, more accurate context packets for AI coding agents instead of stuffing whole repositories into the prompt",
