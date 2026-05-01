@@ -1,6 +1,14 @@
 {
   "topics": [
     {
+      "date": "2026-05-01",
+      "skill": "Shadow mode AI feature rollouts",
+      "topic": "Rolling out AI features in shadow mode with traffic replay, scorecards, redaction, and explicit promotion gates so teams can test real production behavior before letting models take user-visible actions",
+      "slug": "shadow-mode-ai-feature-rollouts",
+      "title": "Shadow Mode Rollouts for AI Features Before You Let Them Act",
+      "summary": "A practical guide to shipping AI features safely with shadow traffic, side-by-side scoring, redaction, and promotion gates that expose failures before the model gets permission to act."
+    },
+    {
       "date": "2026-04-30",
       "skill": "AI-generated tests",
       "topic": "Using AI to generate unit and integration tests with fixture discipline, mutation checks, invariant assertions, and review rules so teams get faster coverage without merging tests that only replay the implementation",
