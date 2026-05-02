@@ -1,6 +1,14 @@
 {
   "topics": [
     {
+      "date": "2026-05-02",
+      "skill": "Context window budgeting for AI coding agents",
+      "topic": "Why advertised context size and usable coding context are different, and how to build bounded context packets, rolling summaries, file pinning, and retrieval refresh loops so long-context models stay accurate instead of turning large prompts into expensive confusion",
+      "slug": "usable-context-vs-advertised-context-coding-agents",
+      "title": "Usable Context vs Advertised Context for AI Coding Agents",
+      "summary": "A practical guide to why huge advertised context windows still fail in coding workflows, with concrete patterns for bounded context packets, rolling summaries, pinned files, and retrieval refresh loops."
+    },
+    {
       "date": "2026-05-01",
       "skill": "Shadow mode AI feature rollouts",
       "topic": "Rolling out AI features in shadow mode with traffic replay, scorecards, redaction, and explicit promotion gates so teams can test real production behavior before letting models take user-visible actions",

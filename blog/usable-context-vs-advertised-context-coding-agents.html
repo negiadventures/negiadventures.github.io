@@ -1,0 +1,236 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="Why huge advertised context windows still break coding agents, and how bounded context packets, rolling summaries, and refresh loops keep long prompts usable.">
+    <meta name="author" content="Anirudh Negi">
+    <title>Usable Context vs Advertised Context for AI Coding Agents | Anirudh Negi</title>
+    <link rel="icon" type="image/svg+xml" href="../images/favicon.svg">
+    <link rel="canonical" href="https://negiadventures.github.io/blog/usable-context-vs-advertised-context-coding-agents.html">
+    <meta property="og:type" content="article">
+    <meta property="og:url" content="https://negiadventures.github.io/blog/usable-context-vs-advertised-context-coding-agents.html">
+    <meta property="og:title" content="Usable Context vs Advertised Context for AI Coding Agents | Anirudh Negi">
+    <meta property="og:description" content="Why huge advertised context windows still break coding agents, and how bounded context packets, rolling summaries, and refresh loops keep long prompts usable.">
+    <meta property="og:image" content="data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A//www.w3.org/2000/svg%27%20viewBox%3D%270%200%201200%20630%27%3E%0A%20%20%3Cdefs%3E%0A%20%20%20%20%3ClinearGradient%20id%3D%27bg%27%20x1%3D%270%27%20x2%3D%271%27%20y1%3D%270%27%20y2%3D%271%27%3E%0A%20%20%20%20%20%20%3Cstop%20offset%3D%270%25%27%20stop-color%3D%27%2308131f%27/%3E%0A%20%20%20%20%20%20%3Cstop%20offset%3D%27100%25%27%20stop-color%3D%27%2319324f%27/%3E%0A%20%20%20%20%3C/linearGradient%3E%0A%20%20%3C/defs%3E%0A%20%20%3Crect%20width%3D%271200%27%20height%3D%27630%27%20fill%3D%27url%28%23bg%29%27/%3E%0A%20%20%3Ccircle%20cx%3D%271005%27%20cy%3D%27115%27%20r%3D%27160%27%20fill%3D%27%2322d3ee%27%20fill-opacity%3D%270.14%27/%3E%0A%20%20%3Ccircle%20cx%3D%27180%27%20cy%3D%27520%27%20r%3D%27210%27%20fill%3D%27%238b5cf6%27%20fill-opacity%3D%270.16%27/%3E%0A%20%20%3Crect%20x%3D%2782%27%20y%3D%2784%27%20width%3D%271036%27%20height%3D%27462%27%20rx%3D%2732%27%20fill%3D%27%230b1220%27%20stroke%3D%27%2338bdf8%27%20stroke-opacity%3D%270.35%27/%3E%0A%20%20%3Ctext%20x%3D%27132%27%20y%3D%27176%27%20fill%3D%27white%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2744%27%20font-weight%3D%27700%27%3EUsable%20Context%20vs%20Advertised%3C/text%3E%0A%20%20%3Ctext%20x%3D%27132%27%20y%3D%27244%27%20fill%3D%27%2393c5fd%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2744%27%20font-weight%3D%27700%27%3EContext%20for%20AI%20Coding%20Agents%3C/text%3E%0A%20%20%3Ctext%20x%3D%27132%27%20y%3D%27320%27%20fill%3D%27%23cbd5e1%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2728%27%3EWhy%20big%20windows%20still%20collapse%2C%20and%20how%20to%20budget%20prompts%20that%20stay%20accurate%3C/text%3E%0A%20%20%3Crect%20x%3D%27132%27%20y%3D%27380%27%20width%3D%27328%27%20height%3D%2754%27%20rx%3D%2714%27%20fill%3D%27%23111c2d%27%20stroke%3D%27%2367e8f9%27%20stroke-opacity%3D%270.45%27/%3E%0A%20%20%3Ctext%20x%3D%27156%27%20y%3D%27415%27%20fill%3D%27%2367e8f9%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2724%27%3Esize%20is%20advertised%2C%20usefulness%20is%20earned%3C/text%3E%0A%20%20%3Crect%20x%3D%27770%27%20y%3D%27178%27%20width%3D%27250%27%20height%3D%2756%27%20rx%3D%2714%27%20fill%3D%27%230d1728%27%20stroke%3D%27%2322d3ee%27%20stroke-opacity%3D%270.45%27/%3E%0A%20%20%3Ctext%20x%3D%27812%27%20y%3D%27214%27%20fill%3D%27%23bae6fd%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2723%27%3Erepo-map.json%3C/text%3E%0A%20%20%3Crect%20x%3D%27770%27%20y%3D%27276%27%20width%3D%27250%27%20height%3D%2756%27%20rx%3D%2714%27%20fill%3D%27%230d1728%27%20stroke%3D%27%2322d3ee%27%20stroke-opacity%3D%270.45%27/%3E%0A%20%20%3Ctext%20x%3D%27800%27%20y%3D%27312%27%20fill%3D%27%23bae6fd%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2723%27%3Esummary.md%3C/text%3E%0A%20%20%3Crect%20x%3D%27770%27%20y%3D%27374%27%20width%3D%27250%27%20height%3D%2756%27%20rx%3D%2714%27%20fill%3D%27%230d1728%27%20stroke%3D%27%23a78bfa%27%20stroke-opacity%3D%270.45%27/%3E%0A%20%20%3Ctext%20x%3D%27820%27%20y%3D%27410%27%20fill%3D%27%23ddd6fe%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2723%27%3Epin%28%29%3C/text%3E%0A%3C/svg%3E">
+    <meta property="article:published_time" content="2026-05-02">
+    <meta property="article:author" content="Anirudh Negi">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:url" content="https://negiadventures.github.io/blog/usable-context-vs-advertised-context-coding-agents.html">
+    <meta name="twitter:title" content="Usable Context vs Advertised Context for AI Coding Agents | Anirudh Negi">
+    <meta name="twitter:description" content="Why huge advertised context windows still break coding agents, and how bounded context packets, rolling summaries, and refresh loops keep long prompts usable.">
+    <meta name="twitter:image" content="data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A//www.w3.org/2000/svg%27%20viewBox%3D%270%200%201200%20630%27%3E%0A%20%20%3Cdefs%3E%0A%20%20%20%20%3ClinearGradient%20id%3D%27bg%27%20x1%3D%270%27%20x2%3D%271%27%20y1%3D%270%27%20y2%3D%271%27%3E%0A%20%20%20%20%20%20%3Cstop%20offset%3D%270%25%27%20stop-color%3D%27%2308131f%27/%3E%0A%20%20%20%20%20%20%3Cstop%20offset%3D%27100%25%27%20stop-color%3D%27%2319324f%27/%3E%0A%20%20%20%20%3C/linearGradient%3E%0A%20%20%3C/defs%3E%0A%20%20%3Crect%20width%3D%271200%27%20height%3D%27630%27%20fill%3D%27url%28%23bg%29%27/%3E%0A%20%20%3Ccircle%20cx%3D%271005%27%20cy%3D%27115%27%20r%3D%27160%27%20fill%3D%27%2322d3ee%27%20fill-opacity%3D%270.14%27/%3E%0A%20%20%3Ccircle%20cx%3D%27180%27%20cy%3D%27520%27%20r%3D%27210%27%20fill%3D%27%238b5cf6%27%20fill-opacity%3D%270.16%27/%3E%0A%20%20%3Crect%20x%3D%2782%27%20y%3D%2784%27%20width%3D%271036%27%20height%3D%27462%27%20rx%3D%2732%27%20fill%3D%27%230b1220%27%20stroke%3D%27%2338bdf8%27%20stroke-opacity%3D%270.35%27/%3E%0A%20%20%3Ctext%20x%3D%27132%27%20y%3D%27176%27%20fill%3D%27white%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2744%27%20font-weight%3D%27700%27%3EUsable%20Context%20vs%20Advertised%3C/text%3E%0A%20%20%3Ctext%20x%3D%27132%27%20y%3D%27244%27%20fill%3D%27%2393c5fd%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2744%27%20font-weight%3D%27700%27%3EContext%20for%20AI%20Coding%20Agents%3C/text%3E%0A%20%20%3Ctext%20x%3D%27132%27%20y%3D%27320%27%20fill%3D%27%23cbd5e1%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2728%27%3EWhy%20big%20windows%20still%20collapse%2C%20and%20how%20to%20budget%20prompts%20that%20stay%20accurate%3C/text%3E%0A%20%20%3Crect%20x%3D%27132%27%20y%3D%27380%27%20width%3D%27328%27%20height%3D%2754%27%20rx%3D%2714%27%20fill%3D%27%23111c2d%27%20stroke%3D%27%2367e8f9%27%20stroke-opacity%3D%270.45%27/%3E%0A%20%20%3Ctext%20x%3D%27156%27%20y%3D%27415%27%20fill%3D%27%2367e8f9%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2724%27%3Esize%20is%20advertised%2C%20usefulness%20is%20earned%3C/text%3E%0A%20%20%3Crect%20x%3D%27770%27%20y%3D%27178%27%20width%3D%27250%27%20height%3D%2756%27%20rx%3D%2714%27%20fill%3D%27%230d1728%27%20stroke%3D%27%2322d3ee%27%20stroke-opacity%3D%270.45%27/%3E%0A%20%20%3Ctext%20x%3D%27812%27%20y%3D%27214%27%20fill%3D%27%23bae6fd%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2723%27%3Erepo-map.json%3C/text%3E%0A%20%20%3Crect%20x%3D%27770%27%20y%3D%27276%27%20width%3D%27250%27%20height%3D%2756%27%20rx%3D%2714%27%20fill%3D%27%230d1728%27%20stroke%3D%27%2322d3ee%27%20stroke-opacity%3D%270.45%27/%3E%0A%20%20%3Ctext%20x%3D%27800%27%20y%3D%27312%27%20fill%3D%27%23bae6fd%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2723%27%3Esummary.md%3C/text%3E%0A%20%20%3Crect%20x%3D%27770%27%20y%3D%27374%27%20width%3D%27250%27%20height%3D%2756%27%20rx%3D%2714%27%20fill%3D%27%230d1728%27%20stroke%3D%27%23a78bfa%27%20stroke-opacity%3D%270.45%27/%3E%0A%20%20%3Ctext%20x%3D%27820%27%20y%3D%27410%27%20fill%3D%27%23ddd6fe%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2723%27%3Epin%28%29%3C/text%3E%0A%3C/svg%3E">
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "BlogPosting",
+      "headline": "Usable Context vs Advertised Context for AI Coding Agents",
+      "description": "Why huge advertised context windows still break coding agents, and how bounded context packets, rolling summaries, and refresh loops keep long prompts usable.",
+      "image": "data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A//www.w3.org/2000/svg%27%20viewBox%3D%270%200%201200%20630%27%3E%0A%20%20%3Cdefs%3E%0A%20%20%20%20%3ClinearGradient%20id%3D%27bg%27%20x1%3D%270%27%20x2%3D%271%27%20y1%3D%270%27%20y2%3D%271%27%3E%0A%20%20%20%20%20%20%3Cstop%20offset%3D%270%25%27%20stop-color%3D%27%2308131f%27/%3E%0A%20%20%20%20%20%20%3Cstop%20offset%3D%27100%25%27%20stop-color%3D%27%2319324f%27/%3E%0A%20%20%20%20%3C/linearGradient%3E%0A%20%20%3C/defs%3E%0A%20%20%3Crect%20width%3D%271200%27%20height%3D%27630%27%20fill%3D%27url%28%23bg%29%27/%3E%0A%20%20%3Ccircle%20cx%3D%271005%27%20cy%3D%27115%27%20r%3D%27160%27%20fill%3D%27%2322d3ee%27%20fill-opacity%3D%270.14%27/%3E%0A%20%20%3Ccircle%20cx%3D%27180%27%20cy%3D%27520%27%20r%3D%27210%27%20fill%3D%27%238b5cf6%27%20fill-opacity%3D%270.16%27/%3E%0A%20%20%3Crect%20x%3D%2782%27%20y%3D%2784%27%20width%3D%271036%27%20height%3D%27462%27%20rx%3D%2732%27%20fill%3D%27%230b1220%27%20stroke%3D%27%2338bdf8%27%20stroke-opacity%3D%270.35%27/%3E%0A%20%20%3Ctext%20x%3D%27132%27%20y%3D%27176%27%20fill%3D%27white%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2744%27%20font-weight%3D%27700%27%3EUsable%20Context%20vs%20Advertised%3C/text%3E%0A%20%20%3Ctext%20x%3D%27132%27%20y%3D%27244%27%20fill%3D%27%2393c5fd%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2744%27%20font-weight%3D%27700%27%3EContext%20for%20AI%20Coding%20Agents%3C/text%3E%0A%20%20%3Ctext%20x%3D%27132%27%20y%3D%27320%27%20fill%3D%27%23cbd5e1%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2728%27%3EWhy%20big%20windows%20still%20collapse%2C%20and%20how%20to%20budget%20prompts%20that%20stay%20accurate%3C/text%3E%0A%20%20%3Crect%20x%3D%27132%27%20y%3D%27380%27%20width%3D%27328%27%20height%3D%2754%27%20rx%3D%2714%27%20fill%3D%27%23111c2d%27%20stroke%3D%27%2367e8f9%27%20stroke-opacity%3D%270.45%27/%3E%0A%20%20%3Ctext%20x%3D%27156%27%20y%3D%27415%27%20fill%3D%27%2367e8f9%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2724%27%3Esize%20is%20advertised%2C%20usefulness%20is%20earned%3C/text%3E%0A%20%20%3Crect%20x%3D%27770%27%20y%3D%27178%27%20width%3D%27250%27%20height%3D%2756%27%20rx%3D%2714%27%20fill%3D%27%230d1728%27%20stroke%3D%27%2322d3ee%27%20stroke-opacity%3D%270.45%27/%3E%0A%20%20%3Ctext%20x%3D%27812%27%20y%3D%27214%27%20fill%3D%27%23bae6fd%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2723%27%3Erepo-map.json%3C/text%3E%0A%20%20%3Crect%20x%3D%27770%27%20y%3D%27276%27%20width%3D%27250%27%20height%3D%2756%27%20rx%3D%2714%27%20fill%3D%27%230d1728%27%20stroke%3D%27%2322d3ee%27%20stroke-opacity%3D%270.45%27/%3E%0A%20%20%3Ctext%20x%3D%27800%27%20y%3D%27312%27%20fill%3D%27%23bae6fd%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2723%27%3Esummary.md%3C/text%3E%0A%20%20%3Crect%20x%3D%27770%27%20y%3D%27374%27%20width%3D%27250%27%20height%3D%2756%27%20rx%3D%2714%27%20fill%3D%27%230d1728%27%20stroke%3D%27%23a78bfa%27%20stroke-opacity%3D%270.45%27/%3E%0A%20%20%3Ctext%20x%3D%27820%27%20y%3D%27410%27%20fill%3D%27%23ddd6fe%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2723%27%3Epin%28%29%3C/text%3E%0A%3C/svg%3E",
+      "url": "https://negiadventures.github.io/blog/usable-context-vs-advertised-context-coding-agents.html",
+      "datePublished": "2026-05-02",
+      "author": {
+        "@type": "Person",
+        "name": "Anirudh Negi",
+        "url": "https://negiadventures.github.io"
+      },
+      "publisher": {
+        "@type": "Person",
+        "name": "Anirudh Negi",
+        "url": "https://negiadventures.github.io"
+      },
+      "keywords": ["Context Engineering", "Coding Agents", "Local LLMs", "Prompt Budgeting", "Reliability"]
+    }
+    </script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../stylesheets/stylesheet.css?v=5" media="screen">
+    <style>
+      .blog-post { max-width: 860px; margin: 0 auto; padding: 60px 20px; }
+      .blog-post-nav { margin-bottom: 30px; }
+      .blog-post-nav a { color: var(--accent-strong); font-size: 0.95rem; }
+      .blog-post-nav a:hover { color: var(--accent); }
+      .blog-post-title { font-size: 2.5rem; margin-bottom: 16px; }
+      .blog-post-meta { display: flex; gap: 20px; color: var(--text-muted); font-size: 0.95rem; margin-bottom: 30px; flex-wrap: wrap; }
+      .blog-post-image { width: 100%; height: 320px; object-fit: cover; border-radius: 16px; margin-bottom: 30px; border: 1px solid var(--border); background: var(--bg-alt); }
+      .blog-post-content h2 { font-size: 1.7rem; margin-top: 42px; margin-bottom: 16px; color: var(--text-light); }
+      .blog-post-content h3 { font-size: 1.25rem; margin-top: 28px; margin-bottom: 12px; color: var(--text-light); }
+      .blog-post-content p, .blog-post-content li { line-height: 1.8; color: var(--text-muted); }
+      .blog-post-content ul, .blog-post-content ol { margin-bottom: 22px; padding-left: 22px; }
+      .code-block, .terminal-block, .diagram-block { background: var(--bg-alt); border: 1px solid var(--border); border-radius: 14px; padding: 20px; margin: 20px 0; overflow-x: auto; }
+      .code-block pre, .terminal-block pre, .diagram-block pre { margin: 0; font-family: var(--mono); font-size: 0.9rem; line-height: 1.6; color: var(--text-light); white-space: pre-wrap; }
+      .code-block code, .terminal-block code, .diagram-block code { color: var(--accent-strong); }
+      .callout { border-left: 4px solid var(--accent); background: rgba(34, 211, 238, 0.08); padding: 18px 18px 18px 20px; border-radius: 12px; margin: 22px 0; }
+      .callout strong { color: var(--text-light); }
+      .comparison-table { width: 100%; border-collapse: collapse; margin: 24px 0; font-size: 0.95rem; }
+      .comparison-table th, .comparison-table td { border: 1px solid var(--border); padding: 14px; text-align: left; vertical-align: top; }
+      .comparison-table th { color: var(--text-light); background: rgba(99, 102, 241, 0.08); }
+      .checklist { background: rgba(139, 92, 246, 0.08); border: 1px solid var(--border); border-radius: 14px; padding: 20px 24px; margin: 24px 0; }
+      .pill-grid { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 40px; padding-top: 30px; border-top: 1px solid var(--border); }
+      .pill { background: var(--accent-soft); color: var(--accent-strong); border-radius: 999px; padding: 6px 14px; font-size: 0.85rem; font-family: var(--mono); }
+      .blog-footer { margin-top: 60px; padding-top: 30px; border-top: 1px solid var(--border); text-align: center; }
+      .blog-footer a { color: var(--accent-strong); }
+      .blog-footer a:hover { color: var(--accent); }
+      @media (max-width: 768px) { .blog-post { padding: 40px 16px; } .blog-post-title { font-size: 2rem; } .blog-post-image { height: 220px; } }
+    </style>
+  </head>
+  <body>
+    <a href="../index.html#main" class="skip-link">Skip to main content</a>
+    <header class="site-header">
+      <div class="container blog-post">
+        <div class="blog-post-nav"><a href="index.html">&larr; Back to All Posts</a></div>
+        <div class="blog-post-header">
+          <h1 class="blog-post-title">Usable Context vs Advertised Context for AI Coding Agents</h1>
+          <div class="blog-post-meta"><span>May 2, 2026</span><span>&bull;</span><span>11 min read</span></div>
+          <img src="data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A//www.w3.org/2000/svg%27%20viewBox%3D%270%200%201200%20630%27%3E%0A%20%20%3Cdefs%3E%0A%20%20%20%20%3ClinearGradient%20id%3D%27bg%27%20x1%3D%270%27%20x2%3D%271%27%20y1%3D%270%27%20y2%3D%271%27%3E%0A%20%20%20%20%20%20%3Cstop%20offset%3D%270%25%27%20stop-color%3D%27%2308131f%27/%3E%0A%20%20%20%20%20%20%3Cstop%20offset%3D%27100%25%27%20stop-color%3D%27%2319324f%27/%3E%0A%20%20%20%20%3C/linearGradient%3E%0A%20%20%3C/defs%3E%0A%20%20%3Crect%20width%3D%271200%27%20height%3D%27630%27%20fill%3D%27url%28%23bg%29%27/%3E%0A%20%20%3Ccircle%20cx%3D%271005%27%20cy%3D%27115%27%20r%3D%27160%27%20fill%3D%27%2322d3ee%27%20fill-opacity%3D%270.14%27/%3E%0A%20%20%3Ccircle%20cx%3D%27180%27%20cy%3D%27520%27%20r%3D%27210%27%20fill%3D%27%238b5cf6%27%20fill-opacity%3D%270.16%27/%3E%0A%20%20%3Crect%20x%3D%2782%27%20y%3D%2784%27%20width%3D%271036%27%20height%3D%27462%27%20rx%3D%2732%27%20fill%3D%27%230b1220%27%20stroke%3D%27%2338bdf8%27%20stroke-opacity%3D%270.35%27/%3E%0A%20%20%3Ctext%20x%3D%27132%27%20y%3D%27176%27%20fill%3D%27white%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2744%27%20font-weight%3D%27700%27%3EUsable%20Context%20vs%20Advertised%3C/text%3E%0A%20%20%3Ctext%20x%3D%27132%27%20y%3D%27244%27%20fill%3D%27%2393c5fd%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2744%27%20font-weight%3D%27700%27%3EContext%20for%20AI%20Coding%20Agents%3C/text%3E%0A%20%20%3Ctext%20x%3D%27132%27%20y%3D%27320%27%20fill%3D%27%23cbd5e1%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2728%27%3EWhy%20big%20windows%20still%20collapse%2C%20and%20how%20to%20budget%20prompts%20that%20stay%20accurate%3C/text%3E%0A%20%20%3Crect%20x%3D%27132%27%20y%3D%27380%27%20width%3D%27328%27%20height%3D%2754%27%20rx%3D%2714%27%20fill%3D%27%23111c2d%27%20stroke%3D%27%2367e8f9%27%20stroke-opacity%3D%270.45%27/%3E%0A%20%20%3Ctext%20x%3D%27156%27%20y%3D%27415%27%20fill%3D%27%2367e8f9%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2724%27%3Esize%20is%20advertised%2C%20usefulness%20is%20earned%3C/text%3E%0A%20%20%3Crect%20x%3D%27770%27%20y%3D%27178%27%20width%3D%27250%27%20height%3D%2756%27%20rx%3D%2714%27%20fill%3D%27%230d1728%27%20stroke%3D%27%2322d3ee%27%20stroke-opacity%3D%270.45%27/%3E%0A%20%20%3Ctext%20x%3D%27812%27%20y%3D%27214%27%20fill%3D%27%23bae6fd%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2723%27%3Erepo-map.json%3C/text%3E%0A%20%20%3Crect%20x%3D%27770%27%20y%3D%27276%27%20width%3D%27250%27%20height%3D%2756%27%20rx%3D%2714%27%20fill%3D%27%230d1728%27%20stroke%3D%27%2322d3ee%27%20stroke-opacity%3D%270.45%27/%3E%0A%20%20%3Ctext%20x%3D%27800%27%20y%3D%27312%27%20fill%3D%27%23bae6fd%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2723%27%3Esummary.md%3C/text%3E%0A%20%20%3Crect%20x%3D%27770%27%20y%3D%27374%27%20width%3D%27250%27%20height%3D%2756%27%20rx%3D%2714%27%20fill%3D%27%230d1728%27%20stroke%3D%27%23a78bfa%27%20stroke-opacity%3D%270.45%27/%3E%0A%20%20%3Ctext%20x%3D%27820%27%20y%3D%27410%27%20fill%3D%27%23ddd6fe%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2723%27%3Epin%28%29%3C/text%3E%0A%3C/svg%3E" alt="Usable Context vs Advertised Context for AI Coding Agents" class="blog-post-image">
+        </div>
+        <div class="blog-post-content">
+          <p>The promise of long-context models is seductive. If a model says it supports 200K, 1M, or more tokens, it is tempting to throw in the whole repo, a pile of logs, and a backlog ticket and assume the agent will sort it out.</p>
+          <p>In practice, that usually degrades before it helps. The model pays less attention to the right files, latency climbs, and the fix quality quietly drops. What matters in coding workflows is not advertised window size. It is usable context, the portion of prompt space that stays relevant, reviewable, and fresh enough to guide the next edit.</p>
+          <p>This post walks through the patterns I trust more: bounded context packets, pinned files, rolling summaries, and refresh loops that let coding agents work with large systems without turning every run into expensive prompt fog.</p>
+
+          <h2>Why this matters</h2>
+          <p>Coding agents fail in very specific ways when context gets sloppy. They anchor on stale files, miss the one schema or config invariant that matters, waste tokens restating irrelevant repo background, and become harder for humans to review because the packet has no obvious shape.</p>
+          <p>A bigger context window helps only if you preserve attention and structure. Production workflows need context that is small enough to inspect, refresh, and replace.</p>
+
+          <h2>Architecture or workflow overview</h2>
+          <div class="diagram-block"><pre><code>flowchart LR
+    A[Task brief] --&gt; B[Repo map + file candidates]
+    B --&gt; C[Retriever and ranker]
+    C --&gt; D[Bounded context packet]
+    D --&gt; E[Model edit step]
+    E --&gt; F[Verification output]
+    F --&gt; G[Rolling summary]
+    G --&gt; H[Packet refresh]
+    H --&gt; D</code></pre></div>
+          <ol>
+            <li>Task brief with explicit success criteria</li>
+            <li>Pinned files that must stay in view</li>
+            <li>Ranked supporting files, capped by token budget</li>
+            <li>Short rolling summary of what changed and what was verified</li>
+            <li>Fresh retrieval after meaningful edits or failed checks</li>
+          </ol>
+
+          <h2>Implementation details</h2>
+          <h3>1) Build a token budget before retrieval</h3>
+          <p>The mistake is starting with files. Start with a budget.</p>
+          <div class="code-block"><pre><code>from dataclasses import dataclass
+
+@dataclass
+class ContextBudget:
+    model_window: int
+    reserved_for_output: int = 12000
+    reserved_for_system: int = 6000
+    safety_margin: int = 8000
+
+    @property
+    def usable_tokens(self) -&gt; int:
+        return max(
+            0,
+            self.model_window
+            - self.reserved_for_output
+            - self.reserved_for_system
+            - self.safety_margin,
+        )
+
+budget = ContextBudget(model_window=200000)
+print(budget.usable_tokens)  # 174000</code></pre></div>
+          <p>This is still optimistic. In real coding loops, I often spend only a fraction of the theoretical remaining space on source files because I want room for tool results, diffs, retries, and short-term reasoning.</p>
+
+          <h3>2) Pin the files that carry invariants</h3>
+          <p>Not every relevant file is equally important. A small migration, policy file, or interface definition can matter more than ten implementation files.</p>
+          <div class="code-block"><pre><code>pinned_files:
+  - path: db/schema.sql
+    reason: source of truth for column names and constraints
+  - path: apps/api/src/routes/users.ts
+    reason: write path touched by this task
+  - path: package.json
+    reason: scripts and runtime assumptions
+retrieval:
+  max_supporting_files: 8
+  max_tokens: 32000
+  refresh_after:
+    - failed_test
+    - file_set_changed
+    - task_phase_change</code></pre></div>
+          <p>Pinned files stop the common failure mode where retrieval keeps swapping out the one document the model should never forget.</p>
+
+          <h3>3) Summarize the run, not the whole world</h3>
+          <p>Long sessions need compression, but generic summaries are almost useless. The summary has to preserve constraints, touched files, and unresolved risk.</p>
+          <div class="code-block"><pre><code>type RollingSummary = {
+  task: string;
+  touchedFiles: string[];
+  decisions: string[];
+  verifiedBy: string[];
+  openRisks: string[];
+};
+
+export function updateSummary(prev: RollingSummary, patch: Partial&lt;RollingSummary&gt;) {
+  return {
+    ...prev,
+    ...patch,
+    touchedFiles: [...new Set([...(prev.touchedFiles || []), ...(patch.touchedFiles || [])])],
+    decisions: [...new Set([...(prev.decisions || []), ...(patch.decisions || [])])],
+    verifiedBy: [...new Set([...(prev.verifiedBy || []), ...(patch.verifiedBy || [])])],
+    openRisks: patch.openRisks ?? prev.openRisks ?? [],
+  };
+}</code></pre></div>
+
+          <div class="terminal-block"><pre><code>$ python tools/context_packet.py --task "fix user sync timeout" --model-window 200000
+usable_tokens: 174000
+pinned_files: 3
+supporting_files_selected: 7
+supporting_tokens: 28140
+summary_tokens: 612
+refresh_policy: failed_test,file_set_changed,task_phase_change
+status: packet-ready</code></pre></div>
+
+          <h2>What went wrong and the tradeoffs</h2>
+          <table class="comparison-table">
+            <thead>
+              <tr><th>Strategy</th><th>Main upside</th><th>Main downside</th><th>When I use it</th></tr>
+            </thead>
+            <tbody>
+              <tr><td>Stuff the repo into the prompt</td><td>Low setup effort</td><td>Attention collapse, higher latency, weak reviewability</td><td>Almost never</td></tr>
+              <tr><td>Pure semantic retrieval</td><td>Good first-pass recall</td><td>Misses exact invariants and file relationships</td><td>Small doc-heavy repos</td></tr>
+              <tr><td>Pinned files plus ranked support</td><td>Better accuracy and easier review</td><td>Needs repo-aware setup</td><td>Most coding agents</td></tr>
+              <tr><td>Rolling summary only</td><td>Token efficient for long sessions</td><td>Can hide missing source details</td><td>Late-stage iterations</td></tr>
+            </tbody>
+          </table>
+
+          <div class="callout">
+            <p><strong>Pitfalls:</strong> stale summary drift, hidden invariant loss, false confidence from giant windows, and cost creep from repeatedly stuffing tool output back into the packet.</p>
+          </div>
+
+          <p>Large packets also widen prompt injection exposure when external docs, issue text, or logs are mixed directly into the prompt. Treat retrieved content as untrusted input, especially when the same run can later execute commands or write code.</p>
+
+          <div class="callout">
+            <p><strong>Best practices:</strong> prefer packet refresh over packet growth, pin invariant files explicitly, reserve output space before budgeting source files, and rebuild the packet when the task changes phase.</p>
+          </div>
+
+          <h2>Practical checklist</h2>
+          <div class="checklist">
+            <ul>
+              <li>Define a usable token budget, not just the model maximum</li>
+              <li>Mark pinned files before retrieval runs</li>
+              <li>Cap supporting files and supporting tokens</li>
+              <li>Store a rolling summary with decisions, checks, and open risks</li>
+              <li>Refresh retrieval after failed tests or subsystem changes</li>
+              <li>Review the packet itself when an agent starts making weird edits</li>
+            </ul>
+          </div>
+
+          <h2>What I would not do</h2>
+          <p>I would not market a coding workflow as solved just because a model supports a giant context number. Bigger windows are helpful, but they do not replace ranking, summaries, and disciplined refresh boundaries.</p>
+
+          <h2>Conclusion</h2>
+          <p>Useful context is shaped, not dumped. The best coding agents I have seen do not win by remembering everything. They win by keeping the right things in view at the right time.</p>
+        </div>
+
+        <div class="pill-grid"><span class="pill">Context Engineering</span><span class="pill">Coding Agents</span><span class="pill">Local LLMs</span><span class="pill">Prompt Budgeting</span><span class="pill">Reliability</span></div>
+        <div class="blog-footer"><p><a href="index.html">Read more posts</a></p></div>
+      </div>
+    </header>
+  </body>
+</html>
