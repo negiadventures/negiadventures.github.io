@@ -1,6 +1,14 @@
 {
   "topics": [
     {
+      "date": "2026-05-03",
+      "skill": "Dynamic model routing for AI coding agents",
+      "topic": "Routing coding-agent tasks between fast and expensive models with explicit risk scoring, escalation rules, verifier passes, and small benchmark ledgers so teams cut latency and spend without quietly downgrading safety-critical edits",
+      "slug": "dynamic-model-routing-coding-agents",
+      "title": "Dynamic Model Routing for AI Coding Agents Without Burning Budget",
+      "summary": "A practical guide to routing coding-agent work across model lanes using inspectable task scoring, verification thresholds, and escalation rules that reduce cost without hiding quality regressions."
+    },
+    {
       "date": "2026-05-02",
       "skill": "Context window budgeting for AI coding agents",
       "topic": "Why advertised context size and usable coding context are different, and how to build bounded context packets, rolling summaries, file pinning, and retrieval refresh loops so long-context models stay accurate instead of turning large prompts into expensive confusion",
