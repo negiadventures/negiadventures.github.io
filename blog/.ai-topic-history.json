@@ -1,6 +1,14 @@
 {
   "topics": [
     {
+      "date": "2026-05-04",
+      "skill": "Trace-driven debugging for multi-step AI agent failures",
+      "topic": "Using trace IDs, span annotations, replay packets, and failure buckets to debug multi-step agent runs so incidents become reproducible engineering problems instead of prompt folklore",
+      "slug": "trace-driven-debugging-agent-failures",
+      "title": "Trace-Driven Debugging for Multi-Step AI Agent Failures",
+      "summary": "A practical guide to debugging multi-step AI agent failures with trace envelopes, OpenTelemetry spans, replay packets, and subsystem-based failure buckets that shorten incident time."
+    },
+    {
       "date": "2026-05-03",
       "skill": "Dynamic model routing for AI coding agents",
       "topic": "Routing coding-agent tasks between fast and expensive models with explicit risk scoring, escalation rules, verifier passes, and small benchmark ledgers so teams cut latency and spend without quietly downgrading safety-critical edits",
