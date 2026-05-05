@@ -1,6 +1,14 @@
 {
   "topics": [
     {
+      "date": "2026-05-05",
+      "skill": "Circuit breakers for AI agent tools and model calls",
+      "topic": "Using per-dependency circuit breakers, timeout budgets, half-open recovery probes, and visible fallback paths so AI agents stop amplifying flaky models and unstable tools into cascading production incidents",
+      "slug": "ai-agent-circuit-breakers",
+      "title": "Circuit Breakers for AI Agents That Touch Real Systems",
+      "summary": "A practical guide to stopping cascading failures in AI agents with circuit breakers, budget guards, and cooldown policies around model calls and external tools."
+    },
+    {
       "date": "2026-05-04",
       "skill": "Trace-driven debugging for multi-step AI agent failures",
       "topic": "Using trace IDs, span annotations, replay packets, and failure buckets to debug multi-step agent runs so incidents become reproducible engineering problems instead of prompt folklore",

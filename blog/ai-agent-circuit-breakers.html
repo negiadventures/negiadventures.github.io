@@ -1,0 +1,280 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="A practical guide to using circuit breakers, budget guards, and cooldown policies for AI agents so model outages, tool flaps, and bad retries do not cascade into user-facing incidents.">
+    <meta name="author" content="Anirudh Negi">
+    <title>Circuit Breakers for AI Agents That Touch Real Systems | Anirudh Negi</title>
+    <link rel="icon" type="image/svg+xml" href="../images/favicon.svg">
+    <link rel="canonical" href="https://negiadventures.github.io/blog/ai-agent-circuit-breakers.html">
+    <meta property="og:type" content="article">
+    <meta property="og:url" content="https://negiadventures.github.io/blog/ai-agent-circuit-breakers.html">
+    <meta property="og:title" content="Circuit Breakers for AI Agents That Touch Real Systems | Anirudh Negi">
+    <meta property="og:description" content="A practical guide to using circuit breakers, budget guards, and cooldown policies for AI agents so model outages, tool flaps, and bad retries do not cascade into user-facing incidents.">
+    <meta property="og:image" content="data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A//www.w3.org/2000/svg%27%20viewBox%3D%270%200%201200%20630%27%3E%0A%20%20%3Cdefs%3E%0A%20%20%20%20%3ClinearGradient%20id%3D%27bg%27%20x1%3D%270%27%20x2%3D%271%27%20y1%3D%270%27%20y2%3D%271%27%3E%0A%20%20%20%20%20%20%3Cstop%20offset%3D%270%25%27%20stop-color%3D%27%2308131f%27/%3E%0A%20%20%20%20%20%20%3Cstop%20offset%3D%27100%25%27%20stop-color%3D%27%2318324d%27/%3E%0A%20%20%20%20%3C/linearGradient%3E%0A%20%20%3C/defs%3E%0A%20%20%3Crect%20width%3D%271200%27%20height%3D%27630%27%20fill%3D%27url%28%23bg%29%27/%3E%0A%20%20%3Ccircle%20cx%3D%271010%27%20cy%3D%27120%27%20r%3D%27160%27%20fill%3D%27%2322d3ee%27%20fill-opacity%3D%270.14%27/%3E%0A%20%20%3Ccircle%20cx%3D%27185%27%20cy%3D%27520%27%20r%3D%27210%27%20fill%3D%27%238b5cf6%27%20fill-opacity%3D%270.16%27/%3E%0A%20%20%3Crect%20x%3D%2782%27%20y%3D%2784%27%20width%3D%271036%27%20height%3D%27462%27%20rx%3D%2732%27%20fill%3D%27%230b1220%27%20stroke%3D%27%2338bdf8%27%20stroke-opacity%3D%270.35%27/%3E%0A%20%20%3Ctext%20x%3D%27132%27%20y%3D%27174%27%20fill%3D%27white%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2744%27%20font-weight%3D%27700%27%3ECircuit%20Breakers%20for%20AI%20Agents%3C/text%3E%0A%20%20%3Ctext%20x%3D%27132%27%20y%3D%27242%27%20fill%3D%27%2393c5fd%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2744%27%20font-weight%3D%27700%27%3EThat%20Touch%20Real%20Systems%3C/text%3E%0A%20%20%3Ctext%20x%3D%27132%27%20y%3D%27320%27%20fill%3D%27%23cbd5e1%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2728%27%3EStop%20tool%20flaps%2C%20budget%20leaks%2C%20and%20retry%20storms%20before%20they%20turn%20into%20visible%20incidents%3C/text%3E%0A%20%20%3Crect%20x%3D%27132%27%20y%3D%27382%27%20width%3D%27320%27%20height%3D%2754%27%20rx%3D%2714%27%20fill%3D%27%23111c2d%27%20stroke%3D%27%2367e8f9%27%20stroke-opacity%3D%270.45%27/%3E%0A%20%20%3Ctext%20x%3D%27156%27%20y%3D%27417%27%20fill%3D%27%2367e8f9%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2724%27%3Efail%20closed%2C%20cool%20down%2C%20recover%20slowly%3C/text%3E%0A%20%20%3Crect%20x%3D%27770%27%20y%3D%27178%27%20width%3D%27252%27%20height%3D%2756%27%20rx%3D%2714%27%20fill%3D%27%230d1728%27%20stroke%3D%27%2322d3ee%27%20stroke-opacity%3D%270.45%27/%3E%0A%20%20%3Ctext%20x%3D%27810%27%20y%3D%27214%27%20fill%3D%27%23bae6fd%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2723%27%3Emodel.call%28%29%3C/text%3E%0A%20%20%3Crect%20x%3D%27770%27%20y%3D%27276%27%20width%3D%27252%27%20height%3D%2756%27%20rx%3D%2714%27%20fill%3D%27%230d1728%27%20stroke%3D%27%2322d3ee%27%20stroke-opacity%3D%270.45%27/%3E%0A%20%20%3Ctext%20x%3D%27816%27%20y%3D%27312%27%20fill%3D%27%23bae6fd%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2723%27%3Etool.exec%28%29%3C/text%3E%0A%20%20%3Crect%20x%3D%27770%27%20y%3D%27374%27%20width%3D%27252%27%20height%3D%2756%27%20rx%3D%2714%27%20fill%3D%27%230d1728%27%20stroke%3D%27%23a78bfa%27%20stroke-opacity%3D%270.45%27/%3E%0A%20%20%3Ctext%20x%3D%27830%27%20y%3D%27410%27%20fill%3D%27%23ddd6fe%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2723%27%3Ecooldown%28%29%3C/text%3E%0A%3C/svg%3E">
+    <meta property="article:published_time" content="2026-05-05">
+    <meta property="article:author" content="Anirudh Negi">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:url" content="https://negiadventures.github.io/blog/ai-agent-circuit-breakers.html">
+    <meta name="twitter:title" content="Circuit Breakers for AI Agents That Touch Real Systems | Anirudh Negi">
+    <meta name="twitter:description" content="A practical guide to using circuit breakers, budget guards, and cooldown policies for AI agents so model outages, tool flaps, and bad retries do not cascade into user-facing incidents.">
+    <meta name="twitter:image" content="data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A//www.w3.org/2000/svg%27%20viewBox%3D%270%200%201200%20630%27%3E%0A%20%20%3Cdefs%3E%0A%20%20%20%20%3ClinearGradient%20id%3D%27bg%27%20x1%3D%270%27%20x2%3D%271%27%20y1%3D%270%27%20y2%3D%271%27%3E%0A%20%20%20%20%20%20%3Cstop%20offset%3D%270%25%27%20stop-color%3D%27%2308131f%27/%3E%0A%20%20%20%20%20%20%3Cstop%20offset%3D%27100%25%27%20stop-color%3D%27%2318324d%27/%3E%0A%20%20%20%20%3C/linearGradient%3E%0A%20%20%3C/defs%3E%0A%20%20%3Crect%20width%3D%271200%27%20height%3D%27630%27%20fill%3D%27url%28%23bg%29%27/%3E%0A%20%20%3Ccircle%20cx%3D%271010%27%20cy%3D%27120%27%20r%3D%27160%27%20fill%3D%27%2322d3ee%27%20fill-opacity%3D%270.14%27/%3E%0A%20%20%3Ccircle%20cx%3D%27185%27%20cy%3D%27520%27%20r%3D%27210%27%20fill%3D%27%238b5cf6%27%20fill-opacity%3D%270.16%27/%3E%0A%20%20%3Crect%20x%3D%2782%27%20y%3D%2784%27%20width%3D%271036%27%20height%3D%27462%27%20rx%3D%2732%27%20fill%3D%27%230b1220%27%20stroke%3D%27%2338bdf8%27%20stroke-opacity%3D%270.35%27/%3E%0A%20%20%3Ctext%20x%3D%27132%27%20y%3D%27174%27%20fill%3D%27white%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2744%27%20font-weight%3D%27700%27%3ECircuit%20Breakers%20for%20AI%20Agents%3C/text%3E%0A%20%20%3Ctext%20x%3D%27132%27%20y%3D%27242%27%20fill%3D%27%2393c5fd%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2744%27%20font-weight%3D%27700%27%3EThat%20Touch%20Real%20Systems%3C/text%3E%0A%20%20%3Ctext%20x%3D%27132%27%20y%3D%27320%27%20fill%3D%27%23cbd5e1%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2728%27%3EStop%20tool%20flaps%2C%20budget%20leaks%2C%20and%20retry%20storms%20before%20they%20turn%20into%20visible%20incidents%3C/text%3E%0A%20%20%3Crect%20x%3D%27132%27%20y%3D%27382%27%20width%3D%27320%27%20height%3D%2754%27%20rx%3D%2714%27%20fill%3D%27%23111c2d%27%20stroke%3D%27%2367e8f9%27%20stroke-opacity%3D%270.45%27/%3E%0A%20%20%3Ctext%20x%3D%27156%27%20y%3D%27417%27%20fill%3D%27%2367e8f9%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2724%27%3Efail%20closed%2C%20cool%20down%2C%20recover%20slowly%3C/text%3E%0A%20%20%3Crect%20x%3D%27770%27%20y%3D%27178%27%20width%3D%27252%27%20height%3D%2756%27%20rx%3D%2714%27%20fill%3D%27%230d1728%27%20stroke%3D%27%2322d3ee%27%20stroke-opacity%3D%270.45%27/%3E%0A%20%20%3Ctext%20x%3D%27810%27%20y%3D%27214%27%20fill%3D%27%23bae6fd%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2723%27%3Emodel.call%28%29%3C/text%3E%0A%20%20%3Crect%20x%3D%27770%27%20y%3D%27276%27%20width%3D%27252%27%20height%3D%2756%27%20rx%3D%2714%27%20fill%3D%27%230d1728%27%20stroke%3D%27%2322d3ee%27%20stroke-opacity%3D%270.45%27/%3E%0A%20%20%3Ctext%20x%3D%27816%27%20y%3D%27312%27%20fill%3D%27%23bae6fd%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2723%27%3Etool.exec%28%29%3C/text%3E%0A%20%20%3Crect%20x%3D%27770%27%20y%3D%27374%27%20width%3D%27252%27%20height%3D%2756%27%20rx%3D%2714%27%20fill%3D%27%230d1728%27%20stroke%3D%27%23a78bfa%27%20stroke-opacity%3D%270.45%27/%3E%0A%20%20%3Ctext%20x%3D%27830%27%20y%3D%27410%27%20fill%3D%27%23ddd6fe%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2723%27%3Ecooldown%28%29%3C/text%3E%0A%3C/svg%3E">
+    <script type="application/ld+json">{"@context": "https://schema.org", "@type": "BlogPosting", "headline": "Circuit Breakers for AI Agents That Touch Real Systems", "description": "A practical guide to using circuit breakers, budget guards, and cooldown policies for AI agents so model outages, tool flaps, and bad retries do not cascade into user-facing incidents.", "image": "data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A//www.w3.org/2000/svg%27%20viewBox%3D%270%200%201200%20630%27%3E%0A%20%20%3Cdefs%3E%0A%20%20%20%20%3ClinearGradient%20id%3D%27bg%27%20x1%3D%270%27%20x2%3D%271%27%20y1%3D%270%27%20y2%3D%271%27%3E%0A%20%20%20%20%20%20%3Cstop%20offset%3D%270%25%27%20stop-color%3D%27%2308131f%27/%3E%0A%20%20%20%20%20%20%3Cstop%20offset%3D%27100%25%27%20stop-color%3D%27%2318324d%27/%3E%0A%20%20%20%20%3C/linearGradient%3E%0A%20%20%3C/defs%3E%0A%20%20%3Crect%20width%3D%271200%27%20height%3D%27630%27%20fill%3D%27url%28%23bg%29%27/%3E%0A%20%20%3Ccircle%20cx%3D%271010%27%20cy%3D%27120%27%20r%3D%27160%27%20fill%3D%27%2322d3ee%27%20fill-opacity%3D%270.14%27/%3E%0A%20%20%3Ccircle%20cx%3D%27185%27%20cy%3D%27520%27%20r%3D%27210%27%20fill%3D%27%238b5cf6%27%20fill-opacity%3D%270.16%27/%3E%0A%20%20%3Crect%20x%3D%2782%27%20y%3D%2784%27%20width%3D%271036%27%20height%3D%27462%27%20rx%3D%2732%27%20fill%3D%27%230b1220%27%20stroke%3D%27%2338bdf8%27%20stroke-opacity%3D%270.35%27/%3E%0A%20%20%3Ctext%20x%3D%27132%27%20y%3D%27174%27%20fill%3D%27white%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2744%27%20font-weight%3D%27700%27%3ECircuit%20Breakers%20for%20AI%20Agents%3C/text%3E%0A%20%20%3Ctext%20x%3D%27132%27%20y%3D%27242%27%20fill%3D%27%2393c5fd%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2744%27%20font-weight%3D%27700%27%3EThat%20Touch%20Real%20Systems%3C/text%3E%0A%20%20%3Ctext%20x%3D%27132%27%20y%3D%27320%27%20fill%3D%27%23cbd5e1%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2728%27%3EStop%20tool%20flaps%2C%20budget%20leaks%2C%20and%20retry%20storms%20before%20they%20turn%20into%20visible%20incidents%3C/text%3E%0A%20%20%3Crect%20x%3D%27132%27%20y%3D%27382%27%20width%3D%27320%27%20height%3D%2754%27%20rx%3D%2714%27%20fill%3D%27%23111c2d%27%20stroke%3D%27%2367e8f9%27%20stroke-opacity%3D%270.45%27/%3E%0A%20%20%3Ctext%20x%3D%27156%27%20y%3D%27417%27%20fill%3D%27%2367e8f9%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2724%27%3Efail%20closed%2C%20cool%20down%2C%20recover%20slowly%3C/text%3E%0A%20%20%3Crect%20x%3D%27770%27%20y%3D%27178%27%20width%3D%27252%27%20height%3D%2756%27%20rx%3D%2714%27%20fill%3D%27%230d1728%27%20stroke%3D%27%2322d3ee%27%20stroke-opacity%3D%270.45%27/%3E%0A%20%20%3Ctext%20x%3D%27810%27%20y%3D%27214%27%20fill%3D%27%23bae6fd%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2723%27%3Emodel.call%28%29%3C/text%3E%0A%20%20%3Crect%20x%3D%27770%27%20y%3D%27276%27%20width%3D%27252%27%20height%3D%2756%27%20rx%3D%2714%27%20fill%3D%27%230d1728%27%20stroke%3D%27%2322d3ee%27%20stroke-opacity%3D%270.45%27/%3E%0A%20%20%3Ctext%20x%3D%27816%27%20y%3D%27312%27%20fill%3D%27%23bae6fd%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2723%27%3Etool.exec%28%29%3C/text%3E%0A%20%20%3Crect%20x%3D%27770%27%20y%3D%27374%27%20width%3D%27252%27%20height%3D%2756%27%20rx%3D%2714%27%20fill%3D%27%230d1728%27%20stroke%3D%27%23a78bfa%27%20stroke-opacity%3D%270.45%27/%3E%0A%20%20%3Ctext%20x%3D%27830%27%20y%3D%27410%27%20fill%3D%27%23ddd6fe%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2723%27%3Ecooldown%28%29%3C/text%3E%0A%3C/svg%3E", "url": "https://negiadventures.github.io/blog/ai-agent-circuit-breakers.html", "datePublished": "2026-05-05", "author": {"@type": "Person", "name": "Anirudh Negi", "url": "https://negiadventures.github.io"}, "publisher": {"@type": "Person", "name": "Anirudh Negi", "url": "https://negiadventures.github.io"}, "keywords": ["AI Reliability", "Circuit Breakers", "Agent Ops", "Tool Calling", "Production AI"]}</script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../stylesheets/stylesheet.css?v=5" media="screen">
+    <style>
+      .blog-post { max-width: 800px; margin: 0 auto; padding: 60px 20px; }
+      .blog-post-header { margin-bottom: 40px; }
+      .blog-post-nav { margin-bottom: 30px; }
+      .blog-post-nav a, .blog-footer a { color: var(--accent-strong); }
+      .blog-post-nav a:hover, .blog-footer a:hover { color: var(--accent); }
+      .blog-post-title { font-size: 2.5rem; margin-bottom: 16px; }
+      .blog-post-meta { display: flex; gap: 20px; color: var(--text-muted); font-size: 0.95rem; margin-bottom: 30px; flex-wrap: wrap; }
+      .blog-post-image { width: 100%; height: 300px; object-fit: cover; border-radius: 16px; margin-bottom: 30px; border: 1px solid var(--border); background: linear-gradient(135deg, rgba(9, 19, 31, 1), rgba(24, 45, 73, 1)); }
+      .blog-post-content h2 { font-size: 1.6rem; margin-top: 40px; margin-bottom: 16px; color: var(--text-light); }
+      .blog-post-content h3 { font-size: 1.25rem; margin-top: 28px; margin-bottom: 12px; color: var(--text-light); }
+      .blog-post-content p { line-height: 1.8; margin-bottom: 16px; color: var(--text-muted); }
+      .blog-post-content ul, .blog-post-content ol { line-height: 1.8; margin-bottom: 20px; color: var(--text-muted); padding-left: 24px; }
+      .blog-post-content li { margin-bottom: 8px; }
+      .code-block, .diagram, .callout, .table-wrap { background: var(--bg-alt); border: 1px solid var(--border); border-radius: 12px; padding: 20px; margin: 20px 0; overflow-x: auto; }
+      .code-block pre, .diagram pre { margin: 0; font-family: var(--mono); font-size: 0.9rem; line-height: 1.6; color: var(--text-light); white-space: pre-wrap; }
+      .code-block code { color: var(--accent-strong); }
+      .diagram-label, .callout-label { font-size: 0.75rem; font-family: var(--mono); color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 12px; }
+      .flow { display: grid; gap: 10px; }
+      .flow-row { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+      .flow-node { background: rgba(99, 102, 241, 0.15); border: 1px solid rgba(129, 140, 248, 0.4); border-radius: 8px; padding: 7px 14px; font-family: var(--mono); font-size: 0.84rem; color: var(--accent-strong); }
+      .flow-node.warn { background: rgba(168, 85, 247, 0.14); border-color: rgba(168, 85, 247, 0.35); color: #ddd6fe; }
+      .flow-arrow { color: var(--text-muted); font-size: 0.9rem; }
+      table { width: 100%; border-collapse: collapse; }
+      th, td { border-bottom: 1px solid var(--border); padding: 12px 10px; text-align: left; vertical-align: top; color: var(--text-muted); }
+      th { color: var(--text-light); }
+      .callout.best { border-color: rgba(34, 211, 238, 0.35); }
+      .callout.pitfall { border-color: rgba(244, 114, 182, 0.35); }
+      .blog-post-tags { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 40px; padding-top: 30px; border-top: 1px solid var(--border); }
+      .blog-post-tag { background: var(--accent-soft); color: var(--accent-strong); border-radius: 999px; padding: 6px 14px; font-size: 0.85rem; font-family: var(--mono); border: 1px solid transparent; }
+      .blog-footer { margin-top: 60px; padding-top: 30px; border-top: 1px solid var(--border); text-align: center; }
+    </style>
+  </head>
+  <body>
+    <a href="../index.html#main" class="skip-link">Skip to main content</a>
+    <main id="main" class="blog-post">
+      <header class="blog-post-header">
+        <nav class="blog-post-nav"><a href="index.html">&larr; Back to Blog</a></nav>
+        <h1 class="blog-post-title">Circuit Breakers for AI Agents That Touch Real Systems</h1>
+        <div class="blog-post-meta">
+          <span>May 5, 2026</span>
+          <span>Reliability</span>
+          <span>8 min read</span>
+        </div>
+        <img src="data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A//www.w3.org/2000/svg%27%20viewBox%3D%270%200%201200%20630%27%3E%0A%20%20%3Cdefs%3E%0A%20%20%20%20%3ClinearGradient%20id%3D%27bg%27%20x1%3D%270%27%20x2%3D%271%27%20y1%3D%270%27%20y2%3D%271%27%3E%0A%20%20%20%20%20%20%3Cstop%20offset%3D%270%25%27%20stop-color%3D%27%2308131f%27/%3E%0A%20%20%20%20%20%20%3Cstop%20offset%3D%27100%25%27%20stop-color%3D%27%2318324d%27/%3E%0A%20%20%20%20%3C/linearGradient%3E%0A%20%20%3C/defs%3E%0A%20%20%3Crect%20width%3D%271200%27%20height%3D%27630%27%20fill%3D%27url%28%23bg%29%27/%3E%0A%20%20%3Ccircle%20cx%3D%271010%27%20cy%3D%27120%27%20r%3D%27160%27%20fill%3D%27%2322d3ee%27%20fill-opacity%3D%270.14%27/%3E%0A%20%20%3Ccircle%20cx%3D%27185%27%20cy%3D%27520%27%20r%3D%27210%27%20fill%3D%27%238b5cf6%27%20fill-opacity%3D%270.16%27/%3E%0A%20%20%3Crect%20x%3D%2782%27%20y%3D%2784%27%20width%3D%271036%27%20height%3D%27462%27%20rx%3D%2732%27%20fill%3D%27%230b1220%27%20stroke%3D%27%2338bdf8%27%20stroke-opacity%3D%270.35%27/%3E%0A%20%20%3Ctext%20x%3D%27132%27%20y%3D%27174%27%20fill%3D%27white%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2744%27%20font-weight%3D%27700%27%3ECircuit%20Breakers%20for%20AI%20Agents%3C/text%3E%0A%20%20%3Ctext%20x%3D%27132%27%20y%3D%27242%27%20fill%3D%27%2393c5fd%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2744%27%20font-weight%3D%27700%27%3EThat%20Touch%20Real%20Systems%3C/text%3E%0A%20%20%3Ctext%20x%3D%27132%27%20y%3D%27320%27%20fill%3D%27%23cbd5e1%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2728%27%3EStop%20tool%20flaps%2C%20budget%20leaks%2C%20and%20retry%20storms%20before%20they%20turn%20into%20visible%20incidents%3C/text%3E%0A%20%20%3Crect%20x%3D%27132%27%20y%3D%27382%27%20width%3D%27320%27%20height%3D%2754%27%20rx%3D%2714%27%20fill%3D%27%23111c2d%27%20stroke%3D%27%2367e8f9%27%20stroke-opacity%3D%270.45%27/%3E%0A%20%20%3Ctext%20x%3D%27156%27%20y%3D%27417%27%20fill%3D%27%2367e8f9%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2724%27%3Efail%20closed%2C%20cool%20down%2C%20recover%20slowly%3C/text%3E%0A%20%20%3Crect%20x%3D%27770%27%20y%3D%27178%27%20width%3D%27252%27%20height%3D%2756%27%20rx%3D%2714%27%20fill%3D%27%230d1728%27%20stroke%3D%27%2322d3ee%27%20stroke-opacity%3D%270.45%27/%3E%0A%20%20%3Ctext%20x%3D%27810%27%20y%3D%27214%27%20fill%3D%27%23bae6fd%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2723%27%3Emodel.call%28%29%3C/text%3E%0A%20%20%3Crect%20x%3D%27770%27%20y%3D%27276%27%20width%3D%27252%27%20height%3D%2756%27%20rx%3D%2714%27%20fill%3D%27%230d1728%27%20stroke%3D%27%2322d3ee%27%20stroke-opacity%3D%270.45%27/%3E%0A%20%20%3Ctext%20x%3D%27816%27%20y%3D%27312%27%20fill%3D%27%23bae6fd%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2723%27%3Etool.exec%28%29%3C/text%3E%0A%20%20%3Crect%20x%3D%27770%27%20y%3D%27374%27%20width%3D%27252%27%20height%3D%2756%27%20rx%3D%2714%27%20fill%3D%27%230d1728%27%20stroke%3D%27%23a78bfa%27%20stroke-opacity%3D%270.45%27/%3E%0A%20%20%3Ctext%20x%3D%27830%27%20y%3D%27410%27%20fill%3D%27%23ddd6fe%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2723%27%3Ecooldown%28%29%3C/text%3E%0A%3C/svg%3E" alt="Circuit Breakers for AI Agents That Touch Real Systems" class="blog-post-image">
+      </header>
+
+      <article class="blog-post-content">
+        <p>AI agents fail differently than normal request handlers. A flaky model endpoint does not just fail one call. It can trigger retries, replan loops, duplicate tool invocations, and confused fallback behavior that burns budget while doing less work.</p>
+        <p>I have become a lot more skeptical of simple retry logic in agent systems. When an LLM is orchestrating other systems, a retry policy without a circuit breaker is often an outage amplifier.</p>
+        <p>This post shows how to wrap model calls and tool invocations in circuit breakers, what signals to trip on, how to recover safely, and where teams usually get the thresholds wrong.</p>
+
+        <h2>Why this matters</h2>
+        <p>In a production AI workflow, one broken dependency can spread across the whole run. A model API starts timing out, the planner retries and creates more requests, the executor repeats a side-effecting tool call, and the user gets a vague status update while costs keep climbing.</p>
+        <p>The practical goal is simple. When a dependency gets unhealthy, the agent should do less, explain more, and preserve the option to recover cleanly.</p>
+
+        <h2>Architecture or workflow overview</h2>
+        <div class="diagram">
+          <div class="diagram-label">Failure containment path</div>
+          <div class="flow">
+            <div class="flow-row"><span class="flow-node">User task</span><span class="flow-arrow">→</span><span class="flow-node">Planner</span><span class="flow-arrow">→</span><span class="flow-node">Guard layer</span><span class="flow-arrow">→</span><span class="flow-node">Model or tool call</span></div>
+            <div class="flow-row"><span class="flow-node warn">timeout or budget breach</span><span class="flow-arrow">→</span><span class="flow-node warn">breaker opens</span><span class="flow-arrow">→</span><span class="flow-node warn">cooldown window</span><span class="flow-arrow">→</span><span class="flow-node warn">safe fallback or stop</span></div>
+            <div class="flow-row"><span class="flow-node">stable probe success</span><span class="flow-arrow">→</span><span class="flow-node">half-open</span><span class="flow-arrow">→</span><span class="flow-node">closed again</span></div>
+          </div>
+        </div>
+
+        <div class="code-block">
+          <div class="diagram-label">Mermaid version</div>
+          <pre><code>flowchart LR
+  U[User task] --> P[Planner]
+  P --> G[Guard layer]
+  G --> M[Model call]
+  G --> T[Tool call]
+  M -->|timeout/error| B[Circuit breaker]
+  T -->|timeout/error| B
+  B --> C[Cooldown window]
+  C --> F[Fallback or safe stop]</code></pre>
+        </div>
+
+        <h2>Implementation details</h2>
+        <h3>1) Put a breaker in front of every unstable edge</h3>
+        <p>The first mistake is having one global breaker for the entire agent. That hides the real failure domain. Breakers should usually live per model endpoint, per tool class, or per tenant-sensitive integration.</p>
+        <div class="code-block"><pre><code>// breaker.ts
+export type BreakerState = 'closed' | 'open' | 'half-open';
+
+export class CircuitBreaker {
+  private state: BreakerState = 'closed';
+  private failures = 0;
+  private successes = 0;
+  private openedAt = 0;
+
+  constructor(
+    private readonly failureThreshold = 5,
+    private readonly halfOpenSuccesses = 2,
+    private readonly cooldownMs = 30_000,
+  ) {}
+
+  canExecute(now = Date.now()) {
+    if (this.state === 'open' && now - this.openedAt &lt; this.cooldownMs) return false;
+    if (this.state === 'open') {
+      this.state = 'half-open';
+      this.successes = 0;
+    }
+    return true;
+  }
+
+  recordSuccess() {
+    if (this.state === 'half-open') {
+      this.successes += 1;
+      if (this.successes &gt;= this.halfOpenSuccesses) {
+        this.state = 'closed';
+        this.failures = 0;
+      }
+      return;
+    }
+    this.failures = 0;
+  }
+
+  recordFailure() {
+    this.failures += 1;
+    if (this.failures &gt;= this.failureThreshold) {
+      this.state = 'open';
+      this.openedAt = Date.now();
+    }
+  }
+}</code></pre></div>
+
+        <h3>2) Wrap model calls with timeout and token budget guards</h3>
+        <p>Model outages are not always hard 500s. Often the first symptom is latency drift or cost blowups from repeated re-asks. The wrapper should account for both.</p>
+        <div class="code-block"><pre><code>// guarded-model-call.ts
+import pTimeout from 'p-timeout';
+import { CircuitBreaker } from './breaker';
+
+const plannerBreaker = new CircuitBreaker(4, 2, 45_000);
+
+export async function guardedPlannerCall(client: any, payload: any) {
+  if (!plannerBreaker.canExecute()) {
+    throw new Error('planner breaker open: skip call and use fallback summary');
+  }
+
+  try {
+    const result = await pTimeout(
+      client.responses.create(payload),
+      { milliseconds: 12_000, message: 'planner timed out' }
+    );
+
+    if (result.usage?.total_tokens &gt; 40_000) {
+      throw new Error('planner exceeded token budget');
+    }
+
+    plannerBreaker.recordSuccess();
+    return result;
+  } catch (error) {
+    plannerBreaker.recordFailure();
+    throw error;
+  }
+}</code></pre></div>
+
+        <h3>3) Keep policy in config</h3>
+        <p>Prompt tweaks are too soft for operational safety. Breaker policy should live in config that is reviewed like infrastructure.</p>
+        <div class="code-block"><pre><code># breaker-policy.yaml
+models:
+  planner:
+    failure_threshold: 4
+    cooldown_ms: 45000
+    half_open_successes: 2
+    timeout_ms: 12000
+    max_total_tokens: 40000
+  executor:
+    failure_threshold: 3
+    cooldown_ms: 60000
+    half_open_successes: 1
+    timeout_ms: 15000
+
+tools:
+  github_write:
+    failure_threshold: 2
+    cooldown_ms: 180000
+    half_open_successes: 1
+    side_effecting: true
+  web_fetch:
+    failure_threshold: 5
+    cooldown_ms: 20000
+    half_open_successes: 2
+    side_effecting: false</code></pre></div>
+
+        <h3>4) Log why the breaker opened</h3>
+        <p>A breaker that opens silently creates a second debugging problem. Structured open, half-open, and close events make incidents much easier to reconstruct.</p>
+        <div class="code-block"><pre><code>2026-05-05T11:42:09Z breaker.open dependency=planner-model reason=timeout_window
+window_failures=4 timeout_ms=12000 fallback=summary_only_request
+
+2026-05-05T11:42:54Z breaker.half_open dependency=planner-model probe=1
+2026-05-05T11:43:01Z breaker.close dependency=planner-model stable_successes=2</code></pre></div>
+
+        <h2>What went wrong, and the tradeoffs</h2>
+        <p>Without a breaker, retries stack on top of replanning and tool loops. The system looks busy while quality collapses. If a write tool fails after a remote system already accepted the request, an agent may try again. Breakers reduce blast radius, but idempotency keys are still mandatory for write paths.</p>
+        <p>The opposite problem is false opens. If thresholds are too strict, one short regional wobble opens the circuit for everyone. Sliding windows and tenant-aware scopes help, and half-open probes should stay scarce so recovery testing does not become a thundering herd.</p>
+
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr><th>Choice</th><th>Upside</th><th>Downside</th><th>Best fit</th></tr>
+            </thead>
+            <tbody>
+              <tr><td>Per-model breaker</td><td>Clean failure isolation</td><td>More configs to tune</td><td>Planner and executor use different providers or budgets</td></tr>
+              <tr><td>Global agent breaker</td><td>Easy to add</td><td>Hides root cause, over-blocks healthy paths</td><td>Tiny prototypes only</td></tr>
+              <tr><td>Fast open thresholds</td><td>Stops cost leaks quickly</td><td>Can degrade availability during transient blips</td><td>Side-effecting tools or expensive models</td></tr>
+              <tr><td>Slow open thresholds</td><td>Fewer false positives</td><td>More wasted retries and user latency</td><td>Cheap read-only tools</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="callout best">
+          <div class="callout-label">Best practice</div>
+          <p>When the breaker opens, do not pretend the agent is still fully capable. Downgrade the plan visibly, for example “search is temporarily degraded, returning cached context only,” so users know the system chose safety on purpose.</p>
+        </div>
+
+        <div class="callout pitfall">
+          <div class="callout-label">Pitfall</div>
+          <p>Teams often keep retries in the HTTP client, the tool wrapper, and the planner at the same time. That triple stack makes outages look random. Pick one retry owner and let the breaker coordinate the rest.</p>
+        </div>
+
+        <h2>Practical checklist</h2>
+        <ul>
+          <li>define breakers per dependency, not one giant global switch</li>
+          <li>separate read-only tools from side-effecting tools</li>
+          <li>count timeouts and token budget blowups as health signals</li>
+          <li>persist breaker state where parallel workers can see it</li>
+          <li>cap half-open probes so recovery testing stays gentle</li>
+          <li>pair write tools with idempotency keys</li>
+          <li>emit structured open, half-open, and close events</li>
+          <li>expose a user-facing fallback message instead of silent spinning</li>
+          <li>review thresholds after real incidents, not only in staging</li>
+        </ul>
+
+        <h2>Conclusion</h2>
+        <p>Agent reliability gets much better when unhealthy dependencies cause smaller behavior, not louder behavior. Circuit breakers are not glamorous, but they are one of the cleanest ways to stop model hiccups and flaky tools from turning into cascading incidents.</p>
+        <p>If I were adding only three things tomorrow, I would start with per-dependency breakers, token-aware health thresholds, and visible fallback messages.</p>
+
+        <h2>References</h2>
+        <ul>
+          <li><a href="https://martinfowler.com/bliki/CircuitBreaker.html">Martin Fowler, Circuit Breaker</a></li>
+          <li><a href="https://pragprog.com/titles/mnee2/release-it-second-edition/">Release It!, Stability Patterns and Production Failure Design</a></li>
+          <li><a href="https://platform.openai.com/docs/guides/error-codes">OpenAI API error codes</a></li>
+          <li><a href="https://docs.anthropic.com/en/api/errors">Anthropic API errors</a></li>
+        </ul>
+      </article>
+
+      <div class="blog-post-tags"><span class="blog-post-tag">AI Reliability</span><span class="blog-post-tag">Circuit Breakers</span><span class="blog-post-tag">Agent Ops</span><span class="blog-post-tag">Tool Calling</span><span class="blog-post-tag">Production AI</span></div>
+      <footer class="blog-footer"><p><a href="index.html">← Back to all posts</a></p></footer>
+    </main>
+  </body>
+</html>
