@@ -1,6 +1,14 @@
 {
   "topics": [
     {
+      "date": "2026-05-06",
+      "skill": "Capability leases for AI agents",
+      "topic": "Using short-lived, approval-bound capability leases with scoped actions, resource constraints, TTLs, and audit trails so agents can perform dangerous tool operations without carrying permanent ambient access",
+      "slug": "capability-leases-ai-agents",
+      "title": "Capability Leases for AI Agents That Need Temporary Access",
+      "summary": "A practical guide to capability leases for AI agents using short-lived grants, approval-bound scopes, and audit trails so powerful tools stay available without becoming always-on risk."
+    },
+    {
       "date": "2026-05-05",
       "skill": "Circuit breakers for AI agent tools and model calls",
       "topic": "Using per-dependency circuit breakers, timeout budgets, half-open recovery probes, and visible fallback paths so AI agents stop amplifying flaky models and unstable tools into cascading production incidents",

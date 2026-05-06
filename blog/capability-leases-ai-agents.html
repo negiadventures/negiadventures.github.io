@@ -1,0 +1,191 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="A practical guide to capability leases for AI agents, using short-lived access grants, scoped tokens, policy checks, and audit trails instead of permanent tool permissions.">
+    <meta name="author" content="Anirudh Negi">
+    <title>Capability Leases for AI Agents That Need Temporary Access | Anirudh Negi</title>
+    <link rel="icon" type="image/svg+xml" href="../images/favicon.svg">
+    <link rel="canonical" href="https://negiadventures.github.io/blog/capability-leases-ai-agents.html">
+    <meta property="og:type" content="article">
+    <meta property="og:url" content="https://negiadventures.github.io/blog/capability-leases-ai-agents.html">
+    <meta property="og:title" content="Capability Leases for AI Agents That Need Temporary Access | Anirudh Negi">
+    <meta property="og:description" content="A practical guide to capability leases for AI agents, using short-lived access grants, scoped tokens, policy checks, and audit trails instead of permanent tool permissions.">
+    <meta property="og:image" content="data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A//www.w3.org/2000/svg%27%20viewBox%3D%270%200%201200%20630%27%3E%3Cdefs%3E%3ClinearGradient%20id%3D%27bg%27%20x1%3D%270%27%20x2%3D%271%27%20y1%3D%270%27%20y2%3D%271%27%3E%3Cstop%20offset%3D%270%25%27%20stop-color%3D%27%2308131f%27/%3E%3Cstop%20offset%3D%27100%25%27%20stop-color%3D%27%231b3553%27/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect%20width%3D%271200%27%20height%3D%27630%27%20fill%3D%27url%28%23bg%29%27/%3E%3Ccircle%20cx%3D%271020%27%20cy%3D%27110%27%20r%3D%27165%27%20fill%3D%27%2322d3ee%27%20fill-opacity%3D%270.14%27/%3E%3Ccircle%20cx%3D%27170%27%20cy%3D%27520%27%20r%3D%27210%27%20fill%3D%27%238b5cf6%27%20fill-opacity%3D%270.16%27/%3E%3Crect%20x%3D%2782%27%20y%3D%2784%27%20width%3D%271036%27%20height%3D%27462%27%20rx%3D%2732%27%20fill%3D%27%230b1220%27%20stroke%3D%27%2338bdf8%27%20stroke-opacity%3D%270.35%27/%3E%3Ctext%20x%3D%27132%27%20y%3D%27172%27%20fill%3D%27white%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2744%27%20font-weight%3D%27700%27%3ECapability%20Leases%20for%20AI%20Agents%3C/text%3E%3Ctext%20x%3D%27132%27%20y%3D%27240%27%20fill%3D%27%2393c5fd%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2744%27%20font-weight%3D%27700%27%3EThat%20Need%20Temporary%20Access%3C/text%3E%3Ctext%20x%3D%27132%27%20y%3D%27318%27%20fill%3D%27%23cbd5e1%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2728%27%3EShort-lived%20grants%2C%20approval-bound%20scopes%2C%20and%20audit%20trails%20for%20tools%20that%20are%20too%20risky%20to%20leave%20permanently%20open%3C/text%3E%3Crect%20x%3D%27132%27%20y%3D%27384%27%20width%3D%27334%27%20height%3D%2754%27%20rx%3D%2714%27%20fill%3D%27%23111c2d%27%20stroke%3D%27%2367e8f9%27%20stroke-opacity%3D%270.45%27/%3E%3Ctext%20x%3D%27156%27%20y%3D%27419%27%20fill%3D%27%2367e8f9%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2724%27%3Egrant%20narrowly%2C%20expire%20aggressively%2C%20log%20everything%3C/text%3E%3Crect%20x%3D%27772%27%20y%3D%27176%27%20width%3D%27250%27%20height%3D%2756%27%20rx%3D%2714%27%20fill%3D%27%230d1728%27%20stroke%3D%27%2322d3ee%27%20stroke-opacity%3D%270.45%27/%3E%3Ctext%20x%3D%27816%27%20y%3D%27212%27%20fill%3D%27%23bae6fd%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2723%27%3Elease.json%3C/text%3E%3Crect%20x%3D%27772%27%20y%3D%27274%27%20width%3D%27250%27%20height%3D%2756%27%20rx%3D%2714%27%20fill%3D%27%230d1728%27%20stroke%3D%27%2322d3ee%27%20stroke-opacity%3D%270.45%27/%3E%3Ctext%20x%3D%27812%27%20y%3D%27310%27%20fill%3D%27%23bae6fd%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2723%27%3Epolicy.check%28%29%3C/text%3E%3Crect%20x%3D%27772%27%20y%3D%27372%27%20width%3D%27250%27%20height%3D%2756%27%20rx%3D%2714%27%20fill%3D%27%230d1728%27%20stroke%3D%27%23a78bfa%27%20stroke-opacity%3D%270.45%27/%3E%3Ctext%20x%3D%27822%27%20y%3D%27408%27%20fill%3D%27%23ddd6fe%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2723%27%3Erevoke%28%29%3C/text%3E%3C/svg%3E">
+    <meta property="article:published_time" content="2026-05-06">
+    <meta property="article:author" content="Anirudh Negi">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:url" content="https://negiadventures.github.io/blog/capability-leases-ai-agents.html">
+    <meta name="twitter:title" content="Capability Leases for AI Agents That Need Temporary Access | Anirudh Negi">
+    <meta name="twitter:description" content="A practical guide to capability leases for AI agents, using short-lived access grants, scoped tokens, policy checks, and audit trails instead of permanent tool permissions.">
+    <meta name="twitter:image" content="data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A//www.w3.org/2000/svg%27%20viewBox%3D%270%200%201200%20630%27%3E%3Cdefs%3E%3ClinearGradient%20id%3D%27bg%27%20x1%3D%270%27%20x2%3D%271%27%20y1%3D%270%27%20y2%3D%271%27%3E%3Cstop%20offset%3D%270%25%27%20stop-color%3D%27%2308131f%27/%3E%3Cstop%20offset%3D%27100%25%27%20stop-color%3D%27%231b3553%27/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect%20width%3D%271200%27%20height%3D%27630%27%20fill%3D%27url%28%23bg%29%27/%3E%3Ccircle%20cx%3D%271020%27%20cy%3D%27110%27%20r%3D%27165%27%20fill%3D%27%2322d3ee%27%20fill-opacity%3D%270.14%27/%3E%3Ccircle%20cx%3D%27170%27%20cy%3D%27520%27%20r%3D%27210%27%20fill%3D%27%238b5cf6%27%20fill-opacity%3D%270.16%27/%3E%3Crect%20x%3D%2782%27%20y%3D%2784%27%20width%3D%271036%27%20height%3D%27462%27%20rx%3D%2732%27%20fill%3D%27%230b1220%27%20stroke%3D%27%2338bdf8%27%20stroke-opacity%3D%270.35%27/%3E%3Ctext%20x%3D%27132%27%20y%3D%27172%27%20fill%3D%27white%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2744%27%20font-weight%3D%27700%27%3ECapability%20Leases%20for%20AI%20Agents%3C/text%3E%3Ctext%20x%3D%27132%27%20y%3D%27240%27%20fill%3D%27%2393c5fd%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2744%27%20font-weight%3D%27700%27%3EThat%20Need%20Temporary%20Access%3C/text%3E%3Ctext%20x%3D%27132%27%20y%3D%27318%27%20fill%3D%27%23cbd5e1%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2728%27%3EShort-lived%20grants%2C%20approval-bound%20scopes%2C%20and%20audit%20trails%20for%20tools%20that%20are%20too%20risky%20to%20leave%20permanently%20open%3C/text%3E%3Crect%20x%3D%27132%27%20y%3D%27384%27%20width%3D%27334%27%20height%3D%2754%27%20rx%3D%2714%27%20fill%3D%27%23111c2d%27%20stroke%3D%27%2367e8f9%27%20stroke-opacity%3D%270.45%27/%3E%3Ctext%20x%3D%27156%27%20y%3D%27419%27%20fill%3D%27%2367e8f9%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2724%27%3Egrant%20narrowly%2C%20expire%20aggressively%2C%20log%20everything%3C/text%3E%3Crect%20x%3D%27772%27%20y%3D%27176%27%20width%3D%27250%27%20height%3D%2756%27%20rx%3D%2714%27%20fill%3D%27%230d1728%27%20stroke%3D%27%2322d3ee%27%20stroke-opacity%3D%270.45%27/%3E%3Ctext%20x%3D%27816%27%20y%3D%27212%27%20fill%3D%27%23bae6fd%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2723%27%3Elease.json%3C/text%3E%3Crect%20x%3D%27772%27%20y%3D%27274%27%20width%3D%27250%27%20height%3D%2756%27%20rx%3D%2714%27%20fill%3D%27%230d1728%27%20stroke%3D%27%2322d3ee%27%20stroke-opacity%3D%270.45%27/%3E%3Ctext%20x%3D%27812%27%20y%3D%27310%27%20fill%3D%27%23bae6fd%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2723%27%3Epolicy.check%28%29%3C/text%3E%3Crect%20x%3D%27772%27%20y%3D%27372%27%20width%3D%27250%27%20height%3D%2756%27%20rx%3D%2714%27%20fill%3D%27%230d1728%27%20stroke%3D%27%23a78bfa%27%20stroke-opacity%3D%270.45%27/%3E%3Ctext%20x%3D%27822%27%20y%3D%27408%27%20fill%3D%27%23ddd6fe%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2723%27%3Erevoke%28%29%3C/text%3E%3C/svg%3E">
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "BlogPosting",
+      "headline": "Capability Leases for AI Agents That Need Temporary Access",
+      "description": "A practical guide to capability leases for AI agents, using short-lived access grants, scoped tokens, policy checks, and audit trails instead of permanent tool permissions.",
+      "image": "data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A//www.w3.org/2000/svg%27%20viewBox%3D%270%200%201200%20630%27%3E%3Cdefs%3E%3ClinearGradient%20id%3D%27bg%27%20x1%3D%270%27%20x2%3D%271%27%20y1%3D%270%27%20y2%3D%271%27%3E%3Cstop%20offset%3D%270%25%27%20stop-color%3D%27%2308131f%27/%3E%3Cstop%20offset%3D%27100%25%27%20stop-color%3D%27%231b3553%27/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect%20width%3D%271200%27%20height%3D%27630%27%20fill%3D%27url%28%23bg%29%27/%3E%3Ccircle%20cx%3D%271020%27%20cy%3D%27110%27%20r%3D%27165%27%20fill%3D%27%2322d3ee%27%20fill-opacity%3D%270.14%27/%3E%3Ccircle%20cx%3D%27170%27%20cy%3D%27520%27%20r%3D%27210%27%20fill%3D%27%238b5cf6%27%20fill-opacity%3D%270.16%27/%3E%3Crect%20x%3D%2782%27%20y%3D%2784%27%20width%3D%271036%27%20height%3D%27462%27%20rx%3D%2732%27%20fill%3D%27%230b1220%27%20stroke%3D%27%2338bdf8%27%20stroke-opacity%3D%270.35%27/%3E%3Ctext%20x%3D%27132%27%20y%3D%27172%27%20fill%3D%27white%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2744%27%20font-weight%3D%27700%27%3ECapability%20Leases%20for%20AI%20Agents%3C/text%3E%3Ctext%20x%3D%27132%27%20y%3D%27240%27%20fill%3D%27%2393c5fd%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2744%27%20font-weight%3D%27700%27%3EThat%20Need%20Temporary%20Access%3C/text%3E%3Ctext%20x%3D%27132%27%20y%3D%27318%27%20fill%3D%27%23cbd5e1%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2728%27%3EShort-lived%20grants%2C%20approval-bound%20scopes%2C%20and%20audit%20trails%20for%20tools%20that%20are%20too%20risky%20to%20leave%20permanently%20open%3C/text%3E%3Crect%20x%3D%27132%27%20y%3D%27384%27%20width%3D%27334%27%20height%3D%2754%27%20rx%3D%2714%27%20fill%3D%27%23111c2d%27%20stroke%3D%27%2367e8f9%27%20stroke-opacity%3D%270.45%27/%3E%3Ctext%20x%3D%27156%27%20y%3D%27419%27%20fill%3D%27%2367e8f9%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2724%27%3Egrant%20narrowly%2C%20expire%20aggressively%2C%20log%20everything%3C/text%3E%3Crect%20x%3D%27772%27%20y%3D%27176%27%20width%3D%27250%27%20height%3D%2756%27%20rx%3D%2714%27%20fill%3D%27%230d1728%27%20stroke%3D%27%2322d3ee%27%20stroke-opacity%3D%270.45%27/%3E%3Ctext%20x%3D%27816%27%20y%3D%27212%27%20fill%3D%27%23bae6fd%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2723%27%3Elease.json%3C/text%3E%3Crect%20x%3D%27772%27%20y%3D%27274%27%20width%3D%27250%27%20height%3D%2756%27%20rx%3D%2714%27%20fill%3D%27%230d1728%27%20stroke%3D%27%2322d3ee%27%20stroke-opacity%3D%270.45%27/%3E%3Ctext%20x%3D%27812%27%20y%3D%27310%27%20fill%3D%27%23bae6fd%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2723%27%3Epolicy.check%28%29%3C/text%3E%3Crect%20x%3D%27772%27%20y%3D%27372%27%20width%3D%27250%27%20height%3D%2756%27%20rx%3D%2714%27%20fill%3D%27%230d1728%27%20stroke%3D%27%23a78bfa%27%20stroke-opacity%3D%270.45%27/%3E%3Ctext%20x%3D%27822%27%20y%3D%27408%27%20fill%3D%27%23ddd6fe%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2723%27%3Erevoke%28%29%3C/text%3E%3C/svg%3E",
+      "url": "https://negiadventures.github.io/blog/capability-leases-ai-agents.html",
+      "datePublished": "2026-05-06",
+      "author": {"@type": "Person", "name": "Anirudh Negi", "url": "https://negiadventures.github.io"},
+      "publisher": {"@type": "Person", "name": "Anirudh Negi", "url": "https://negiadventures.github.io"}
+    }
+    </script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../stylesheets/stylesheet.css?v=5" media="screen">
+    <style>
+      .blog-post { max-width: 860px; margin: 0 auto; padding: 60px 20px; }
+      .blog-post-nav { margin-bottom: 30px; }
+      .blog-post-nav a, .blog-footer a { color: var(--accent-strong); }
+      .blog-post-nav a:hover, .blog-footer a:hover { color: var(--accent); }
+      .blog-post-title { font-size: 2.5rem; margin-bottom: 16px; }
+      .blog-post-meta { display: flex; gap: 20px; color: var(--text-muted); font-size: 0.95rem; margin-bottom: 30px; flex-wrap: wrap; }
+      .blog-post-image { width: 100%; border-radius: 16px; margin-bottom: 30px; border: 1px solid var(--border); background: var(--bg-alt); }
+      .blog-post-content h2 { font-size: 1.6rem; margin-top: 40px; margin-bottom: 16px; color: var(--text-light); }
+      .blog-post-content h3 { font-size: 1.25rem; margin-top: 28px; margin-bottom: 12px; color: var(--text-light); }
+      .blog-post-content p, .blog-post-content li { line-height: 1.8; color: var(--text-muted); }
+      .blog-post-content ul, .blog-post-content ol { margin-bottom: 20px; padding-left: 24px; }
+      .code-block, .callout, .diagram-card, .terminal-block, .comparison-table { background: var(--card); border: 1px solid var(--border); border-radius: 16px; margin: 22px 0; }
+      .code-block pre, .terminal-block pre { margin: 0; padding: 20px; overflow-x: auto; font-family: var(--mono); font-size: 0.9rem; line-height: 1.65; color: var(--text-light); }
+      .code-block code { color: var(--accent-strong); }
+      .callout { padding: 18px 20px; }
+      .callout strong { color: var(--text-light); }
+      .diagram-card { padding: 20px; }
+      .diagram-flow { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 12px; align-items: center; margin-top: 14px; }
+      .diagram-node { border: 1px solid rgba(103, 232, 249, 0.35); background: rgba(17, 28, 45, 0.9); border-radius: 14px; padding: 14px; text-align: center; color: var(--text-light); font-family: var(--mono); font-size: 0.9rem; }
+      .diagram-arrow { text-align: center; color: var(--accent-strong); font-size: 1.3rem; }
+      .comparison-table table { width: 100%; border-collapse: collapse; }
+      .comparison-table th, .comparison-table td { padding: 14px 16px; border-bottom: 1px solid var(--border); text-align: left; vertical-align: top; }
+      .comparison-table th { color: var(--text-light); font-size: 0.95rem; }
+      .comparison-table td { color: var(--text-muted); line-height: 1.7; }
+      .blog-post-tags { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 40px; padding-top: 30px; border-top: 1px solid var(--border); }
+      .blog-post-tag { background: var(--accent-soft); color: var(--accent-strong); border-radius: 999px; padding: 6px 14px; font-size: 0.85rem; font-family: var(--mono); border: 1px solid transparent; }
+      .blog-post-tag:hover { border-color: var(--accent); }
+      .blog-footer { margin-top: 60px; padding-top: 30px; border-top: 1px solid var(--border); text-align: center; }
+      @media (max-width: 768px) { .blog-post { padding: 40px 16px; } .blog-post-title { font-size: 2rem; } .diagram-flow { grid-template-columns: 1fr; } .diagram-arrow { transform: rotate(90deg); } }
+    </style>
+  </head>
+  <body>
+    <a href="../index.html#main" class="skip-link">Skip to main content</a>
+    <header class="site-header">
+      <div class="container blog-post">
+        <div class="blog-post-nav"><a href="index.html">&larr; Back to All Posts</a></div>
+        <div class="blog-post-header">
+          <h1 class="blog-post-title">Capability Leases for AI Agents That Need Temporary Access</h1>
+          <div class="blog-post-meta"><span>May 6, 2026</span><span>&bull;</span><span>11 min read</span><span>&bull;</span><span>Security &amp; Reliability</span></div>
+          <img src="data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A//www.w3.org/2000/svg%27%20viewBox%3D%270%200%201200%20630%27%3E%3Cdefs%3E%3ClinearGradient%20id%3D%27bg%27%20x1%3D%270%27%20x2%3D%271%27%20y1%3D%270%27%20y2%3D%271%27%3E%3Cstop%20offset%3D%270%25%27%20stop-color%3D%27%2308131f%27/%3E%3Cstop%20offset%3D%27100%25%27%20stop-color%3D%27%231b3553%27/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect%20width%3D%271200%27%20height%3D%27630%27%20fill%3D%27url%28%23bg%29%27/%3E%3Ccircle%20cx%3D%271020%27%20cy%3D%27110%27%20r%3D%27165%27%20fill%3D%27%2322d3ee%27%20fill-opacity%3D%270.14%27/%3E%3Ccircle%20cx%3D%27170%27%20cy%3D%27520%27%20r%3D%27210%27%20fill%3D%27%238b5cf6%27%20fill-opacity%3D%270.16%27/%3E%3Crect%20x%3D%2782%27%20y%3D%2784%27%20width%3D%271036%27%20height%3D%27462%27%20rx%3D%2732%27%20fill%3D%27%230b1220%27%20stroke%3D%27%2338bdf8%27%20stroke-opacity%3D%270.35%27/%3E%3Ctext%20x%3D%27132%27%20y%3D%27172%27%20fill%3D%27white%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2744%27%20font-weight%3D%27700%27%3ECapability%20Leases%20for%20AI%20Agents%3C/text%3E%3Ctext%20x%3D%27132%27%20y%3D%27240%27%20fill%3D%27%2393c5fd%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2744%27%20font-weight%3D%27700%27%3EThat%20Need%20Temporary%20Access%3C/text%3E%3Ctext%20x%3D%27132%27%20y%3D%27318%27%20fill%3D%27%23cbd5e1%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2728%27%3EShort-lived%20grants%2C%20approval-bound%20scopes%2C%20and%20audit%20trails%20for%20tools%20that%20are%20too%20risky%20to%20leave%20permanently%20open%3C/text%3E%3Crect%20x%3D%27132%27%20y%3D%27384%27%20width%3D%27334%27%20height%3D%2754%27%20rx%3D%2714%27%20fill%3D%27%23111c2d%27%20stroke%3D%27%2367e8f9%27%20stroke-opacity%3D%270.45%27/%3E%3Ctext%20x%3D%27156%27%20y%3D%27419%27%20fill%3D%27%2367e8f9%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2724%27%3Egrant%20narrowly%2C%20expire%20aggressively%2C%20log%20everything%3C/text%3E%3Crect%20x%3D%27772%27%20y%3D%27176%27%20width%3D%27250%27%20height%3D%2756%27%20rx%3D%2714%27%20fill%3D%27%230d1728%27%20stroke%3D%27%2322d3ee%27%20stroke-opacity%3D%270.45%27/%3E%3Ctext%20x%3D%27816%27%20y%3D%27212%27%20fill%3D%27%23bae6fd%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2723%27%3Elease.json%3C/text%3E%3Crect%20x%3D%27772%27%20y%3D%27274%27%20width%3D%27250%27%20height%3D%2756%27%20rx%3D%2714%27%20fill%3D%27%230d1728%27%20stroke%3D%27%2322d3ee%27%20stroke-opacity%3D%270.45%27/%3E%3Ctext%20x%3D%27812%27%20y%3D%27310%27%20fill%3D%27%23bae6fd%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2723%27%3Epolicy.check%28%29%3C/text%3E%3Crect%20x%3D%27772%27%20y%3D%27372%27%20width%3D%27250%27%20height%3D%2756%27%20rx%3D%2714%27%20fill%3D%27%230d1728%27%20stroke%3D%27%23a78bfa%27%20stroke-opacity%3D%270.45%27/%3E%3Ctext%20x%3D%27822%27%20y%3D%27408%27%20fill%3D%27%23ddd6fe%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2723%27%3Erevoke%28%29%3C/text%3E%3C/svg%3E" alt="Capability Leases for AI Agents That Need Temporary Access" class="blog-post-image">
+        </div>
+        <div class="blog-post-content">
+          <p>A lot of agent demos quietly assume the dangerous part away. The model can run the deployment script, hit the production database, or call the billing API because the tool is just there.</p>
+          <p>That works right up until a prompt is malformed, a tool output gets weird, or a retry loop keeps reusing access that should have expired ten minutes ago.</p>
+          <p>The safer pattern is not never giving the agent power. It is giving the agent power briefly, for one reason, with a receipt. Capability leases are short-lived grants that let an agent do one bounded thing, then disappear.</p>
+          <h2>Why this matters</h2>
+          <p>Permanent tool permissions are easy to wire and hard to trust. In production systems, the real problem is not whether the model is smart. It is whether access survives longer than the task that justified it.</p>
+          <ul><li>deploy approvals for CI agents</li><li>temporary write access to a ticketing system</li><li>one-off production read queries during incident response</li><li>short admin windows for migration or rollback helpers</li></ul>
+          <h2>Architecture or workflow overview</h2>
+          <div class="diagram-card"><strong>Visual plan</strong><ul><li>Hero: dark banner with lease artifact, policy check, and revoke steps</li><li>Diagram: approval service issuing a short-lived lease token through a policy engine</li><li>Terminal visual: grant and revoke audit events</li><li>Comparison table: permanent permissions vs session scopes vs capability leases</li></ul><div class="diagram-flow"><div class="diagram-node">Human approval<br>or policy gate</div><div class="diagram-arrow">→</div><div class="diagram-node">Lease issuer<br>and policy service</div><div class="diagram-arrow">→</div><div class="diagram-node">Agent run<br>uses scoped tool</div></div></div>
+          <div class="code-block"><pre><code>flowchart LR
+    U[Human approval or policy gate] --&gt; P[Policy service]
+    P --&gt; L[Lease issuer]
+    L --&gt; A[Agent run]
+    A --&gt; T[Scoped tool call]
+    T --&gt; O[Audit log]
+    L --&gt; X[Auto expiry or revoke]
+    X --&gt; T</code></pre></div>
+          <ol><li>The agent requests a capability for a specific action.</li><li>A policy service checks actor, task, scope, and time budget.</li><li>The lease issuer returns a short-lived token or signed document.</li><li>The tool verifies the lease before every privileged operation.</li><li>The lease expires or gets revoked, and the tool stops honoring it.</li></ol>
+          <h2>Implementation details</h2>
+          <h3>1) Define the lease like a real contract</h3>
+          <p>A lease should be inspectable and boring. If you cannot explain it to an auditor in one minute, it is too loose.</p>
+          <div class="code-block"><pre><code>{
+  "lease_id": "lease_01hxqj4k6v9",
+  "subject": "agent-run-88421",
+  "tool": "deploy.prod",
+  "allowed_actions": ["release:create", "release:status"],
+  "resource_constraints": {
+    "service": "payments-api",
+    "environment": "staging"
+  },
+  "issued_at": "2026-05-06T12:00:00Z",
+  "expires_at": "2026-05-06T12:12:00Z",
+  "approved_by": "human:anirudh",
+  "reason": "promote already-built artifact for smoke test",
+  "signature": "base64-ed25519-signature"
+}</code></pre></div>
+          <p>Useful fields: the <strong>subject</strong> ties access to one run, <strong>allowed_actions</strong> narrows the tool surface, <strong>resource_constraints</strong> prevent environment drift, and <strong>expires_at</strong> forces cleanup even if the worker crashes.</p>
+          <div class="callout"><strong>What I would not do:</strong> issue a generic <code>admin=true</code> lease and hope downstream code behaves.</div>
+          <h3>2) Verify at the tool boundary, not only in the orchestrator</h3>
+          <p>Central policy helps, but the tool still needs to fail closed. Otherwise an old token can leak through a forgotten side path.</p>
+          <div class="code-block"><pre><code>import { verifyLeaseSignature, isExpired } from './lease-crypto';
+import type { Lease } from './types';
+
+export async function authorizeLease(
+  lease: Lease,
+  action: string,
+  target: { service: string; environment: string }
+) {
+  if (!verifyLeaseSignature(lease)) throw new Error('invalid lease signature');
+  if (isExpired(lease.expires_at)) throw new Error('lease expired');
+  if (!lease.allowed_actions.includes(action)) throw new Error('action denied');
+  if (lease.resource_constraints.service !== target.service) throw new Error('service denied');
+  if (lease.resource_constraints.environment !== target.environment) throw new Error('environment denied');
+
+  return true;
+}</code></pre></div>
+          <h3>3) Keep the issuance path small and observable</h3>
+          <p>Lease issuance tends to sprawl because teams pack in too many escape hatches. I prefer one small endpoint with explicit defaults.</p>
+          <div class="code-block"><pre><code>from datetime import datetime, timedelta, timezone
+
+MAX_TTL_SECONDS = 900
+
+
+def issue_lease(request, approver_id):
+    ttl = min(request.get("ttl_seconds", 300), MAX_TTL_SECONDS)
+    now = datetime.now(timezone.utc)
+
+    lease = {
+        "lease_id": new_lease_id(),
+        "subject": request["subject"],
+        "tool": request["tool"],
+        "allowed_actions": request["allowed_actions"],
+        "resource_constraints": request["resource_constraints"],
+        "issued_at": now.isoformat(),
+        "expires_at": (now + timedelta(seconds=ttl)).isoformat(),
+        "approved_by": approver_id,
+        "reason": request["reason"],
+    }
+
+    write_audit_event("lease.issued", lease)
+    return sign_lease(lease)</code></pre></div>
+          <p>The important design choice is the max TTL. Teams almost always start too long. Five to fifteen minutes is enough for most dangerous tasks.</p>
+          <h3>4) Show the operator what changed</h3>
+          <p>If the human cannot see what was granted, approval becomes theater.</p>
+          <div class="terminal-block"><pre>$ clawctl lease inspect lease_01hxqj4k6v9
+subject: agent-run-88421
+scope: deploy.prod -&gt; release:create,release:status
+resource: payments-api / staging
+approved-by: human:anirudh
+expires-in: 08m14s
+status: active
+
+$ clawctl lease revoke lease_01hxqj4k6v9
+status: revoked
+reason: rollout completed</pre></div>
+          <div class="comparison-table"><table><thead><tr><th>Pattern</th><th>Good at</th><th>Main risk</th><th>My take</th></tr></thead><tbody><tr><td>Permanent tool credentials</td><td>Simplicity</td><td>Hidden blast radius, stale access</td><td>Fine for read-only low-risk tools, bad default for write paths</td></tr><tr><td>Session-scoped credentials</td><td>Slightly better containment</td><td>Sessions outlive tasks, accidental reuse</td><td>Better than permanent, still too broad for risky actions</td></tr><tr><td>Capability leases</td><td>Narrow, explainable access</td><td>More plumbing and policy work</td><td>Best default for dangerous tools</td></tr></tbody></table></div>
+          <h2>What went wrong and the tradeoffs</h2>
+          <h3>Failure mode 1: the lease outlived the queue</h3><p>One ugly bug pattern is when a worker retries a job after a long delay, but the old lease is still cached somewhere. The job looks resumable and suddenly performs a stale action.</p><p><strong>Fix:</strong> bind the lease to both a run ID and a monotonic attempt ID, then reject mismatches.</p>
+          <h3>Failure mode 2: humans approve scopes they cannot parse</h3><p>If the approval card says “Grant elevated tool access,” people will click yes because they want the task finished.</p><p><strong>Fix:</strong> show exact action verbs, target resource, TTL, and reason. Small text details matter here.</p>
+          <h3>Failure mode 3: revocation exists on paper but not in the tool</h3><p>I have seen systems add a revoke button while the downstream tool never checks the revocation ledger after first validation.</p><p><strong>Fix:</strong> either make leases short enough that revocation is rare, or check revocation on every state-changing operation.</p>
+          <div class="callout"><strong>Security and reliability concerns</strong><ul><li>Signed leases are better than opaque booleans in memory.</li><li>Clock skew matters if TTLs are short, so keep servers NTP-sane.</li><li>Audit logs need append-only or tamper-evident storage if these leases gate production writes.</li><li>If a tool fans out to sub-tools, decide whether the lease can delegate. My default is no.</li></ul></div>
+          <h2>Practical checklist</h2><ul><li>[ ] Scope the lease to a run, not a whole assistant identity</li><li>[ ] Limit actions to verbs the human can understand</li><li>[ ] Add explicit resource constraints like environment, repo, or service</li><li>[ ] Set a hard max TTL and keep it short</li><li>[ ] Verify the lease at the privileged tool boundary</li><li>[ ] Log issuance, use, expiry, and revoke events</li><li>[ ] Show approval details before the human clicks yes</li><li>[ ] Refuse delegation unless you have a strong reason to allow it</li></ul>
+          <h2>Conclusion</h2><p>Capability leases add friction, but it is the useful kind. They turn “the agent can do this” into “the agent can do this, for this reason, until this time, and we can prove it.” For real systems, that is a much better deal.</p>
+          <div class="blog-post-tags"><span class="blog-post-tag">AI Agents</span><span class="blog-post-tag">Security</span><span class="blog-post-tag">Access Control</span><span class="blog-post-tag">Tooling</span><span class="blog-post-tag">Reliability</span></div>
+        </div>
+        <div class="blog-footer"><a href="index.html">Browse more posts</a></div>
+      </div>
+    </header>
+  </body>
+</html>
