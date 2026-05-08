@@ -1,6 +1,14 @@
 {
   "topics": [
     {
+      "date": "2026-05-08",
+      "skill": "Semantic caching for AI coding agents",
+      "topic": "Using semantic caching with repo-aware fingerprints, watched-path invalidation, trust-lane policies, and lightweight verification so coding agents can reuse repeated reasoning without serving stale answers into changed repositories",
+      "slug": "semantic-caching-ai-coding-agents",
+      "title": "Semantic Caching for AI Coding Agents Without Serving Stale Bugs",
+      "summary": "A practical guide to semantic caching for AI coding agents using fingerprinted prompts, repo-aware invalidation, trust boundaries, and fallback verification so cached answers stay fast without becoming quietly wrong."
+    },
+    {
       "date": "2026-05-07",
       "skill": "Verifier pipelines for AI coding agents",
       "topic": "Using staged patch verification with diff classification, syntax gates, semantic policy checks, focused tests, and risk-based escalation so coding agents catch bad edits before they become reviewer cleanup or production regressions",

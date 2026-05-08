@@ -1,0 +1,271 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="A practical guide to semantic caching for AI coding agents using fingerprinted prompts, repo-aware invalidation, trust boundaries, and fallback verification so cached answers stay fast without becoming quietly wrong.">
+    <meta name="author" content="Anirudh Negi">
+    <title>Semantic Caching for AI Coding Agents Without Serving Stale Bugs | Anirudh Negi</title>
+    <link rel="icon" type="image/svg+xml" href="../images/favicon.svg">
+    <link rel="canonical" href="https://negiadventures.github.io/blog/semantic-caching-ai-coding-agents.html">
+    <meta property="og:type" content="article">
+    <meta property="og:url" content="https://negiadventures.github.io/blog/semantic-caching-ai-coding-agents.html">
+    <meta property="og:title" content="Semantic Caching for AI Coding Agents Without Serving Stale Bugs | Anirudh Negi">
+    <meta property="og:description" content="A practical guide to semantic caching for AI coding agents using fingerprinted prompts, repo-aware invalidation, trust boundaries, and fallback verification so cached answers stay fast without becoming quietly wrong.">
+    <meta property="og:image" content="data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A//www.w3.org/2000/svg%27%20viewBox%3D%270%200%201200%20630%27%3E%0A%3Cdefs%3E%0A%20%20%3ClinearGradient%20id%3D%27bg%27%20x1%3D%270%27%20x2%3D%271%27%20y1%3D%270%27%20y2%3D%271%27%3E%0A%20%20%20%20%3Cstop%20offset%3D%270%25%27%20stop-color%3D%27%2307121d%27/%3E%0A%20%20%20%20%3Cstop%20offset%3D%27100%25%27%20stop-color%3D%27%23163658%27/%3E%0A%20%20%3C/linearGradient%3E%0A%3C/defs%3E%0A%3Crect%20width%3D%271200%27%20height%3D%27630%27%20fill%3D%27url%28%23bg%29%27/%3E%0A%3Ccircle%20cx%3D%271018%27%20cy%3D%27110%27%20r%3D%27170%27%20fill%3D%27%2322d3ee%27%20fill-opacity%3D%270.14%27/%3E%0A%3Ccircle%20cx%3D%27180%27%20cy%3D%27518%27%20r%3D%27206%27%20fill%3D%27%238b5cf6%27%20fill-opacity%3D%270.16%27/%3E%0A%3Crect%20x%3D%2782%27%20y%3D%2784%27%20width%3D%271036%27%20height%3D%27462%27%20rx%3D%2732%27%20fill%3D%27%230b1220%27%20stroke%3D%27%2338bdf8%27%20stroke-opacity%3D%270.35%27/%3E%0A%3Ctext%20x%3D%27132%27%20y%3D%27172%27%20fill%3D%27white%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2742%27%20font-weight%3D%27700%27%3ESemantic%20Caching%20for%20AI%20Coding%20Agents%3C/text%3E%0A%3Ctext%20x%3D%27132%27%20y%3D%27238%27%20fill%3D%27%2393c5fd%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2742%27%20font-weight%3D%27700%27%3EWithout%20Serving%20Stale%20Bugs%3C/text%3E%0A%3Ctext%20x%3D%27132%27%20y%3D%27314%27%20fill%3D%27%23cbd5e1%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2728%27%3EFingerprint%20the%20task%2C%20bind%20it%20to%20repo%20state%2C%20and%20verify%20before%20reuse%3C/text%3E%0A%3Crect%20x%3D%27132%27%20y%3D%27378%27%20width%3D%27338%27%20height%3D%2754%27%20rx%3D%2714%27%20fill%3D%27%23111c2d%27%20stroke%3D%27%2367e8f9%27%20stroke-opacity%3D%270.45%27/%3E%0A%3Ctext%20x%3D%27156%27%20y%3D%27413%27%20fill%3D%27%2367e8f9%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2724%27%3Ecache%20hits%20are%20earned%2C%20not%20assumed%3C/text%3E%0A%3Crect%20x%3D%27774%27%20y%3D%27172%27%20width%3D%27248%27%20height%3D%2756%27%20rx%3D%2714%27%20fill%3D%27%230d1728%27%20stroke%3D%27%2322d3ee%27%20stroke-opacity%3D%270.45%27/%3E%0A%3Ctext%20x%3D%27802%27%20y%3D%27208%27%20fill%3D%27%23bae6fd%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2723%27%3Efingerprint%28%29%3C/text%3E%0A%3Crect%20x%3D%27774%27%20y%3D%27270%27%20width%3D%27248%27%20height%3D%2756%27%20rx%3D%2714%27%20fill%3D%27%230d1728%27%20stroke%3D%27%2322d3ee%27%20stroke-opacity%3D%270.45%27/%3E%0A%3Ctext%20x%3D%27828%27%20y%3D%27306%27%20fill%3D%27%23bae6fd%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2723%27%3Everify%28%29%3C/text%3E%0A%3Crect%20x%3D%27774%27%20y%3D%27368%27%20width%3D%27248%27%20height%3D%2756%27%20rx%3D%2714%27%20fill%3D%27%230d1728%27%20stroke%3D%27%23a78bfa%27%20stroke-opacity%3D%270.45%27/%3E%0A%3Ctext%20x%3D%27818%27%20y%3D%27404%27%20fill%3D%27%23ddd6fe%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2723%27%3Einvalidate%28%29%3C/text%3E%0A%3C/svg%3E">
+    <meta property="article:published_time" content="2026-05-08">
+    <meta property="article:author" content="Anirudh Negi">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:url" content="https://negiadventures.github.io/blog/semantic-caching-ai-coding-agents.html">
+    <meta name="twitter:title" content="Semantic Caching for AI Coding Agents Without Serving Stale Bugs | Anirudh Negi">
+    <meta name="twitter:description" content="A practical guide to semantic caching for AI coding agents using fingerprinted prompts, repo-aware invalidation, trust boundaries, and fallback verification so cached answers stay fast without becoming quietly wrong.">
+    <meta name="twitter:image" content="data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A//www.w3.org/2000/svg%27%20viewBox%3D%270%200%201200%20630%27%3E%0A%3Cdefs%3E%0A%20%20%3ClinearGradient%20id%3D%27bg%27%20x1%3D%270%27%20x2%3D%271%27%20y1%3D%270%27%20y2%3D%271%27%3E%0A%20%20%20%20%3Cstop%20offset%3D%270%25%27%20stop-color%3D%27%2307121d%27/%3E%0A%20%20%20%20%3Cstop%20offset%3D%27100%25%27%20stop-color%3D%27%23163658%27/%3E%0A%20%20%3C/linearGradient%3E%0A%3C/defs%3E%0A%3Crect%20width%3D%271200%27%20height%3D%27630%27%20fill%3D%27url%28%23bg%29%27/%3E%0A%3Ccircle%20cx%3D%271018%27%20cy%3D%27110%27%20r%3D%27170%27%20fill%3D%27%2322d3ee%27%20fill-opacity%3D%270.14%27/%3E%0A%3Ccircle%20cx%3D%27180%27%20cy%3D%27518%27%20r%3D%27206%27%20fill%3D%27%238b5cf6%27%20fill-opacity%3D%270.16%27/%3E%0A%3Crect%20x%3D%2782%27%20y%3D%2784%27%20width%3D%271036%27%20height%3D%27462%27%20rx%3D%2732%27%20fill%3D%27%230b1220%27%20stroke%3D%27%2338bdf8%27%20stroke-opacity%3D%270.35%27/%3E%0A%3Ctext%20x%3D%27132%27%20y%3D%27172%27%20fill%3D%27white%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2742%27%20font-weight%3D%27700%27%3ESemantic%20Caching%20for%20AI%20Coding%20Agents%3C/text%3E%0A%3Ctext%20x%3D%27132%27%20y%3D%27238%27%20fill%3D%27%2393c5fd%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2742%27%20font-weight%3D%27700%27%3EWithout%20Serving%20Stale%20Bugs%3C/text%3E%0A%3Ctext%20x%3D%27132%27%20y%3D%27314%27%20fill%3D%27%23cbd5e1%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2728%27%3EFingerprint%20the%20task%2C%20bind%20it%20to%20repo%20state%2C%20and%20verify%20before%20reuse%3C/text%3E%0A%3Crect%20x%3D%27132%27%20y%3D%27378%27%20width%3D%27338%27%20height%3D%2754%27%20rx%3D%2714%27%20fill%3D%27%23111c2d%27%20stroke%3D%27%2367e8f9%27%20stroke-opacity%3D%270.45%27/%3E%0A%3Ctext%20x%3D%27156%27%20y%3D%27413%27%20fill%3D%27%2367e8f9%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2724%27%3Ecache%20hits%20are%20earned%2C%20not%20assumed%3C/text%3E%0A%3Crect%20x%3D%27774%27%20y%3D%27172%27%20width%3D%27248%27%20height%3D%2756%27%20rx%3D%2714%27%20fill%3D%27%230d1728%27%20stroke%3D%27%2322d3ee%27%20stroke-opacity%3D%270.45%27/%3E%0A%3Ctext%20x%3D%27802%27%20y%3D%27208%27%20fill%3D%27%23bae6fd%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2723%27%3Efingerprint%28%29%3C/text%3E%0A%3Crect%20x%3D%27774%27%20y%3D%27270%27%20width%3D%27248%27%20height%3D%2756%27%20rx%3D%2714%27%20fill%3D%27%230d1728%27%20stroke%3D%27%2322d3ee%27%20stroke-opacity%3D%270.45%27/%3E%0A%3Ctext%20x%3D%27828%27%20y%3D%27306%27%20fill%3D%27%23bae6fd%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2723%27%3Everify%28%29%3C/text%3E%0A%3Crect%20x%3D%27774%27%20y%3D%27368%27%20width%3D%27248%27%20height%3D%2756%27%20rx%3D%2714%27%20fill%3D%27%230d1728%27%20stroke%3D%27%23a78bfa%27%20stroke-opacity%3D%270.45%27/%3E%0A%3Ctext%20x%3D%27818%27%20y%3D%27404%27%20fill%3D%27%23ddd6fe%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2723%27%3Einvalidate%28%29%3C/text%3E%0A%3C/svg%3E">
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "BlogPosting",
+      "headline": "Semantic Caching for AI Coding Agents Without Serving Stale Bugs",
+      "description": "A practical guide to semantic caching for AI coding agents using fingerprinted prompts, repo-aware invalidation, trust boundaries, and fallback verification so cached answers stay fast without becoming quietly wrong.",
+      "image": "data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A//www.w3.org/2000/svg%27%20viewBox%3D%270%200%201200%20630%27%3E%0A%3Cdefs%3E%0A%20%20%3ClinearGradient%20id%3D%27bg%27%20x1%3D%270%27%20x2%3D%271%27%20y1%3D%270%27%20y2%3D%271%27%3E%0A%20%20%20%20%3Cstop%20offset%3D%270%25%27%20stop-color%3D%27%2307121d%27/%3E%0A%20%20%20%20%3Cstop%20offset%3D%27100%25%27%20stop-color%3D%27%23163658%27/%3E%0A%20%20%3C/linearGradient%3E%0A%3C/defs%3E%0A%3Crect%20width%3D%271200%27%20height%3D%27630%27%20fill%3D%27url%28%23bg%29%27/%3E%0A%3Ccircle%20cx%3D%271018%27%20cy%3D%27110%27%20r%3D%27170%27%20fill%3D%27%2322d3ee%27%20fill-opacity%3D%270.14%27/%3E%0A%3Ccircle%20cx%3D%27180%27%20cy%3D%27518%27%20r%3D%27206%27%20fill%3D%27%238b5cf6%27%20fill-opacity%3D%270.16%27/%3E%0A%3Crect%20x%3D%2782%27%20y%3D%2784%27%20width%3D%271036%27%20height%3D%27462%27%20rx%3D%2732%27%20fill%3D%27%230b1220%27%20stroke%3D%27%2338bdf8%27%20stroke-opacity%3D%270.35%27/%3E%0A%3Ctext%20x%3D%27132%27%20y%3D%27172%27%20fill%3D%27white%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2742%27%20font-weight%3D%27700%27%3ESemantic%20Caching%20for%20AI%20Coding%20Agents%3C/text%3E%0A%3Ctext%20x%3D%27132%27%20y%3D%27238%27%20fill%3D%27%2393c5fd%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2742%27%20font-weight%3D%27700%27%3EWithout%20Serving%20Stale%20Bugs%3C/text%3E%0A%3Ctext%20x%3D%27132%27%20y%3D%27314%27%20fill%3D%27%23cbd5e1%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2728%27%3EFingerprint%20the%20task%2C%20bind%20it%20to%20repo%20state%2C%20and%20verify%20before%20reuse%3C/text%3E%0A%3Crect%20x%3D%27132%27%20y%3D%27378%27%20width%3D%27338%27%20height%3D%2754%27%20rx%3D%2714%27%20fill%3D%27%23111c2d%27%20stroke%3D%27%2367e8f9%27%20stroke-opacity%3D%270.45%27/%3E%0A%3Ctext%20x%3D%27156%27%20y%3D%27413%27%20fill%3D%27%2367e8f9%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2724%27%3Ecache%20hits%20are%20earned%2C%20not%20assumed%3C/text%3E%0A%3Crect%20x%3D%27774%27%20y%3D%27172%27%20width%3D%27248%27%20height%3D%2756%27%20rx%3D%2714%27%20fill%3D%27%230d1728%27%20stroke%3D%27%2322d3ee%27%20stroke-opacity%3D%270.45%27/%3E%0A%3Ctext%20x%3D%27802%27%20y%3D%27208%27%20fill%3D%27%23bae6fd%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2723%27%3Efingerprint%28%29%3C/text%3E%0A%3Crect%20x%3D%27774%27%20y%3D%27270%27%20width%3D%27248%27%20height%3D%2756%27%20rx%3D%2714%27%20fill%3D%27%230d1728%27%20stroke%3D%27%2322d3ee%27%20stroke-opacity%3D%270.45%27/%3E%0A%3Ctext%20x%3D%27828%27%20y%3D%27306%27%20fill%3D%27%23bae6fd%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2723%27%3Everify%28%29%3C/text%3E%0A%3Crect%20x%3D%27774%27%20y%3D%27368%27%20width%3D%27248%27%20height%3D%2756%27%20rx%3D%2714%27%20fill%3D%27%230d1728%27%20stroke%3D%27%23a78bfa%27%20stroke-opacity%3D%270.45%27/%3E%0A%3Ctext%20x%3D%27818%27%20y%3D%27404%27%20fill%3D%27%23ddd6fe%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2723%27%3Einvalidate%28%29%3C/text%3E%0A%3C/svg%3E",
+      "url": "https://negiadventures.github.io/blog/semantic-caching-ai-coding-agents.html",
+      "datePublished": "2026-05-08",
+      "author": {
+        "@type": "Person",
+        "name": "Anirudh Negi",
+        "url": "https://negiadventures.github.io"
+      },
+      "publisher": {
+        "@type": "Person",
+        "name": "Anirudh Negi",
+        "url": "https://negiadventures.github.io"
+      },
+      "keywords": ["AI agents", "semantic caching", "developer tools", "reliability", "LLM ops"]
+    }
+    </script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../stylesheets/stylesheet.css?v=5" media="screen">
+    <style>
+      .blog-post { max-width: 860px; margin: 0 auto; padding: 60px 20px; }
+      .blog-post-nav { margin-bottom: 30px; }
+      .blog-post-nav a { color: var(--accent-strong); font-size: 0.95rem; }
+      .blog-post-nav a:hover { color: var(--accent); }
+      .blog-post-title { font-size: 2.5rem; margin-bottom: 16px; }
+      .blog-post-meta { display: flex; gap: 16px; color: var(--text-muted); font-size: 0.95rem; margin-bottom: 28px; flex-wrap: wrap; }
+      .blog-post-image { width: 100%; height: 300px; object-fit: cover; border-radius: 16px; margin-bottom: 30px; border: 1px solid var(--border); background: var(--bg-alt); }
+      .blog-post-content h2 { font-size: 1.65rem; margin-top: 42px; margin-bottom: 16px; color: var(--text-light); }
+      .blog-post-content h3 { font-size: 1.25rem; margin-top: 28px; margin-bottom: 12px; color: var(--text-light); }
+      .blog-post-content p, .blog-post-content ul, .blog-post-content ol { line-height: 1.8; color: var(--text-muted); }
+      .blog-post-content p { margin-bottom: 16px; }
+      .blog-post-content ul, .blog-post-content ol { margin-bottom: 20px; padding-left: 24px; }
+      .blog-post-content li { margin-bottom: 8px; }
+      .code-block { background: var(--bg-alt); border: 1px solid var(--border); border-radius: 12px; padding: 20px; margin: 20px 0; overflow-x: auto; }
+      .code-block pre { margin: 0; font-family: var(--mono); font-size: 0.9rem; line-height: 1.6; color: var(--text-light); }
+      .code-block code { color: var(--accent-strong); }
+      .diagram-block, .callout, .table-wrap { background: rgba(11, 18, 32, 0.8); border: 1px solid var(--border); border-radius: 14px; padding: 18px; margin: 24px 0; }
+      .callout { border-left: 4px solid var(--accent); }
+      .callout strong { color: var(--text-light); }
+      .table-wrap table { width: 100%; border-collapse: collapse; }
+      .table-wrap th, .table-wrap td { text-align: left; padding: 12px 10px; border-bottom: 1px solid var(--border); color: var(--text-muted); vertical-align: top; }
+      .table-wrap th { color: var(--text-light); }
+      .checklist { background: rgba(11, 18, 32, 0.75); border: 1px solid var(--border); border-radius: 16px; padding: 20px 24px; margin-top: 24px; }
+      .checklist ul { list-style: none; padding-left: 0; margin-bottom: 0; }
+      .checklist li { position: relative; padding-left: 30px; margin-bottom: 12px; }
+      .checklist li::before { content: "✓"; position: absolute; left: 0; top: 0; color: var(--accent); font-weight: 700; }
+      .blog-post-tags { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 40px; padding-top: 30px; border-top: 1px solid var(--border); }
+      .blog-post-tag { background: var(--accent-soft); color: var(--accent-strong); border-radius: 999px; padding: 6px 14px; font-size: 0.85rem; font-family: var(--mono); border: 1px solid transparent; }
+      .blog-footer { margin-top: 60px; padding-top: 30px; border-top: 1px solid var(--border); text-align: center; }
+      .blog-footer a { color: var(--accent-strong); }
+      .blog-footer a:hover { color: var(--accent); }
+      @media (max-width: 768px) { .blog-post { padding: 40px 16px; } .blog-post-title { font-size: 2rem; } .blog-post-image { height: 220px; } }
+    </style>
+  </head>
+  <body>
+    <a href="../index.html#main" class="skip-link">Skip to main content</a>
+    <header class="site-header">
+      <div class="container blog-post">
+        <div class="blog-post-nav"><a href="index.html">&larr; Back to All Posts</a></div>
+        <div class="blog-post-header">
+          <h1 class="blog-post-title">Semantic Caching for AI Coding Agents Without Serving Stale Bugs</h1>
+          <div class="blog-post-meta"><span>May 8, 2026</span><span>&bull;</span><span>11 min read</span><span>&bull;</span><span>Caching</span></div>
+          <img src="data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A//www.w3.org/2000/svg%27%20viewBox%3D%270%200%201200%20630%27%3E%0A%3Cdefs%3E%0A%20%20%3ClinearGradient%20id%3D%27bg%27%20x1%3D%270%27%20x2%3D%271%27%20y1%3D%270%27%20y2%3D%271%27%3E%0A%20%20%20%20%3Cstop%20offset%3D%270%25%27%20stop-color%3D%27%2307121d%27/%3E%0A%20%20%20%20%3Cstop%20offset%3D%27100%25%27%20stop-color%3D%27%23163658%27/%3E%0A%20%20%3C/linearGradient%3E%0A%3C/defs%3E%0A%3Crect%20width%3D%271200%27%20height%3D%27630%27%20fill%3D%27url%28%23bg%29%27/%3E%0A%3Ccircle%20cx%3D%271018%27%20cy%3D%27110%27%20r%3D%27170%27%20fill%3D%27%2322d3ee%27%20fill-opacity%3D%270.14%27/%3E%0A%3Ccircle%20cx%3D%27180%27%20cy%3D%27518%27%20r%3D%27206%27%20fill%3D%27%238b5cf6%27%20fill-opacity%3D%270.16%27/%3E%0A%3Crect%20x%3D%2782%27%20y%3D%2784%27%20width%3D%271036%27%20height%3D%27462%27%20rx%3D%2732%27%20fill%3D%27%230b1220%27%20stroke%3D%27%2338bdf8%27%20stroke-opacity%3D%270.35%27/%3E%0A%3Ctext%20x%3D%27132%27%20y%3D%27172%27%20fill%3D%27white%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2742%27%20font-weight%3D%27700%27%3ESemantic%20Caching%20for%20AI%20Coding%20Agents%3C/text%3E%0A%3Ctext%20x%3D%27132%27%20y%3D%27238%27%20fill%3D%27%2393c5fd%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2742%27%20font-weight%3D%27700%27%3EWithout%20Serving%20Stale%20Bugs%3C/text%3E%0A%3Ctext%20x%3D%27132%27%20y%3D%27314%27%20fill%3D%27%23cbd5e1%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2728%27%3EFingerprint%20the%20task%2C%20bind%20it%20to%20repo%20state%2C%20and%20verify%20before%20reuse%3C/text%3E%0A%3Crect%20x%3D%27132%27%20y%3D%27378%27%20width%3D%27338%27%20height%3D%2754%27%20rx%3D%2714%27%20fill%3D%27%23111c2d%27%20stroke%3D%27%2367e8f9%27%20stroke-opacity%3D%270.45%27/%3E%0A%3Ctext%20x%3D%27156%27%20y%3D%27413%27%20fill%3D%27%2367e8f9%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2724%27%3Ecache%20hits%20are%20earned%2C%20not%20assumed%3C/text%3E%0A%3Crect%20x%3D%27774%27%20y%3D%27172%27%20width%3D%27248%27%20height%3D%2756%27%20rx%3D%2714%27%20fill%3D%27%230d1728%27%20stroke%3D%27%2322d3ee%27%20stroke-opacity%3D%270.45%27/%3E%0A%3Ctext%20x%3D%27802%27%20y%3D%27208%27%20fill%3D%27%23bae6fd%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2723%27%3Efingerprint%28%29%3C/text%3E%0A%3Crect%20x%3D%27774%27%20y%3D%27270%27%20width%3D%27248%27%20height%3D%2756%27%20rx%3D%2714%27%20fill%3D%27%230d1728%27%20stroke%3D%27%2322d3ee%27%20stroke-opacity%3D%270.45%27/%3E%0A%3Ctext%20x%3D%27828%27%20y%3D%27306%27%20fill%3D%27%23bae6fd%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2723%27%3Everify%28%29%3C/text%3E%0A%3Crect%20x%3D%27774%27%20y%3D%27368%27%20width%3D%27248%27%20height%3D%2756%27%20rx%3D%2714%27%20fill%3D%27%230d1728%27%20stroke%3D%27%23a78bfa%27%20stroke-opacity%3D%270.45%27/%3E%0A%3Ctext%20x%3D%27818%27%20y%3D%27404%27%20fill%3D%27%23ddd6fe%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2723%27%3Einvalidate%28%29%3C/text%3E%0A%3C/svg%3E" alt="Semantic Caching for AI Coding Agents Without Serving Stale Bugs" class="blog-post-image">
+        </div>
+        <div class="blog-post-content">
+          <p>Semantic caching looks like free performance until it replays yesterday's answer into today's repository. That is where a lot of agent setups get into trouble. A fast wrong answer is often worse than a slow fresh one.</p>
+          <p>The useful version of semantic caching is not "vector search, but for prompts." It is a narrow reuse layer that understands task shape, repo state, tool versions, and trust boundaries. If those inputs drift, the cache should miss on purpose.</p>
+          <p>In this post I will show how I would wire a semantic cache for coding agents so it actually helps. The goal is lower latency and lower model spend without reusing stale plans, leaking cross-repo context, or letting cached tool results bypass verification.</p>
+          <h2>Why this matters</h2>
+          <p>Coding agents repeat themselves more than people expect. They summarize the same stack traces, explain the same build failures, restate the same repo instructions, and regenerate similar patch plans for similar files. If every one of those calls goes back to the model, latency and cost climb fast.</p>
+          <p>The catch is that code tasks are not static. A small commit, dependency bump, or changed tool contract can turn a previously correct answer into a misleading one. That makes semantic caching a production reliability problem, not just an optimization trick.</p>
+          <ol><li>Is this really the same task?</li><li>Is the repository state close enough?</li><li>Did the dependency or tool contract change?</li><li>Does this response still need verification before reuse?</li></ol>
+          <h2>Architecture or workflow overview</h2>
+          <div class="diagram-block"><pre><code>flowchart LR
+    Agent request -> Normalize task -> Build semantic fingerprint
+    -> Vector plus exact lookup -> Candidate hit?
+    -> Repo and tool validation -> Lightweight verifier -> Serve or regenerate</code></pre></div>
+          <div class="code-block"><pre><code class="language-mermaid">flowchart LR
+    A[Agent request] --> B[Normalize task]
+    B --> C[Build semantic fingerprint]
+    C --> D[Vector + exact lookup]
+    D --> E{Hit above threshold?}
+    E -- no --> F[Call model]
+    E -- yes --> G[Check repo snapshot, tool versions, policy lane]
+    G --> H{Still valid?}
+    H -- no --> F
+    H -- yes --> I[Run lightweight verifier]
+    I --> J{Verifier passes?}
+    J -- no --> F
+    J -- yes --> K[Serve cached response]
+    F --> L[Store with metadata, TTL, and invalidation keys]</code></pre></div>
+          <p>The important part is that the semantic index is only the first gate. Similarity gets you a candidate. It does not give you permission to trust it.</p>
+          <div class="table-wrap"><table><thead><tr><th>Layer</th><th>Good for</th><th>What I would cache</th><th>Main risk</th></tr></thead><tbody><tr><td>Prefix or provider prompt cache</td><td>Large repeated system prompts and repo instructions</td><td>Stable instruction blocks</td><td>Limited control over semantic correctness</td></tr><tr><td>Semantic response cache</td><td>Repeated explanations, plans, summaries, and low-risk code assists</td><td>Natural-language outputs with narrow scope</td><td>Stale answers after repo drift</td></tr><tr><td>Tool-result cache</td><td>Expensive read-only tool calls like repo maps or symbol graphs</td><td>Deterministic read outputs</td><td>Hidden dependence on changed files</td></tr><tr><td>Patch cache</td><td>Almost never by default</td><td>Tiny boilerplate transforms only</td><td>Replaying wrong edits into changed code</td></tr></tbody></table></div>
+          <h2>Implementation details</h2>
+          <h3>1. Build a fingerprint that is more than prompt text</h3>
+          <p>A prompt-only hash misses the thing that matters most in coding workflows: the surrounding state. I would fingerprint a request from normalized task inputs plus a small repo snapshot.</p>
+          <div class="code-block"><pre><code>from __future__ import annotations
+
+import hashlib
+import json
+from pathlib import Path
+from typing import Iterable
+
+
+def sha256_text(value: str) -> str:
+    return hashlib.sha256(value.encode("utf-8")).hexdigest()
+
+
+def build_repo_snapshot(repo_root: Path, files: Iterable[str]) -> dict:
+    snapshot = {}
+    for rel in sorted(set(files)):
+        path = repo_root / rel
+        if not path.exists():
+            snapshot[rel] = {"exists": False}
+            continue
+        text = path.read_text(encoding="utf-8", errors="ignore")
+        snapshot[rel] = {
+            "exists": True,
+            "sha256": sha256_text(text),
+            "bytes": len(text.encode("utf-8")),
+        }
+    return snapshot
+
+
+def semantic_fingerprint(task: dict, repo_snapshot: dict, tool_versions: dict) -> str:
+    payload = {
+        "intent": task["intent"],
+        "language": task.get("language"),
+        "error_class": task.get("error_class"),
+        "paths": sorted(task.get("paths", [])),
+        "constraints": sorted(task.get("constraints", [])),
+        "repo_snapshot": repo_snapshot,
+        "tool_versions": tool_versions,
+        "policy_lane": task.get("policy_lane", "default"),
+    }
+    canonical = json.dumps(payload, sort_keys=True, separators=(",", ":"))
+    return sha256_text(canonical)</code></pre></div>
+          <p>This is intentionally picky. If the repo snapshot or tool versions change, I want the cache key to change too. That hurts hit rate a bit, but it protects correctness where it matters.</p>
+          <h3>2. Store retrieval metadata, not just the answer</h3>
+          <p>If you only store the final text, you lose the context needed to decide whether a hit is safe. A usable entry needs its own small audit record.</p>
+          <div class="code-block"><pre><code>{
+  "fingerprint": "d9c8...",
+  "embedding_key": "plan-debug-webpack-build",
+  "task_class": "build_failure_summary",
+  "repo": "negiadventures.github.io",
+  "branch": "master",
+  "created_at": "2026-05-08T11:40:00Z",
+  "ttl_seconds": 21600,
+  "tool_versions": {
+    "node": "22.22.1",
+    "eslint": "9.2.0"
+  },
+  "watched_paths": [
+    "package.json",
+    "package-lock.json",
+    "webpack.config.js",
+    "src/components/Header.tsx"
+  ],
+  "verification": {
+    "required": true,
+    "kind": "lightweight"
+  },
+  "response": {
+    "summary": "ESM import mismatch caused the build failure",
+    "actions": ["rename config to webpack.config.mjs", "update import path aliases"]
+  }
+}</code></pre></div>
+          <p>The watched paths become your invalidation hooks. If one of them changes, the entry should miss even if the semantic similarity still looks high.</p>
+          <h3>3. Separate low-risk reuse from high-risk reuse</h3>
+          <ul><li><strong>Low risk:</strong> summaries, explanations, stack-trace classification, command suggestions</li><li><strong>Medium risk:</strong> refactor plans, test recommendations, migration checklists</li><li><strong>High risk:</strong> concrete patches, deployment commands, schema-changing edits</li></ul>
+          <p>Only low-risk items should be reusable with lightweight verification. Medium-risk items usually need a fresh repo snapshot check and a short verifier. High-risk items should often fall through to a fresh generation, even when the semantic match is strong.</p>
+          <h3>4. Verify the hit before serving it</h3>
+          <p>The verifier can be small. You do not need a second full model pass every time. You need a cheap guard that checks whether the assumptions behind the cached answer still hold.</p>
+          <div class="code-block"><pre><code>import { execFile } from "node:child_process";
+import { promisify } from "node:util";
+
+const execFileAsync = promisify(execFile);
+
+type CacheEntry = {
+  watchedPaths: string[];
+  toolVersions: Record&lt;string, string&gt;;
+  verification: { required: boolean; kind: "none" | "lightweight" | "strict" };
+};
+
+export async function verifyCacheHit(entry: CacheEntry): Promise&lt;boolean&gt; {
+  if (!entry.verification.required) return true;
+  const { stdout } = await execFileAsync("git", ["diff", "--name-only", "HEAD~1", "HEAD"]);
+  const changed = new Set(stdout.split("
+").filter(Boolean));
+  for (const path of entry.watchedPaths) {
+    if (changed.has(path)) return false;
+  }
+  if (entry.verification.kind === "strict") {
+    const checks = [execFileAsync("npm", ["run", "lint", "--", "--quiet"]), execFileAsync("npm", ["test", "--", "--runInBand", "affected"])];
+    const results = await Promise.allSettled(checks);
+    return results.every((result) => result.status === "fulfilled");
+  }
+  return true;
+}</code></pre></div>
+          <p>Cache safety usually comes from boring checks tied to real repository signals, not from clever embedding math.</p>
+          <h3>5. Cache tool outputs with explicit invalidation keys</h3>
+          <p>Tool-result caching is underrated. Repo maps, dependency graphs, and symbol indexes are often expensive to regenerate but deterministic enough to cache safely if you bind them to the right files.</p>
+          <p>A symbol graph cache tied to <code>tsconfig.json</code>, <code>package-lock.json</code>, and all <code>src/**/*.ts</code> hashes is much easier to reason about than a cached patch suggestion. Start there.</p>
+          <h3>Terminal view</h3>
+          <div class="code-block"><pre><code>$ agent run "explain why lint fails on CI but not locally"
+cache.lookup        candidate_score=0.94 task_class=lint_failure_summary
+cache.validate      repo_snapshot=match tool_versions=match policy_lane=low-risk
+cache.verify        watched_paths_clean=true verifier=lightweight
+cache.result        HIT latency_ms=74 saved_model_call=true</code></pre></div>
+          <h2>What went wrong and the tradeoffs</h2>
+          <h3>Failure mode 1: cache hits survived dependency bumps</h3>
+          <p>The request looked the same, but a minor dependency release changed build behavior. The cached explanation kept pointing engineers toward the old fix.</p>
+          <div class="callout"><strong>Fix:</strong> include lockfiles and tool versions in the fingerprint, and expire build-related entries quickly.</div>
+          <h3>Failure mode 2: semantically similar does not mean operationally identical</h3>
+          <p>Two TypeScript errors can look almost identical while coming from very different causes. If one lives in a generated file and the other in a hand-written adapter, the right next step may be completely different.</p>
+          <div class="callout"><strong>Fix:</strong> include task class and watched paths, not just an embedding score.</div>
+          <h3>Failure mode 3: cached plans leaked across trust boundaries</h3>
+          <p>A cache shared between repos or teams can quietly turn into a context leak. This is especially ugly if prompts contain internal architecture notes or file paths.</p>
+          <div class="callout"><strong>Fix:</strong> scope entries by repo, branch family, tenant, and policy lane. Never let a semantic hit cross those boundaries.</div>
+          <h3>Failure mode 4: aggressive caching made humans trust the agent too much</h3>
+          <p>Fast answers feel authoritative. Teams stop noticing that they are reading reused advice.</p>
+          <div class="callout"><strong>Fix:</strong> surface cache provenance. Show when the answer was cached, what it depended on, and why it was considered safe to reuse.</div>
+          <div class="table-wrap"><table><thead><tr><th>Choice</th><th>Upside</th><th>Downside</th><th>My default</th></tr></thead><tbody><tr><td>Long TTLs</td><td>Better hit rate</td><td>More stale answers</td><td>Short TTLs for code tasks</td></tr><tr><td>Broad semantic matching</td><td>More reuse</td><td>Wrong-task collisions</td><td>Narrow task-class matching</td></tr><tr><td>Shared cache across repos</td><td>Lower cost</td><td>Context leakage risk</td><td>No cross-repo reuse</td></tr><tr><td>Cache patch outputs</td><td>Fast edits</td><td>High correctness risk</td><td>Avoid unless boilerplate</td></tr><tr><td>No verifier</td><td>Lowest latency</td><td>Silent bad hits</td><td>Always verify anything non-trivial</td></tr></tbody></table></div>
+          <div class="callout"><strong>Pitfall:</strong> Do not count all cache hits as wins. A hit that still needs escalation or re-verification may save tokens, but it can still cost engineer attention. Track usefulness, not just hit rate.</div>
+          <div class="callout"><strong>Best practice:</strong> Keep separate metrics for cache hit rate, verifier pass rate, stale-hit rejection rate, and model-cost saved. One blended cache score will hide the exact failure you need to fix.</div>
+          <h2>Practical checklist</h2>
+          <div class="checklist"><ul><li>Start with read-only tasks like summaries, diagnostics, and repo maps</li><li>Include repo snapshot data, tool versions, and policy lane in the fingerprint</li><li>Scope cache entries to a single repo and trust boundary</li><li>Add watched-path invalidation for lockfiles, config files, and affected sources</li><li>Require a verifier for anything that changes engineering decisions</li><li>Keep TTLs short for build, test, and migration related outputs</li><li>Log cache provenance so operators can see why a hit was served</li><li>Track stale-hit rejection rate, not just hit rate</li><li>Avoid caching concrete patches unless the transform is tiny and deterministic</li></ul></div>
+          <h2>What I would and would not do</h2>
+          <p>I would absolutely cache stack-trace summaries, repeated repo instructions, and deterministic tool outputs like symbol maps. Those are high-frequency and low-drama.</p>
+          <p>I would not cache migration patches, deployment commands, or broad refactor plans without a strict verifier. The speedup is real, but so is the blast radius when the cached answer is slightly out of date.</p>
+          <h2>Conclusion</h2>
+          <p>Semantic caching for coding agents works best when it behaves like a suspicious teammate. It should ask whether the task is really the same, whether the repo is still in the same shape, and whether the answer still deserves trust.</p>
+          <p>That makes the cache a little less magical, but much more useful.</p>
+          <h2>References</h2>
+          <ul><li><a href="https://docs.anthropic.com/en/docs/build-with-claude/prompt-caching">Anthropic prompt caching docs</a></li><li><a href="https://platform.openai.com/docs/guides/prompt-caching">OpenAI prompt caching overview</a></li><li><a href="https://redis.io/docs/latest/solutions/ai/semantic-caching/">Redis semantic caching pattern</a></li><li><a href="https://martinfowler.com/articles/feature-toggles.html">Martin Fowler on feature toggles and operational safety patterns</a></li></ul>
+          <div class="blog-post-tags"><span class="blog-post-tag">AI Agents</span><span class="blog-post-tag">Caching</span><span class="blog-post-tag">Developer Tools</span><span class="blog-post-tag">Reliability</span><span class="blog-post-tag">LLM Ops</span></div>
+        </div>
+        <div class="blog-footer"><a href="index.html">← Back to all posts</a></div>
+      </div>
+    </header>
+  </body>
+</html>
