@@ -1,6 +1,14 @@
 {
   "topics": [
     {
+      "date": "2026-05-09",
+      "skill": "Secrets management for agentic workflows",
+      "topic": "Using brokered secrets, short-lived credentials, OIDC federation, scoped environment injection, and audit-first execution so AI agents can do useful work without carrying long-lived production access in prompts, files, or shells",
+      "slug": "secrets-management-ai-agents",
+      "title": "Secrets Management for AI Agents Without Handing Them the Kingdom",
+      "summary": "A practical guide to secrets management for AI agents using brokered access, short-lived credentials, OIDC, scoped injection, and audit trails that reduce blast radius without killing automation."
+    },
+    {
       "date": "2026-05-08",
       "skill": "Semantic caching for AI coding agents",
       "topic": "Using semantic caching with repo-aware fingerprints, watched-path invalidation, trust-lane policies, and lightweight verification so coding agents can reuse repeated reasoning without serving stale answers into changed repositories",
