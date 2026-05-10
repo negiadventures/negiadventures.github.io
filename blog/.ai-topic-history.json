@@ -1,6 +1,14 @@
 {
   "topics": [
     {
+      "date": "2026-05-10",
+      "skill": "Hybrid local plus cloud AI development workflows",
+      "topic": "Using local-first routing, privacy lanes, redaction before remote escalation, and verification-backed fallback policy so developers keep sensitive and routine work local while still using stronger cloud models for the tasks that actually need them",
+      "slug": "hybrid-local-cloud-ai-dev-workflows",
+      "title": "Hybrid Local and Cloud AI Dev Workflows Without Losing Control",
+      "summary": "A practical comparison of hybrid local and cloud AI development workflows using task routing, privacy lanes, local-first defaults, and explicit escalation rules so teams get faster iteration without turning every prompt into a cloud dependency."
+    },
+    {
       "date": "2026-05-09",
       "skill": "Secrets management for agentic workflows",
       "topic": "Using brokered secrets, short-lived credentials, OIDC federation, scoped environment injection, and audit-first execution so AI agents can do useful work without carrying long-lived production access in prompts, files, or shells",
