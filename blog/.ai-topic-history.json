@@ -1,6 +1,14 @@
 {
   "topics": [
     {
+      "date": "2026-05-11",
+      "skill": "Speculative patch generation for AI coding agents",
+      "topic": "Using parallel candidate branches, shared verifier pipelines, deterministic scorecards, and promotion thresholds so coding agents can explore multiple plausible fixes without turning ambiguity into reviewer cleanup",
+      "slug": "speculative-patch-generation-ai-coding-agents",
+      "title": "Speculative Patch Generation for AI Coding Agents That Stays Reviewable",
+      "summary": "A practical guide to speculative patch generation for AI coding agents using parallel candidate branches, verifier scorecards, and deterministic promotion rules so teams can explore multiple fixes without turning code review into chaos."
+    },
+    {
       "date": "2026-05-10",
       "skill": "Hybrid local plus cloud AI development workflows",
       "topic": "Using local-first routing, privacy lanes, redaction before remote escalation, and verification-backed fallback policy so developers keep sensitive and routine work local while still using stronger cloud models for the tasks that actually need them",
