@@ -1,0 +1,255 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="Design AI agent tool calls to fail loudly, classify errors, retry safely, and surface human-actionable recovery paths instead of burying broken automation behind vague exceptions.">
+    <meta name="author" content="Anirudh Negi">
+    <title>Tool Error Handling Patterns for AI Agents That Fail Loudly and Recover Cleanly | Anirudh Negi</title>
+    <link rel="icon" type="image/svg+xml" href="../images/favicon.svg">
+    <link rel="canonical" href="https://negiadventures.github.io/blog/tool-error-handling-ai-agents.html">
+    <meta property="og:type" content="article">
+    <meta property="og:url" content="https://negiadventures.github.io/blog/tool-error-handling-ai-agents.html">
+    <meta property="og:title" content="Tool Error Handling Patterns for AI Agents That Fail Loudly and Recover Cleanly | Anirudh Negi">
+    <meta property="og:description" content="Design AI agent tool calls to fail loudly, classify errors, retry safely, and surface human-actionable recovery paths instead of burying broken automation behind vague exceptions.">
+    <meta property="og:image" content="data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A//www.w3.org/2000/svg%27%20viewBox%3D%270%200%201200%20630%27%3E%0A%3Cdefs%3E%0A%20%20%3ClinearGradient%20id%3D%27bg%27%20x1%3D%270%27%20x2%3D%271%27%20y1%3D%270%27%20y2%3D%271%27%3E%0A%20%20%20%20%3Cstop%20offset%3D%270%25%27%20stop-color%3D%27%2307121d%27/%3E%0A%20%20%20%20%3Cstop%20offset%3D%27100%25%27%20stop-color%3D%27%2318385d%27/%3E%0A%20%20%3C/linearGradient%3E%0A%3C/defs%3E%0A%3Crect%20width%3D%271200%27%20height%3D%27630%27%20fill%3D%27url%28%23bg%29%27/%3E%0A%3Ccircle%20cx%3D%271020%27%20cy%3D%27112%27%20r%3D%27170%27%20fill%3D%27%2322d3ee%27%20fill-opacity%3D%270.14%27/%3E%0A%3Ccircle%20cx%3D%27180%27%20cy%3D%27520%27%20r%3D%27214%27%20fill%3D%27%238b5cf6%27%20fill-opacity%3D%270.16%27/%3E%0A%3Crect%20x%3D%2782%27%20y%3D%2784%27%20width%3D%271036%27%20height%3D%27462%27%20rx%3D%2732%27%20fill%3D%27%230b1220%27%20stroke%3D%27%2338bdf8%27%20stroke-opacity%3D%270.35%27/%3E%0A%3Ctext%20x%3D%27132%27%20y%3D%27172%27%20fill%3D%27white%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2742%27%20font-weight%3D%27700%27%3ETool%20Error%20Handling%20Patterns%20for%20AI%20Agents%3C/text%3E%0A%3Ctext%20x%3D%27132%27%20y%3D%27238%27%20fill%3D%27%2393c5fd%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2742%27%20font-weight%3D%27700%27%3EThat%20Fail%20Loudly%20and%20Recover%20Cleanly%3C/text%3E%0A%3Ctext%20x%3D%27132%27%20y%3D%27314%27%20fill%3D%27%23cbd5e1%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2728%27%3EClassify%20errors%2C%20retry%20safely%2C%20and%20hand%20useful%20recovery%20context%20to%20humans%20instead%20of%20hiding%20tool%20failures%3C/text%3E%0A%3Crect%20x%3D%27132%27%20y%3D%27382%27%20width%3D%27332%27%20height%3D%2754%27%20rx%3D%2714%27%20fill%3D%27%23111c2d%27%20stroke%3D%27%2367e8f9%27%20stroke-opacity%3D%270.45%27/%3E%0A%3Ctext%20x%3D%27156%27%20y%3D%27417%27%20fill%3D%27%2367e8f9%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2724%27%3Ebad%20retries%20are%20worse%20than%20honest%20failures%3C/text%3E%0A%3Crect%20x%3D%27772%27%20y%3D%27176%27%20width%3D%27252%27%20height%3D%2756%27%20rx%3D%2714%27%20fill%3D%27%230d1728%27%20stroke%3D%27%2322d3ee%27%20stroke-opacity%3D%270.45%27/%3E%0A%3Ctext%20x%3D%27814%27%20y%3D%27212%27%20fill%3D%27%23bae6fd%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2723%27%3Eclassify%28error%29%3C/text%3E%0A%3Crect%20x%3D%27772%27%20y%3D%27274%27%20width%3D%27252%27%20height%3D%2756%27%20rx%3D%2714%27%20fill%3D%27%230d1728%27%20stroke%3D%27%2322d3ee%27%20stroke-opacity%3D%270.45%27/%3E%0A%3Ctext%20x%3D%27834%27%20y%3D%27310%27%20fill%3D%27%23bae6fd%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2723%27%3Eretry%3F%3C/text%3E%0A%3Crect%20x%3D%27772%27%20y%3D%27372%27%20width%3D%27252%27%20height%3D%2756%27%20rx%3D%2714%27%20fill%3D%27%230d1728%27%20stroke%3D%27%23a78bfa%27%20stroke-opacity%3D%270.45%27/%3E%0A%3Ctext%20x%3D%27798%27%20y%3D%27408%27%20fill%3D%27%23ddd6fe%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2723%27%3Erecover%28context%29%3C/text%3E%0A%3C/svg%3E">
+    <meta property="article:published_time" content="2026-05-12">
+    <meta property="article:author" content="Anirudh Negi">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:url" content="https://negiadventures.github.io/blog/tool-error-handling-ai-agents.html">
+    <meta name="twitter:title" content="Tool Error Handling Patterns for AI Agents That Fail Loudly and Recover Cleanly | Anirudh Negi">
+    <meta name="twitter:description" content="Design AI agent tool calls to fail loudly, classify errors, retry safely, and surface human-actionable recovery paths instead of burying broken automation behind vague exceptions.">
+    <meta name="twitter:image" content="data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A//www.w3.org/2000/svg%27%20viewBox%3D%270%200%201200%20630%27%3E%0A%3Cdefs%3E%0A%20%20%3ClinearGradient%20id%3D%27bg%27%20x1%3D%270%27%20x2%3D%271%27%20y1%3D%270%27%20y2%3D%271%27%3E%0A%20%20%20%20%3Cstop%20offset%3D%270%25%27%20stop-color%3D%27%2307121d%27/%3E%0A%20%20%20%20%3Cstop%20offset%3D%27100%25%27%20stop-color%3D%27%2318385d%27/%3E%0A%20%20%3C/linearGradient%3E%0A%3C/defs%3E%0A%3Crect%20width%3D%271200%27%20height%3D%27630%27%20fill%3D%27url%28%23bg%29%27/%3E%0A%3Ccircle%20cx%3D%271020%27%20cy%3D%27112%27%20r%3D%27170%27%20fill%3D%27%2322d3ee%27%20fill-opacity%3D%270.14%27/%3E%0A%3Ccircle%20cx%3D%27180%27%20cy%3D%27520%27%20r%3D%27214%27%20fill%3D%27%238b5cf6%27%20fill-opacity%3D%270.16%27/%3E%0A%3Crect%20x%3D%2782%27%20y%3D%2784%27%20width%3D%271036%27%20height%3D%27462%27%20rx%3D%2732%27%20fill%3D%27%230b1220%27%20stroke%3D%27%2338bdf8%27%20stroke-opacity%3D%270.35%27/%3E%0A%3Ctext%20x%3D%27132%27%20y%3D%27172%27%20fill%3D%27white%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2742%27%20font-weight%3D%27700%27%3ETool%20Error%20Handling%20Patterns%20for%20AI%20Agents%3C/text%3E%0A%3Ctext%20x%3D%27132%27%20y%3D%27238%27%20fill%3D%27%2393c5fd%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2742%27%20font-weight%3D%27700%27%3EThat%20Fail%20Loudly%20and%20Recover%20Cleanly%3C/text%3E%0A%3Ctext%20x%3D%27132%27%20y%3D%27314%27%20fill%3D%27%23cbd5e1%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2728%27%3EClassify%20errors%2C%20retry%20safely%2C%20and%20hand%20useful%20recovery%20context%20to%20humans%20instead%20of%20hiding%20tool%20failures%3C/text%3E%0A%3Crect%20x%3D%27132%27%20y%3D%27382%27%20width%3D%27332%27%20height%3D%2754%27%20rx%3D%2714%27%20fill%3D%27%23111c2d%27%20stroke%3D%27%2367e8f9%27%20stroke-opacity%3D%270.45%27/%3E%0A%3Ctext%20x%3D%27156%27%20y%3D%27417%27%20fill%3D%27%2367e8f9%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2724%27%3Ebad%20retries%20are%20worse%20than%20honest%20failures%3C/text%3E%0A%3Crect%20x%3D%27772%27%20y%3D%27176%27%20width%3D%27252%27%20height%3D%2756%27%20rx%3D%2714%27%20fill%3D%27%230d1728%27%20stroke%3D%27%2322d3ee%27%20stroke-opacity%3D%270.45%27/%3E%0A%3Ctext%20x%3D%27814%27%20y%3D%27212%27%20fill%3D%27%23bae6fd%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2723%27%3Eclassify%28error%29%3C/text%3E%0A%3Crect%20x%3D%27772%27%20y%3D%27274%27%20width%3D%27252%27%20height%3D%2756%27%20rx%3D%2714%27%20fill%3D%27%230d1728%27%20stroke%3D%27%2322d3ee%27%20stroke-opacity%3D%270.45%27/%3E%0A%3Ctext%20x%3D%27834%27%20y%3D%27310%27%20fill%3D%27%23bae6fd%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2723%27%3Eretry%3F%3C/text%3E%0A%3Crect%20x%3D%27772%27%20y%3D%27372%27%20width%3D%27252%27%20height%3D%2756%27%20rx%3D%2714%27%20fill%3D%27%230d1728%27%20stroke%3D%27%23a78bfa%27%20stroke-opacity%3D%270.45%27/%3E%0A%3Ctext%20x%3D%27798%27%20y%3D%27408%27%20fill%3D%27%23ddd6fe%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2723%27%3Erecover%28context%29%3C/text%3E%0A%3C/svg%3E">
+    <script type="application/ld+json">{
+      "@context": "https://schema.org",
+      "@type": "BlogPosting",
+      "headline": "Tool Error Handling Patterns for AI Agents That Fail Loudly and Recover Cleanly",
+      "description": "Design AI agent tool calls to fail loudly, classify errors, retry safely, and surface human-actionable recovery paths instead of burying broken automation behind vague exceptions.",
+      "image": "data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A//www.w3.org/2000/svg%27%20viewBox%3D%270%200%201200%20630%27%3E%0A%3Cdefs%3E%0A%20%20%3ClinearGradient%20id%3D%27bg%27%20x1%3D%270%27%20x2%3D%271%27%20y1%3D%270%27%20y2%3D%271%27%3E%0A%20%20%20%20%3Cstop%20offset%3D%270%25%27%20stop-color%3D%27%2307121d%27/%3E%0A%20%20%20%20%3Cstop%20offset%3D%27100%25%27%20stop-color%3D%27%2318385d%27/%3E%0A%20%20%3C/linearGradient%3E%0A%3C/defs%3E%0A%3Crect%20width%3D%271200%27%20height%3D%27630%27%20fill%3D%27url%28%23bg%29%27/%3E%0A%3Ccircle%20cx%3D%271020%27%20cy%3D%27112%27%20r%3D%27170%27%20fill%3D%27%2322d3ee%27%20fill-opacity%3D%270.14%27/%3E%0A%3Ccircle%20cx%3D%27180%27%20cy%3D%27520%27%20r%3D%27214%27%20fill%3D%27%238b5cf6%27%20fill-opacity%3D%270.16%27/%3E%0A%3Crect%20x%3D%2782%27%20y%3D%2784%27%20width%3D%271036%27%20height%3D%27462%27%20rx%3D%2732%27%20fill%3D%27%230b1220%27%20stroke%3D%27%2338bdf8%27%20stroke-opacity%3D%270.35%27/%3E%0A%3Ctext%20x%3D%27132%27%20y%3D%27172%27%20fill%3D%27white%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2742%27%20font-weight%3D%27700%27%3ETool%20Error%20Handling%20Patterns%20for%20AI%20Agents%3C/text%3E%0A%3Ctext%20x%3D%27132%27%20y%3D%27238%27%20fill%3D%27%2393c5fd%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2742%27%20font-weight%3D%27700%27%3EThat%20Fail%20Loudly%20and%20Recover%20Cleanly%3C/text%3E%0A%3Ctext%20x%3D%27132%27%20y%3D%27314%27%20fill%3D%27%23cbd5e1%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2728%27%3EClassify%20errors%2C%20retry%20safely%2C%20and%20hand%20useful%20recovery%20context%20to%20humans%20instead%20of%20hiding%20tool%20failures%3C/text%3E%0A%3Crect%20x%3D%27132%27%20y%3D%27382%27%20width%3D%27332%27%20height%3D%2754%27%20rx%3D%2714%27%20fill%3D%27%23111c2d%27%20stroke%3D%27%2367e8f9%27%20stroke-opacity%3D%270.45%27/%3E%0A%3Ctext%20x%3D%27156%27%20y%3D%27417%27%20fill%3D%27%2367e8f9%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2724%27%3Ebad%20retries%20are%20worse%20than%20honest%20failures%3C/text%3E%0A%3Crect%20x%3D%27772%27%20y%3D%27176%27%20width%3D%27252%27%20height%3D%2756%27%20rx%3D%2714%27%20fill%3D%27%230d1728%27%20stroke%3D%27%2322d3ee%27%20stroke-opacity%3D%270.45%27/%3E%0A%3Ctext%20x%3D%27814%27%20y%3D%27212%27%20fill%3D%27%23bae6fd%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2723%27%3Eclassify%28error%29%3C/text%3E%0A%3Crect%20x%3D%27772%27%20y%3D%27274%27%20width%3D%27252%27%20height%3D%2756%27%20rx%3D%2714%27%20fill%3D%27%230d1728%27%20stroke%3D%27%2322d3ee%27%20stroke-opacity%3D%270.45%27/%3E%0A%3Ctext%20x%3D%27834%27%20y%3D%27310%27%20fill%3D%27%23bae6fd%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2723%27%3Eretry%3F%3C/text%3E%0A%3Crect%20x%3D%27772%27%20y%3D%27372%27%20width%3D%27252%27%20height%3D%2756%27%20rx%3D%2714%27%20fill%3D%27%230d1728%27%20stroke%3D%27%23a78bfa%27%20stroke-opacity%3D%270.45%27/%3E%0A%3Ctext%20x%3D%27798%27%20y%3D%27408%27%20fill%3D%27%23ddd6fe%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2723%27%3Erecover%28context%29%3C/text%3E%0A%3C/svg%3E",
+      "url": "https://negiadventures.github.io/blog/tool-error-handling-ai-agents.html",
+      "datePublished": "2026-05-12",
+      "dateModified": "2026-05-12",
+      "author": { "@type": "Person", "name": "Anirudh Negi", "url": "https://negiadventures.github.io" },
+      "publisher": { "@type": "Person", "name": "Anirudh Negi", "url": "https://negiadventures.github.io" },
+      "keywords": ["AI Agents", "Tool Calling", "Reliability", "MCP", "Developer Workflows"]
+    }</script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../stylesheets/stylesheet.css?v=5" media="screen">
+    <script type="module">
+      import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.esm.min.mjs';
+      mermaid.initialize({ startOnLoad: true, theme: 'dark' });
+    </script>
+    <style>
+      .blog-post { max-width: 860px; margin: 0 auto; padding: 60px 20px; }
+      .blog-post-nav { margin-bottom: 30px; }
+      .blog-post-nav a, .blog-footer a { color: var(--accent-strong); }
+      .blog-post-nav a:hover, .blog-footer a:hover { color: var(--accent); }
+      .blog-post-title { font-size: 2.5rem; margin-bottom: 16px; }
+      .blog-post-meta { display: flex; gap: 16px; flex-wrap: wrap; color: var(--text-muted); margin-bottom: 28px; }
+      .blog-post-image { width: 100%; border-radius: 18px; border: 1px solid var(--border); margin-bottom: 32px; }
+      .blog-post-content h2 { font-size: 1.7rem; margin-top: 42px; margin-bottom: 14px; }
+      .blog-post-content h3 { font-size: 1.25rem; margin-top: 28px; margin-bottom: 12px; }
+      .blog-post-content p, .blog-post-content li { color: var(--text-muted); line-height: 1.8; }
+      .blog-post-content ul, .blog-post-content ol { margin-bottom: 20px; padding-left: 22px; }
+      .code-block, .table-wrap, .callout, .mermaid-wrap { background: var(--bg-alt); border: 1px solid var(--border); border-radius: 14px; padding: 18px; margin: 22px 0; overflow-x: auto; }
+      .code-block pre { margin: 0; font-family: var(--mono); font-size: 0.9rem; line-height: 1.6; color: var(--text-light); }
+      .code-block code { color: var(--accent-strong); }
+      .callout strong { color: var(--text-light); display: block; margin-bottom: 8px; }
+      .callout.best { border-color: rgba(34,211,238,0.4); box-shadow: 0 0 0 1px rgba(34,211,238,0.08) inset; }
+      .callout.warn { border-color: rgba(167,139,250,0.45); box-shadow: 0 0 0 1px rgba(167,139,250,0.08) inset; }
+      table { width: 100%; border-collapse: collapse; }
+      th, td { padding: 12px; text-align: left; border-bottom: 1px solid var(--border); color: var(--text-muted); vertical-align: top; }
+      th { color: var(--text-light); }
+      .blog-post-tags { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 40px; padding-top: 28px; border-top: 1px solid var(--border); }
+      .blog-post-tag { background: var(--accent-soft); color: var(--accent-strong); border-radius: 999px; padding: 6px 14px; font-size: 0.85rem; font-family: var(--mono); }
+      .blog-footer { margin-top: 56px; padding-top: 28px; border-top: 1px solid var(--border); text-align: center; }
+      @media (max-width: 768px) { .blog-post { padding: 40px 16px; } .blog-post-title { font-size: 2rem; } }
+    </style>
+  </head>
+  <body>
+    <a href="../index.html#main" class="skip-link">Skip to main content</a>
+    <header class="site-header">
+      <div class="container blog-post">
+        <div class="blog-post-nav"><a href="index.html">&larr; Back to All Posts</a></div>
+        <div class="blog-post-header">
+          <h1 class="blog-post-title">Tool Error Handling Patterns for AI Agents That Fail Loudly and Recover Cleanly</h1>
+          <div class="blog-post-meta"><span>May 12, 2026</span><span>&bull;</span><span>9 min read</span><span>&bull;</span><span>Tool Reliability</span></div>
+          <img src="data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A//www.w3.org/2000/svg%27%20viewBox%3D%270%200%201200%20630%27%3E%0A%3Cdefs%3E%0A%20%20%3ClinearGradient%20id%3D%27bg%27%20x1%3D%270%27%20x2%3D%271%27%20y1%3D%270%27%20y2%3D%271%27%3E%0A%20%20%20%20%3Cstop%20offset%3D%270%25%27%20stop-color%3D%27%2307121d%27/%3E%0A%20%20%20%20%3Cstop%20offset%3D%27100%25%27%20stop-color%3D%27%2318385d%27/%3E%0A%20%20%3C/linearGradient%3E%0A%3C/defs%3E%0A%3Crect%20width%3D%271200%27%20height%3D%27630%27%20fill%3D%27url%28%23bg%29%27/%3E%0A%3Ccircle%20cx%3D%271020%27%20cy%3D%27112%27%20r%3D%27170%27%20fill%3D%27%2322d3ee%27%20fill-opacity%3D%270.14%27/%3E%0A%3Ccircle%20cx%3D%27180%27%20cy%3D%27520%27%20r%3D%27214%27%20fill%3D%27%238b5cf6%27%20fill-opacity%3D%270.16%27/%3E%0A%3Crect%20x%3D%2782%27%20y%3D%2784%27%20width%3D%271036%27%20height%3D%27462%27%20rx%3D%2732%27%20fill%3D%27%230b1220%27%20stroke%3D%27%2338bdf8%27%20stroke-opacity%3D%270.35%27/%3E%0A%3Ctext%20x%3D%27132%27%20y%3D%27172%27%20fill%3D%27white%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2742%27%20font-weight%3D%27700%27%3ETool%20Error%20Handling%20Patterns%20for%20AI%20Agents%3C/text%3E%0A%3Ctext%20x%3D%27132%27%20y%3D%27238%27%20fill%3D%27%2393c5fd%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2742%27%20font-weight%3D%27700%27%3EThat%20Fail%20Loudly%20and%20Recover%20Cleanly%3C/text%3E%0A%3Ctext%20x%3D%27132%27%20y%3D%27314%27%20fill%3D%27%23cbd5e1%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2728%27%3EClassify%20errors%2C%20retry%20safely%2C%20and%20hand%20useful%20recovery%20context%20to%20humans%20instead%20of%20hiding%20tool%20failures%3C/text%3E%0A%3Crect%20x%3D%27132%27%20y%3D%27382%27%20width%3D%27332%27%20height%3D%2754%27%20rx%3D%2714%27%20fill%3D%27%23111c2d%27%20stroke%3D%27%2367e8f9%27%20stroke-opacity%3D%270.45%27/%3E%0A%3Ctext%20x%3D%27156%27%20y%3D%27417%27%20fill%3D%27%2367e8f9%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2724%27%3Ebad%20retries%20are%20worse%20than%20honest%20failures%3C/text%3E%0A%3Crect%20x%3D%27772%27%20y%3D%27176%27%20width%3D%27252%27%20height%3D%2756%27%20rx%3D%2714%27%20fill%3D%27%230d1728%27%20stroke%3D%27%2322d3ee%27%20stroke-opacity%3D%270.45%27/%3E%0A%3Ctext%20x%3D%27814%27%20y%3D%27212%27%20fill%3D%27%23bae6fd%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2723%27%3Eclassify%28error%29%3C/text%3E%0A%3Crect%20x%3D%27772%27%20y%3D%27274%27%20width%3D%27252%27%20height%3D%2756%27%20rx%3D%2714%27%20fill%3D%27%230d1728%27%20stroke%3D%27%2322d3ee%27%20stroke-opacity%3D%270.45%27/%3E%0A%3Ctext%20x%3D%27834%27%20y%3D%27310%27%20fill%3D%27%23bae6fd%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2723%27%3Eretry%3F%3C/text%3E%0A%3Crect%20x%3D%27772%27%20y%3D%27372%27%20width%3D%27252%27%20height%3D%2756%27%20rx%3D%2714%27%20fill%3D%27%230d1728%27%20stroke%3D%27%23a78bfa%27%20stroke-opacity%3D%270.45%27/%3E%0A%3Ctext%20x%3D%27798%27%20y%3D%27408%27%20fill%3D%27%23ddd6fe%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2723%27%3Erecover%28context%29%3C/text%3E%0A%3C/svg%3E" alt="Tool Error Handling Patterns for AI Agents That Fail Loudly and Recover Cleanly" class="blog-post-image">
+        </div>
+        <div class="blog-post-content">
+          <p>Tool-calling agents rarely break because the model cannot produce JSON. They break because the system treats every failure the same way.</p>
+          <p>A timeout gets retried even though the tool already committed the write. A validation error gets buried in a generic <code>tool failed</code> message. A rate limit becomes a hot loop that turns one bad minute into an outage. That is the failure pattern this post is about.</p>
+          <p>Here is the practical workflow I would use: classify tool failures, attach structured recovery hints, retry only when the side effects are safe, and escalate with a packet a human can act on immediately.</p>
+
+          <h2>Why this matters</h2>
+          <p>Once an agent can call tools that hit real systems, error handling stops being plumbing. It becomes the control surface for reliability, cost, and safety.</p>
+          <p>A useful tool layer should answer four questions fast: did the action happen, is retry safe, what context should the model see next, and when should a human take over?</p>
+          <p>If your platform cannot answer those questions, the agent will improvise, and that is how quiet failures turn into duplicate writes, phantom retries, and reviewer confusion.</p>
+          <div class="callout best"><strong>Best practice</strong><p>Make the tool runtime more opinionated than the model. The model should not guess whether a failed write partially succeeded.</p></div>
+
+          <h2>Architecture or workflow overview</h2>
+          <div class="mermaid-wrap"><div class="mermaid">flowchart LR
+    A[Agent requests tool] --> B[Validate input and auth]
+    B --> C[Execute tool]
+    C --> D{Success?}
+    D -->|yes| E[Return structured result]
+    D -->|no| F[Classify error]
+    F --> G{Retry safe?}
+    G -->|yes| H[Retry with budget and idempotency key]
+    G -->|no| I[Return recovery packet]
+    H --> J{Recovered?}
+    J -->|yes| E
+    J -->|no| I
+    I --> K[Escalate or ask for new action]</div></div>
+          <p>The important bit is that the classifier sits after execution, not just before it. Plenty of failures are only meaningful once you know whether a write was attempted, whether a lease expired, or whether the remote endpoint acknowledged anything.</p>
+
+          <h2>Implementation details</h2>
+          <h3>1) Define an error envelope the model can reason about</h3>
+          <p>Do not return a flat exception string. Return an error object with fields that drive the next step.</p>
+          <div class="code-block"><pre><code>{
+  "ok": false,
+  "tool": "deploy_preview",
+  "error": {
+    "code": "RATE_LIMITED",
+    "retryable": true,
+    "sideEffectState": "unknown",
+    "humanActionRequired": false,
+    "retryAfterMs": 15000,
+    "summary": "GitHub API secondary rate limit hit while creating deployment status",
+    "recoveryHint": "Wait for retryAfterMs and reuse the same idempotency key",
+    "traceId": "toolrun_01hzyw3w5a"
+  }
+}</code></pre></div>
+          <p>I like three values for side-effect state: <strong>none</strong>, <strong>unknown</strong>, and <strong>committed</strong>. That single field prevents a lot of reckless retries.</p>
+
+          <h3>2) Separate error classification from retry policy</h3>
+          <p>A classifier should identify what happened. A retry policy should decide what to do about it.</p>
+          <div class="code-block"><pre><code>from dataclasses import dataclass
+
+@dataclass
+class ToolErrorInfo:
+    code: str
+    retryable: bool
+    side_effect_state: str
+    human_action_required: bool
+    retry_after_ms: int | None = None
+
+
+def classify_tool_error(exc: Exception) -> ToolErrorInfo:
+    if isinstance(exc, TimeoutError):
+        return ToolErrorInfo("TIMEOUT", True, "unknown", False, 2000)
+    if isinstance(exc, PermissionError):
+        return ToolErrorInfo("PERMISSION_DENIED", False, "none", True)
+    if "rate limit" in str(exc).lower():
+        return ToolErrorInfo("RATE_LIMITED", True, "none", False, 15000)
+    return ToolErrorInfo("UNKNOWN", False, "unknown", True)</code></pre></div>
+          <p>This keeps policy drift under control. Otherwise every tool grows its own retry folklore.</p>
+
+          <h3>3) Retry only with idempotency and a budget</h3>
+          <p>If a write tool can be retried, it should carry an idempotency key and a hard retry budget.</p>
+          <div class="code-block"><pre><code>def execute_with_retry(tool_fn, args, *, idempotency_key: str, max_attempts: int = 3):
+    attempt = 0
+    while attempt &lt; max_attempts:
+        attempt += 1
+        try:
+            return tool_fn(**args, idempotency_key=idempotency_key)
+        except Exception as exc:
+            info = classify_tool_error(exc)
+            if not info.retryable:
+                raise
+            if info.side_effect_state == "committed":
+                raise RuntimeError("write already committed, refusing blind retry") from exc
+            if attempt == max_attempts:
+                raise</code></pre></div>
+          <p>If the tool cannot accept idempotency keys, I would be very conservative about automatic retries for writes.</p>
+
+          <h3>4) Return a recovery packet, not just an error</h3>
+          <p>A recovery packet is the thing that lets the model or human continue without re-reading logs.</p>
+          <div class="code-block"><pre><code>recovery_packet:
+  trace_id: toolrun_01hzyw3w5a
+  tool: deploy_preview
+  failed_step: create_deployment_status
+  safe_next_actions:
+    - "verify whether preview URL already exists"
+    - "reuse idempotency key if retrying"
+    - "wait 15s before next API call"
+  unsafe_next_actions:
+    - "do not create a new deployment record"
+    - "do not delete the existing preview env"
+  suggested_prompt: "Check deployment status for trace toolrun_01hzyw3w5a before trying again."</code></pre></div>
+          <p>That packet is far more useful than another natural-language apology from the model.</p>
+
+          <h2>What went wrong and the tradeoffs</h2>
+          <p>The biggest mistake I see is retrying by transport symptom instead of business risk. A timeout is not automatically safe to replay. For read tools, aggressive retries are usually fine. For write tools, they can be actively dangerous.</p>
+          <div class="table-wrap"><table>
+            <thead><tr><th>Pattern</th><th>Best for</th><th>Upside</th><th>Downside</th></tr></thead>
+            <tbody>
+              <tr><td>Blind retries</td><td>Read-only or idempotent operations</td><td>Simple to implement</td><td>Causes duplicate writes and noisy incidents</td></tr>
+              <tr><td>Classified retries</td><td>Mixed tool fleets with writes</td><td>Safer recovery, lower hidden risk</td><td>More runtime design work</td></tr>
+              <tr><td>Human-only recovery</td><td>High-risk money, infra, or destructive ops</td><td>Strongest safety</td><td>Slower loops and more interruptions</td></tr>
+            </tbody>
+          </table></div>
+
+          <h3>Failure modes worth planning for</h3>
+          <ul>
+            <li><strong>Timeout after commit:</strong> the remote system wrote state, but your caller never saw the ack.</li>
+            <li><strong>Rate-limit storm:</strong> multiple agents retry together and create their own outage.</li>
+            <li><strong>Permission drift:</strong> cached assumptions about tool access become stale mid-run.</li>
+            <li><strong>Prompt contamination:</strong> the model sees raw stack traces and invents the wrong remediation path.</li>
+          </ul>
+          <div class="callout warn"><strong>Pitfall</strong><p>Never pass huge raw exception blobs straight back into the model if they contain secrets, tokens, or confusing transport noise. Summarize, redact, and attach the trace ID.</p></div>
+
+          <h2>Terminal output I actually want</h2>
+          <div class="code-block"><pre><code>[toolrun_01hzyw3w5a] deploy_preview
+status: failed
+code: RATE_LIMITED
+retryable: true
+sideEffectState: none
+retryAfterMs: 15000
+safe_next_action: retry with same idempotency key
+unsafe_next_action: create a second deployment record</code></pre></div>
+
+          <h2>Practical checklist or decision framework</h2>
+          <ul>
+            <li>[ ] Every tool returns a structured success or error envelope</li>
+            <li>[ ] Error classification is centralized, not tool-specific folklore</li>
+            <li>[ ] Write tools support idempotency keys or explicit no-retry policy</li>
+            <li>[ ] Retry budgets are finite and visible</li>
+            <li>[ ] Recovery packets include safe and unsafe next actions</li>
+            <li>[ ] Human escalation paths include trace IDs and summarized context</li>
+            <li>[ ] Raw errors are redacted before they go back into the prompt</li>
+          </ul>
+
+          <h2>What I would do again</h2>
+          <ol>
+            <li>Keep the error taxonomy small enough that engineers actually use it.</li>
+            <li>Add <code>sideEffectState</code> before adding clever retry logic.</li>
+            <li>Treat rate limits and permission failures as product behavior, not edge cases.</li>
+            <li>Log recovery packets as first-class artifacts for incident review.</li>
+          </ol>
+
+          <h2>Conclusion</h2>
+          <p>Reliable tool-calling agents do not just need good tools. They need good failure semantics. If you classify errors, retry with discipline, and hand back recovery context instead of noise, the agent stops feeling haunted and starts behaving like real software.</p>
+
+          <h2>References</h2>
+          <ul>
+            <li><a href="https://modelcontextprotocol.io">MCP overview</a></li>
+            <li><a href="https://stripe.com/docs/api/idempotent_requests">Stripe on idempotent requests</a></li>
+            <li><a href="https://sre.google/sre-book/handling-overload/">Google SRE book, handling overload</a></li>
+          </ul>
+
+          <div class="blog-post-tags">
+            <span class="blog-post-tag">AI Agents</span>
+            <span class="blog-post-tag">Tool Calling</span>
+            <span class="blog-post-tag">Reliability</span>
+            <span class="blog-post-tag">MCP</span>
+            <span class="blog-post-tag">Developer Workflows</span>
+          </div>
+        </div>
+        <div class="blog-footer"><p><a href="index.html">Browse more posts</a></p></div>
+      </div>
+    </header>
+  </body>
+</html>

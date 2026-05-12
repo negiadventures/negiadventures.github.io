@@ -1,6 +1,14 @@
 {
   "topics": [
     {
+      "date": "2026-05-12",
+      "skill": "Tool error handling for AI agents",
+      "topic": "Using structured error envelopes, side-effect state tracking, idempotent retry policy, and recovery packets so tool-calling agents fail loudly, retry safely, and hand useful context to humans instead of hiding broken automation behind vague exceptions",
+      "slug": "tool-error-handling-ai-agents",
+      "title": "Tool Error Handling Patterns for AI Agents That Fail Loudly and Recover Cleanly",
+      "summary": "A practical guide to tool error handling for AI agents using structured error envelopes, retry budgets, idempotency keys, and recovery packets so tool-calling systems fail safely and recover cleanly."
+    },
+    {
       "date": "2026-05-11",
       "skill": "Speculative patch generation for AI coding agents",
       "topic": "Using parallel candidate branches, shared verifier pipelines, deterministic scorecards, and promotion thresholds so coding agents can explore multiple plausible fixes without turning ambiguity into reviewer cleanup",
