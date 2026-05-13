@@ -1,6 +1,14 @@
 {
   "topics": [
     {
+      "date": "2026-05-13",
+      "skill": "Environment manifests for AI coding agents",
+      "topic": "Using pinned toolchains, checked-in environment manifests, versioned fixture packs, and verifier snapshots so coding agents reproduce the real bug and verification lane instead of fixing a local fiction created by drift",
+      "slug": "environment-manifests-ai-coding-agents",
+      "title": "Environment Manifests for AI Coding Agents That Reproduce the Bug You Meant to Fix",
+      "summary": "A practical guide to environment manifests for AI coding agents using pinned toolchains, seeded fixtures, and verifier snapshots so patches reproduce the real bug instead of fixing a local fiction."
+    },
+    {
       "date": "2026-05-12",
       "skill": "Tool error handling for AI agents",
       "topic": "Using structured error envelopes, side-effect state tracking, idempotent retry policy, and recovery packets so tool-calling agents fail loudly, retry safely, and hand useful context to humans instead of hiding broken automation behind vague exceptions",
