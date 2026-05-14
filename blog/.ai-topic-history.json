@@ -1,6 +1,14 @@
 {
   "topics": [
     {
+      "date": "2026-05-14",
+      "skill": "Dependency update lanes for AI coding agents",
+      "topic": "Using risk-tiered update lanes, SBOM diffs, changelog evidence packs, focused verification, and promotion gates so coding agents can handle routine dependency upgrades without turning low-signal version bumps into production surprises",
+      "slug": "dependency-update-lanes-ai-coding-agents",
+      "title": "Dependency Update Lanes for AI Coding Agents Without Surprise Regressions",
+      "summary": "A practical guide to dependency update lanes for AI coding agents using risk tiers, SBOM diffs, focused verification, and staged promotion so automated upgrades stay fast without turning every version bump into reviewer roulette."
+    },
+    {
       "date": "2026-05-13",
       "skill": "Environment manifests for AI coding agents",
       "topic": "Using pinned toolchains, checked-in environment manifests, versioned fixture packs, and verifier snapshots so coding agents reproduce the real bug and verification lane instead of fixing a local fiction created by drift",
