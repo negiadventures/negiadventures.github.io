@@ -1,6 +1,14 @@
 {
   "topics": [
     {
+      "date": "2026-05-15",
+      "skill": "AST codemods for AI coding agents",
+      "topic": "Using AST codemods, repo-scoped discovery, agent-generated transform drafts, fixture-led verification, and rollout checkpoints so coding agents can perform large API migrations without turning regex replacements into repo-wide damage",
+      "slug": "ast-codemods-ai-coding-agents",
+      "title": "AST Codemods for AI Coding Agents That Need to Rewrite Large Codebases Safely",
+      "summary": "A practical guide to AST codemods for AI coding agents using syntax-aware transforms, fixture-led verification, and rollout checkpoints so large API migrations stay reviewable instead of devolving into regex cleanup."
+    },
+    {
       "date": "2026-05-14",
       "skill": "Dependency update lanes for AI coding agents",
       "topic": "Using risk-tiered update lanes, SBOM diffs, changelog evidence packs, focused verification, and promotion gates so coding agents can handle routine dependency upgrades without turning low-signal version bumps into production surprises",
