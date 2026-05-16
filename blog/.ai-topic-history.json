@@ -1,6 +1,14 @@
 {
   "topics": [
     {
+      "date": "2026-05-16",
+      "skill": "Backpressure and concurrency control for AI agents",
+      "topic": "Using per-tool queue budgets, adaptive concurrency caps, lease-based workers, and overload-aware admission so agent fleets stop amplifying one slow dependency into a self-inflicted outage",
+      "slug": "backpressure-concurrency-ai-agents",
+      "title": "Backpressure and Concurrency Caps for AI Agents That Would Otherwise DDoS Your Own Tools",
+      "summary": "A practical guide to backpressure for AI agents using queue budgets, concurrency caps, lease-aware workers, and overload signals so tool-calling systems stop amplifying latency into self-inflicted outages."
+    },
+    {
       "date": "2026-05-15",
       "skill": "AST codemods for AI coding agents",
       "topic": "Using AST codemods, repo-scoped discovery, agent-generated transform drafts, fixture-led verification, and rollout checkpoints so coding agents can perform large API migrations without turning regex replacements into repo-wide damage",

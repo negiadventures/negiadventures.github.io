@@ -1,0 +1,248 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="A practical guide to backpressure for AI agents using queue budgets, concurrency caps, lease-aware workers, and overload signals so tool-calling systems stop amplifying latency into self-inflicted outages.">
+    <meta name="author" content="Anirudh Negi">
+    <title>Backpressure and Concurrency Caps for AI Agents That Would Otherwise DDoS Your Own Tools | Anirudh Negi</title>
+    <link rel="icon" type="image/svg+xml" href="../images/favicon.svg">
+    <link rel="canonical" href="https://negiadventures.github.io/blog/backpressure-concurrency-ai-agents.html">
+    <meta property="og:type" content="article">
+    <meta property="og:url" content="https://negiadventures.github.io/blog/backpressure-concurrency-ai-agents.html">
+    <meta property="og:title" content="Backpressure and Concurrency Caps for AI Agents That Would Otherwise DDoS Your Own Tools | Anirudh Negi">
+    <meta property="og:description" content="A practical guide to backpressure for AI agents using queue budgets, concurrency caps, lease-aware workers, and overload signals so tool-calling systems stop amplifying latency into self-inflicted outages.">
+    <meta property="og:image" content="data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A//www.w3.org/2000/svg%27%20viewBox%3D%270%200%201200%20630%27%3E%0A%3Cdefs%3E%0A%20%20%3ClinearGradient%20id%3D%27bg%27%20x1%3D%270%27%20x2%3D%271%27%20y1%3D%270%27%20y2%3D%271%27%3E%0A%20%20%20%20%3Cstop%20offset%3D%270%25%27%20stop-color%3D%27%2307121d%27/%3E%0A%20%20%20%20%3Cstop%20offset%3D%27100%25%27%20stop-color%3D%27%23173a60%27/%3E%0A%20%20%3C/linearGradient%3E%0A%3C/defs%3E%0A%3Crect%20width%3D%271200%27%20height%3D%27630%27%20fill%3D%27url%28%23bg%29%27/%3E%0A%3Ccircle%20cx%3D%271018%27%20cy%3D%27112%27%20r%3D%27172%27%20fill%3D%27%2322d3ee%27%20fill-opacity%3D%270.14%27/%3E%0A%3Ccircle%20cx%3D%27180%27%20cy%3D%27520%27%20r%3D%27214%27%20fill%3D%27%238b5cf6%27%20fill-opacity%3D%270.16%27/%3E%0A%3Crect%20x%3D%2782%27%20y%3D%2784%27%20width%3D%271036%27%20height%3D%27462%27%20rx%3D%2732%27%20fill%3D%27%230b1220%27%20stroke%3D%27%2338bdf8%27%20stroke-opacity%3D%270.35%27/%3E%0A%3Ctext%20x%3D%27132%27%20y%3D%27170%27%20fill%3D%27white%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2740%27%20font-weight%3D%27700%27%3EBackpressure%20and%20Concurrency%20Caps%20for%20AI%20Agents%3C/text%3E%0A%3Ctext%20x%3D%27132%27%20y%3D%27232%27%20fill%3D%27%2393c5fd%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2740%27%20font-weight%3D%27700%27%3EThat%20Would%20Otherwise%20DDoS%20Your%20Own%20Tools%3C/text%3E%0A%3Ctext%20x%3D%27132%27%20y%3D%27306%27%20fill%3D%27%23cbd5e1%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2728%27%3EBound%20queues%2C%20cap%20workers%2C%20and%20shed%20load%20before%20the%20agent%20fleet%3C/text%3E%0A%3Ctext%20x%3D%27132%27%20y%3D%27342%27%20fill%3D%27%23cbd5e1%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2728%27%3Eturns%20one%20slow%20dependency%20into%20a%20noisy%20internal%20outage%3C/text%3E%0A%3Crect%20x%3D%27132%27%20y%3D%27390%27%20width%3D%27350%27%20height%3D%2754%27%20rx%3D%2714%27%20fill%3D%27%23111c2d%27%20stroke%3D%27%2367e8f9%27%20stroke-opacity%3D%270.45%27/%3E%0A%3Ctext%20x%3D%27156%27%20y%3D%27425%27%20fill%3D%27%2367e8f9%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2724%27%3Eslow%20tools%20need%20pressure%20relief%2C%20not%20optimism%3C/text%3E%0A%3Crect%20x%3D%27770%27%20y%3D%27176%27%20width%3D%27254%27%20height%3D%2756%27%20rx%3D%2714%27%20fill%3D%27%230d1728%27%20stroke%3D%27%2322d3ee%27%20stroke-opacity%3D%270.45%27/%3E%0A%3Ctext%20x%3D%27812%27%20y%3D%27212%27%20fill%3D%27%23bae6fd%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2723%27%3Equeue%20budget%3C/text%3E%0A%3Crect%20x%3D%27770%27%20y%3D%27274%27%20width%3D%27254%27%20height%3D%2756%27%20rx%3D%2714%27%20fill%3D%27%230d1728%27%20stroke%3D%27%2322d3ee%27%20stroke-opacity%3D%270.45%27/%3E%0A%3Ctext%20x%3D%27804%27%20y%3D%27310%27%20fill%3D%27%23bae6fd%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2723%27%3Eworker%20cap%3C/text%3E%0A%3Crect%20x%3D%27770%27%20y%3D%27372%27%20width%3D%27254%27%20height%3D%2756%27%20rx%3D%2714%27%20fill%3D%27%230d1728%27%20stroke%3D%27%23a78bfa%27%20stroke-opacity%3D%270.45%27/%3E%0A%3Ctext%20x%3D%27808%27%20y%3D%27408%27%20fill%3D%27%23ddd6fe%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2723%27%3Eshed%20load%3C/text%3E%0A%3C/svg%3E">
+    <meta property="article:published_time" content="2026-05-16">
+    <meta property="article:author" content="Anirudh Negi">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:url" content="https://negiadventures.github.io/blog/backpressure-concurrency-ai-agents.html">
+    <meta name="twitter:title" content="Backpressure and Concurrency Caps for AI Agents That Would Otherwise DDoS Your Own Tools | Anirudh Negi">
+    <meta name="twitter:description" content="A practical guide to backpressure for AI agents using queue budgets, concurrency caps, lease-aware workers, and overload signals so tool-calling systems stop amplifying latency into self-inflicted outages.">
+    <meta name="twitter:image" content="data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A//www.w3.org/2000/svg%27%20viewBox%3D%270%200%201200%20630%27%3E%0A%3Cdefs%3E%0A%20%20%3ClinearGradient%20id%3D%27bg%27%20x1%3D%270%27%20x2%3D%271%27%20y1%3D%270%27%20y2%3D%271%27%3E%0A%20%20%20%20%3Cstop%20offset%3D%270%25%27%20stop-color%3D%27%2307121d%27/%3E%0A%20%20%20%20%3Cstop%20offset%3D%27100%25%27%20stop-color%3D%27%23173a60%27/%3E%0A%20%20%3C/linearGradient%3E%0A%3C/defs%3E%0A%3Crect%20width%3D%271200%27%20height%3D%27630%27%20fill%3D%27url%28%23bg%29%27/%3E%0A%3Ccircle%20cx%3D%271018%27%20cy%3D%27112%27%20r%3D%27172%27%20fill%3D%27%2322d3ee%27%20fill-opacity%3D%270.14%27/%3E%0A%3Ccircle%20cx%3D%27180%27%20cy%3D%27520%27%20r%3D%27214%27%20fill%3D%27%238b5cf6%27%20fill-opacity%3D%270.16%27/%3E%0A%3Crect%20x%3D%2782%27%20y%3D%2784%27%20width%3D%271036%27%20height%3D%27462%27%20rx%3D%2732%27%20fill%3D%27%230b1220%27%20stroke%3D%27%2338bdf8%27%20stroke-opacity%3D%270.35%27/%3E%0A%3Ctext%20x%3D%27132%27%20y%3D%27170%27%20fill%3D%27white%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2740%27%20font-weight%3D%27700%27%3EBackpressure%20and%20Concurrency%20Caps%20for%20AI%20Agents%3C/text%3E%0A%3Ctext%20x%3D%27132%27%20y%3D%27232%27%20fill%3D%27%2393c5fd%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2740%27%20font-weight%3D%27700%27%3EThat%20Would%20Otherwise%20DDoS%20Your%20Own%20Tools%3C/text%3E%0A%3Ctext%20x%3D%27132%27%20y%3D%27306%27%20fill%3D%27%23cbd5e1%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2728%27%3EBound%20queues%2C%20cap%20workers%2C%20and%20shed%20load%20before%20the%20agent%20fleet%3C/text%3E%0A%3Ctext%20x%3D%27132%27%20y%3D%27342%27%20fill%3D%27%23cbd5e1%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2728%27%3Eturns%20one%20slow%20dependency%20into%20a%20noisy%20internal%20outage%3C/text%3E%0A%3Crect%20x%3D%27132%27%20y%3D%27390%27%20width%3D%27350%27%20height%3D%2754%27%20rx%3D%2714%27%20fill%3D%27%23111c2d%27%20stroke%3D%27%2367e8f9%27%20stroke-opacity%3D%270.45%27/%3E%0A%3Ctext%20x%3D%27156%27%20y%3D%27425%27%20fill%3D%27%2367e8f9%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2724%27%3Eslow%20tools%20need%20pressure%20relief%2C%20not%20optimism%3C/text%3E%0A%3Crect%20x%3D%27770%27%20y%3D%27176%27%20width%3D%27254%27%20height%3D%2756%27%20rx%3D%2714%27%20fill%3D%27%230d1728%27%20stroke%3D%27%2322d3ee%27%20stroke-opacity%3D%270.45%27/%3E%0A%3Ctext%20x%3D%27812%27%20y%3D%27212%27%20fill%3D%27%23bae6fd%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2723%27%3Equeue%20budget%3C/text%3E%0A%3Crect%20x%3D%27770%27%20y%3D%27274%27%20width%3D%27254%27%20height%3D%2756%27%20rx%3D%2714%27%20fill%3D%27%230d1728%27%20stroke%3D%27%2322d3ee%27%20stroke-opacity%3D%270.45%27/%3E%0A%3Ctext%20x%3D%27804%27%20y%3D%27310%27%20fill%3D%27%23bae6fd%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2723%27%3Eworker%20cap%3C/text%3E%0A%3Crect%20x%3D%27770%27%20y%3D%27372%27%20width%3D%27254%27%20height%3D%2756%27%20rx%3D%2714%27%20fill%3D%27%230d1728%27%20stroke%3D%27%23a78bfa%27%20stroke-opacity%3D%270.45%27/%3E%0A%3Ctext%20x%3D%27808%27%20y%3D%27408%27%20fill%3D%27%23ddd6fe%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2723%27%3Eshed%20load%3C/text%3E%0A%3C/svg%3E">
+    <script type="application/ld+json">{
+      "@context": "https://schema.org",
+      "@type": "BlogPosting",
+      "headline": "Backpressure and Concurrency Caps for AI Agents That Would Otherwise DDoS Your Own Tools",
+      "description": "A practical guide to backpressure for AI agents using queue budgets, concurrency caps, lease-aware workers, and overload signals so tool-calling systems stop amplifying latency into self-inflicted outages.",
+      "image": "data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A//www.w3.org/2000/svg%27%20viewBox%3D%270%200%201200%20630%27%3E%0A%3Cdefs%3E%0A%20%20%3ClinearGradient%20id%3D%27bg%27%20x1%3D%270%27%20x2%3D%271%27%20y1%3D%270%27%20y2%3D%271%27%3E%0A%20%20%20%20%3Cstop%20offset%3D%270%25%27%20stop-color%3D%27%2307121d%27/%3E%0A%20%20%20%20%3Cstop%20offset%3D%27100%25%27%20stop-color%3D%27%23173a60%27/%3E%0A%20%20%3C/linearGradient%3E%0A%3C/defs%3E%0A%3Crect%20width%3D%271200%27%20height%3D%27630%27%20fill%3D%27url%28%23bg%29%27/%3E%0A%3Ccircle%20cx%3D%271018%27%20cy%3D%27112%27%20r%3D%27172%27%20fill%3D%27%2322d3ee%27%20fill-opacity%3D%270.14%27/%3E%0A%3Ccircle%20cx%3D%27180%27%20cy%3D%27520%27%20r%3D%27214%27%20fill%3D%27%238b5cf6%27%20fill-opacity%3D%270.16%27/%3E%0A%3Crect%20x%3D%2782%27%20y%3D%2784%27%20width%3D%271036%27%20height%3D%27462%27%20rx%3D%2732%27%20fill%3D%27%230b1220%27%20stroke%3D%27%2338bdf8%27%20stroke-opacity%3D%270.35%27/%3E%0A%3Ctext%20x%3D%27132%27%20y%3D%27170%27%20fill%3D%27white%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2740%27%20font-weight%3D%27700%27%3EBackpressure%20and%20Concurrency%20Caps%20for%20AI%20Agents%3C/text%3E%0A%3Ctext%20x%3D%27132%27%20y%3D%27232%27%20fill%3D%27%2393c5fd%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2740%27%20font-weight%3D%27700%27%3EThat%20Would%20Otherwise%20DDoS%20Your%20Own%20Tools%3C/text%3E%0A%3Ctext%20x%3D%27132%27%20y%3D%27306%27%20fill%3D%27%23cbd5e1%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2728%27%3EBound%20queues%2C%20cap%20workers%2C%20and%20shed%20load%20before%20the%20agent%20fleet%3C/text%3E%0A%3Ctext%20x%3D%27132%27%20y%3D%27342%27%20fill%3D%27%23cbd5e1%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2728%27%3Eturns%20one%20slow%20dependency%20into%20a%20noisy%20internal%20outage%3C/text%3E%0A%3Crect%20x%3D%27132%27%20y%3D%27390%27%20width%3D%27350%27%20height%3D%2754%27%20rx%3D%2714%27%20fill%3D%27%23111c2d%27%20stroke%3D%27%2367e8f9%27%20stroke-opacity%3D%270.45%27/%3E%0A%3Ctext%20x%3D%27156%27%20y%3D%27425%27%20fill%3D%27%2367e8f9%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2724%27%3Eslow%20tools%20need%20pressure%20relief%2C%20not%20optimism%3C/text%3E%0A%3Crect%20x%3D%27770%27%20y%3D%27176%27%20width%3D%27254%27%20height%3D%2756%27%20rx%3D%2714%27%20fill%3D%27%230d1728%27%20stroke%3D%27%2322d3ee%27%20stroke-opacity%3D%270.45%27/%3E%0A%3Ctext%20x%3D%27812%27%20y%3D%27212%27%20fill%3D%27%23bae6fd%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2723%27%3Equeue%20budget%3C/text%3E%0A%3Crect%20x%3D%27770%27%20y%3D%27274%27%20width%3D%27254%27%20height%3D%2756%27%20rx%3D%2714%27%20fill%3D%27%230d1728%27%20stroke%3D%27%2322d3ee%27%20stroke-opacity%3D%270.45%27/%3E%0A%3Ctext%20x%3D%27804%27%20y%3D%27310%27%20fill%3D%27%23bae6fd%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2723%27%3Eworker%20cap%3C/text%3E%0A%3Crect%20x%3D%27770%27%20y%3D%27372%27%20width%3D%27254%27%20height%3D%2756%27%20rx%3D%2714%27%20fill%3D%27%230d1728%27%20stroke%3D%27%23a78bfa%27%20stroke-opacity%3D%270.45%27/%3E%0A%3Ctext%20x%3D%27808%27%20y%3D%27408%27%20fill%3D%27%23ddd6fe%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2723%27%3Eshed%20load%3C/text%3E%0A%3C/svg%3E",
+      "url": "https://negiadventures.github.io/blog/backpressure-concurrency-ai-agents.html",
+      "datePublished": "2026-05-16",
+      "dateModified": "2026-05-16",
+      "author": { "@type": "Person", "name": "Anirudh Negi", "url": "https://negiadventures.github.io" },
+      "publisher": { "@type": "Person", "name": "Anirudh Negi", "url": "https://negiadventures.github.io" },
+      "keywords": ["AI Agents", "Concurrency", "Queues", "Reliability", "Backpressure"]
+    }</script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../stylesheets/stylesheet.css?v=5" media="screen">
+    <script type="module">
+      import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.esm.min.mjs';
+      mermaid.initialize({ startOnLoad: true, theme: 'dark' });
+    </script>
+    <style>
+      .blog-post { max-width: 860px; margin: 0 auto; padding: 60px 20px; }
+      .blog-post-nav { margin-bottom: 30px; }
+      .blog-post-nav a, .blog-footer a { color: var(--accent-strong); }
+      .blog-post-nav a:hover, .blog-footer a:hover { color: var(--accent); }
+      .blog-post-title { font-size: 2.5rem; margin-bottom: 16px; }
+      .blog-post-meta { display: flex; gap: 16px; flex-wrap: wrap; color: var(--text-muted); margin-bottom: 28px; }
+      .blog-post-image { width: 100%; border-radius: 18px; border: 1px solid var(--border); margin-bottom: 32px; }
+      .blog-post-content h2 { font-size: 1.7rem; margin-top: 42px; margin-bottom: 14px; }
+      .blog-post-content h3 { font-size: 1.25rem; margin-top: 28px; margin-bottom: 12px; }
+      .blog-post-content p, .blog-post-content li { color: var(--text-muted); line-height: 1.8; }
+      .blog-post-content ul, .blog-post-content ol { margin-bottom: 20px; padding-left: 22px; }
+      .code-block, .table-wrap, .callout, .mermaid-wrap { background: var(--bg-alt); border: 1px solid var(--border); border-radius: 14px; padding: 18px; margin: 22px 0; overflow-x: auto; }
+      .code-block pre { margin: 0; font-family: var(--mono); font-size: 0.9rem; line-height: 1.6; color: var(--text-light); }
+      .code-block code { color: var(--accent-strong); }
+      .callout strong { color: var(--text-light); display: block; margin-bottom: 8px; }
+      .callout.best { border-color: rgba(34,211,238,0.4); box-shadow: 0 0 0 1px rgba(34,211,238,0.08) inset; }
+      .callout.warn { border-color: rgba(167,139,250,0.45); box-shadow: 0 0 0 1px rgba(167,139,250,0.08) inset; }
+      table { width: 100%; border-collapse: collapse; }
+      th, td { padding: 12px; text-align: left; border-bottom: 1px solid var(--border); color: var(--text-muted); vertical-align: top; }
+      th { color: var(--text-light); }
+      .blog-post-tags { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 40px; padding-top: 28px; border-top: 1px solid var(--border); }
+      .blog-post-tag { background: var(--accent-soft); color: var(--accent-strong); border-radius: 999px; padding: 6px 14px; font-size: 0.85rem; font-family: var(--mono); }
+      .blog-footer { margin-top: 56px; padding-top: 28px; border-top: 1px solid var(--border); text-align: center; }
+      @media (max-width: 768px) { .blog-post { padding: 40px 16px; } .blog-post-title { font-size: 2rem; } }
+    </style>
+  </head>
+  <body>
+    <a href="../index.html#main" class="skip-link">Skip to main content</a>
+    <header class="site-header">
+      <div class="container blog-post">
+        <div class="blog-post-nav"><a href="index.html">&larr; Back to All Posts</a></div>
+        <div class="blog-post-header">
+          <h1 class="blog-post-title">Backpressure and Concurrency Caps for AI Agents That Would Otherwise DDoS Your Own Tools</h1>
+          <div class="blog-post-meta"><span>May 16, 2026</span><span>&bull;</span><span>10 min read</span><span>&bull;</span><span>Reliability</span></div>
+          <img src="data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A//www.w3.org/2000/svg%27%20viewBox%3D%270%200%201200%20630%27%3E%0A%3Cdefs%3E%0A%20%20%3ClinearGradient%20id%3D%27bg%27%20x1%3D%270%27%20x2%3D%271%27%20y1%3D%270%27%20y2%3D%271%27%3E%0A%20%20%20%20%3Cstop%20offset%3D%270%25%27%20stop-color%3D%27%2307121d%27/%3E%0A%20%20%20%20%3Cstop%20offset%3D%27100%25%27%20stop-color%3D%27%23173a60%27/%3E%0A%20%20%3C/linearGradient%3E%0A%3C/defs%3E%0A%3Crect%20width%3D%271200%27%20height%3D%27630%27%20fill%3D%27url%28%23bg%29%27/%3E%0A%3Ccircle%20cx%3D%271018%27%20cy%3D%27112%27%20r%3D%27172%27%20fill%3D%27%2322d3ee%27%20fill-opacity%3D%270.14%27/%3E%0A%3Ccircle%20cx%3D%27180%27%20cy%3D%27520%27%20r%3D%27214%27%20fill%3D%27%238b5cf6%27%20fill-opacity%3D%270.16%27/%3E%0A%3Crect%20x%3D%2782%27%20y%3D%2784%27%20width%3D%271036%27%20height%3D%27462%27%20rx%3D%2732%27%20fill%3D%27%230b1220%27%20stroke%3D%27%2338bdf8%27%20stroke-opacity%3D%270.35%27/%3E%0A%3Ctext%20x%3D%27132%27%20y%3D%27170%27%20fill%3D%27white%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2740%27%20font-weight%3D%27700%27%3EBackpressure%20and%20Concurrency%20Caps%20for%20AI%20Agents%3C/text%3E%0A%3Ctext%20x%3D%27132%27%20y%3D%27232%27%20fill%3D%27%2393c5fd%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2740%27%20font-weight%3D%27700%27%3EThat%20Would%20Otherwise%20DDoS%20Your%20Own%20Tools%3C/text%3E%0A%3Ctext%20x%3D%27132%27%20y%3D%27306%27%20fill%3D%27%23cbd5e1%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2728%27%3EBound%20queues%2C%20cap%20workers%2C%20and%20shed%20load%20before%20the%20agent%20fleet%3C/text%3E%0A%3Ctext%20x%3D%27132%27%20y%3D%27342%27%20fill%3D%27%23cbd5e1%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2728%27%3Eturns%20one%20slow%20dependency%20into%20a%20noisy%20internal%20outage%3C/text%3E%0A%3Crect%20x%3D%27132%27%20y%3D%27390%27%20width%3D%27350%27%20height%3D%2754%27%20rx%3D%2714%27%20fill%3D%27%23111c2d%27%20stroke%3D%27%2367e8f9%27%20stroke-opacity%3D%270.45%27/%3E%0A%3Ctext%20x%3D%27156%27%20y%3D%27425%27%20fill%3D%27%2367e8f9%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2724%27%3Eslow%20tools%20need%20pressure%20relief%2C%20not%20optimism%3C/text%3E%0A%3Crect%20x%3D%27770%27%20y%3D%27176%27%20width%3D%27254%27%20height%3D%2756%27%20rx%3D%2714%27%20fill%3D%27%230d1728%27%20stroke%3D%27%2322d3ee%27%20stroke-opacity%3D%270.45%27/%3E%0A%3Ctext%20x%3D%27812%27%20y%3D%27212%27%20fill%3D%27%23bae6fd%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2723%27%3Equeue%20budget%3C/text%3E%0A%3Crect%20x%3D%27770%27%20y%3D%27274%27%20width%3D%27254%27%20height%3D%2756%27%20rx%3D%2714%27%20fill%3D%27%230d1728%27%20stroke%3D%27%2322d3ee%27%20stroke-opacity%3D%270.45%27/%3E%0A%3Ctext%20x%3D%27804%27%20y%3D%27310%27%20fill%3D%27%23bae6fd%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2723%27%3Eworker%20cap%3C/text%3E%0A%3Crect%20x%3D%27770%27%20y%3D%27372%27%20width%3D%27254%27%20height%3D%2756%27%20rx%3D%2714%27%20fill%3D%27%230d1728%27%20stroke%3D%27%23a78bfa%27%20stroke-opacity%3D%270.45%27/%3E%0A%3Ctext%20x%3D%27808%27%20y%3D%27408%27%20fill%3D%27%23ddd6fe%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2723%27%3Eshed%20load%3C/text%3E%0A%3C/svg%3E" alt="Backpressure and Concurrency Caps for AI Agents That Would Otherwise DDoS Your Own Tools" class="blog-post-image">
+        </div>
+        <div class="blog-post-content">
+          <p>Backpressure is the missing control loop in a lot of agent systems. The model gets faster, orchestration gets cleaner, and then one flaky dependency slows down enough that every worker piles on at once.</p>
+          <p>That is how a helpful agent fleet turns into an internal DDoS. The scary part is that nothing is down at first. Queues keep growing, retries look reasonable in isolation, and latency quietly spreads from one tool to every workflow around it.</p>
+          <p>This post is about the practical fixes that matter: queue budgets, per-tool concurrency caps, overload-aware admission, and lease-based workers that stop pretending infinite parallelism is free.</p>
+
+          <h2>Why this matters</h2>
+          <p>Most production agent failures are not caused by one bad prompt. They are caused by too much successful work arriving at a dependency that cannot keep up.</p>
+          <p>If your agents can call search, CI, GitHub, databases, browsers, or internal APIs, you already have a distributed systems problem. The model layer may decide what to do, but the queueing layer decides whether your system stays useful under stress.</p>
+          <p>A bounded system degrades honestly. An unbounded one creates ghost incidents: duplicate jobs, runaway retries, stale approvals, and operators who cannot tell whether the tool is slow or just buried.</p>
+          <div class="callout best"><strong>Best practice</strong><p>Treat queue depth like a safety boundary, not a tuning detail. Once it is full, the honest answer is often defer or drop, not maybe later.</p></div>
+
+          <h2>Architecture or workflow overview</h2>
+          <div class="mermaid-wrap"><div class="mermaid">flowchart LR
+    A[Agent run created] --> B[Admission controller]
+    B --> C{Queue budget available?}
+    C -->|no| D[Reject or defer with overload signal]
+    C -->|yes| E[Per-tool queue]
+    E --> F{Worker slot available?}
+    F -->|no| G[Wait with TTL and priority]
+    F -->|yes| H[Lease-aware worker executes tool]
+    H --> I{Dependency healthy?}
+    I -->|yes| J[Return result and metrics]
+    I -->|degraded| K[Reduce concurrency and extend backoff]
+    K --> L[Requeue or shed low-priority work]</div></div>
+          <p>I like to separate admission from execution. Admission decides whether work is allowed into the system at all. Execution decides how much of that admitted work can run right now against each dependency.</p>
+          <p>That split matters because the queue is not a trash can. If you let every job in, you have already accepted a future outage.</p>
+
+          <h2>Implementation details</h2>
+          <h3>1) Give every tool its own queue budget</h3>
+          <p>A single global queue hides which dependency is actually overloaded. Per-tool budgets make pressure visible and give you a place to shed load deliberately.</p>
+          <div class="code-block"><pre><code>tools:
+  github:
+    maxQueueDepth: 120
+    maxConcurrent: 8
+    ttlSeconds: 180
+  browser:
+    maxQueueDepth: 20
+    maxConcurrent: 2
+    ttlSeconds: 90
+  embeddings:
+    maxQueueDepth: 400
+    maxConcurrent: 32
+    ttlSeconds: 60</code></pre></div>
+          <p>This is intentionally boring configuration. The important part is not the exact numbers. It is that the limits exist, they differ by tool, and they match the real cost profile of each dependency.</p>
+          <p>I would not give browser automation and embeddings the same concurrency lane just because both are tools. One blocks scarce stateful workers. The other is often a cheap network call with better horizontal scaling.</p>
+
+          <h3>2) Make admission control return an overload result the model can handle</h3>
+          <p>If a queue is full, reject the work with a structured signal. Do not silently enqueue it forever.</p>
+          <div class="code-block"><pre><code>from dataclasses import dataclass
+
+@dataclass
+class AdmissionResult:
+    accepted: bool
+    reason: str | None = None
+    retry_after_ms: int | None = None
+
+
+def admit(job, stats) -> AdmissionResult:
+    lane = stats[job.tool]
+    if lane.queue_depth &gt;= lane.max_queue_depth:
+        return AdmissionResult(
+            accepted=False,
+            reason="QUEUE_SATURATED",
+            retry_after_ms=15000,
+        )
+    return AdmissionResult(accepted=True)</code></pre></div>
+          <p>That error is useful. The model can defer, summarize the overload, or choose a cheaper fallback path. An infinitely growing queue gives it nothing actionable.</p>
+
+          <h3>3) Use worker leases so stalled jobs do not pin capacity forever</h3>
+          <p>A worker should lease a slot, renew it while healthy, and release it decisively when the process crashes or times out.</p>
+          <div class="code-block"><pre><code>create table tool_leases (
+  lease_id text primary key,
+  tool_name text not null,
+  job_id text not null,
+  expires_at timestamptz not null,
+  heartbeat_at timestamptz not null
+);
+
+-- reclaim expired slots
+select lease_id, job_id
+from tool_leases
+where expires_at &lt; now();</code></pre></div>
+          <p>Without leases, concurrency caps drift upward in practice because dead workers still count and operators start overriding limits manually. That is exactly the kind of reliability debt agent platforms accumulate.</p>
+
+          <h3>4) Reduce concurrency when latency spikes, not just when requests fail</h3>
+          <p>Waiting for outright failure is too late. If p95 latency doubles, you should shrink the active worker count before the queue turns toxic.</p>
+          <div class="code-block"><pre><code>def next_concurrency(current: int, p95_ms: int, error_rate: float) -> int:
+    if error_rate &gt; 0.1:
+        return max(1, current // 2)
+    if p95_ms &gt; 4000:
+        return max(1, current - 2)
+    if p95_ms &lt; 1200 and error_rate &lt; 0.02:
+        return min(current + 1, 16)
+    return current</code></pre></div>
+          <p>This does not need to be fancy. Simple additive increase and conservative decrease already beats leave the worker pool at 20 and hope the API forgives us.</p>
+
+          <h2>Terminal output I actually want</h2>
+          <div class="code-block"><pre><code>tool=github queue_depth=119/120 active_workers=8/8 p95_ms=4820 error_rate=0.03
+admission=reject reason=QUEUE_SATURATED retry_after_ms=15000
+controller_action=decrease_concurrency new_limit=6
+shed_low_priority=true</code></pre></div>
+
+          <h2>Comparison table</h2>
+          <div class="table-wrap"><table>
+            <thead><tr><th>Pattern</th><th>Works well for</th><th>Upside</th><th>Downside</th></tr></thead>
+            <tbody>
+              <tr><td>Unbounded queue + fixed workers</td><td>Toy demos</td><td>Easy to ship</td><td>Turns slow tools into backlog explosions</td></tr>
+              <tr><td>Bounded queue + fixed workers</td><td>Small stable workloads</td><td>Predictable failure mode</td><td>Still sluggish during latency spikes</td></tr>
+              <tr><td>Bounded queue + adaptive workers</td><td>Mixed production workloads</td><td>Better survival under bursty load</td><td>Needs metrics and sane control logic</td></tr>
+              <tr><td>Manual operator throttling</td><td>Rare high-risk systems</td><td>Maximum human oversight</td><td>Too slow for routine agent bursts</td></tr>
+            </tbody>
+          </table></div>
+
+          <h2>What went wrong and the tradeoffs</h2>
+          <p>The first bad pattern is overvaluing throughput. Teams see an idle model fleet and assume the bottleneck must be more parallelism. Usually the real bottleneck is a fragile tool dependency that never asked for forty concurrent callers.</p>
+          <p>The second bad pattern is retrying inside the worker while holding the slot. That makes every slow call occupy scarce capacity for longer and starves fresh work that might actually succeed.</p>
+          <ul>
+            <li><strong>Tight caps</strong> protect dependencies but may increase visible deferrals.</li>
+            <li><strong>Loose caps</strong> improve best-case latency but make tail events much uglier.</li>
+            <li><strong>Priority queues</strong> help urgent work, but only if low-priority work can actually be dropped.</li>
+          </ul>
+          <div class="callout warn"><strong>Pitfall</strong><p>Queued jobs should not outlive the approval, browser state, or user intent they depended on. If TTLs are missing, the system starts doing technically correct but contextually wrong work.</p></div>
+
+          <h3>Failure modes worth planning for</h3>
+          <ul>
+            <li><strong>Retry storms:</strong> every timed-out worker retries together and multiplies pressure.</li>
+            <li><strong>Zombie slots:</strong> crashed workers never release browser or sandbox capacity.</li>
+            <li><strong>Stale work:</strong> queued jobs outlive the context or approval they depended on.</li>
+            <li><strong>Cross-tool contagion:</strong> one slow dependency steals workers from unrelated tools because the scheduler is shared.</li>
+          </ul>
+
+          <h2>Best-practices checklist</h2>
+          <ul>
+            <li>[ ] Every tool has a queue depth limit and a concurrency cap.</li>
+            <li>[ ] Admission rejection is explicit, structured, and visible to the model and operator.</li>
+            <li>[ ] Jobs carry TTLs so stale work expires instead of executing late.</li>
+            <li>[ ] Worker slots are lease-based and reclaimable after crashes.</li>
+            <li>[ ] Concurrency reacts to latency, not just hard failures.</li>
+            <li>[ ] Low-priority work can be shed before critical work is impacted.</li>
+            <li>[ ] Retry policy is outside the worker hot path when possible.</li>
+            <li>[ ] Metrics include queue depth, wait time, active slots, p95 latency, and shed counts.</li>
+          </ul>
+
+          <h2>What I would do again</h2>
+          <ol>
+            <li>Start with smaller worker caps than you think you need.</li>
+            <li>Add overload responses that the agent can reason about instead of generic failures.</li>
+            <li>Expire queued jobs aggressively when the user context is no longer fresh.</li>
+            <li>Keep per-tool controls separate even if the infrastructure is shared.</li>
+          </ol>
+
+          <h2>Conclusion</h2>
+          <p>Agent systems need pressure relief valves just as much as APIs do. Once you bound queues, cap concurrency, and shed load on purpose, the system stops pretending every job can run right now and starts acting like reliable software.</p>
+
+          <h2>References</h2>
+          <ul>
+            <li><a href="https://sre.google/sre-book/handling-overload/">Google SRE Book, Handling Overload</a></li>
+            <li><a href="https://aws.amazon.com/builders-library/timeouts-retries-and-backoff-with-jitter/">AWS Builders Library, Timeouts, retries, and backoff</a></li>
+            <li><a href="https://stripe.com/docs/api/idempotent_requests">Stripe on idempotent requests</a></li>
+          </ul>
+
+          <div class="blog-post-tags"><span class="blog-post-tag">AI Agents</span><span class="blog-post-tag">Concurrency</span><span class="blog-post-tag">Queues</span><span class="blog-post-tag">Reliability</span><span class="blog-post-tag">Backpressure</span></div>
+        </div>
+        <div class="blog-footer"><p><a href="index.html">Browse more posts</a></p></div>
+      </div>
+    </header>
+  </body>
+</html>
