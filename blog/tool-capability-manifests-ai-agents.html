@@ -1,0 +1,260 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="A practical guide to tool capability manifests for AI agents using side-effect metadata, cost hints, auth lanes, and planner scoring so agents choose safer and cheaper tools on purpose.">
+    <meta name="author" content="Anirudh Negi">
+    <title>Tool Capability Manifests for AI Agents That Need to Pick the Right Tool | Anirudh Negi</title>
+    <link rel="icon" type="image/svg+xml" href="../images/favicon.svg">
+    <link rel="canonical" href="https://negiadventures.github.io/blog/tool-capability-manifests-ai-agents.html">
+    <meta property="og:type" content="article">
+    <meta property="og:url" content="https://negiadventures.github.io/blog/tool-capability-manifests-ai-agents.html">
+    <meta property="og:title" content="Tool Capability Manifests for AI Agents That Need to Pick the Right Tool | Anirudh Negi">
+    <meta property="og:description" content="A practical guide to tool capability manifests for AI agents using side-effect metadata, cost hints, auth lanes, and planner scoring so agents choose safer and cheaper tools on purpose.">
+    <meta property="og:image" content="data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%27%20viewBox%3D%270%200%201200%20630%27%3E%0A%3Cdefs%3E%0A%20%20%3ClinearGradient%20id%3D%27bg%27%20x1%3D%270%27%20x2%3D%271%27%20y1%3D%270%27%20y2%3D%271%27%3E%0A%20%20%20%20%3Cstop%20offset%3D%270%25%27%20stop-color%3D%27%2307121d%27%2F%3E%0A%20%20%20%20%3Cstop%20offset%3D%27100%25%27%20stop-color%3D%27%2318385d%27%2F%3E%0A%20%20%3C%2FlinearGradient%3E%0A%3C%2Fdefs%3E%0A%3Crect%20width%3D%271200%27%20height%3D%27630%27%20fill%3D%27url%28%23bg%29%27%2F%3E%0A%3Ccircle%20cx%3D%271018%27%20cy%3D%27110%27%20r%3D%27172%27%20fill%3D%27%2322d3ee%27%20fill-opacity%3D%270.14%27%2F%3E%0A%3Ccircle%20cx%3D%27186%27%20cy%3D%27516%27%20r%3D%27214%27%20fill%3D%27%238b5cf6%27%20fill-opacity%3D%270.16%27%2F%3E%0A%3Crect%20x%3D%2782%27%20y%3D%2784%27%20width%3D%271036%27%20height%3D%27462%27%20rx%3D%2732%27%20fill%3D%27%230b1220%27%20stroke%3D%27%2338bdf8%27%20stroke-opacity%3D%270.35%27%2F%3E%0A%3Ctext%20x%3D%27132%27%20y%3D%27172%27%20fill%3D%27white%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2742%27%20font-weight%3D%27700%27%3ETool%20Capability%20Manifests%20for%20AI%20Agents%3C%2Ftext%3E%0A%3Ctext%20x%3D%27132%27%20y%3D%27238%27%20fill%3D%27%2393c5fd%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2742%27%20font-weight%3D%27700%27%3EThat%20Need%20to%20Pick%20the%20Right%20Tool%3C%2Ftext%3E%0A%3Ctext%20x%3D%27132%27%20y%3D%27314%27%20fill%3D%27%23cbd5e1%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2728%27%3EDescribe%20side%20effects%2C%20auth%2C%20cost%2C%20latency%2C%20and%20rollback%20hints%20so%20the%20planner%3C%2Ftext%3E%0A%3Ctext%20x%3D%27132%27%20y%3D%27350%27%20fill%3D%27%23cbd5e1%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2728%27%3Estops%20treating%20every%20tool%20call%20like%20a%20free%20autocomplete%3C%2Ftext%3E%0A%3Crect%20x%3D%27132%27%20y%3D%27394%27%20width%3D%27360%27%20height%3D%2754%27%20rx%3D%2714%27%20fill%3D%27%23111c2d%27%20stroke%3D%27%2367e8f9%27%20stroke-opacity%3D%270.45%27%2F%3E%0A%3Ctext%20x%3D%27156%27%20y%3D%27429%27%20fill%3D%27%2367e8f9%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2724%27%3Ebetter%20metadata%20makes%20safer%20planners%3C%2Ftext%3E%0A%3Crect%20x%3D%27770%27%20y%3D%27176%27%20width%3D%27252%27%20height%3D%2756%27%20rx%3D%2714%27%20fill%3D%27%230d1728%27%20stroke%3D%27%2322d3ee%27%20stroke-opacity%3D%270.45%27%2F%3E%0A%3Ctext%20x%3D%27810%27%20y%3D%27212%27%20fill%3D%27%23bae6fd%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2723%27%3Eside%20effects%3C%2Ftext%3E%0A%3Crect%20x%3D%27770%27%20y%3D%27274%27%20width%3D%27252%27%20height%3D%2756%27%20rx%3D%2714%27%20fill%3D%27%230d1728%27%20stroke%3D%27%2322d3ee%27%20stroke-opacity%3D%270.45%27%2F%3E%0A%3Ctext%20x%3D%27824%27%20y%3D%27310%27%20fill%3D%27%23bae6fd%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2723%27%3Ecost%20lane%3C%2Ftext%3E%0A%3Crect%20x%3D%27770%27%20y%3D%27372%27%20width%3D%27252%27%20height%3D%2756%27%20rx%3D%2714%27%20fill%3D%27%230d1728%27%20stroke%3D%27%23a78bfa%27%20stroke-opacity%3D%270.45%27%2F%3E%0A%3Ctext%20x%3D%27800%27%20y%3D%27408%27%20fill%3D%27%23ddd6fe%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2723%27%3Erollback%20hint%3C%2Ftext%3E%0A%3C%2Fsvg%3E">
+    <meta property="article:published_time" content="2026-05-17">
+    <meta property="article:author" content="Anirudh Negi">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:url" content="https://negiadventures.github.io/blog/tool-capability-manifests-ai-agents.html">
+    <meta name="twitter:title" content="Tool Capability Manifests for AI Agents That Need to Pick the Right Tool | Anirudh Negi">
+    <meta name="twitter:description" content="A practical guide to tool capability manifests for AI agents using side-effect metadata, cost hints, auth lanes, and planner scoring so agents choose safer and cheaper tools on purpose.">
+    <meta name="twitter:image" content="data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%27%20viewBox%3D%270%200%201200%20630%27%3E%0A%3Cdefs%3E%0A%20%20%3ClinearGradient%20id%3D%27bg%27%20x1%3D%270%27%20x2%3D%271%27%20y1%3D%270%27%20y2%3D%271%27%3E%0A%20%20%20%20%3Cstop%20offset%3D%270%25%27%20stop-color%3D%27%2307121d%27%2F%3E%0A%20%20%20%20%3Cstop%20offset%3D%27100%25%27%20stop-color%3D%27%2318385d%27%2F%3E%0A%20%20%3C%2FlinearGradient%3E%0A%3C%2Fdefs%3E%0A%3Crect%20width%3D%271200%27%20height%3D%27630%27%20fill%3D%27url%28%23bg%29%27%2F%3E%0A%3Ccircle%20cx%3D%271018%27%20cy%3D%27110%27%20r%3D%27172%27%20fill%3D%27%2322d3ee%27%20fill-opacity%3D%270.14%27%2F%3E%0A%3Ccircle%20cx%3D%27186%27%20cy%3D%27516%27%20r%3D%27214%27%20fill%3D%27%238b5cf6%27%20fill-opacity%3D%270.16%27%2F%3E%0A%3Crect%20x%3D%2782%27%20y%3D%2784%27%20width%3D%271036%27%20height%3D%27462%27%20rx%3D%2732%27%20fill%3D%27%230b1220%27%20stroke%3D%27%2338bdf8%27%20stroke-opacity%3D%270.35%27%2F%3E%0A%3Ctext%20x%3D%27132%27%20y%3D%27172%27%20fill%3D%27white%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2742%27%20font-weight%3D%27700%27%3ETool%20Capability%20Manifests%20for%20AI%20Agents%3C%2Ftext%3E%0A%3Ctext%20x%3D%27132%27%20y%3D%27238%27%20fill%3D%27%2393c5fd%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2742%27%20font-weight%3D%27700%27%3EThat%20Need%20to%20Pick%20the%20Right%20Tool%3C%2Ftext%3E%0A%3Ctext%20x%3D%27132%27%20y%3D%27314%27%20fill%3D%27%23cbd5e1%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2728%27%3EDescribe%20side%20effects%2C%20auth%2C%20cost%2C%20latency%2C%20and%20rollback%20hints%20so%20the%20planner%3C%2Ftext%3E%0A%3Ctext%20x%3D%27132%27%20y%3D%27350%27%20fill%3D%27%23cbd5e1%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2728%27%3Estops%20treating%20every%20tool%20call%20like%20a%20free%20autocomplete%3C%2Ftext%3E%0A%3Crect%20x%3D%27132%27%20y%3D%27394%27%20width%3D%27360%27%20height%3D%2754%27%20rx%3D%2714%27%20fill%3D%27%23111c2d%27%20stroke%3D%27%2367e8f9%27%20stroke-opacity%3D%270.45%27%2F%3E%0A%3Ctext%20x%3D%27156%27%20y%3D%27429%27%20fill%3D%27%2367e8f9%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2724%27%3Ebetter%20metadata%20makes%20safer%20planners%3C%2Ftext%3E%0A%3Crect%20x%3D%27770%27%20y%3D%27176%27%20width%3D%27252%27%20height%3D%2756%27%20rx%3D%2714%27%20fill%3D%27%230d1728%27%20stroke%3D%27%2322d3ee%27%20stroke-opacity%3D%270.45%27%2F%3E%0A%3Ctext%20x%3D%27810%27%20y%3D%27212%27%20fill%3D%27%23bae6fd%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2723%27%3Eside%20effects%3C%2Ftext%3E%0A%3Crect%20x%3D%27770%27%20y%3D%27274%27%20width%3D%27252%27%20height%3D%2756%27%20rx%3D%2714%27%20fill%3D%27%230d1728%27%20stroke%3D%27%2322d3ee%27%20stroke-opacity%3D%270.45%27%2F%3E%0A%3Ctext%20x%3D%27824%27%20y%3D%27310%27%20fill%3D%27%23bae6fd%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2723%27%3Ecost%20lane%3C%2Ftext%3E%0A%3Crect%20x%3D%27770%27%20y%3D%27372%27%20width%3D%27252%27%20height%3D%2756%27%20rx%3D%2714%27%20fill%3D%27%230d1728%27%20stroke%3D%27%23a78bfa%27%20stroke-opacity%3D%270.45%27%2F%3E%0A%3Ctext%20x%3D%27800%27%20y%3D%27408%27%20fill%3D%27%23ddd6fe%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2723%27%3Erollback%20hint%3C%2Ftext%3E%0A%3C%2Fsvg%3E">
+    <script type="application/ld+json">{
+      "@context": "https://schema.org",
+      "@type": "BlogPosting",
+      "headline": "Tool Capability Manifests for AI Agents That Need to Pick the Right Tool",
+      "description": "A practical guide to tool capability manifests for AI agents using side-effect metadata, cost hints, auth lanes, and planner scoring so agents choose safer and cheaper tools on purpose.",
+      "image": "data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%27%20viewBox%3D%270%200%201200%20630%27%3E%0A%3Cdefs%3E%0A%20%20%3ClinearGradient%20id%3D%27bg%27%20x1%3D%270%27%20x2%3D%271%27%20y1%3D%270%27%20y2%3D%271%27%3E%0A%20%20%20%20%3Cstop%20offset%3D%270%25%27%20stop-color%3D%27%2307121d%27%2F%3E%0A%20%20%20%20%3Cstop%20offset%3D%27100%25%27%20stop-color%3D%27%2318385d%27%2F%3E%0A%20%20%3C%2FlinearGradient%3E%0A%3C%2Fdefs%3E%0A%3Crect%20width%3D%271200%27%20height%3D%27630%27%20fill%3D%27url%28%23bg%29%27%2F%3E%0A%3Ccircle%20cx%3D%271018%27%20cy%3D%27110%27%20r%3D%27172%27%20fill%3D%27%2322d3ee%27%20fill-opacity%3D%270.14%27%2F%3E%0A%3Ccircle%20cx%3D%27186%27%20cy%3D%27516%27%20r%3D%27214%27%20fill%3D%27%238b5cf6%27%20fill-opacity%3D%270.16%27%2F%3E%0A%3Crect%20x%3D%2782%27%20y%3D%2784%27%20width%3D%271036%27%20height%3D%27462%27%20rx%3D%2732%27%20fill%3D%27%230b1220%27%20stroke%3D%27%2338bdf8%27%20stroke-opacity%3D%270.35%27%2F%3E%0A%3Ctext%20x%3D%27132%27%20y%3D%27172%27%20fill%3D%27white%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2742%27%20font-weight%3D%27700%27%3ETool%20Capability%20Manifests%20for%20AI%20Agents%3C%2Ftext%3E%0A%3Ctext%20x%3D%27132%27%20y%3D%27238%27%20fill%3D%27%2393c5fd%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2742%27%20font-weight%3D%27700%27%3EThat%20Need%20to%20Pick%20the%20Right%20Tool%3C%2Ftext%3E%0A%3Ctext%20x%3D%27132%27%20y%3D%27314%27%20fill%3D%27%23cbd5e1%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2728%27%3EDescribe%20side%20effects%2C%20auth%2C%20cost%2C%20latency%2C%20and%20rollback%20hints%20so%20the%20planner%3C%2Ftext%3E%0A%3Ctext%20x%3D%27132%27%20y%3D%27350%27%20fill%3D%27%23cbd5e1%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2728%27%3Estops%20treating%20every%20tool%20call%20like%20a%20free%20autocomplete%3C%2Ftext%3E%0A%3Crect%20x%3D%27132%27%20y%3D%27394%27%20width%3D%27360%27%20height%3D%2754%27%20rx%3D%2714%27%20fill%3D%27%23111c2d%27%20stroke%3D%27%2367e8f9%27%20stroke-opacity%3D%270.45%27%2F%3E%0A%3Ctext%20x%3D%27156%27%20y%3D%27429%27%20fill%3D%27%2367e8f9%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2724%27%3Ebetter%20metadata%20makes%20safer%20planners%3C%2Ftext%3E%0A%3Crect%20x%3D%27770%27%20y%3D%27176%27%20width%3D%27252%27%20height%3D%2756%27%20rx%3D%2714%27%20fill%3D%27%230d1728%27%20stroke%3D%27%2322d3ee%27%20stroke-opacity%3D%270.45%27%2F%3E%0A%3Ctext%20x%3D%27810%27%20y%3D%27212%27%20fill%3D%27%23bae6fd%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2723%27%3Eside%20effects%3C%2Ftext%3E%0A%3Crect%20x%3D%27770%27%20y%3D%27274%27%20width%3D%27252%27%20height%3D%2756%27%20rx%3D%2714%27%20fill%3D%27%230d1728%27%20stroke%3D%27%2322d3ee%27%20stroke-opacity%3D%270.45%27%2F%3E%0A%3Ctext%20x%3D%27824%27%20y%3D%27310%27%20fill%3D%27%23bae6fd%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2723%27%3Ecost%20lane%3C%2Ftext%3E%0A%3Crect%20x%3D%27770%27%20y%3D%27372%27%20width%3D%27252%27%20height%3D%2756%27%20rx%3D%2714%27%20fill%3D%27%230d1728%27%20stroke%3D%27%23a78bfa%27%20stroke-opacity%3D%270.45%27%2F%3E%0A%3Ctext%20x%3D%27800%27%20y%3D%27408%27%20fill%3D%27%23ddd6fe%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2723%27%3Erollback%20hint%3C%2Ftext%3E%0A%3C%2Fsvg%3E",
+      "url": "https://negiadventures.github.io/blog/tool-capability-manifests-ai-agents.html",
+      "datePublished": "2026-05-17",
+      "author": {
+        "@type": "Person",
+        "name": "Anirudh Negi",
+        "url": "https://negiadventures.github.io"
+      },
+      "publisher": {
+        "@type": "Person",
+        "name": "Anirudh Negi",
+        "url": "https://negiadventures.github.io"
+      }
+    }</script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../stylesheets/stylesheet.css?v=5" media="screen">
+    <style>
+      .blog-post { max-width: 860px; margin: 0 auto; padding: 60px 20px; }
+      .blog-post-header { margin-bottom: 40px; }
+      .blog-post-nav { margin-bottom: 30px; }
+      .blog-post-nav a { color: var(--accent-strong); font-size: 0.95rem; }
+      .blog-post-nav a:hover { color: var(--accent); }
+      .blog-post-title { font-size: 2.5rem; margin-bottom: 16px; }
+      .blog-post-meta { display: flex; gap: 20px; color: var(--text-muted); font-size: 0.95rem; margin-bottom: 30px; flex-wrap: wrap; }
+      .blog-post-image { width: 100%; height: 320px; object-fit: cover; border-radius: 16px; margin-bottom: 30px; border: 1px solid var(--border); }
+      .blog-post-content h2 { font-size: 1.6rem; margin-top: 40px; margin-bottom: 16px; color: var(--text-light); }
+      .blog-post-content h3 { font-size: 1.25rem; margin-top: 28px; margin-bottom: 12px; color: var(--text-light); }
+      .blog-post-content p, .blog-post-content li { line-height: 1.8; color: var(--text-muted); }
+      .blog-post-content p { margin-bottom: 16px; }
+      .blog-post-content ul, .blog-post-content ol { margin-bottom: 20px; padding-left: 24px; }
+      .code-block { background: var(--bg-alt); border: 1px solid var(--border); border-radius: 12px; padding: 20px; margin: 20px 0; overflow-x: auto; }
+      .code-block pre { margin: 0; font-family: var(--mono); font-size: 0.9rem; line-height: 1.65; color: var(--text-light); }
+      .code-block code { color: var(--accent-strong); }
+      .callout { border-radius: 14px; padding: 18px 20px; margin: 22px 0; border: 1px solid var(--border); }
+      .callout p:last-child { margin-bottom: 0; }
+      .callout-warning { background: rgba(251, 191, 36, 0.08); border-color: rgba(251, 191, 36, 0.3); }
+      .callout-best { background: rgba(34, 211, 238, 0.08); border-color: rgba(34, 211, 238, 0.28); }
+      .comparison-table { width: 100%; border-collapse: collapse; margin: 24px 0; font-size: 0.95rem; }
+      .comparison-table th, .comparison-table td { border: 1px solid var(--border); padding: 14px; text-align: left; vertical-align: top; }
+      .comparison-table th { color: var(--text-light); background: var(--bg-alt); }
+      .blog-post-tags { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 40px; padding-top: 30px; border-top: 1px solid var(--border); }
+      .blog-post-tag { background: var(--accent-soft); color: var(--accent-strong); border-radius: 999px; padding: 6px 14px; font-size: 0.85rem; font-family: var(--mono); border: 1px solid transparent; }
+      .blog-footer { margin-top: 60px; padding-top: 30px; border-top: 1px solid var(--border); text-align: center; }
+      .blog-footer a { color: var(--accent-strong); }
+      @media (max-width: 768px) { .blog-post { padding: 40px 16px; } .blog-post-title { font-size: 2rem; } .blog-post-image { height: 220px; } }
+    </style>
+  </head>
+  <body>
+    <a href="../index.html#main" class="skip-link">Skip to main content</a>
+    <header class="site-header">
+      <div class="container blog-post">
+        <div class="blog-post-nav"><a href="index.html">&larr; Back to All Posts</a></div>
+        <div class="blog-post-header">
+          <h1 class="blog-post-title">Tool Capability Manifests for AI Agents That Need to Pick the Right Tool</h1>
+          <div class="blog-post-meta"><span>May 17, 2026</span><span>&bull;</span><span>11 min read</span></div>
+          <img src="data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%27%20viewBox%3D%270%200%201200%20630%27%3E%0A%3Cdefs%3E%0A%20%20%3ClinearGradient%20id%3D%27bg%27%20x1%3D%270%27%20x2%3D%271%27%20y1%3D%270%27%20y2%3D%271%27%3E%0A%20%20%20%20%3Cstop%20offset%3D%270%25%27%20stop-color%3D%27%2307121d%27%2F%3E%0A%20%20%20%20%3Cstop%20offset%3D%27100%25%27%20stop-color%3D%27%2318385d%27%2F%3E%0A%20%20%3C%2FlinearGradient%3E%0A%3C%2Fdefs%3E%0A%3Crect%20width%3D%271200%27%20height%3D%27630%27%20fill%3D%27url%28%23bg%29%27%2F%3E%0A%3Ccircle%20cx%3D%271018%27%20cy%3D%27110%27%20r%3D%27172%27%20fill%3D%27%2322d3ee%27%20fill-opacity%3D%270.14%27%2F%3E%0A%3Ccircle%20cx%3D%27186%27%20cy%3D%27516%27%20r%3D%27214%27%20fill%3D%27%238b5cf6%27%20fill-opacity%3D%270.16%27%2F%3E%0A%3Crect%20x%3D%2782%27%20y%3D%2784%27%20width%3D%271036%27%20height%3D%27462%27%20rx%3D%2732%27%20fill%3D%27%230b1220%27%20stroke%3D%27%2338bdf8%27%20stroke-opacity%3D%270.35%27%2F%3E%0A%3Ctext%20x%3D%27132%27%20y%3D%27172%27%20fill%3D%27white%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2742%27%20font-weight%3D%27700%27%3ETool%20Capability%20Manifests%20for%20AI%20Agents%3C%2Ftext%3E%0A%3Ctext%20x%3D%27132%27%20y%3D%27238%27%20fill%3D%27%2393c5fd%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2742%27%20font-weight%3D%27700%27%3EThat%20Need%20to%20Pick%20the%20Right%20Tool%3C%2Ftext%3E%0A%3Ctext%20x%3D%27132%27%20y%3D%27314%27%20fill%3D%27%23cbd5e1%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2728%27%3EDescribe%20side%20effects%2C%20auth%2C%20cost%2C%20latency%2C%20and%20rollback%20hints%20so%20the%20planner%3C%2Ftext%3E%0A%3Ctext%20x%3D%27132%27%20y%3D%27350%27%20fill%3D%27%23cbd5e1%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2728%27%3Estops%20treating%20every%20tool%20call%20like%20a%20free%20autocomplete%3C%2Ftext%3E%0A%3Crect%20x%3D%27132%27%20y%3D%27394%27%20width%3D%27360%27%20height%3D%2754%27%20rx%3D%2714%27%20fill%3D%27%23111c2d%27%20stroke%3D%27%2367e8f9%27%20stroke-opacity%3D%270.45%27%2F%3E%0A%3Ctext%20x%3D%27156%27%20y%3D%27429%27%20fill%3D%27%2367e8f9%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2724%27%3Ebetter%20metadata%20makes%20safer%20planners%3C%2Ftext%3E%0A%3Crect%20x%3D%27770%27%20y%3D%27176%27%20width%3D%27252%27%20height%3D%2756%27%20rx%3D%2714%27%20fill%3D%27%230d1728%27%20stroke%3D%27%2322d3ee%27%20stroke-opacity%3D%270.45%27%2F%3E%0A%3Ctext%20x%3D%27810%27%20y%3D%27212%27%20fill%3D%27%23bae6fd%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2723%27%3Eside%20effects%3C%2Ftext%3E%0A%3Crect%20x%3D%27770%27%20y%3D%27274%27%20width%3D%27252%27%20height%3D%2756%27%20rx%3D%2714%27%20fill%3D%27%230d1728%27%20stroke%3D%27%2322d3ee%27%20stroke-opacity%3D%270.45%27%2F%3E%0A%3Ctext%20x%3D%27824%27%20y%3D%27310%27%20fill%3D%27%23bae6fd%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2723%27%3Ecost%20lane%3C%2Ftext%3E%0A%3Crect%20x%3D%27770%27%20y%3D%27372%27%20width%3D%27252%27%20height%3D%2756%27%20rx%3D%2714%27%20fill%3D%27%230d1728%27%20stroke%3D%27%23a78bfa%27%20stroke-opacity%3D%270.45%27%2F%3E%0A%3Ctext%20x%3D%27800%27%20y%3D%27408%27%20fill%3D%27%23ddd6fe%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2723%27%3Erollback%20hint%3C%2Ftext%3E%0A%3C%2Fsvg%3E" alt="Tool Capability Manifests for AI Agents That Need to Pick the Right Tool" class="blog-post-image">
+        </div>
+        <div class="blog-post-content">
+          <p>Agents get weird when every tool looks equally safe.</p>
+          <p>That is the real failure mode behind a lot of bad tool decisions. A planner sees two options, both described with a name, a schema, and a happy-path description, then reaches for the tool that looks most directly useful.</p>
+          <p>What it usually cannot see is that one call is read-only and cheap while the other spends money, mutates state, pages production, or leaves a messy rollback path. This post is about fixing that missing layer with capability manifests.</p>
+
+          <h2>Why this matters</h2>
+          <p>Schema validation tells you whether a tool call is well formed. It does not tell you whether the tool call is wise.</p>
+          <p>That difference becomes expensive the moment an agent can touch GitHub, cloud APIs, incident tooling, or customer-facing systems. If the planner has no explicit capability metadata, it will overvalue the shortest path to an answer.</p>
+          <ul>
+            <li>expensive tools get used for cheap questions</li>
+            <li>write tools get used where read tools would have been enough</li>
+            <li>rollback paths are discovered after the fact</li>
+            <li>reviewers cannot tell whether the tool catalog is actually safe</li>
+          </ul>
+
+          <h2>Architecture or workflow overview</h2>
+          <div class="code-block"><pre><code>flowchart TD
+    A[User task] --&gt; B[Planner]
+    B --&gt; C[Capability manifest registry]
+    C --&gt; D{{Score candidates}}
+    D --&gt;|low risk, cheap, read only| E[Call tool directly]
+    D --&gt;|write or high blast radius| F[Ask for approval or pick safer alternative]
+    E --&gt; G[Trace result with manifest metadata]
+    F --&gt; G
+    G --&gt; H[Memory, audit, retry policy]</code></pre></div>
+          <p>A practical manifest registry usually sits next to the tool adapter layer, not inside the prompt alone. That lets the same metadata drive planning, approval gating, tracing, and incident review.</p>
+
+          <h2>Implementation details</h2>
+          <h3>1) Define manifests with decision-grade metadata</h3>
+          <p>I keep tool input schemas separate from operational metadata. The planner needs both, but they answer different questions.</p>
+          <div class="code-block"><pre><code>name: github.create_pull_request
+summary: Open a pull request in GitHub for an already-pushed branch
+inputSchemaRef: ./schemas/github.create_pull_request.json
+capabilities:
+  mode: write
+  sideEffects:
+    external: true
+    reversible: partial
+    rollbackHint: close_pr_and_revert_branch
+  auth:
+    scope: repo
+    humanApprovalRequired: true
+  cost:
+    lane: low
+    estimatedDollars: 0.00
+  latency:
+    p50Ms: 900
+    p95Ms: 2600
+  reliability:
+    idempotent: false
+    retryClass: guarded
+  observability:
+    emitTraceAttrs:
+      - repo
+      - baseBranch
+      - headBranch
+  alternatives:
+    - github.diff_branch
+    - github.draft_pr_summary</code></pre></div>
+          <p>The exact field names matter less than the discipline. Side effects, approval needs, reversibility, and retry class should not live as tribal knowledge.</p>
+
+          <h3>2) Score candidates before the model commits</h3>
+          <p>A small deterministic layer helps more than endlessly rewriting the planner prompt.</p>
+          <div class="code-block"><pre><code>interface ToolCandidate {
+  name: string;
+  semanticFit: number;
+  capability: {
+    mode: 'read' | 'write';
+    approvalRequired: boolean;
+    estimatedDollars: number;
+    p95Ms: number;
+    reversible: 'full' | 'partial' | 'none';
+  };
+}
+
+export function scoreTool(candidate: ToolCandidate, taskRisk: number) {
+  let score = candidate.semanticFit * 100;
+
+  if (candidate.capability.mode === 'write') score -= 18;
+  if (candidate.capability.approvalRequired) score -= 10;
+  if (candidate.capability.estimatedDollars &gt; 0.10) score -= 8;
+  if (candidate.capability.p95Ms &gt; 3000) score -= 6;
+  if (candidate.capability.reversible === 'none') score -= 12;
+
+  score -= taskRisk * 5;
+  return score;
+}</code></pre></div>
+          <p>This does not replace the model. It narrows the menu so the model stops picking tools that are technically valid but operationally dumb.</p>
+
+          <h3>3) Push manifest metadata into tracing and review</h3>
+          <div class="code-block"><pre><code>{
+  "trace_id": "3c8df2f9f2f64b5a",
+  "tool": "github.create_pull_request",
+  "tool_mode": "write",
+  "approval_required": true,
+  "retry_class": "guarded",
+  "estimated_dollars": 0.0,
+  "rollback_hint": "close_pr_and_revert_branch",
+  "selected_over": [
+    "github.diff_branch",
+    "github.draft_pr_summary"
+  ]
+}</code></pre></div>
+          <p>This is the part teams usually skip, and it is why later postmortems turn into guesswork. Good manifest data should survive past planning and stay visible in traces and approvals.</p>
+
+          <h2>What went wrong and the tradeoffs</h2>
+          <h3>Failure mode 1, the manifest turns into a stale wiki</h3>
+          <p>If manifests live only in docs, people stop updating them. Nothing breaks until a planner makes the wrong call in production.</p>
+          <div class="callout callout-best"><p><strong>Best practice:</strong> fail CI when a tool changes retry policy, auth scope, or side-effect lane without a corresponding manifest update.</p></div>
+
+          <h3>Failure mode 2, everything gets labeled high risk</h3>
+          <p>That keeps you safe for a week, then destroys tool selection quality because the planner cannot see meaningful gradients.</p>
+          <table class="comparison-table">
+            <thead>
+              <tr><th>Approach</th><th>Benefit</th><th>Cost</th><th>When I would use it</th></tr>
+            </thead>
+            <tbody>
+              <tr><td>Coarse risk labels only</td><td>Fast to launch</td><td>Too much ambiguity</td><td>Tiny catalogs with few write tools</td></tr>
+              <tr><td>Full capability manifests</td><td>Best planner quality and auditability</td><td>More maintenance</td><td>Shared agent platforms</td></tr>
+              <tr><td>Human-written per-task overrides</td><td>Precise for sensitive flows</td><td>Hard to scale</td><td>Deployments, finance, paging</td></tr>
+            </tbody>
+          </table>
+
+          <h3>Failure mode 3, side effects are hidden behind read tools</h3>
+          <p>This is the sneaky one. A tool might look informational but still mutate state through caching, analytics writes, or implicit server-side sessions.</p>
+          <div class="callout callout-warning"><p><strong>Pitfall:</strong> read-only should mean no user-visible or system-visible mutation worth auditing. If the backend writes durable state, label it honestly.</p></div>
+
+          <h3>Security and reliability concern</h3>
+          <p>Capability metadata is part of your trust boundary. If the model can rewrite the manifest, or if tool servers can self-report unchecked metadata at runtime, an attacker can downgrade a dangerous tool into a harmless-looking one.</p>
+          <ul>
+            <li>store manifests in reviewed code or signed registry data</li>
+            <li>validate them server-side before exposure to the planner</li>
+            <li>separate tool description text from enforcement policy</li>
+            <li>bind approval UI to the same manifest source the runtime enforces</li>
+          </ul>
+
+          <h2>Practical checklist</h2>
+          <ul>
+            <li>[ ] classify every tool as read, write, or mixed</li>
+            <li>[ ] document irreversible or partially reversible side effects</li>
+            <li>[ ] record auth scope and whether human approval is required</li>
+            <li>[ ] add rough latency and cost lanes, even if hand-estimated</li>
+            <li>[ ] define retry class, especially for non-idempotent tools</li>
+            <li>[ ] expose safer alternatives in the manifest for planner comparison</li>
+            <li>[ ] emit manifest fields into traces and approval screens</li>
+            <li>[ ] add CI checks so manifest drift is visible</li>
+          </ul>
+
+          <h2>Conclusion</h2>
+          <p>Tool schemas tell the agent how to call something. Capability manifests tell it whether calling that thing is a good idea.</p>
+          <p>If you want agents to make saner choices under cost, risk, and approval constraints, this is one of the highest-leverage layers you can add.</p>
+
+          <h2>References</h2>
+          <ul>
+            <li><a href="https://modelcontextprotocol.io">Model Context Protocol</a></li>
+            <li><a href="https://json-schema.org/">JSON Schema</a></li>
+            <li><a href="https://opentelemetry.io/docs/specs/semconv/">OpenTelemetry semantic conventions</a></li>
+            <li><a href="https://spec.openapis.org/oas/latest.html">OpenAPI Specification</a></li>
+          </ul>
+        </div>
+        <div class="blog-post-tags">
+          <span class="blog-post-tag">AI Agents</span>
+          <span class="blog-post-tag">MCP</span>
+          <span class="blog-post-tag">Tooling</span>
+          <span class="blog-post-tag">Reliability</span>
+          <span class="blog-post-tag">Architecture</span>
+        </div>
+        <div class="blog-footer">
+          <p><a href="index.html">Browse more posts</a></p>
+        </div>
+      </div>
+    </header>
+  </body>
+</html>

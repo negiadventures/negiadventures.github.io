@@ -1,6 +1,14 @@
 {
   "topics": [
     {
+      "date": "2026-05-17",
+      "skill": "Tool capability manifests for AI agents",
+      "topic": "Using reviewed capability manifests with side-effect metadata, approval hints, latency and cost lanes, and rollback signals so planners choose safer tools instead of treating every valid schema as equally cheap and reversible",
+      "slug": "tool-capability-manifests-ai-agents",
+      "title": "Tool Capability Manifests for AI Agents That Need to Pick the Right Tool",
+      "summary": "A practical guide to tool capability manifests for AI agents using side-effect metadata, cost hints, auth lanes, and planner scoring so planners stop treating every tool as equally safe, cheap, and reversible."
+    },
+    {
       "date": "2026-05-16",
       "skill": "Backpressure and concurrency control for AI agents",
       "topic": "Using per-tool queue budgets, adaptive concurrency caps, lease-based workers, and overload-aware admission so agent fleets stop amplifying one slow dependency into a self-inflicted outage",
