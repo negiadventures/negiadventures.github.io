@@ -1,6 +1,14 @@
 {
   "topics": [
     {
+      "date": "2026-05-18",
+      "skill": "MCP server versioning and compatibility contracts",
+      "topic": "Using explicit protocol lanes, capability negotiation, schema version pins, deprecation windows, and handshake tests so MCP servers can evolve without silently breaking agent clients, tool adapters, and approval flows",
+      "slug": "versioning-mcp-servers-compatibility-contracts",
+      "title": "Versioning MCP Servers Without Breaking Every Agent Client",
+      "summary": "A practical guide to versioning MCP servers with compatibility contracts, capability negotiation, deprecation windows, and handshake tests so MCP upgrades stay boring instead of turning into client roulette."
+    },
+    {
       "date": "2026-05-17",
       "skill": "Tool capability manifests for AI agents",
       "topic": "Using reviewed capability manifests with side-effect metadata, approval hints, latency and cost lanes, and rollback signals so planners choose safer tools instead of treating every valid schema as equally cheap and reversible",

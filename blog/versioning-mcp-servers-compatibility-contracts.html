@@ -1,0 +1,298 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="A practical guide to versioning MCP servers with capability negotiation, contract lanes, deprecation windows, and compatibility tests so one server upgrade does not break every agent client at once.">
+    <meta name="author" content="Anirudh Negi">
+    <title>Versioning MCP Servers Without Breaking Every Agent Client | Anirudh Negi</title>
+    <link rel="icon" type="image/svg+xml" href="../images/favicon.svg">
+    <link rel="canonical" href="https://negiadventures.github.io/blog/versioning-mcp-servers-compatibility-contracts.html">
+    <meta property="og:type" content="article">
+    <meta property="og:url" content="https://negiadventures.github.io/blog/versioning-mcp-servers-compatibility-contracts.html">
+    <meta property="og:title" content="Versioning MCP Servers Without Breaking Every Agent Client | Anirudh Negi">
+    <meta property="og:description" content="A practical guide to versioning MCP servers with capability negotiation, contract lanes, deprecation windows, and compatibility tests so one server upgrade does not break every agent client at once.">
+    <meta property="og:image" content="https://negiadventures.github.io/images/profile.jpg">
+    <meta property="article:published_time" content="2026-05-18">
+    <meta property="article:author" content="Anirudh Negi">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:url" content="https://negiadventures.github.io/blog/versioning-mcp-servers-compatibility-contracts.html">
+    <meta name="twitter:title" content="Versioning MCP Servers Without Breaking Every Agent Client | Anirudh Negi">
+    <meta name="twitter:description" content="A practical guide to versioning MCP servers with capability negotiation, contract lanes, deprecation windows, and compatibility tests so one server upgrade does not break every agent client at once.">
+    <meta name="twitter:image" content="https://negiadventures.github.io/images/profile.jpg">
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "BlogPosting",
+      "headline": "Versioning MCP Servers Without Breaking Every Agent Client",
+      "description": "A practical guide to versioning MCP servers with capability negotiation, contract lanes, deprecation windows, and compatibility tests so one server upgrade does not break every agent client at once.",
+      "image": "https://negiadventures.github.io/images/profile.jpg",
+      "url": "https://negiadventures.github.io/blog/versioning-mcp-servers-compatibility-contracts.html",
+      "datePublished": "2026-05-18",
+      "author": {
+        "@type": "Person",
+        "name": "Anirudh Negi",
+        "url": "https://negiadventures.github.io"
+      },
+      "publisher": {
+        "@type": "Person",
+        "name": "Anirudh Negi",
+        "url": "https://negiadventures.github.io"
+      },
+      "keywords": ["MCP", "AI Agents", "Compatibility", "Tooling", "Architecture"]
+    }
+    </script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../stylesheets/stylesheet.css?v=5" media="screen">
+    <style>
+      .blog-post { max-width: 800px; margin: 0 auto; padding: 60px 20px; }
+      .blog-post-header { margin-bottom: 40px; }
+      .blog-post-nav { margin-bottom: 30px; }
+      .blog-post-nav a { color: var(--accent-strong); font-size: 0.95rem; }
+      .blog-post-nav a:hover { color: var(--accent); }
+      .blog-post-title { font-size: 2.5rem; margin-bottom: 16px; }
+      .blog-post-meta { display: flex; gap: 20px; color: var(--text-muted); font-size: 0.95rem; margin-bottom: 30px; flex-wrap: wrap; }
+      .blog-post-image { width: 100%; height: 300px; object-fit: cover; border-radius: 16px; margin-bottom: 30px; border: 1px solid var(--border); background: var(--bg-alt); }
+      .blog-post-content h2 { font-size: 1.6rem; margin-top: 40px; margin-bottom: 16px; color: var(--text-light); }
+      .blog-post-content h3 { font-size: 1.3rem; margin-top: 30px; margin-bottom: 12px; color: var(--text-light); }
+      .blog-post-content p { line-height: 1.8; margin-bottom: 16px; color: var(--text-muted); }
+      .blog-post-content ul, .blog-post-content ol { line-height: 1.8; margin-bottom: 20px; color: var(--text-muted); padding-left: 24px; }
+      .blog-post-content li { margin-bottom: 8px; }
+      .code-block { background: var(--bg-alt); border: 1px solid var(--border); border-radius: 12px; padding: 20px; margin: 20px 0; overflow-x: auto; }
+      .code-block pre { margin: 0; font-family: var(--mono); font-size: 0.9rem; line-height: 1.6; color: var(--text-light); }
+      .code-block code { color: var(--accent-strong); }
+      .callout { border-radius: 14px; padding: 18px 20px; margin: 22px 0; border: 1px solid var(--border); background: rgba(34, 211, 238, 0.08); color: var(--text-muted); }
+      .callout strong { color: var(--text-light); }
+      .tradeoff-table { width: 100%; border-collapse: collapse; margin: 24px 0; font-size: 0.95rem; }
+      .tradeoff-table th, .tradeoff-table td { border: 1px solid var(--border); padding: 12px 14px; text-align: left; vertical-align: top; }
+      .tradeoff-table th { background: rgba(34, 211, 238, 0.08); color: var(--text-light); }
+      .tradeoff-table td { color: var(--text-muted); }
+      .terminal { background: #09111d; border: 1px solid #17324f; border-radius: 14px; padding: 18px 20px; margin: 24px 0; box-shadow: inset 0 1px 0 rgba(255,255,255,0.03); }
+      .terminal pre { margin: 0; white-space: pre-wrap; color: #d7e7ff; font-family: var(--mono); font-size: 0.9rem; line-height: 1.6; }
+      .diagram-shell { border: 1px solid var(--border); border-radius: 16px; padding: 18px; background: linear-gradient(180deg, rgba(12,18,32,0.95), rgba(10,15,26,0.95)); margin: 24px 0; }
+      .blog-post-tags { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 40px; padding-top: 30px; border-top: 1px solid var(--border); }
+      .blog-post-tag { background: var(--accent-soft); color: var(--accent-strong); border-radius: 999px; padding: 6px 14px; font-size: 0.85rem; font-family: var(--mono); border: 1px solid transparent; }
+      .blog-footer { margin-top: 60px; padding-top: 30px; border-top: 1px solid var(--border); text-align: center; }
+      .blog-footer a { color: var(--accent-strong); }
+      @media (max-width: 768px) { .blog-post { padding: 40px 16px; } .blog-post-title { font-size: 2rem; } .blog-post-image { height: 220px; } .tradeoff-table { display: block; overflow-x: auto; } }
+    </style>
+  </head>
+  <body>
+    <a href="../index.html#main" class="skip-link">Skip to main content</a>
+    <header class="site-header">
+      <div class="container blog-post">
+        <div class="blog-post-nav">
+          <a href="index.html">&larr; Back to All Posts</a>
+        </div>
+        <div class="blog-post-header">
+          <h1 class="blog-post-title">Versioning MCP Servers Without Breaking Every Agent Client</h1>
+          <div class="blog-post-meta">
+            <span>May 18, 2026</span>
+            <span>&bull;</span>
+            <span>11 min read</span>
+          </div>
+          <img src="data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A//www.w3.org/2000/svg%27%20viewBox%3D%270%200%201200%20630%27%3E%0A%3Cdefs%3E%0A%20%20%3ClinearGradient%20id%3D%27bg%27%20x1%3D%270%27%20x2%3D%271%27%20y1%3D%270%27%20y2%3D%271%27%3E%0A%20%20%20%20%3Cstop%20offset%3D%270%25%27%20stop-color%3D%27%2307121d%27/%3E%0A%20%20%20%20%3Cstop%20offset%3D%27100%25%27%20stop-color%3D%27%23173a60%27/%3E%0A%20%20%3C/linearGradient%3E%0A%3C/defs%3E%0A%3Crect%20width%3D%271200%27%20height%3D%27630%27%20fill%3D%27url%28%23bg%29%27/%3E%0A%3Ccircle%20cx%3D%271018%27%20cy%3D%27112%27%20r%3D%27172%27%20fill%3D%27%2322d3ee%27%20fill-opacity%3D%270.14%27/%3E%0A%3Ccircle%20cx%3D%27184%27%20cy%3D%27516%27%20r%3D%27214%27%20fill%3D%27%238b5cf6%27%20fill-opacity%3D%270.16%27/%3E%0A%3Crect%20x%3D%2782%27%20y%3D%2784%27%20width%3D%271036%27%20height%3D%27462%27%20rx%3D%2732%27%20fill%3D%27%230b1220%27%20stroke%3D%27%2338bdf8%27%20stroke-opacity%3D%270.35%27/%3E%0A%3Ctext%20x%3D%27132%27%20y%3D%27170%27%20fill%3D%27white%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2740%27%20font-weight%3D%27700%27%3EVersioning%20MCP%20Servers%20Without%20Breaking%3C/text%3E%0A%3Ctext%20x%3D%27132%27%20y%3D%27232%27%20fill%3D%27%2393c5fd%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2740%27%20font-weight%3D%27700%27%3EEvery%20Agent%20Client%3C/text%3E%0A%3Ctext%20x%3D%27132%27%20y%3D%27304%27%20fill%3D%27%23cbd5e1%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2728%27%3EUse%20capability%20negotiation%2C%20contract%20lanes%2C%20and%20deprecation%20windows%3C/text%3E%0A%3Ctext%20x%3D%27132%27%20y%3D%27340%27%20fill%3D%27%23cbd5e1%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2728%27%3Eso%20one%20server%20release%20does%20not%20turn%20into%20client%20roulette%3C/text%3E%0A%3Crect%20x%3D%27132%27%20y%3D%27388%27%20width%3D%27342%27%20height%3D%2754%27%20rx%3D%2714%27%20fill%3D%27%23111c2d%27%20stroke%3D%27%2367e8f9%27%20stroke-opacity%3D%270.45%27/%3E%0A%3Ctext%20x%3D%27156%27%20y%3D%27423%27%20fill%3D%27%2367e8f9%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2724%27%3Eboring%20upgrades%20beat%20clever%20breakage%3C/text%3E%0A%3Crect%20x%3D%27772%27%20y%3D%27176%27%20width%3D%27252%27%20height%3D%2756%27%20rx%3D%2714%27%20fill%3D%27%230d1728%27%20stroke%3D%27%2322d3ee%27%20stroke-opacity%3D%270.45%27/%3E%0A%3Ctext%20x%3D%27810%27%20y%3D%27212%27%20fill%3D%27%23bae6fd%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2723%27%3Ecapabilities%3C/text%3E%0A%3Crect%20x%3D%27772%27%20y%3D%27274%27%20width%3D%27252%27%20height%3D%2756%27%20rx%3D%2714%27%20fill%3D%27%230d1728%27%20stroke%3D%27%2322d3ee%27%20stroke-opacity%3D%270.45%27/%3E%0A%3Ctext%20x%3D%27822%27%20y%3D%27310%27%20fill%3D%27%23bae6fd%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2723%27%3Eschema%20lane%3C/text%3E%0A%3Crect%20x%3D%27772%27%20y%3D%27372%27%20width%3D%27252%27%20height%3D%2756%27%20rx%3D%2714%27%20fill%3D%27%230d1728%27%20stroke%3D%27%23a78bfa%27%20stroke-opacity%3D%270.45%27/%3E%0A%3Ctext%20x%3D%27810%27%20y%3D%27408%27%20fill%3D%27%23ddd6fe%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2723%27%3Esunset%20window%3C/text%3E%0A%3C/svg%3E" alt="Versioning MCP Servers Without Breaking Every Agent Client" class="blog-post-image">
+        </div>
+        <div class="blog-post-content">
+          <p>MCP servers are easy to break in ways that look polite.</p>
+          <p>The server still starts. The tools still list. The client still connects. Then the agent calls a tool with one missing field, the approval UI cannot render a new capability flag, or an older desktop client silently ignores the negotiation hint you thought was optional.</p>
+          <p>That is the real upgrade problem. Most MCP breakage is not a dramatic crash. It is a compatibility drift that turns one server release into a lottery across editors, gateways, and agent runtimes.</p>
+          <p>This post covers a versioning pattern that has worked better for me: explicit protocol lanes, capability negotiation, schema version pins, deprecation windows, and handshake tests that fail before humans do.</p>
+
+          <h2>Why this matters</h2>
+          <p>MCP is attractive because it lets one tool server talk to many clients. That multiplier is exactly why sloppy versioning hurts.</p>
+          <p>A server change can affect the transport handshake, capability discovery, tool schemas, and the approval or tracing layer that depends on those contracts. If you only track a single semantic version for the whole server, you usually learn too late which surface actually broke.</p>
+          <ul>
+            <li>one client may only care about tool schema compatibility</li>
+            <li>another may break because an approval capability bit disappeared</li>
+            <li>a third may connect fine and fail only on the first write tool call</li>
+          </ul>
+
+          <h2>Architecture or workflow overview</h2>
+          <div class="diagram-shell">
+            <pre class="mermaid">flowchart LR
+    A[Client starts session] --> B[Handshake]
+    B --> C[Server advertises protocol lane and capabilities]
+    C --> D{Compatibility gate}
+    D -->|supported| E[Expose tools and resources]
+    D -->|deprecated but allowed| F[Warn and continue]
+    D -->|unsupported| G[Fail closed with migration hint]
+    E --> H[Schema version checks per tool]
+    F --> H
+    H --> I[Run request plus trace contract metadata]</pre>
+          </div>
+          <p>A good rule is simple: negotiate once at session start, validate again at tool boundaries, and fail closed when the server cannot safely explain itself.</p>
+
+          <h2>Implementation details</h2>
+          <h3>1) Split protocol compatibility from tool contract compatibility</h3>
+          <p>One version number is too coarse. I prefer a compatibility envelope with separate lanes for the session protocol, capability surface, and per-tool schema contracts.</p>
+          <div class="code-block"><pre><code>{
+  "server": "deploy-tools",
+  "serverVersion": "1.9.0",
+  "protocolLane": "2026-04",
+  "capabilities": {
+    "tools": true,
+    "resources": false,
+    "approvals": true,
+    "streamingToolResults": true
+  },
+  "toolContracts": {
+    "github.create_pull_request": "2.1",
+    "kubernetes.deploy": "3.0",
+    "artifact.diff_bundle": "1.4"
+  },
+  "deprecations": [
+    {
+      "field": "kubernetes.deploy.input.cluster",
+      "replacedBy": "target.clusterRef",
+      "sunsetAfter": "2026-08-01"
+    }
+  ]
+}</code></pre></div>
+          <p>This lets the client answer three different questions: can I speak to the server, can I use the features it exposes, and can I safely call the specific tool contracts I need.</p>
+
+          <h3>2) Negotiate with deterministic gates, not prompt vibes</h3>
+          <p>The runtime should make the compatibility decision before the model sees the tools.</p>
+          <div class="code-block"><pre><code>interface HandshakeEnvelope {
+  protocolLane: string;
+  capabilities: Record&lt;string, boolean&gt;;
+  toolContracts: Record&lt;string, string&gt;;
+  deprecations: Array&lt;{ field: string; replacedBy?: string; sunsetAfter: string }&gt;;
+}
+
+const supportedProtocolLanes = new Set(['2026-02', '2026-04']);
+const requiredCapabilities = ['tools', 'approvals'];
+
+export function assertCompatible(env: HandshakeEnvelope) {
+  if (!supportedProtocolLanes.has(env.protocolLane)) {
+    throw new Error(`Unsupported MCP protocol lane: ${env.protocolLane}`);
+  }
+
+  for (const cap of requiredCapabilities) {
+    if (!env.capabilities[cap]) {
+      throw new Error(`Missing required capability: ${cap}`);
+    }
+  }
+
+  const prContract = env.toolContracts['github.create_pull_request'];
+  if (!prContract?.startsWith('2.')) {
+    throw new Error(`Unsupported github.create_pull_request contract: ${prContract}`);
+  }
+}</code></pre></div>
+          <p>The model should never have to infer whether the server is safe enough to use. That is adapter logic.</p>
+
+          <h3>3) Deprecate fields with overlap windows and telemetry</h3>
+          <p>The dangerous move is deleting fields the moment a cleaner contract exists. That works in one repo and explodes in mixed-client fleets.</p>
+          <ul>
+            <li>add the new field first</li>
+            <li>keep the old field for one or two release windows</li>
+            <li>log old-field usage with client identifiers</li>
+            <li>refuse removal until usage falls to zero or the deadline is explicit and communicated</li>
+          </ul>
+          <div class="code-block"><pre><code>export function normalizeDeployInput(input: any, clientName: string) {
+  if (input.cluster &amp;&amp; !input.target?.clusterRef) {
+    console.warn('deprecated_field_used', {
+      clientName,
+      field: 'cluster',
+      replacement: 'target.clusterRef'
+    });
+
+    input.target = { ...input.target, clusterRef: input.cluster };
+  }
+
+  return input;
+}</code></pre></div>
+          <div class="callout"><strong>Best practice:</strong> compatibility work should be operationally boring. Overlap windows and telemetry are what make that possible.</div>
+
+          <h3>4) Run handshake tests like API contract tests</h3>
+          <p>If CI only tests happy-path tool behavior, it will miss most upgrade regressions.</p>
+          <div class="terminal"><pre>$ node scripts/check-handshake.js --client cursor-1.8 --server http://localhost:3000
+✔ protocol lane 2026-04 supported
+✔ required capabilities present: tools, approvals
+✔ github.create_pull_request contract matches 2.x
+⚠ deprecated field kubernetes.deploy.input.cluster still accepted until 2026-08-01
+
+$ node scripts/check-handshake.js --client old-gateway --server http://localhost:3000
+✖ protocol lane 2025-12 expected, server advertises 2026-04
+hint: upgrade gateway adapter or pin server deploy-tools@1.8.x</pre></div>
+          <p>I would test at least one newest client, one lagging client, and one intentionally unsupported client so fail-closed behavior stays honest.</p>
+
+          <h2>What went wrong and the tradeoffs</h2>
+          <h3>The easy mistake, semantic versioning by itself</h3>
+          <p>A plain <code>2.0.0</code> server tag tells humans something changed, but it does not tell clients what changed. Handshake metadata and per-tool contracts carry the useful detail.</p>
+
+          <h3>The opposite mistake, per-field chaos</h3>
+          <p>You can also overdo it and invent too many tiny version numbers. That creates bookkeeping nobody trusts.</p>
+          <table class="tradeoff-table">
+            <thead>
+              <tr><th>Approach</th><th>Benefit</th><th>Cost</th><th>When I would use it</th></tr>
+            </thead>
+            <tbody>
+              <tr><td>Single server semver only</td><td>Minimal overhead</td><td>Hides incompatible surface changes</td><td>Small internal prototypes</td></tr>
+              <tr><td>Protocol lane plus per-tool contracts</td><td>Good balance of clarity and effort</td><td>Needs discipline in adapters and CI</td><td>Shared MCP servers used by many clients</td></tr>
+              <tr><td>Version every field separately</td><td>Maximum precision</td><td>Operationally annoying</td><td>Rarely worth it</td></tr>
+            </tbody>
+          </table>
+
+          <h3>Failure mode, capability drift outside the handshake</h3>
+          <p>I have seen teams add approval or streaming behavior in the tool description text but forget to publish it in the handshake envelope. That creates a bad split-brain state where the model knows more than the runtime UI.</p>
+          <div class="callout"><strong>Pitfall:</strong> if a capability changes client behavior, put it in machine-readable negotiation data, not only in prose.</div>
+
+          <h3>Security and reliability concern</h3>
+          <p>Compatibility logic is part of the trust boundary. If a proxy or plugin can rewrite capability flags in transit, it can trick clients into enabling flows they do not actually support.</p>
+          <ul>
+            <li>terminate negotiation at a trusted adapter, not deep inside prompt text</li>
+            <li>trace the negotiated protocol lane and tool contract versions</li>
+            <li>bind approval UI behavior to the same contract metadata the executor enforces</li>
+            <li>reject unknown write-tool contract majors by default</li>
+          </ul>
+
+          <h3>What I would not do</h3>
+          <p>I would not let the model dynamically decide that <code>2.x</code> is close enough to <code>3.x</code> for a write tool. That kind of optimism belongs nowhere near deployments, PR creation, or anything with side effects.</p>
+
+          <h2>Practical checklist</h2>
+          <ul>
+            <li>[ ] publish a handshake envelope with protocol lane, capabilities, and per-tool contract versions</li>
+            <li>[ ] separate transport compatibility from tool schema compatibility</li>
+            <li>[ ] add deprecation windows instead of deleting fields immediately</li>
+            <li>[ ] log deprecated field usage by client name and version</li>
+            <li>[ ] trace negotiated contract metadata on every session</li>
+            <li>[ ] test newest, lagging, and unsupported clients in CI</li>
+            <li>[ ] fail closed on unknown major versions for write tools</li>
+            <li>[ ] keep migration hints human-readable in rejection errors</li>
+          </ul>
+          <div class="callout"><strong>Best practice:</strong> the compatibility story is not done until an older client fails with a clear migration hint instead of a vague tool error three steps later.</div>
+
+          <h2>Conclusion</h2>
+          <p>The best MCP versioning scheme is the one that turns upgrades into routine maintenance instead of archaeology.</p>
+          <p>Separate the handshake from the tool contracts, keep deprecations visible, and test compatibility like a real interface. Your future client fleet will thank you.</p>
+
+          <h2>References</h2>
+          <ul>
+            <li><a href="https://modelcontextprotocol.io">Model Context Protocol documentation</a></li>
+            <li><a href="https://semver.org/">Semantic Versioning 2.0.0</a></li>
+            <li><a href="https://json-schema.org/">JSON Schema</a></li>
+            <li><a href="https://opentelemetry.io/">OpenTelemetry</a></li>
+          </ul>
+
+          <div class="blog-post-tags">
+            <span class="blog-post-tag">MCP</span>
+            <span class="blog-post-tag">AI Agents</span>
+            <span class="blog-post-tag">Compatibility</span>
+            <span class="blog-post-tag">Tooling</span>
+            <span class="blog-post-tag">Architecture</span>
+          </div>
+          <div class="blog-footer">
+            <p><a href="index.html">Read more posts</a> or <a href="../index.html">go back to the portfolio</a>.</p>
+          </div>
+        </div>
+      </div>
+    </header>
+    <script type="module">
+      import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.esm.min.mjs';
+      mermaid.initialize({ startOnLoad: true, theme: 'dark' });
+    </script>
+  </body>
+</html>
