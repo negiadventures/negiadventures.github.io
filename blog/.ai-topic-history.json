@@ -1,6 +1,14 @@
 {
   "topics": [
     {
+      "date": "2026-05-19",
+      "skill": "Freshness guards for long-running AI coding agents",
+      "topic": "Using repo fingerprints, context TTLs, file watchlists, and pre-write revalidation gates so long-running coding agents refresh stale assumptions before they turn into polished but wrong patches",
+      "slug": "freshness-guards-long-running-ai-coding-agents",
+      "title": "Freshness Guards for Long-Running AI Coding Agents",
+      "summary": "A practical guide to freshness guards for long-running AI coding agents using repo fingerprints, file watchlists, context TTLs, and revalidation gates so stale context does not quietly turn into bad patches."
+    },
+    {
       "date": "2026-05-18",
       "skill": "MCP server versioning and compatibility contracts",
       "topic": "Using explicit protocol lanes, capability negotiation, schema version pins, deprecation windows, and handshake tests so MCP servers can evolve without silently breaking agent clients, tool adapters, and approval flows",
