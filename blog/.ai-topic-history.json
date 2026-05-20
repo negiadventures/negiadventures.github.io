@@ -1,6 +1,14 @@
 {
   "topics": [
     {
+      "date": "2026-05-20",
+      "skill": "Canary model upgrade workflows for AI coding agents",
+      "topic": "Using eval slices, fallback lanes, cost guards, and promotion scorecards so teams can refresh coding models safely without quietly trading away patch quality, reviewability, or budget discipline",
+      "slug": "canary-model-upgrades-ai-coding-agents",
+      "title": "Canary Model Upgrades for AI Coding Agents Without Surprise Regressions",
+      "summary": "A practical guide to canarying model upgrades for AI coding agents with eval slices, fallback lanes, budget guardrails, and promotion scorecards so model refreshes do not quietly degrade code quality."
+    },
+    {
       "date": "2026-05-19",
       "skill": "Freshness guards for long-running AI coding agents",
       "topic": "Using repo fingerprints, context TTLs, file watchlists, and pre-write revalidation gates so long-running coding agents refresh stale assumptions before they turn into polished but wrong patches",
