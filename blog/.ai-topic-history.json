@@ -1,6 +1,14 @@
 {
   "topics": [
     {
+      "date": "2026-05-21",
+      "skill": "Ephemeral preview environments for AI-generated pull requests",
+      "topic": "Using per-PR preview stacks, seeded fixtures, smoke-test gating, TTL cleanup, and cost guardrails so AI-generated pull requests can be reviewed against real runtime behavior instead of blind diff confidence",
+      "slug": "ephemeral-preview-environments-ai-generated-prs",
+      "title": "Ephemeral Preview Environments for AI-Generated Pull Requests Without Surprise Infrastructure Spend",
+      "summary": "A practical guide to ephemeral preview environments for AI-generated pull requests using per-PR stacks, seeded fixtures, smoke tests, TTL cleanup, and cost guardrails so reviewers can validate runtime behavior before merge."
+    },
+    {
       "date": "2026-05-20",
       "skill": "Canary model upgrade workflows for AI coding agents",
       "topic": "Using eval slices, fallback lanes, cost guards, and promotion scorecards so teams can refresh coding models safely without quietly trading away patch quality, reviewability, or budget discipline",
