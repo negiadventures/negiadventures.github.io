@@ -122,10 +122,10 @@ for rc in plan.get("resource_changes", []):
         replacements.append(rc["address"])
 
 print("Terraform plan summary")
-print(f"create: {counts[("create",)]}")
-print(f"update: {counts[("update",)]}")
-print(f"delete: {counts[("delete",)]}")
-print(f"replace: {counts[("delete", "create")]}")
+print(f"create: {counts[('create',)]}")
+print(f"update: {counts[('update',)]}")
+print(f"delete: {counts[('delete',)]}")
+print(f"replace: {counts[('delete', 'create')]}")
 if replacements:
     print("replacement targets:")
     for addr in replacements:
