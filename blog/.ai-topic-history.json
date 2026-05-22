@@ -1,6 +1,14 @@
 {
   "topics": [
     {
+      "date": "2026-05-22",
+      "skill": "Policy-as-code gates for AI-generated infrastructure changes",
+      "topic": "Using Terraform plan evidence, OPA or Conftest policy gates, identity-aware exceptions, and reviewer-friendly summaries so AI-generated infrastructure diffs stop looking correct while quietly widening blast radius, cost, or exposure",
+      "slug": "policy-gates-ai-generated-infrastructure-changes",
+      "title": "Policy-as-Code Gates for AI-Generated Infrastructure Changes",
+      "summary": "A practical guide to gating AI-generated infrastructure changes with Terraform plan evidence, policy checks, reviewer summaries, and exception handling so plausible diffs do not quietly create risky cloud drift."
+    },
+    {
       "date": "2026-05-21",
       "skill": "Ephemeral preview environments for AI-generated pull requests",
       "topic": "Using per-PR preview stacks, seeded fixtures, smoke-test gating, TTL cleanup, and cost guardrails so AI-generated pull requests can be reviewed against real runtime behavior instead of blind diff confidence",
