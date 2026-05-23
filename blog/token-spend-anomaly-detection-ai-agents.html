@@ -1,0 +1,304 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="Build token spend anomaly detection for always-on AI agents with labels, rolling baselines, budget lanes, and actionable alerts before quiet cost drift becomes a monthly surprise.">
+    <meta name="author" content="Anirudh Negi">
+    <title>Token Spend Anomaly Detection for Always-On AI Agents | Anirudh Negi</title>
+    <link rel="icon" type="image/svg+xml" href="../images/favicon.svg">
+    <link rel="canonical" href="https://negiadventures.github.io/blog/token-spend-anomaly-detection-ai-agents.html">
+    <meta property="og:type" content="article">
+    <meta property="og:url" content="https://negiadventures.github.io/blog/token-spend-anomaly-detection-ai-agents.html">
+    <meta property="og:title" content="Token Spend Anomaly Detection for Always-On AI Agents | Anirudh Negi">
+    <meta property="og:description" content="Build token spend anomaly detection for always-on AI agents with labels, rolling baselines, budget lanes, and actionable alerts before quiet cost drift becomes a monthly surprise.">
+    <meta property="og:image" content="data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A//www.w3.org/2000/svg%27%20viewBox%3D%270%200%201200%20630%27%3E%0A%3Cdefs%3E%0A%20%20%3ClinearGradient%20id%3D%27bg%27%20x1%3D%270%27%20x2%3D%271%27%20y1%3D%270%27%20y2%3D%271%27%3E%0A%20%20%20%20%3Cstop%20offset%3D%270%25%27%20stop-color%3D%27%2307111d%27/%3E%0A%20%20%20%20%3Cstop%20offset%3D%27100%25%27%20stop-color%3D%27%23143a63%27/%3E%0A%20%20%3C/linearGradient%3E%0A%3C/defs%3E%0A%3Crect%20width%3D%271200%27%20height%3D%27630%27%20fill%3D%27url%28%23bg%29%27/%3E%0A%3Ccircle%20cx%3D%271020%27%20cy%3D%27108%27%20r%3D%27172%27%20fill%3D%27%2322d3ee%27%20fill-opacity%3D%270.14%27/%3E%0A%3Ccircle%20cx%3D%27176%27%20cy%3D%27518%27%20r%3D%27218%27%20fill%3D%27%238b5cf6%27%20fill-opacity%3D%270.16%27/%3E%0A%3Crect%20x%3D%2782%27%20y%3D%2784%27%20width%3D%271036%27%20height%3D%27462%27%20rx%3D%2732%27%20fill%3D%27%230b1220%27%20stroke%3D%27%2338bdf8%27%20stroke-opacity%3D%270.35%27/%3E%0A%3Ctext%20x%3D%27132%27%20y%3D%27172%27%20fill%3D%27white%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2742%27%20font-weight%3D%27700%27%3EToken%20Spend%20Anomaly%20Detection%3C/text%3E%0A%3Ctext%20x%3D%27132%27%20y%3D%27238%27%20fill%3D%27%2393c5fd%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2742%27%20font-weight%3D%27700%27%3Efor%20Always-On%20AI%20Agents%3C/text%3E%0A%3Ctext%20x%3D%27132%27%20y%3D%27314%27%20fill%3D%27%23cbd5e1%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2728%27%3ELabel%20usage%2C%20set%20baselines%2C%20and%20alert%20before%20quiet%20cost%20drift%3C/text%3E%0A%3Ctext%20x%3D%27132%27%20y%3D%27350%27%20fill%3D%27%23cbd5e1%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2728%27%3Eturns%20into%20a%20month-end%20surprise%3C/text%3E%0A%3Crect%20x%3D%27132%27%20y%3D%27394%27%20width%3D%27334%27%20height%3D%2754%27%20rx%3D%2714%27%20fill%3D%27%23111c2d%27%20stroke%3D%27%2367e8f9%27%20stroke-opacity%3D%270.45%27/%3E%0A%3Ctext%20x%3D%27156%27%20y%3D%27429%27%20fill%3D%27%2367e8f9%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2724%27%3Ecost%20control%20needs%20signals%2C%20not%20guessing%3C/text%3E%0A%3Crect%20x%3D%27772%27%20y%3D%27176%27%20width%3D%27252%27%20height%3D%2756%27%20rx%3D%2714%27%20fill%3D%27%230d1728%27%20stroke%3D%27%2322d3ee%27%20stroke-opacity%3D%270.45%27/%3E%0A%3Ctext%20x%3D%27804%27%20y%3D%27212%27%20fill%3D%27%23bae6fd%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2723%27%3Elabel%20every%20run%3C/text%3E%0A%3Crect%20x%3D%27772%27%20y%3D%27274%27%20width%3D%27252%27%20height%3D%2756%27%20rx%3D%2714%27%20fill%3D%27%230d1728%27%20stroke%3D%27%2322d3ee%27%20stroke-opacity%3D%270.45%27/%3E%0A%3Ctext%20x%3D%27810%27%20y%3D%27310%27%20fill%3D%27%23bae6fd%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2723%27%3Ebaseline%20EWMA%3C/text%3E%0A%3Crect%20x%3D%27772%27%20y%3D%27372%27%20width%3D%27252%27%20height%3D%2756%27%20rx%3D%2714%27%20fill%3D%27%230d1728%27%20stroke%3D%27%23a78bfa%27%20stroke-opacity%3D%270.45%27/%3E%0A%3Ctext%20x%3D%27816%27%20y%3D%27408%27%20fill%3D%27%23ddd6fe%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2723%27%3Epage%20human%20early%3C/text%3E%0A%3C/svg%3E">
+    <meta property="article:published_time" content="2026-05-23">
+    <meta property="article:author" content="Anirudh Negi">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:url" content="https://negiadventures.github.io/blog/token-spend-anomaly-detection-ai-agents.html">
+    <meta name="twitter:title" content="Token Spend Anomaly Detection for Always-On AI Agents | Anirudh Negi">
+    <meta name="twitter:description" content="Build token spend anomaly detection for always-on AI agents with labels, rolling baselines, budget lanes, and actionable alerts before quiet cost drift becomes a monthly surprise.">
+    <meta name="twitter:image" content="data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A//www.w3.org/2000/svg%27%20viewBox%3D%270%200%201200%20630%27%3E%0A%3Cdefs%3E%0A%20%20%3ClinearGradient%20id%3D%27bg%27%20x1%3D%270%27%20x2%3D%271%27%20y1%3D%270%27%20y2%3D%271%27%3E%0A%20%20%20%20%3Cstop%20offset%3D%270%25%27%20stop-color%3D%27%2307111d%27/%3E%0A%20%20%20%20%3Cstop%20offset%3D%27100%25%27%20stop-color%3D%27%23143a63%27/%3E%0A%20%20%3C/linearGradient%3E%0A%3C/defs%3E%0A%3Crect%20width%3D%271200%27%20height%3D%27630%27%20fill%3D%27url%28%23bg%29%27/%3E%0A%3Ccircle%20cx%3D%271020%27%20cy%3D%27108%27%20r%3D%27172%27%20fill%3D%27%2322d3ee%27%20fill-opacity%3D%270.14%27/%3E%0A%3Ccircle%20cx%3D%27176%27%20cy%3D%27518%27%20r%3D%27218%27%20fill%3D%27%238b5cf6%27%20fill-opacity%3D%270.16%27/%3E%0A%3Crect%20x%3D%2782%27%20y%3D%2784%27%20width%3D%271036%27%20height%3D%27462%27%20rx%3D%2732%27%20fill%3D%27%230b1220%27%20stroke%3D%27%2338bdf8%27%20stroke-opacity%3D%270.35%27/%3E%0A%3Ctext%20x%3D%27132%27%20y%3D%27172%27%20fill%3D%27white%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2742%27%20font-weight%3D%27700%27%3EToken%20Spend%20Anomaly%20Detection%3C/text%3E%0A%3Ctext%20x%3D%27132%27%20y%3D%27238%27%20fill%3D%27%2393c5fd%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2742%27%20font-weight%3D%27700%27%3Efor%20Always-On%20AI%20Agents%3C/text%3E%0A%3Ctext%20x%3D%27132%27%20y%3D%27314%27%20fill%3D%27%23cbd5e1%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2728%27%3ELabel%20usage%2C%20set%20baselines%2C%20and%20alert%20before%20quiet%20cost%20drift%3C/text%3E%0A%3Ctext%20x%3D%27132%27%20y%3D%27350%27%20fill%3D%27%23cbd5e1%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2728%27%3Eturns%20into%20a%20month-end%20surprise%3C/text%3E%0A%3Crect%20x%3D%27132%27%20y%3D%27394%27%20width%3D%27334%27%20height%3D%2754%27%20rx%3D%2714%27%20fill%3D%27%23111c2d%27%20stroke%3D%27%2367e8f9%27%20stroke-opacity%3D%270.45%27/%3E%0A%3Ctext%20x%3D%27156%27%20y%3D%27429%27%20fill%3D%27%2367e8f9%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2724%27%3Ecost%20control%20needs%20signals%2C%20not%20guessing%3C/text%3E%0A%3Crect%20x%3D%27772%27%20y%3D%27176%27%20width%3D%27252%27%20height%3D%2756%27%20rx%3D%2714%27%20fill%3D%27%230d1728%27%20stroke%3D%27%2322d3ee%27%20stroke-opacity%3D%270.45%27/%3E%0A%3Ctext%20x%3D%27804%27%20y%3D%27212%27%20fill%3D%27%23bae6fd%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2723%27%3Elabel%20every%20run%3C/text%3E%0A%3Crect%20x%3D%27772%27%20y%3D%27274%27%20width%3D%27252%27%20height%3D%2756%27%20rx%3D%2714%27%20fill%3D%27%230d1728%27%20stroke%3D%27%2322d3ee%27%20stroke-opacity%3D%270.45%27/%3E%0A%3Ctext%20x%3D%27810%27%20y%3D%27310%27%20fill%3D%27%23bae6fd%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2723%27%3Ebaseline%20EWMA%3C/text%3E%0A%3Crect%20x%3D%27772%27%20y%3D%27372%27%20width%3D%27252%27%20height%3D%2756%27%20rx%3D%2714%27%20fill%3D%27%230d1728%27%20stroke%3D%27%23a78bfa%27%20stroke-opacity%3D%270.45%27/%3E%0A%3Ctext%20x%3D%27816%27%20y%3D%27408%27%20fill%3D%27%23ddd6fe%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2723%27%3Epage%20human%20early%3C/text%3E%0A%3C/svg%3E">
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "BlogPosting",
+      "headline": "Token Spend Anomaly Detection for Always-On AI Agents",
+      "description": "Build token spend anomaly detection for always-on AI agents with labels, rolling baselines, budget lanes, and actionable alerts before quiet cost drift becomes a monthly surprise.",
+      "image": "data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A//www.w3.org/2000/svg%27%20viewBox%3D%270%200%201200%20630%27%3E%0A%3Cdefs%3E%0A%20%20%3ClinearGradient%20id%3D%27bg%27%20x1%3D%270%27%20x2%3D%271%27%20y1%3D%270%27%20y2%3D%271%27%3E%0A%20%20%20%20%3Cstop%20offset%3D%270%25%27%20stop-color%3D%27%2307111d%27/%3E%0A%20%20%20%20%3Cstop%20offset%3D%27100%25%27%20stop-color%3D%27%23143a63%27/%3E%0A%20%20%3C/linearGradient%3E%0A%3C/defs%3E%0A%3Crect%20width%3D%271200%27%20height%3D%27630%27%20fill%3D%27url%28%23bg%29%27/%3E%0A%3Ccircle%20cx%3D%271020%27%20cy%3D%27108%27%20r%3D%27172%27%20fill%3D%27%2322d3ee%27%20fill-opacity%3D%270.14%27/%3E%0A%3Ccircle%20cx%3D%27176%27%20cy%3D%27518%27%20r%3D%27218%27%20fill%3D%27%238b5cf6%27%20fill-opacity%3D%270.16%27/%3E%0A%3Crect%20x%3D%2782%27%20y%3D%2784%27%20width%3D%271036%27%20height%3D%27462%27%20rx%3D%2732%27%20fill%3D%27%230b1220%27%20stroke%3D%27%2338bdf8%27%20stroke-opacity%3D%270.35%27/%3E%0A%3Ctext%20x%3D%27132%27%20y%3D%27172%27%20fill%3D%27white%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2742%27%20font-weight%3D%27700%27%3EToken%20Spend%20Anomaly%20Detection%3C/text%3E%0A%3Ctext%20x%3D%27132%27%20y%3D%27238%27%20fill%3D%27%2393c5fd%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2742%27%20font-weight%3D%27700%27%3Efor%20Always-On%20AI%20Agents%3C/text%3E%0A%3Ctext%20x%3D%27132%27%20y%3D%27314%27%20fill%3D%27%23cbd5e1%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2728%27%3ELabel%20usage%2C%20set%20baselines%2C%20and%20alert%20before%20quiet%20cost%20drift%3C/text%3E%0A%3Ctext%20x%3D%27132%27%20y%3D%27350%27%20fill%3D%27%23cbd5e1%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2728%27%3Eturns%20into%20a%20month-end%20surprise%3C/text%3E%0A%3Crect%20x%3D%27132%27%20y%3D%27394%27%20width%3D%27334%27%20height%3D%2754%27%20rx%3D%2714%27%20fill%3D%27%23111c2d%27%20stroke%3D%27%2367e8f9%27%20stroke-opacity%3D%270.45%27/%3E%0A%3Ctext%20x%3D%27156%27%20y%3D%27429%27%20fill%3D%27%2367e8f9%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2724%27%3Ecost%20control%20needs%20signals%2C%20not%20guessing%3C/text%3E%0A%3Crect%20x%3D%27772%27%20y%3D%27176%27%20width%3D%27252%27%20height%3D%2756%27%20rx%3D%2714%27%20fill%3D%27%230d1728%27%20stroke%3D%27%2322d3ee%27%20stroke-opacity%3D%270.45%27/%3E%0A%3Ctext%20x%3D%27804%27%20y%3D%27212%27%20fill%3D%27%23bae6fd%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2723%27%3Elabel%20every%20run%3C/text%3E%0A%3Crect%20x%3D%27772%27%20y%3D%27274%27%20width%3D%27252%27%20height%3D%2756%27%20rx%3D%2714%27%20fill%3D%27%230d1728%27%20stroke%3D%27%2322d3ee%27%20stroke-opacity%3D%270.45%27/%3E%0A%3Ctext%20x%3D%27810%27%20y%3D%27310%27%20fill%3D%27%23bae6fd%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2723%27%3Ebaseline%20EWMA%3C/text%3E%0A%3Crect%20x%3D%27772%27%20y%3D%27372%27%20width%3D%27252%27%20height%3D%2756%27%20rx%3D%2714%27%20fill%3D%27%230d1728%27%20stroke%3D%27%23a78bfa%27%20stroke-opacity%3D%270.45%27/%3E%0A%3Ctext%20x%3D%27816%27%20y%3D%27408%27%20fill%3D%27%23ddd6fe%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2723%27%3Epage%20human%20early%3C/text%3E%0A%3C/svg%3E",
+      "url": "https://negiadventures.github.io/blog/token-spend-anomaly-detection-ai-agents.html",
+      "datePublished": "2026-05-23",
+      "author": {
+        "@type": "Person",
+        "name": "Anirudh Negi",
+        "url": "https://negiadventures.github.io"
+      },
+      "publisher": {
+        "@type": "Person",
+        "name": "Anirudh Negi",
+        "url": "https://negiadventures.github.io"
+      }
+    }
+    </script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../stylesheets/stylesheet.css?v=5" media="screen">
+    <script type="module">
+      import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.esm.min.mjs';
+      mermaid.initialize({ startOnLoad: true, theme: 'dark' });
+    </script>
+    <style>
+      .blog-post { max-width: 860px; margin: 0 auto; padding: 60px 20px; }
+      .blog-post-nav { margin-bottom: 30px; }
+      .blog-post-nav a { color: var(--accent-strong); font-size: 0.95rem; }
+      .blog-post-title { font-size: 2.5rem; margin-bottom: 16px; }
+      .blog-post-meta { display: flex; gap: 20px; color: var(--text-muted); font-size: 0.95rem; margin-bottom: 30px; flex-wrap: wrap; }
+      .blog-post-image { width: 100%; height: 320px; object-fit: cover; border-radius: 16px; margin-bottom: 30px; border: 1px solid var(--border); background: var(--bg-alt); }
+      .blog-post-content h2 { font-size: 1.65rem; margin-top: 40px; margin-bottom: 16px; color: var(--text-light); }
+      .blog-post-content h3 { font-size: 1.25rem; margin-top: 28px; margin-bottom: 12px; color: var(--text-light); }
+      .blog-post-content p, .blog-post-content li { line-height: 1.8; color: var(--text-muted); }
+      .blog-post-content ul, .blog-post-content ol { margin-bottom: 20px; padding-left: 22px; }
+      .code-block { background: var(--bg-alt); border: 1px solid var(--border); border-radius: 12px; padding: 20px; margin: 20px 0; overflow-x: auto; }
+      .code-block pre { margin: 0; font-family: var(--mono); font-size: 0.9rem; line-height: 1.6; color: var(--text-light); white-space: pre-wrap; }
+      .code-block code { color: var(--accent-strong); }
+      .mermaid-block { background: var(--bg-alt); border: 1px solid var(--border); border-radius: 12px; padding: 18px; margin: 24px 0; overflow-x: auto; }
+      table { width: 100%; border-collapse: collapse; margin: 24px 0; background: var(--bg-alt); border: 1px solid var(--border); border-radius: 12px; overflow: hidden; }
+      th, td { padding: 14px 16px; text-align: left; border-bottom: 1px solid var(--border); color: var(--text-muted); vertical-align: top; }
+      th { color: var(--text-light); background: rgba(56, 189, 248, 0.08); }
+      .callout { border-radius: 14px; padding: 18px 20px; margin: 24px 0; border: 1px solid var(--border); }
+      .callout-warning { background: rgba(245, 158, 11, 0.08); border-color: rgba(245, 158, 11, 0.3); }
+      .callout-success { background: rgba(34, 197, 94, 0.08); border-color: rgba(34, 197, 94, 0.28); }
+      .callout strong { color: var(--text-light); }
+      .blog-post-tags { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 40px; padding-top: 30px; border-top: 1px solid var(--border); }
+      .blog-post-tag { background: var(--accent-soft); color: var(--accent-strong); border-radius: 999px; padding: 6px 14px; font-size: 0.85rem; font-family: var(--mono); }
+      .blog-footer { margin-top: 60px; padding-top: 30px; border-top: 1px solid var(--border); text-align: center; }
+      .blog-footer a { color: var(--accent-strong); }
+      @media (max-width: 768px) { .blog-post { padding: 40px 16px; } .blog-post-title { font-size: 2rem; } .blog-post-image { height: 220px; } }
+    </style>
+  </head>
+  <body>
+    <a href="../index.html#main" class="skip-link">Skip to main content</a>
+    <header class="site-header">
+      <div class="container blog-post">
+        <div class="blog-post-nav"><a href="index.html">&larr; Back to All Posts</a></div>
+        <div class="blog-post-header">
+          <h1 class="blog-post-title">Token Spend Anomaly Detection for Always-On AI Agents</h1>
+          <div class="blog-post-meta">
+            <span>May 23, 2026</span>
+            <span>&bull;</span>
+            <span>10 min read</span>
+            <span>&bull;</span>
+            <span>Cost Engineering</span>
+          </div>
+          <img src="data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A//www.w3.org/2000/svg%27%20viewBox%3D%270%200%201200%20630%27%3E%0A%3Cdefs%3E%0A%20%20%3ClinearGradient%20id%3D%27bg%27%20x1%3D%270%27%20x2%3D%271%27%20y1%3D%270%27%20y2%3D%271%27%3E%0A%20%20%20%20%3Cstop%20offset%3D%270%25%27%20stop-color%3D%27%2307111d%27/%3E%0A%20%20%20%20%3Cstop%20offset%3D%27100%25%27%20stop-color%3D%27%23143a63%27/%3E%0A%20%20%3C/linearGradient%3E%0A%3C/defs%3E%0A%3Crect%20width%3D%271200%27%20height%3D%27630%27%20fill%3D%27url%28%23bg%29%27/%3E%0A%3Ccircle%20cx%3D%271020%27%20cy%3D%27108%27%20r%3D%27172%27%20fill%3D%27%2322d3ee%27%20fill-opacity%3D%270.14%27/%3E%0A%3Ccircle%20cx%3D%27176%27%20cy%3D%27518%27%20r%3D%27218%27%20fill%3D%27%238b5cf6%27%20fill-opacity%3D%270.16%27/%3E%0A%3Crect%20x%3D%2782%27%20y%3D%2784%27%20width%3D%271036%27%20height%3D%27462%27%20rx%3D%2732%27%20fill%3D%27%230b1220%27%20stroke%3D%27%2338bdf8%27%20stroke-opacity%3D%270.35%27/%3E%0A%3Ctext%20x%3D%27132%27%20y%3D%27172%27%20fill%3D%27white%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2742%27%20font-weight%3D%27700%27%3EToken%20Spend%20Anomaly%20Detection%3C/text%3E%0A%3Ctext%20x%3D%27132%27%20y%3D%27238%27%20fill%3D%27%2393c5fd%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2742%27%20font-weight%3D%27700%27%3Efor%20Always-On%20AI%20Agents%3C/text%3E%0A%3Ctext%20x%3D%27132%27%20y%3D%27314%27%20fill%3D%27%23cbd5e1%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2728%27%3ELabel%20usage%2C%20set%20baselines%2C%20and%20alert%20before%20quiet%20cost%20drift%3C/text%3E%0A%3Ctext%20x%3D%27132%27%20y%3D%27350%27%20fill%3D%27%23cbd5e1%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2728%27%3Eturns%20into%20a%20month-end%20surprise%3C/text%3E%0A%3Crect%20x%3D%27132%27%20y%3D%27394%27%20width%3D%27334%27%20height%3D%2754%27%20rx%3D%2714%27%20fill%3D%27%23111c2d%27%20stroke%3D%27%2367e8f9%27%20stroke-opacity%3D%270.45%27/%3E%0A%3Ctext%20x%3D%27156%27%20y%3D%27429%27%20fill%3D%27%2367e8f9%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2724%27%3Ecost%20control%20needs%20signals%2C%20not%20guessing%3C/text%3E%0A%3Crect%20x%3D%27772%27%20y%3D%27176%27%20width%3D%27252%27%20height%3D%2756%27%20rx%3D%2714%27%20fill%3D%27%230d1728%27%20stroke%3D%27%2322d3ee%27%20stroke-opacity%3D%270.45%27/%3E%0A%3Ctext%20x%3D%27804%27%20y%3D%27212%27%20fill%3D%27%23bae6fd%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2723%27%3Elabel%20every%20run%3C/text%3E%0A%3Crect%20x%3D%27772%27%20y%3D%27274%27%20width%3D%27252%27%20height%3D%2756%27%20rx%3D%2714%27%20fill%3D%27%230d1728%27%20stroke%3D%27%2322d3ee%27%20stroke-opacity%3D%270.45%27/%3E%0A%3Ctext%20x%3D%27810%27%20y%3D%27310%27%20fill%3D%27%23bae6fd%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2723%27%3Ebaseline%20EWMA%3C/text%3E%0A%3Crect%20x%3D%27772%27%20y%3D%27372%27%20width%3D%27252%27%20height%3D%2756%27%20rx%3D%2714%27%20fill%3D%27%230d1728%27%20stroke%3D%27%23a78bfa%27%20stroke-opacity%3D%270.45%27/%3E%0A%3Ctext%20x%3D%27816%27%20y%3D%27408%27%20fill%3D%27%23ddd6fe%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2723%27%3Epage%20human%20early%3C/text%3E%0A%3C/svg%3E" alt="Token Spend Anomaly Detection for Always-On AI Agents" class="blog-post-image">
+        </div>
+        <div class="blog-post-content">
+          <p>Always-on agents rarely fail with one dramatic invoice. They drift. A new fallback path fires too often, a retrieval loop gets chatty, or a verifier starts replaying large prompts after every timeout. Everything still works, but your daily spend graph starts leaning the wrong way.</p>
+          <p>The annoying part is that plain provider dashboards usually tell you <em>that</em> spend is up, not <em>which workflow changed shape</em>. If you run coding agents, cron workers, support automation, or evaluation jobs, you need task-level cost signals before the monthly bill becomes the first alert.</p>
+          <p>This post walks through a practical token spend anomaly pipeline: label every run, build rolling baselines per lane, fire human-actionable alerts, and avoid the two classic mistakes, alerting on normal product growth and ignoring prompt inflation hidden inside successful runs.</p>
+
+          <h2>Why this matters</h2>
+          <p>Agent systems create cost in ways that look legitimate at first glance. Better models quietly become the default, retries multiply prompt overhead, retrieval expands context packets over time, and background jobs keep running long after the original need fades.</p>
+          <p>That makes cost a reliability concern, not just a finance report. If a run suddenly needs 4x more input tokens, something operational changed, even if the user-facing result still looks fine.</p>
+          <ol>
+            <li>Which workflow lane got more expensive?</li>
+            <li>Is the jump volume-driven or per-run inflation?</li>
+            <li>Did a model route, retry path, or context packet change?</li>
+            <li>What should the operator do next?</li>
+          </ol>
+
+          <h2>Architecture or workflow overview</h2>
+          <div class="mermaid-block"><pre class="mermaid">flowchart LR
+  A[agent run] --> B[usage event]
+  B --> C[label normalizer]
+  C --> D[time-series store]
+  D --> E[baseline job]
+  E --> F[anomaly scorer]
+  F --> G[alert router]
+  G --> H[Slack or Discord summary]
+  F --> I[budget lane action]
+  I --> J[throttle fallback or human review]</pre></div>
+          <p>The key design choice is to baseline <strong>lanes</strong>, not the whole platform. A nightly eval suite should not share a baseline with customer-facing chat or a repo automation worker.</p>
+
+          <h3>Visual plan</h3>
+          <ul>
+            <li><strong>Hero:</strong> dark dashboard banner with labeled usage lanes, EWMA baseline, and early alert callout</li>
+            <li><strong>Diagram:</strong> run event to labels to baseline to anomaly scorer to alert router</li>
+            <li><strong>Code sections:</strong> usage event schema, rolling baseline scorer, alert summary generation</li>
+          </ul>
+
+          <h2>Implementation details</h2>
+          <p>Start with one rule: every model invocation must emit a normalized usage event, even if the request fails.</p>
+
+          <h3>1) Emit lane-aware usage events</h3>
+          <div class="code-block"><pre><code>{
+  "ts": "2026-05-23T11:42:18Z",
+  "run_id": "run_8fd2",
+  "workflow": "repo-pr-worker",
+  "lane": "scheduled-medium-risk",
+  "model": "gpt-5.4",
+  "input_tokens": 18420,
+  "output_tokens": 2110,
+  "cached_input_tokens": 9400,
+  "tool_calls": 6,
+  "retry_count": 1,
+  "status": "success",
+  "git_repo": "negiadventures.github.io",
+  "cost_usd": 0.2142
+}</code></pre></div>
+          <p>The <code>lane</code> field matters more than most teams expect. If you only group by model, you miss the operational story. The expensive run is usually tied to a workflow pattern, not just a model name.</p>
+
+          <h3>2) Score anomalies against a rolling baseline</h3>
+          <p>I like an EWMA baseline plus median absolute deviation because it is simple, explainable, and good enough for most agent fleets.</p>
+          <div class="code-block"><pre><code>from dataclasses import dataclass
+from statistics import median
+
+@dataclass
+class UsagePoint:
+    lane: str
+    cost_usd: float
+    input_tokens: int
+    output_tokens: int
+
+
+def mad(values: list[float]) -> float:
+    center = median(values)
+    return median([abs(v - center) for v in values]) or 0.0001
+
+
+def score_lane(points: list[UsagePoint], current: UsagePoint, alpha: float = 0.25) -> dict:
+    costs = [p.cost_usd for p in points]
+    ewma = costs[0]
+    for value in costs[1:]:
+        ewma = alpha * value + (1 - alpha) * ewma
+
+    spread = mad(costs)
+    z_like = (current.cost_usd - ewma) / spread
+    return {
+        "baseline_cost": round(ewma, 4),
+        "spread": round(spread, 4),
+        "score": round(z_like, 2),
+        "is_anomalous": current.cost_usd > ewma * 1.8 and z_like >= 4.0,
+    }</code></pre></div>
+          <p>This is intentionally boring. That is a feature. Operators can reason about it during an incident. Fancy black-box anomaly detectors tend to lose trust fast when they cannot explain why a normal traffic spike got paged.</p>
+
+          <h3>3) Generate alerts with an operator hint</h3>
+          <p>An alert without probable cause is just a guilt delivery system. Include model route, retry count, cache effectiveness, and context size change.</p>
+          <div class="code-block"><pre><code>def build_alert(run: dict, baseline: dict) -> str:
+    cache_ratio = 0.0
+    if run["input_tokens"]:
+        cache_ratio = run["cached_input_tokens"] / run["input_tokens"]
+
+    return f"""
+Lane: {run['lane']}
+Workflow: {run['workflow']}
+Cost: ${run['cost_usd']:.4f} vs baseline ${baseline['baseline_cost']:.4f}
+Score: {baseline['score']}
+Model: {run['model']}
+Retries: {run['retry_count']}
+Cache hit ratio: {cache_ratio:.0%}
+Likely check: route change, retry storm, or larger context packet
+Recommended action: inspect last 20 runs and compare token shape before throttling
+""".strip()</code></pre></div>
+
+          <h3>Example terminal summary</h3>
+          <div class="code-block"><pre><code>$ agent-cost-watch daily-summary --lane scheduled-medium-risk
+
+lane=scheduled-medium-risk
+runs=148
+avg_cost=$0.071
+current_p95=$0.204
+baseline_p95=$0.109
+anomalies=3
+likely_cause=retry inflation after verifier timeout change
+next_action=cap retries at 1 and re-check context packet size</code></pre></div>
+
+          <h2>What went wrong and tradeoffs</h2>
+          <p>The first candidate I would not trust is hard daily caps only. Static budget caps are useful, but they are too blunt on their own. They catch catastrophes late and say nothing about why costs shifted.</p>
+
+          <table>
+            <thead>
+              <tr>
+                <th>Control style</th>
+                <th>Good at</th>
+                <th>Weak at</th>
+                <th>Best use</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>Static daily cap</td>
+                <td>catching runaway spend</td>
+                <td>misses gradual drift</td>
+                <td>final safety net</td>
+              </tr>
+              <tr>
+                <td>Pure anomaly baseline</td>
+                <td>spotting shape changes</td>
+                <td>noisy during launches</td>
+                <td>operator visibility</td>
+              </tr>
+              <tr>
+                <td>Hybrid cap plus baseline</td>
+                <td>alerting early and containing blast radius</td>
+                <td>more moving parts</td>
+                <td>most production agent systems</td>
+              </tr>
+            </tbody>
+          </table>
+
+          <div class="callout callout-warning">
+            <strong>Pitfalls:</strong>
+            <ul>
+              <li>Mixing unrelated workflows into one baseline, which hides real anomalies.</li>
+              <li>Ignoring failed runs, even though retries and failed tool loops often create the spend spike.</li>
+              <li>Alerting on total daily cost instead of per-run inflation, which confuses growth with waste.</li>
+              <li>Missing cached-token ratios, so prompt regressions look like model-price changes.</li>
+            </ul>
+          </div>
+
+          <p>Cost alerts can also expose private workload names, repo names, or user identifiers if you dump raw labels into chat. Normalize labels up front and redact anything user-derived before sending alerts outside your metrics store.</p>
+          <p>I would not let anomaly detection auto-switch every workflow to a cheaper model the moment spend rises. That often turns one problem into two, higher costs and degraded outcomes.</p>
+
+          <h2>Practical checklist or decision framework</h2>
+          <div class="callout callout-success">
+            <strong>What I would do again:</strong>
+            <ul>
+              <li>Label every run with workflow and lane before building any dashboards.</li>
+              <li>Track per-run cost, retry count, cache ratio, and input token growth together.</li>
+              <li>Use a simple explainable baseline before reaching for more complex detection.</li>
+              <li>Send alerts with one probable-cause hint and one concrete next step.</li>
+              <li>Keep a hard budget ceiling as the final blast-radius guard.</li>
+            </ul>
+          </div>
+
+          <ul>
+            <li>[ ] every model call emits a normalized usage event</li>
+            <li>[ ] failed runs count toward spend analysis</li>
+            <li>[ ] baselines are separated by workflow lane</li>
+            <li>[ ] alerts include retry count and cache effectiveness</li>
+            <li>[ ] operators can compare the current run against the previous 20 runs</li>
+            <li>[ ] a hard spend cap still exists for catastrophic failures</li>
+          </ul>
+
+          <h2>Conclusion</h2>
+          <p>If you run agents continuously, token spend is an operational signal, not just a billing artifact. The practical win is not a perfect forecast. It is catching quiet per-run inflation early enough that a human can fix the workflow before the invoice becomes the incident report.</p>
+
+          <div class="blog-post-tags">
+            <span class="blog-post-tag">Cost Engineering</span>
+            <span class="blog-post-tag">AI Agents</span>
+            <span class="blog-post-tag">Observability</span>
+            <span class="blog-post-tag">FinOps</span>
+            <span class="blog-post-tag">Reliability</span>
+          </div>
+        </div>
+
+        <div class="blog-footer">
+          <p><a href="index.html">Back to Blog</a> &bull; <a href="../index.html">Back to Portfolio</a></p>
+        </div>
+      </div>
+    </header>
+  </body>
+</html>

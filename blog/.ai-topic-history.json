@@ -1,6 +1,14 @@
 {
   "topics": [
     {
+      "date": "2026-05-23",
+      "skill": "Token spend anomaly detection for always-on AI agents",
+      "topic": "Using lane-aware usage labels, rolling EWMA baselines, cache-ratio signals, and operator-friendly alerts so always-on agent workflows reveal quiet prompt inflation before it turns into a month-end billing surprise",
+      "slug": "token-spend-anomaly-detection-ai-agents",
+      "title": "Token Spend Anomaly Detection for Always-On AI Agents",
+      "summary": "A practical guide to catching AI agent cost drift with lane-aware usage labels, rolling baselines, cache-ratio signals, and early alerts before prompt inflation turns into a billing surprise."
+    },
+    {
       "date": "2026-05-22",
       "skill": "Policy-as-code gates for AI-generated infrastructure changes",
       "topic": "Using Terraform plan evidence, OPA or Conftest policy gates, identity-aware exceptions, and reviewer-friendly summaries so AI-generated infrastructure diffs stop looking correct while quietly widening blast radius, cost, or exposure",
