@@ -1,0 +1,239 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="A practical guide to prompt provenance for AI agents using version pins, hashable prompt bundles, behavior diffs, and rollback playbooks so prompt edits stop behaving like invisible production deploys.">
+    <meta name="author" content="Anirudh Negi">
+    <title>Prompt Provenance for AI Agents That Need Safe Rollbacks | Anirudh Negi</title>
+    <link rel="icon" type="image/svg+xml" href="../images/favicon.svg">
+    <link rel="canonical" href="https://negiadventures.github.io/blog/prompt-provenance-ai-agents.html">
+    <meta property="og:type" content="article">
+    <meta property="og:url" content="https://negiadventures.github.io/blog/prompt-provenance-ai-agents.html">
+    <meta property="og:title" content="Prompt Provenance for AI Agents That Need Safe Rollbacks | Anirudh Negi">
+    <meta property="og:description" content="A practical guide to prompt provenance for AI agents using version pins, hashable prompt bundles, behavior diffs, and rollback playbooks so prompt edits stop behaving like invisible production deploys.">
+    <meta property="og:image" content="data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A//www.w3.org/2000/svg%27%20viewBox%3D%270%200%201200%20630%27%3E%0A%3Cdefs%3E%0A%20%20%3ClinearGradient%20id%3D%27bg%27%20x1%3D%270%27%20x2%3D%271%27%20y1%3D%270%27%20y2%3D%271%27%3E%0A%20%20%20%20%3Cstop%20offset%3D%270%25%27%20stop-color%3D%27%2307111d%27/%3E%0A%20%20%20%20%3Cstop%20offset%3D%27100%25%27%20stop-color%3D%27%23163d67%27/%3E%0A%20%20%3C/linearGradient%3E%0A%3C/defs%3E%0A%3Crect%20width%3D%271200%27%20height%3D%27630%27%20fill%3D%27url%28%23bg%29%27/%3E%0A%3Ccircle%20cx%3D%271018%27%20cy%3D%27108%27%20r%3D%27172%27%20fill%3D%27%2322d3ee%27%20fill-opacity%3D%270.14%27/%3E%0A%3Ccircle%20cx%3D%27180%27%20cy%3D%27518%27%20r%3D%27216%27%20fill%3D%27%238b5cf6%27%20fill-opacity%3D%270.16%27/%3E%0A%3Crect%20x%3D%2782%27%20y%3D%2784%27%20width%3D%271036%27%20height%3D%27462%27%20rx%3D%2732%27%20fill%3D%27%230b1220%27%20stroke%3D%27%2338bdf8%27%20stroke-opacity%3D%270.35%27/%3E%0A%3Ctext%20x%3D%27132%27%20y%3D%27172%27%20fill%3D%27white%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2742%27%20font-weight%3D%27700%27%3EPrompt%20Provenance%20for%20AI%20Agents%3C/text%3E%0A%3Ctext%20x%3D%27132%27%20y%3D%27238%27%20fill%3D%27%2393c5fd%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2742%27%20font-weight%3D%27700%27%3EThat%20Need%20Safe%20Rollbacks%3C/text%3E%0A%3Ctext%20x%3D%27132%27%20y%3D%27314%27%20fill%3D%27%23cbd5e1%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2728%27%3EVersion%20prompt%20bundles%2C%20diff%20behavior%2C%20and%20roll%20back%20bad%20edits%3C/text%3E%0A%3Ctext%20x%3D%27132%27%20y%3D%27350%27%20fill%3D%27%23cbd5e1%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2728%27%3Ebefore%20they%20quietly%20rewrite%20your%20agent%20fleet%3C/text%3E%0A%3Crect%20x%3D%27132%27%20y%3D%27394%27%20width%3D%27342%27%20height%3D%2754%27%20rx%3D%2714%27%20fill%3D%27%23111c2d%27%20stroke%3D%27%2367e8f9%27%20stroke-opacity%3D%270.45%27/%3E%0A%3Ctext%20x%3D%27156%27%20y%3D%27429%27%20fill%3D%27%2367e8f9%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2724%27%3Eprompts%20are%20production%20artifacts%2C%20not%20scratch%20notes%3C/text%3E%0A%3Crect%20x%3D%27772%27%20y%3D%27176%27%20width%3D%27252%27%20height%3D%2756%27%20rx%3D%2714%27%20fill%3D%27%230d1728%27%20stroke%3D%27%2322d3ee%27%20stroke-opacity%3D%270.45%27/%3E%0A%3Ctext%20x%3D%27808%27%20y%3D%27212%27%20fill%3D%27%23bae6fd%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2723%27%3Ebundle%20hash%3C/text%3E%0A%3Crect%20x%3D%27772%27%20y%3D%27274%27%20width%3D%27252%27%20height%3D%2756%27%20rx%3D%2714%27%20fill%3D%27%230d1728%27%20stroke%3D%27%2322d3ee%27%20stroke-opacity%3D%270.45%27/%3E%0A%3Ctext%20x%3D%27822%27%20y%3D%27310%27%20fill%3D%27%23bae6fd%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2723%27%3Ebehavior%20diff%3C/text%3E%0A%3Crect%20x%3D%27772%27%20y%3D%27372%27%20width%3D%27252%27%20height%3D%2756%27%20rx%3D%2714%27%20fill%3D%27%230d1728%27%20stroke%3D%27%23a78bfa%27%20stroke-opacity%3D%270.45%27/%3E%0A%3Ctext%20x%3D%27810%27%20y%3D%27408%27%20fill%3D%27%23ddd6fe%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2723%27%3Erollback%20lane%3C/text%3E%0A%3C/svg%3E">
+    <meta property="article:published_time" content="2026-05-24">
+    <meta property="article:author" content="Anirudh Negi">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:url" content="https://negiadventures.github.io/blog/prompt-provenance-ai-agents.html">
+    <meta name="twitter:title" content="Prompt Provenance for AI Agents That Need Safe Rollbacks | Anirudh Negi">
+    <meta name="twitter:description" content="A practical guide to prompt provenance for AI agents using version pins, hashable prompt bundles, behavior diffs, and rollback playbooks so prompt edits stop behaving like invisible production deploys.">
+    <meta name="twitter:image" content="data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A//www.w3.org/2000/svg%27%20viewBox%3D%270%200%201200%20630%27%3E%0A%3Cdefs%3E%0A%20%20%3ClinearGradient%20id%3D%27bg%27%20x1%3D%270%27%20x2%3D%271%27%20y1%3D%270%27%20y2%3D%271%27%3E%0A%20%20%20%20%3Cstop%20offset%3D%270%25%27%20stop-color%3D%27%2307111d%27/%3E%0A%20%20%20%20%3Cstop%20offset%3D%27100%25%27%20stop-color%3D%27%23163d67%27/%3E%0A%20%20%3C/linearGradient%3E%0A%3C/defs%3E%0A%3Crect%20width%3D%271200%27%20height%3D%27630%27%20fill%3D%27url%28%23bg%29%27/%3E%0A%3Ccircle%20cx%3D%271018%27%20cy%3D%27108%27%20r%3D%27172%27%20fill%3D%27%2322d3ee%27%20fill-opacity%3D%270.14%27/%3E%0A%3Ccircle%20cx%3D%27180%27%20cy%3D%27518%27%20r%3D%27216%27%20fill%3D%27%238b5cf6%27%20fill-opacity%3D%270.16%27/%3E%0A%3Crect%20x%3D%2782%27%20y%3D%2784%27%20width%3D%271036%27%20height%3D%27462%27%20rx%3D%2732%27%20fill%3D%27%230b1220%27%20stroke%3D%27%2338bdf8%27%20stroke-opacity%3D%270.35%27/%3E%0A%3Ctext%20x%3D%27132%27%20y%3D%27172%27%20fill%3D%27white%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2742%27%20font-weight%3D%27700%27%3EPrompt%20Provenance%20for%20AI%20Agents%3C/text%3E%0A%3Ctext%20x%3D%27132%27%20y%3D%27238%27%20fill%3D%27%2393c5fd%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2742%27%20font-weight%3D%27700%27%3EThat%20Need%20Safe%20Rollbacks%3C/text%3E%0A%3Ctext%20x%3D%27132%27%20y%3D%27314%27%20fill%3D%27%23cbd5e1%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2728%27%3EVersion%20prompt%20bundles%2C%20diff%20behavior%2C%20and%20roll%20back%20bad%20edits%3C/text%3E%0A%3Ctext%20x%3D%27132%27%20y%3D%27350%27%20fill%3D%27%23cbd5e1%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2728%27%3Ebefore%20they%20quietly%20rewrite%20your%20agent%20fleet%3C/text%3E%0A%3Crect%20x%3D%27132%27%20y%3D%27394%27%20width%3D%27342%27%20height%3D%2754%27%20rx%3D%2714%27%20fill%3D%27%23111c2d%27%20stroke%3D%27%2367e8f9%27%20stroke-opacity%3D%270.45%27/%3E%0A%3Ctext%20x%3D%27156%27%20y%3D%27429%27%20fill%3D%27%2367e8f9%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2724%27%3Eprompts%20are%20production%20artifacts%2C%20not%20scratch%20notes%3C/text%3E%0A%3Crect%20x%3D%27772%27%20y%3D%27176%27%20width%3D%27252%27%20height%3D%2756%27%20rx%3D%2714%27%20fill%3D%27%230d1728%27%20stroke%3D%27%2322d3ee%27%20stroke-opacity%3D%270.45%27/%3E%0A%3Ctext%20x%3D%27808%27%20y%3D%27212%27%20fill%3D%27%23bae6fd%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2723%27%3Ebundle%20hash%3C/text%3E%0A%3Crect%20x%3D%27772%27%20y%3D%27274%27%20width%3D%27252%27%20height%3D%2756%27%20rx%3D%2714%27%20fill%3D%27%230d1728%27%20stroke%3D%27%2322d3ee%27%20stroke-opacity%3D%270.45%27/%3E%0A%3Ctext%20x%3D%27822%27%20y%3D%27310%27%20fill%3D%27%23bae6fd%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2723%27%3Ebehavior%20diff%3C/text%3E%0A%3Crect%20x%3D%27772%27%20y%3D%27372%27%20width%3D%27252%27%20height%3D%2756%27%20rx%3D%2714%27%20fill%3D%27%230d1728%27%20stroke%3D%27%23a78bfa%27%20stroke-opacity%3D%270.45%27/%3E%0A%3Ctext%20x%3D%27810%27%20y%3D%27408%27%20fill%3D%27%23ddd6fe%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2723%27%3Erollback%20lane%3C/text%3E%0A%3C/svg%3E">
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "BlogPosting",
+      "headline": "Prompt Provenance for AI Agents That Need Safe Rollbacks",
+      "description": "A practical guide to prompt provenance for AI agents using version pins, hashable prompt bundles, behavior diffs, and rollback playbooks so prompt edits stop behaving like invisible production deploys.",
+      "image": "data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A//www.w3.org/2000/svg%27%20viewBox%3D%270%200%201200%20630%27%3E%0A%3Cdefs%3E%0A%20%20%3ClinearGradient%20id%3D%27bg%27%20x1%3D%270%27%20x2%3D%271%27%20y1%3D%270%27%20y2%3D%271%27%3E%0A%20%20%20%20%3Cstop%20offset%3D%270%25%27%20stop-color%3D%27%2307111d%27/%3E%0A%20%20%20%20%3Cstop%20offset%3D%27100%25%27%20stop-color%3D%27%23163d67%27/%3E%0A%20%20%3C/linearGradient%3E%0A%3C/defs%3E%0A%3Crect%20width%3D%271200%27%20height%3D%27630%27%20fill%3D%27url%28%23bg%29%27/%3E%0A%3Ccircle%20cx%3D%271018%27%20cy%3D%27108%27%20r%3D%27172%27%20fill%3D%27%2322d3ee%27%20fill-opacity%3D%270.14%27/%3E%0A%3Ccircle%20cx%3D%27180%27%20cy%3D%27518%27%20r%3D%27216%27%20fill%3D%27%238b5cf6%27%20fill-opacity%3D%270.16%27/%3E%0A%3Crect%20x%3D%2782%27%20y%3D%2784%27%20width%3D%271036%27%20height%3D%27462%27%20rx%3D%2732%27%20fill%3D%27%230b1220%27%20stroke%3D%27%2338bdf8%27%20stroke-opacity%3D%270.35%27/%3E%0A%3Ctext%20x%3D%27132%27%20y%3D%27172%27%20fill%3D%27white%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2742%27%20font-weight%3D%27700%27%3EPrompt%20Provenance%20for%20AI%20Agents%3C/text%3E%0A%3Ctext%20x%3D%27132%27%20y%3D%27238%27%20fill%3D%27%2393c5fd%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2742%27%20font-weight%3D%27700%27%3EThat%20Need%20Safe%20Rollbacks%3C/text%3E%0A%3Ctext%20x%3D%27132%27%20y%3D%27314%27%20fill%3D%27%23cbd5e1%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2728%27%3EVersion%20prompt%20bundles%2C%20diff%20behavior%2C%20and%20roll%20back%20bad%20edits%3C/text%3E%0A%3Ctext%20x%3D%27132%27%20y%3D%27350%27%20fill%3D%27%23cbd5e1%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2728%27%3Ebefore%20they%20quietly%20rewrite%20your%20agent%20fleet%3C/text%3E%0A%3Crect%20x%3D%27132%27%20y%3D%27394%27%20width%3D%27342%27%20height%3D%2754%27%20rx%3D%2714%27%20fill%3D%27%23111c2d%27%20stroke%3D%27%2367e8f9%27%20stroke-opacity%3D%270.45%27/%3E%0A%3Ctext%20x%3D%27156%27%20y%3D%27429%27%20fill%3D%27%2367e8f9%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2724%27%3Eprompts%20are%20production%20artifacts%2C%20not%20scratch%20notes%3C/text%3E%0A%3Crect%20x%3D%27772%27%20y%3D%27176%27%20width%3D%27252%27%20height%3D%2756%27%20rx%3D%2714%27%20fill%3D%27%230d1728%27%20stroke%3D%27%2322d3ee%27%20stroke-opacity%3D%270.45%27/%3E%0A%3Ctext%20x%3D%27808%27%20y%3D%27212%27%20fill%3D%27%23bae6fd%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2723%27%3Ebundle%20hash%3C/text%3E%0A%3Crect%20x%3D%27772%27%20y%3D%27274%27%20width%3D%27252%27%20height%3D%2756%27%20rx%3D%2714%27%20fill%3D%27%230d1728%27%20stroke%3D%27%2322d3ee%27%20stroke-opacity%3D%270.45%27/%3E%0A%3Ctext%20x%3D%27822%27%20y%3D%27310%27%20fill%3D%27%23bae6fd%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2723%27%3Ebehavior%20diff%3C/text%3E%0A%3Crect%20x%3D%27772%27%20y%3D%27372%27%20width%3D%27252%27%20height%3D%2756%27%20rx%3D%2714%27%20fill%3D%27%230d1728%27%20stroke%3D%27%23a78bfa%27%20stroke-opacity%3D%270.45%27/%3E%0A%3Ctext%20x%3D%27810%27%20y%3D%27408%27%20fill%3D%27%23ddd6fe%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2723%27%3Erollback%20lane%3C/text%3E%0A%3C/svg%3E",
+      "url": "https://negiadventures.github.io/blog/prompt-provenance-ai-agents.html",
+      "datePublished": "2026-05-24",
+      "dateModified": "2026-05-24",
+      "author": {
+        "@type": "Person",
+        "name": "Anirudh Negi",
+        "url": "https://negiadventures.github.io"
+      },
+      "publisher": {
+        "@type": "Person",
+        "name": "Anirudh Negi",
+        "url": "https://negiadventures.github.io"
+      },
+      "keywords": ["Prompt Engineering", "AI Agents", "Reliability", "MLOps", "Observability"]
+    }
+    </script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../stylesheets/stylesheet.css?v=5" media="screen">
+    <style>
+      .blog-post { max-width: 800px; margin: 0 auto; padding: 60px 20px; }
+      .blog-post-header { margin-bottom: 40px; }
+      .blog-post-nav { margin-bottom: 30px; }
+      .blog-post-nav a, .blog-footer a { color: var(--accent-strong); }
+      .blog-post-nav a:hover, .blog-footer a:hover { color: var(--accent); }
+      .blog-post-title { font-size: 2.5rem; margin-bottom: 16px; }
+      .blog-post-meta { display: flex; gap: 20px; color: var(--text-muted); font-size: 0.95rem; margin-bottom: 30px; flex-wrap: wrap; }
+      .blog-post-image { width: 100%; height: 300px; object-fit: cover; border-radius: 16px; margin-bottom: 30px; border: 1px solid var(--border); background: var(--bg-alt); }
+      .blog-post-content h2 { font-size: 1.6rem; margin-top: 40px; margin-bottom: 16px; color: var(--text-light); }
+      .blog-post-content h3 { font-size: 1.25rem; margin-top: 30px; margin-bottom: 12px; color: var(--text-light); }
+      .blog-post-content p, .blog-post-content li { line-height: 1.8; color: var(--text-muted); }
+      .blog-post-content p { margin-bottom: 16px; }
+      .blog-post-content ul, .blog-post-content ol { margin-bottom: 20px; padding-left: 24px; }
+      .code-block { background: var(--bg-alt); border: 1px solid var(--border); border-radius: 12px; padding: 20px; margin: 20px 0; overflow-x: auto; }
+      .code-block pre { margin: 0; font-family: var(--mono); font-size: 0.9rem; line-height: 1.6; color: var(--text-light); white-space: pre-wrap; }
+      .callout { border-left: 4px solid var(--accent); background: rgba(34, 211, 238, 0.08); padding: 16px 18px; border-radius: 12px; margin: 20px 0; }
+      .callout.warning { border-left-color: #f59e0b; background: rgba(245, 158, 11, 0.08); }
+      .callout strong { color: var(--text-light); }
+      .diagram-card, .table-wrap { background: var(--bg-alt); border: 1px solid var(--border); border-radius: 16px; padding: 18px; margin: 24px 0; overflow-x: auto; }
+      table { width: 100%; border-collapse: collapse; }
+      th, td { text-align: left; padding: 12px 14px; border-bottom: 1px solid var(--border); color: var(--text-muted); vertical-align: top; }
+      th { color: var(--text-light); }
+      .checklist li::marker { color: var(--accent-strong); }
+      .blog-post-tags { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 40px; padding-top: 30px; border-top: 1px solid var(--border); }
+      .blog-post-tag { background: var(--accent-soft); color: var(--accent-strong); border-radius: 999px; padding: 6px 14px; font-size: 0.85rem; font-family: var(--mono); border: 1px solid transparent; }
+      .blog-footer { margin-top: 60px; padding-top: 30px; border-top: 1px solid var(--border); text-align: center; }
+      @media (max-width: 768px) { .blog-post { padding: 40px 16px; } .blog-post-title { font-size: 2rem; } .blog-post-image { height: 200px; } }
+    </style>
+  </head>
+  <body>
+    <a href="../index.html#main" class="skip-link">Skip to main content</a>
+    <header class="site-header">
+      <div class="container blog-post">
+        <div class="blog-post-nav"><a href="index.html">&larr; Back to All Posts</a></div>
+        <div class="blog-post-header">
+          <h1 class="blog-post-title">Prompt Provenance for AI Agents That Need Safe Rollbacks</h1>
+          <div class="blog-post-meta"><span>May 24, 2026</span><span>&bull;</span><span>10 min read</span></div>
+          <img src="data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A//www.w3.org/2000/svg%27%20viewBox%3D%270%200%201200%20630%27%3E%0A%3Cdefs%3E%0A%20%20%3ClinearGradient%20id%3D%27bg%27%20x1%3D%270%27%20x2%3D%271%27%20y1%3D%270%27%20y2%3D%271%27%3E%0A%20%20%20%20%3Cstop%20offset%3D%270%25%27%20stop-color%3D%27%2307111d%27/%3E%0A%20%20%20%20%3Cstop%20offset%3D%27100%25%27%20stop-color%3D%27%23163d67%27/%3E%0A%20%20%3C/linearGradient%3E%0A%3C/defs%3E%0A%3Crect%20width%3D%271200%27%20height%3D%27630%27%20fill%3D%27url%28%23bg%29%27/%3E%0A%3Ccircle%20cx%3D%271018%27%20cy%3D%27108%27%20r%3D%27172%27%20fill%3D%27%2322d3ee%27%20fill-opacity%3D%270.14%27/%3E%0A%3Ccircle%20cx%3D%27180%27%20cy%3D%27518%27%20r%3D%27216%27%20fill%3D%27%238b5cf6%27%20fill-opacity%3D%270.16%27/%3E%0A%3Crect%20x%3D%2782%27%20y%3D%2784%27%20width%3D%271036%27%20height%3D%27462%27%20rx%3D%2732%27%20fill%3D%27%230b1220%27%20stroke%3D%27%2338bdf8%27%20stroke-opacity%3D%270.35%27/%3E%0A%3Ctext%20x%3D%27132%27%20y%3D%27172%27%20fill%3D%27white%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2742%27%20font-weight%3D%27700%27%3EPrompt%20Provenance%20for%20AI%20Agents%3C/text%3E%0A%3Ctext%20x%3D%27132%27%20y%3D%27238%27%20fill%3D%27%2393c5fd%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2742%27%20font-weight%3D%27700%27%3EThat%20Need%20Safe%20Rollbacks%3C/text%3E%0A%3Ctext%20x%3D%27132%27%20y%3D%27314%27%20fill%3D%27%23cbd5e1%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2728%27%3EVersion%20prompt%20bundles%2C%20diff%20behavior%2C%20and%20roll%20back%20bad%20edits%3C/text%3E%0A%3Ctext%20x%3D%27132%27%20y%3D%27350%27%20fill%3D%27%23cbd5e1%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2728%27%3Ebefore%20they%20quietly%20rewrite%20your%20agent%20fleet%3C/text%3E%0A%3Crect%20x%3D%27132%27%20y%3D%27394%27%20width%3D%27342%27%20height%3D%2754%27%20rx%3D%2714%27%20fill%3D%27%23111c2d%27%20stroke%3D%27%2367e8f9%27%20stroke-opacity%3D%270.45%27/%3E%0A%3Ctext%20x%3D%27156%27%20y%3D%27429%27%20fill%3D%27%2367e8f9%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2724%27%3Eprompts%20are%20production%20artifacts%2C%20not%20scratch%20notes%3C/text%3E%0A%3Crect%20x%3D%27772%27%20y%3D%27176%27%20width%3D%27252%27%20height%3D%2756%27%20rx%3D%2714%27%20fill%3D%27%230d1728%27%20stroke%3D%27%2322d3ee%27%20stroke-opacity%3D%270.45%27/%3E%0A%3Ctext%20x%3D%27808%27%20y%3D%27212%27%20fill%3D%27%23bae6fd%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2723%27%3Ebundle%20hash%3C/text%3E%0A%3Crect%20x%3D%27772%27%20y%3D%27274%27%20width%3D%27252%27%20height%3D%2756%27%20rx%3D%2714%27%20fill%3D%27%230d1728%27%20stroke%3D%27%2322d3ee%27%20stroke-opacity%3D%270.45%27/%3E%0A%3Ctext%20x%3D%27822%27%20y%3D%27310%27%20fill%3D%27%23bae6fd%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2723%27%3Ebehavior%20diff%3C/text%3E%0A%3Crect%20x%3D%27772%27%20y%3D%27372%27%20width%3D%27252%27%20height%3D%2756%27%20rx%3D%2714%27%20fill%3D%27%230d1728%27%20stroke%3D%27%23a78bfa%27%20stroke-opacity%3D%270.45%27/%3E%0A%3Ctext%20x%3D%27810%27%20y%3D%27408%27%20fill%3D%27%23ddd6fe%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2723%27%3Erollback%20lane%3C/text%3E%0A%3C/svg%3E" alt="Prompt Provenance for AI Agents That Need Safe Rollbacks" class="blog-post-image">
+        </div>
+        <div class="blog-post-content">
+          <p>A lot of teams still treat prompt changes like a harmless text edit. Then a two-line instruction tweak lands on Friday, tool selection shifts, retries spike, and nobody can say which prompt version actually caused the mess.</p>
+          <p>That is the uncomfortable part of agent systems. Behavior often changes before code does. If prompts are not versioned, hashed, evaluated, and rolled out like real production artifacts, debugging turns into folklore.</p>
+          <p>This guide shows how to build prompt provenance for AI agents: versioned prompt bundles, immutable hashes, behavior diff runs, and a rollback path that is actually fast enough to use during an incident.</p>
+          <h2>Why this matters</h2>
+          <p>In production agent workflows, prompts are part of the executable system. They influence tool selection, retrieval behavior, safety boundaries, verbosity, spend, and escalation patterns. If you only version application code, you lose the trail when an agent starts over-calling tools or suddenly sounding more confident while being more wrong.</p>
+          <div class="callout"><strong>Bottom line:</strong> treat prompts like configuration with blast radius, not like scratchpad prose. Every prompt change should ship with identity, evidence, and a rollback handle.</div>
+          <h2>Architecture or workflow overview</h2>
+          <div class="diagram-card"><pre><code>authoring repo
+  -> bundle manifest + rendered hash
+  -> prompt registry
+  -> offline eval suite
+  -> canary rollout policy
+  -> runtime resolver
+  -> traces tagged with bundle_id
+  -> dashboards and rollback</code></pre></div>
+          <div class="code-block"><pre><code class="language-mermaid">flowchart LR
+    A[Prompt authoring repo] --> B[Bundle manifest + hash]
+    B --> C[Prompt registry]
+    C --> D[Offline eval suite]
+    D --> E[Gradual rollout policy]
+    E --> F[Runtime resolver]
+    F --> G[Agent traces with bundle_id]
+    G --> H[Cost, safety, and failure dashboards]
+    H --> I[Rollback or promote]</code></pre></div>
+          <p>The key design choice is that the runtime never asks for the latest prompt. It asks for a resolved bundle ID, and every trace, tool call, and outcome record carries that ID forward.</p>
+          <h2>Implementation details</h2>
+          <h3>1. Define a prompt bundle as a versioned artifact</h3>
+          <p>A prompt bundle should capture more than the main system prompt. Include the exact policy fragments, tool instructions, retrieval hints, and templating variables that affect behavior.</p>
+          <div class="code-block"><pre><code>bundle_id: support-agent@2026-05-24.1
+model_family: gpt-5-class
+owner: platform-ai
+files:
+  - prompts/system.md
+  - prompts/tool_rules.md
+  - prompts/escalation.md
+variables_schema: schemas/support-agent-vars.json
+defaults:
+  tone: concise
+  max_tool_hops: 4
+eval_suite: evals/support-regression.yaml
+rollout:
+  lane: canary
+  initial_percent: 5</code></pre></div>
+          <p>This is boring on purpose. The manifest gives you something reviewable, diffable, and easy to pin in deployment config.</p>
+          <h3>2. Hash the fully rendered bundle</h3>
+          <p>Hashing only the top-level prompt file misses included fragments and default variables. Resolve the full bundle first, then hash the canonical output.</p>
+          <div class="code-block"><pre><code>import hashlib
+import json
+from pathlib import Path
+
+
+def render_bundle(manifest: dict, root: Path) -> dict:
+    rendered = {
+        "bundle_id": manifest["bundle_id"],
+        "model_family": manifest["model_family"],
+        "defaults": manifest.get("defaults", {}),
+        "files": {}
+    }
+    for relpath in manifest["files"]:
+        rendered["files"][relpath] = (root / relpath).read_text().strip()
+    return rendered
+
+
+def bundle_hash(rendered: dict) -> str:
+    payload = json.dumps(rendered, sort_keys=True, separators=(",", ":"))
+    return hashlib.sha256(payload.encode()).hexdigest()</code></pre></div>
+          <p>If a trace says <code>bundle_hash=5eb8...</code>, you can reconstruct the exact instructions that produced a bad action. That is a huge debugging upgrade.</p>
+          <h3>3. Resolve prompts through a registry</h3>
+          <p>A registry can be simple object storage plus metadata or a formal config service. What matters is that the application resolves an approved bundle and emits the chosen ID in telemetry.</p>
+          <div class="code-block"><pre><code>export async function resolvePromptBundle(agentName: string, lane: "canary" | "stable") {
+  const response = await fetch(`${process.env.PROMPT_REGISTRY_URL}/v1/bundles/resolve?agent=${agentName}&lane=${lane}`);
+  if (!response.ok) throw new Error(`bundle resolve failed: ${response.status}`);
+
+  const bundle = await response.json();
+  return {
+    bundleId: bundle.bundle_id,
+    bundleHash: bundle.bundle_hash,
+    systemPrompt: bundle.rendered.files["prompts/system.md"],
+    toolRules: bundle.rendered.files["prompts/tool_rules.md"],
+    escalationRules: bundle.rendered.files["prompts/escalation.md"]
+  };
+}</code></pre></div>
+          <div class="callout warning"><strong>Pitfall:</strong> the app should not silently fall back to a stale inline prompt string. For write-capable agents, fail closed or use only the last known-good pinned bundle.</div>
+          <h3>4. Run behavior diffs before promotion</h3>
+          <p>String diffs are easy, but behavior diffs catch what matters: tool choice, refusal rate, cost, latency, and escalation behavior.</p>
+          <div class="code-block"><pre><code>promptctl diff   --candidate support-agent@2026-05-24.1   --baseline support-agent@2026-05-17.2   --eval-suite evals/support-regression.yaml   --metrics answer_quality,tool_calls,escalations,p95_latency,total_tokens</code></pre></div>
+          <div class="code-block"><pre><code>suite: support-regression
+baseline: support-agent@2026-05-17.2
+candidate: support-agent@2026-05-24.1
+
+answer_quality      +1.8%
+tool_calls          +19.4%
+escalations         -8.1%
+p95_latency         +11.2%
+total_tokens        +14.7%
+
+warning: candidate overuses refund_lookup on low-confidence tickets
+recommendation: hold promotion, tighten tool_rules.md confidence threshold</code></pre></div>
+          <h2>Tradeoff table</h2>
+          <div class="table-wrap"><table><thead><tr><th>Approach</th><th>What it optimizes</th><th>Failure mode</th><th>My take</th></tr></thead><tbody><tr><td>Inline prompt strings in app code</td><td>Simplicity</td><td>No provenance, awkward rollback</td><td>Fine for prototypes only</td></tr><tr><td>Git-only prompt files</td><td>Reviewability</td><td>Runtime may not know what version is live</td><td>Better, but incomplete</td></tr><tr><td>Registry with pinned bundle IDs</td><td>Reproducibility and rollback</td><td>Needs metadata discipline</td><td>Best default for serious agents</td></tr><tr><td>Dynamic latest prompt fetches</td><td>Fast iteration</td><td>Incident debugging becomes guesswork</td><td>I would avoid this</td></tr></tbody></table></div>
+          <h2>What went wrong and the tradeoffs</h2>
+          <h3>Prompt includes drift quietly breaks reproducibility</h3>
+          <p>Teams often version the main prompt but let included snippets come from another branch, a CMS entry, or a manually edited knowledge blob. The result is fake provenance.</p>
+          <p><strong>What I would not do:</strong> mix versioned and non-versioned prompt fragments for the same agent path.</p>
+          <h3>Canary metrics can look good while tool misuse gets worse</h3>
+          <p>A prompt that lowers escalations may simply be making the agent more willing to act. That can look like success until you inspect tool-call classes or side effects.</p>
+          <p><strong>Best practice:</strong> compare behavior by task slice, not just blended averages.</p>
+          <h3>Rollback is useless if caches keep serving the bad bundle</h3>
+          <p>If your runtime caches bundle resolution too aggressively, the control plane says rolled back while half the fleet still runs the broken version.</p>
+          <p><strong>Reliability concern:</strong> keep bundle TTLs short, log the resolved bundle per request, and expose a purge path for incidents.</p>
+          <h3>Security review matters for prompt changes too</h3>
+          <p>Prompt edits can widen data disclosure or make agents more vulnerable to prompt injection via tool output. A just docs mindset is risky here.</p>
+          <ul>
+            <li><a href="https://opentelemetry.io/docs/specs/">OpenTelemetry semantic conventions</a></li>
+            <li><a href="https://cheatsheetseries.owasp.org/cheatsheets/LLM_Prompt_Injection_Prevention_Cheat_Sheet.html">OWASP LLM Prompt Injection Prevention Cheat Sheet</a></li>
+            <li><a href="https://modelcontextprotocol.io/">Model Context Protocol</a></li>
+          </ul>
+          <h2>Practical checklist</h2>
+          <ul class="checklist">
+            <li>Every production agent resolves a pinned <code>bundle_id</code> and <code>bundle_hash</code></li>
+            <li>All prompt fragments and defaults are included in the rendered hash</li>
+            <li>Runtime traces attach bundle metadata to model and tool spans</li>
+            <li>Prompt changes run an eval suite before promotion</li>
+            <li>Canary rollout has explicit promotion and rollback thresholds</li>
+            <li>Last known-good bundle is cached for safe fallback</li>
+            <li>Security-sensitive prompt changes get the same review discipline as code</li>
+          </ul>
+          <h2>Terminal workflow example</h2>
+          <div class="code-block"><pre><code>$ promptctl publish prompts/support-agent.bundle.yaml
+published bundle_id=support-agent@2026-05-24.1
+bundle_hash=5eb8fd2d58c7b3...
+status=awaiting-eval
+
+$ promptctl promote support-agent@2026-05-24.1 --lane canary --percent 5
+promotion started
+
+$ promptctl rollback support-agent --to support-agent@2026-05-17.2
+rollback complete
+fleet convergence: 96% in 40s</code></pre></div>
+          <h2>Conclusion</h2>
+          <p>If an agent prompt can change behavior, it deserves provenance. Once you version bundles, attach hashes to traces, and keep rollback boring, prompt incidents stop feeling mystical and start feeling like normal engineering.</p>
+          <p>That is the real win. Not prettier prompt files, but faster answers when something weird happens at 2 AM.</p>
+          <div class="blog-post-tags"><span class="blog-post-tag">Prompt Engineering</span><span class="blog-post-tag">AI Agents</span><span class="blog-post-tag">Reliability</span><span class="blog-post-tag">MLOps</span><span class="blog-post-tag">Observability</span></div>
+        </div>
+        <div class="blog-footer"><p><a href="index.html">← Back to all posts</a></p></div>
+      </div>
+    </header>
+  </body>
+</html>

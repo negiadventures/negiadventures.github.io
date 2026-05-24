@@ -1,6 +1,14 @@
 {
   "topics": [
     {
+      "date": "2026-05-24",
+      "skill": "Prompt provenance for AI agents",
+      "topic": "Using versioned prompt bundles, rendered hashes, behavior diffs, registry-based resolution, and rollback playbooks so prompt edits stop acting like invisible production deploys",
+      "slug": "prompt-provenance-ai-agents",
+      "title": "Prompt Provenance for AI Agents That Need Safe Rollbacks",
+      "summary": "A practical guide to prompt provenance for AI agents using version pins, hashable prompt bundles, behavior diffs, and rollback playbooks so prompt edits stop behaving like invisible production deploys."
+    },
+    {
       "date": "2026-05-23",
       "skill": "Token spend anomaly detection for always-on AI agents",
       "topic": "Using lane-aware usage labels, rolling EWMA baselines, cache-ratio signals, and operator-friendly alerts so always-on agent workflows reveal quiet prompt inflation before it turns into a month-end billing surprise",
