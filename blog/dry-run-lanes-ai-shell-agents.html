@@ -1,0 +1,290 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="A practical guide to dry-run lanes for AI agents that execute shell commands using command risk classification, diff previews, ephemeral sandboxes, and promotion gates before anything mutates a real system.">
+    <meta name="author" content="Anirudh Negi">
+    <title>Dry-Run Lanes for AI Agents That Need to Execute Shell Commands | Anirudh Negi</title>
+    <link rel="icon" type="image/svg+xml" href="../images/favicon.svg">
+    <link rel="canonical" href="https://negiadventures.github.io/blog/dry-run-lanes-ai-shell-agents.html">
+    <meta property="og:type" content="article">
+    <meta property="og:url" content="https://negiadventures.github.io/blog/dry-run-lanes-ai-shell-agents.html">
+    <meta property="og:title" content="Dry-Run Lanes for AI Agents That Need to Execute Shell Commands | Anirudh Negi">
+    <meta property="og:description" content="A practical guide to dry-run lanes for AI agents that execute shell commands using command risk classification, diff previews, ephemeral sandboxes, and promotion gates before anything mutates a real system.">
+    <meta property="og:image" content="data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A//www.w3.org/2000/svg%27%20viewBox%3D%270%200%201200%20630%27%3E%0A%3Cdefs%3E%0A%20%20%3ClinearGradient%20id%3D%27bg%27%20x1%3D%270%27%20x2%3D%271%27%20y1%3D%270%27%20y2%3D%271%27%3E%0A%20%20%20%20%3Cstop%20offset%3D%270%25%27%20stop-color%3D%27%2307111d%27/%3E%0A%20%20%20%20%3Cstop%20offset%3D%27100%25%27%20stop-color%3D%27%23183d67%27/%3E%0A%20%20%3C/linearGradient%3E%0A%3C/defs%3E%0A%3Crect%20width%3D%271200%27%20height%3D%27630%27%20fill%3D%27url%28%23bg%29%27/%3E%0A%3Ccircle%20cx%3D%271018%27%20cy%3D%27108%27%20r%3D%27172%27%20fill%3D%27%2322d3ee%27%20fill-opacity%3D%270.14%27/%3E%0A%3Ccircle%20cx%3D%27180%27%20cy%3D%27518%27%20r%3D%27216%27%20fill%3D%27%238b5cf6%27%20fill-opacity%3D%270.16%27/%3E%0A%3Crect%20x%3D%2782%27%20y%3D%2784%27%20width%3D%271036%27%20height%3D%27462%27%20rx%3D%2732%27%20fill%3D%27%230b1220%27%20stroke%3D%27%2338bdf8%27%20stroke-opacity%3D%270.35%27/%3E%0A%3Ctext%20x%3D%27132%27%20y%3D%27172%27%20fill%3D%27white%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2742%27%20font-weight%3D%27700%27%3EDry-Run%20Lanes%20for%20AI%20Agents%3C/text%3E%0A%3Ctext%20x%3D%27132%27%20y%3D%27238%27%20fill%3D%27%2393c5fd%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2742%27%20font-weight%3D%27700%27%3EThat%20Need%20to%20Execute%20Shell%20Commands%3C/text%3E%0A%3Ctext%20x%3D%27132%27%20y%3D%27314%27%20fill%3D%27%23cbd5e1%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2728%27%3ERehearse%20dangerous%20commands%20in%20a%20sandbox%2C%20diff%20the%20side%20effects%2C%3C/text%3E%0A%3Ctext%20x%3D%27132%27%20y%3D%27350%27%20fill%3D%27%23cbd5e1%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2728%27%3Ethen%20promote%20only%20the%20runs%20that%20prove%20their%20intent%3C/text%3E%0A%3Crect%20x%3D%27132%27%20y%3D%27394%27%20width%3D%27326%27%20height%3D%2754%27%20rx%3D%2714%27%20fill%3D%27%23111c2d%27%20stroke%3D%27%2367e8f9%27%20stroke-opacity%3D%270.45%27/%3E%0A%3Ctext%20x%3D%27156%27%20y%3D%27429%27%20fill%3D%27%2367e8f9%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2724%27%3Eshell%20automation%20needs%20rehearsal%2C%20not%20blind%20trust%3C/text%3E%0A%3Crect%20x%3D%27772%27%20y%3D%27176%27%20width%3D%27252%27%20height%3D%2756%27%20rx%3D%2714%27%20fill%3D%27%230d1728%27%20stroke%3D%27%2322d3ee%27%20stroke-opacity%3D%270.45%27/%3E%0A%3Ctext%20x%3D%27806%27%20y%3D%27212%27%20fill%3D%27%23bae6fd%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2723%27%3Eclassify%20risk%3C/text%3E%0A%3Crect%20x%3D%27772%27%20y%3D%27274%27%20width%3D%27252%27%20height%3D%2756%27%20rx%3D%2714%27%20fill%3D%27%230d1728%27%20stroke%3D%27%2322d3ee%27%20stroke-opacity%3D%270.45%27/%3E%0A%3Ctext%20x%3D%27798%27%20y%3D%27310%27%20fill%3D%27%23bae6fd%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2723%27%3Edry-run%20sandbox%3C/text%3E%0A%3Crect%20x%3D%27772%27%20y%3D%27372%27%20width%3D%27252%27%20height%3D%2756%27%20rx%3D%2714%27%20fill%3D%27%230d1728%27%20stroke%3D%27%23a78bfa%27%20stroke-opacity%3D%270.45%27/%3E%0A%3Ctext%20x%3D%27814%27%20y%3D%27408%27%20fill%3D%27%23ddd6fe%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2723%27%3Epromote%20live%3C/text%3E%0A%3C/svg%3E">
+    <meta property="article:published_time" content="2026-05-25">
+    <meta property="article:author" content="Anirudh Negi">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:url" content="https://negiadventures.github.io/blog/dry-run-lanes-ai-shell-agents.html">
+    <meta name="twitter:title" content="Dry-Run Lanes for AI Agents That Need to Execute Shell Commands | Anirudh Negi">
+    <meta name="twitter:description" content="A practical guide to dry-run lanes for AI agents that execute shell commands using command risk classification, diff previews, ephemeral sandboxes, and promotion gates before anything mutates a real system.">
+    <meta name="twitter:image" content="data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A//www.w3.org/2000/svg%27%20viewBox%3D%270%200%201200%20630%27%3E%0A%3Cdefs%3E%0A%20%20%3ClinearGradient%20id%3D%27bg%27%20x1%3D%270%27%20x2%3D%271%27%20y1%3D%270%27%20y2%3D%271%27%3E%0A%20%20%20%20%3Cstop%20offset%3D%270%25%27%20stop-color%3D%27%2307111d%27/%3E%0A%20%20%20%20%3Cstop%20offset%3D%27100%25%27%20stop-color%3D%27%23183d67%27/%3E%0A%20%20%3C/linearGradient%3E%0A%3C/defs%3E%0A%3Crect%20width%3D%271200%27%20height%3D%27630%27%20fill%3D%27url%28%23bg%29%27/%3E%0A%3Ccircle%20cx%3D%271018%27%20cy%3D%27108%27%20r%3D%27172%27%20fill%3D%27%2322d3ee%27%20fill-opacity%3D%270.14%27/%3E%0A%3Ccircle%20cx%3D%27180%27%20cy%3D%27518%27%20r%3D%27216%27%20fill%3D%27%238b5cf6%27%20fill-opacity%3D%270.16%27/%3E%0A%3Crect%20x%3D%2782%27%20y%3D%2784%27%20width%3D%271036%27%20height%3D%27462%27%20rx%3D%2732%27%20fill%3D%27%230b1220%27%20stroke%3D%27%2338bdf8%27%20stroke-opacity%3D%270.35%27/%3E%0A%3Ctext%20x%3D%27132%27%20y%3D%27172%27%20fill%3D%27white%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2742%27%20font-weight%3D%27700%27%3EDry-Run%20Lanes%20for%20AI%20Agents%3C/text%3E%0A%3Ctext%20x%3D%27132%27%20y%3D%27238%27%20fill%3D%27%2393c5fd%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2742%27%20font-weight%3D%27700%27%3EThat%20Need%20to%20Execute%20Shell%20Commands%3C/text%3E%0A%3Ctext%20x%3D%27132%27%20y%3D%27314%27%20fill%3D%27%23cbd5e1%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2728%27%3ERehearse%20dangerous%20commands%20in%20a%20sandbox%2C%20diff%20the%20side%20effects%2C%3C/text%3E%0A%3Ctext%20x%3D%27132%27%20y%3D%27350%27%20fill%3D%27%23cbd5e1%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2728%27%3Ethen%20promote%20only%20the%20runs%20that%20prove%20their%20intent%3C/text%3E%0A%3Crect%20x%3D%27132%27%20y%3D%27394%27%20width%3D%27326%27%20height%3D%2754%27%20rx%3D%2714%27%20fill%3D%27%23111c2d%27%20stroke%3D%27%2367e8f9%27%20stroke-opacity%3D%270.45%27/%3E%0A%3Ctext%20x%3D%27156%27%20y%3D%27429%27%20fill%3D%27%2367e8f9%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2724%27%3Eshell%20automation%20needs%20rehearsal%2C%20not%20blind%20trust%3C/text%3E%0A%3Crect%20x%3D%27772%27%20y%3D%27176%27%20width%3D%27252%27%20height%3D%2756%27%20rx%3D%2714%27%20fill%3D%27%230d1728%27%20stroke%3D%27%2322d3ee%27%20stroke-opacity%3D%270.45%27/%3E%0A%3Ctext%20x%3D%27806%27%20y%3D%27212%27%20fill%3D%27%23bae6fd%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2723%27%3Eclassify%20risk%3C/text%3E%0A%3Crect%20x%3D%27772%27%20y%3D%27274%27%20width%3D%27252%27%20height%3D%2756%27%20rx%3D%2714%27%20fill%3D%27%230d1728%27%20stroke%3D%27%2322d3ee%27%20stroke-opacity%3D%270.45%27/%3E%0A%3Ctext%20x%3D%27798%27%20y%3D%27310%27%20fill%3D%27%23bae6fd%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2723%27%3Edry-run%20sandbox%3C/text%3E%0A%3Crect%20x%3D%27772%27%20y%3D%27372%27%20width%3D%27252%27%20height%3D%2756%27%20rx%3D%2714%27%20fill%3D%27%230d1728%27%20stroke%3D%27%23a78bfa%27%20stroke-opacity%3D%270.45%27/%3E%0A%3Ctext%20x%3D%27814%27%20y%3D%27408%27%20fill%3D%27%23ddd6fe%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2723%27%3Epromote%20live%3C/text%3E%0A%3C/svg%3E">
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "BlogPosting",
+      "headline": "Dry-Run Lanes for AI Agents That Need to Execute Shell Commands",
+      "description": "A practical guide to dry-run lanes for AI agents that execute shell commands using command risk classification, diff previews, ephemeral sandboxes, and promotion gates before anything mutates a real system.",
+      "image": "data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A//www.w3.org/2000/svg%27%20viewBox%3D%270%200%201200%20630%27%3E%0A%3Cdefs%3E%0A%20%20%3ClinearGradient%20id%3D%27bg%27%20x1%3D%270%27%20x2%3D%271%27%20y1%3D%270%27%20y2%3D%271%27%3E%0A%20%20%20%20%3Cstop%20offset%3D%270%25%27%20stop-color%3D%27%2307111d%27/%3E%0A%20%20%20%20%3Cstop%20offset%3D%27100%25%27%20stop-color%3D%27%23183d67%27/%3E%0A%20%20%3C/linearGradient%3E%0A%3C/defs%3E%0A%3Crect%20width%3D%271200%27%20height%3D%27630%27%20fill%3D%27url%28%23bg%29%27/%3E%0A%3Ccircle%20cx%3D%271018%27%20cy%3D%27108%27%20r%3D%27172%27%20fill%3D%27%2322d3ee%27%20fill-opacity%3D%270.14%27/%3E%0A%3Ccircle%20cx%3D%27180%27%20cy%3D%27518%27%20r%3D%27216%27%20fill%3D%27%238b5cf6%27%20fill-opacity%3D%270.16%27/%3E%0A%3Crect%20x%3D%2782%27%20y%3D%2784%27%20width%3D%271036%27%20height%3D%27462%27%20rx%3D%2732%27%20fill%3D%27%230b1220%27%20stroke%3D%27%2338bdf8%27%20stroke-opacity%3D%270.35%27/%3E%0A%3Ctext%20x%3D%27132%27%20y%3D%27172%27%20fill%3D%27white%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2742%27%20font-weight%3D%27700%27%3EDry-Run%20Lanes%20for%20AI%20Agents%3C/text%3E%0A%3Ctext%20x%3D%27132%27%20y%3D%27238%27%20fill%3D%27%2393c5fd%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2742%27%20font-weight%3D%27700%27%3EThat%20Need%20to%20Execute%20Shell%20Commands%3C/text%3E%0A%3Ctext%20x%3D%27132%27%20y%3D%27314%27%20fill%3D%27%23cbd5e1%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2728%27%3ERehearse%20dangerous%20commands%20in%20a%20sandbox%2C%20diff%20the%20side%20effects%2C%3C/text%3E%0A%3Ctext%20x%3D%27132%27%20y%3D%27350%27%20fill%3D%27%23cbd5e1%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2728%27%3Ethen%20promote%20only%20the%20runs%20that%20prove%20their%20intent%3C/text%3E%0A%3Crect%20x%3D%27132%27%20y%3D%27394%27%20width%3D%27326%27%20height%3D%2754%27%20rx%3D%2714%27%20fill%3D%27%23111c2d%27%20stroke%3D%27%2367e8f9%27%20stroke-opacity%3D%270.45%27/%3E%0A%3Ctext%20x%3D%27156%27%20y%3D%27429%27%20fill%3D%27%2367e8f9%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2724%27%3Eshell%20automation%20needs%20rehearsal%2C%20not%20blind%20trust%3C/text%3E%0A%3Crect%20x%3D%27772%27%20y%3D%27176%27%20width%3D%27252%27%20height%3D%2756%27%20rx%3D%2714%27%20fill%3D%27%230d1728%27%20stroke%3D%27%2322d3ee%27%20stroke-opacity%3D%270.45%27/%3E%0A%3Ctext%20x%3D%27806%27%20y%3D%27212%27%20fill%3D%27%23bae6fd%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2723%27%3Eclassify%20risk%3C/text%3E%0A%3Crect%20x%3D%27772%27%20y%3D%27274%27%20width%3D%27252%27%20height%3D%2756%27%20rx%3D%2714%27%20fill%3D%27%230d1728%27%20stroke%3D%27%2322d3ee%27%20stroke-opacity%3D%270.45%27/%3E%0A%3Ctext%20x%3D%27798%27%20y%3D%27310%27%20fill%3D%27%23bae6fd%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2723%27%3Edry-run%20sandbox%3C/text%3E%0A%3Crect%20x%3D%27772%27%20y%3D%27372%27%20width%3D%27252%27%20height%3D%2756%27%20rx%3D%2714%27%20fill%3D%27%230d1728%27%20stroke%3D%27%23a78bfa%27%20stroke-opacity%3D%270.45%27/%3E%0A%3Ctext%20x%3D%27814%27%20y%3D%27408%27%20fill%3D%27%23ddd6fe%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2723%27%3Epromote%20live%3C/text%3E%0A%3C/svg%3E",
+      "url": "https://negiadventures.github.io/blog/dry-run-lanes-ai-shell-agents.html",
+      "datePublished": "2026-05-25",
+      "author": {
+        "@type": "Person",
+        "name": "Anirudh Negi",
+        "url": "https://negiadventures.github.io"
+      },
+      "publisher": {
+        "@type": "Person",
+        "name": "Anirudh Negi",
+        "url": "https://negiadventures.github.io"
+      },
+      "keywords": "AI Agents, Shell Safety, Automation, DevOps, Reliability"
+    }
+    </script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../stylesheets/stylesheet.css?v=5" media="screen">
+    <style>
+      .blog-post { max-width: 860px; margin: 0 auto; padding: 60px 20px; }
+      .blog-post-nav { margin-bottom: 30px; }
+      .blog-post-nav a, .blog-footer a { color: var(--accent-strong); }
+      .blog-post-nav a:hover, .blog-footer a:hover { color: var(--accent); }
+      .blog-post-title { font-size: 2.5rem; margin-bottom: 16px; }
+      .blog-post-meta { display: flex; gap: 18px; flex-wrap: wrap; color: var(--text-muted); margin-bottom: 28px; }
+      .blog-post-image { width: 100%; height: 300px; object-fit: cover; border-radius: 16px; margin-bottom: 28px; border: 1px solid var(--border); background: var(--bg-alt); }
+      .blog-post-content h2 { font-size: 1.65rem; margin-top: 40px; margin-bottom: 16px; color: var(--text-light); }
+      .blog-post-content h3 { font-size: 1.25rem; margin-top: 28px; margin-bottom: 12px; color: var(--text-light); }
+      .blog-post-content p, .blog-post-content li { line-height: 1.8; color: var(--text-muted); }
+      .blog-post-content ul, .blog-post-content ol { margin-bottom: 20px; padding-left: 22px; }
+      .code-block, .callout, .mermaid-block, .terminal-block { background: var(--bg-alt); border: 1px solid var(--border); border-radius: 14px; padding: 20px; margin: 20px 0; overflow-x: auto; }
+      .code-block pre, .mermaid-block pre, .terminal-block pre { margin: 0; font-family: var(--mono); font-size: 0.9rem; line-height: 1.65; color: var(--text-light); white-space: pre-wrap; }
+      .callout { border-left: 4px solid var(--accent); }
+      .table-wrap { overflow-x: auto; margin: 22px 0; }
+      table { width: 100%; border-collapse: collapse; font-size: 0.95rem; }
+      th, td { border: 1px solid var(--border); padding: 12px 14px; text-align: left; vertical-align: top; }
+      th { color: var(--text-light); background: rgba(148, 163, 184, 0.08); }
+      td { color: var(--text-muted); }
+      .blog-post-tags { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 40px; padding-top: 28px; border-top: 1px solid var(--border); }
+      .blog-post-tag { background: var(--accent-soft); color: var(--accent-strong); border-radius: 999px; padding: 6px 14px; font-size: 0.85rem; font-family: var(--mono); }
+      .blog-footer { margin-top: 56px; padding-top: 28px; border-top: 1px solid var(--border); text-align: center; }
+      @media (max-width: 768px) { .blog-post { padding: 40px 16px; } .blog-post-title { font-size: 2rem; } .blog-post-image { height: 220px; } }
+    </style>
+  </head>
+  <body>
+    <a href="../index.html#main" class="skip-link">Skip to main content</a>
+    <header class="site-header">
+      <div class="container blog-post">
+        <div class="blog-post-nav"><a href="index.html">&larr; Back to All Posts</a></div>
+        <div class="blog-post-header">
+          <h1 class="blog-post-title">Dry-Run Lanes for AI Agents That Need to Execute Shell Commands</h1>
+          <div class="blog-post-meta"><span>May 25, 2026</span><span>&bull;</span><span>14 min read</span><span>&bull;</span><span>Command Safety</span></div>
+          <img src="data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A//www.w3.org/2000/svg%27%20viewBox%3D%270%200%201200%20630%27%3E%0A%3Cdefs%3E%0A%20%20%3ClinearGradient%20id%3D%27bg%27%20x1%3D%270%27%20x2%3D%271%27%20y1%3D%270%27%20y2%3D%271%27%3E%0A%20%20%20%20%3Cstop%20offset%3D%270%25%27%20stop-color%3D%27%2307111d%27/%3E%0A%20%20%20%20%3Cstop%20offset%3D%27100%25%27%20stop-color%3D%27%23183d67%27/%3E%0A%20%20%3C/linearGradient%3E%0A%3C/defs%3E%0A%3Crect%20width%3D%271200%27%20height%3D%27630%27%20fill%3D%27url%28%23bg%29%27/%3E%0A%3Ccircle%20cx%3D%271018%27%20cy%3D%27108%27%20r%3D%27172%27%20fill%3D%27%2322d3ee%27%20fill-opacity%3D%270.14%27/%3E%0A%3Ccircle%20cx%3D%27180%27%20cy%3D%27518%27%20r%3D%27216%27%20fill%3D%27%238b5cf6%27%20fill-opacity%3D%270.16%27/%3E%0A%3Crect%20x%3D%2782%27%20y%3D%2784%27%20width%3D%271036%27%20height%3D%27462%27%20rx%3D%2732%27%20fill%3D%27%230b1220%27%20stroke%3D%27%2338bdf8%27%20stroke-opacity%3D%270.35%27/%3E%0A%3Ctext%20x%3D%27132%27%20y%3D%27172%27%20fill%3D%27white%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2742%27%20font-weight%3D%27700%27%3EDry-Run%20Lanes%20for%20AI%20Agents%3C/text%3E%0A%3Ctext%20x%3D%27132%27%20y%3D%27238%27%20fill%3D%27%2393c5fd%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2742%27%20font-weight%3D%27700%27%3EThat%20Need%20to%20Execute%20Shell%20Commands%3C/text%3E%0A%3Ctext%20x%3D%27132%27%20y%3D%27314%27%20fill%3D%27%23cbd5e1%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2728%27%3ERehearse%20dangerous%20commands%20in%20a%20sandbox%2C%20diff%20the%20side%20effects%2C%3C/text%3E%0A%3Ctext%20x%3D%27132%27%20y%3D%27350%27%20fill%3D%27%23cbd5e1%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2728%27%3Ethen%20promote%20only%20the%20runs%20that%20prove%20their%20intent%3C/text%3E%0A%3Crect%20x%3D%27132%27%20y%3D%27394%27%20width%3D%27326%27%20height%3D%2754%27%20rx%3D%2714%27%20fill%3D%27%23111c2d%27%20stroke%3D%27%2367e8f9%27%20stroke-opacity%3D%270.45%27/%3E%0A%3Ctext%20x%3D%27156%27%20y%3D%27429%27%20fill%3D%27%2367e8f9%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2724%27%3Eshell%20automation%20needs%20rehearsal%2C%20not%20blind%20trust%3C/text%3E%0A%3Crect%20x%3D%27772%27%20y%3D%27176%27%20width%3D%27252%27%20height%3D%2756%27%20rx%3D%2714%27%20fill%3D%27%230d1728%27%20stroke%3D%27%2322d3ee%27%20stroke-opacity%3D%270.45%27/%3E%0A%3Ctext%20x%3D%27806%27%20y%3D%27212%27%20fill%3D%27%23bae6fd%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2723%27%3Eclassify%20risk%3C/text%3E%0A%3Crect%20x%3D%27772%27%20y%3D%27274%27%20width%3D%27252%27%20height%3D%2756%27%20rx%3D%2714%27%20fill%3D%27%230d1728%27%20stroke%3D%27%2322d3ee%27%20stroke-opacity%3D%270.45%27/%3E%0A%3Ctext%20x%3D%27798%27%20y%3D%27310%27%20fill%3D%27%23bae6fd%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2723%27%3Edry-run%20sandbox%3C/text%3E%0A%3Crect%20x%3D%27772%27%20y%3D%27372%27%20width%3D%27252%27%20height%3D%2756%27%20rx%3D%2714%27%20fill%3D%27%230d1728%27%20stroke%3D%27%23a78bfa%27%20stroke-opacity%3D%270.45%27/%3E%0A%3Ctext%20x%3D%27814%27%20y%3D%27408%27%20fill%3D%27%23ddd6fe%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2723%27%3Epromote%20live%3C/text%3E%0A%3C/svg%3E" alt="Dry-Run Lanes for AI Agents That Need to Execute Shell Commands" class="blog-post-image">
+        </div>
+        <div class="blog-post-content">
+          <p>Too many agent demos jump straight from "the model proposed a command" to "the command ran on something that matters." That is fine for <code>ls</code>. It is reckless for <code>sed -i</code>, <code>terraform apply</code>, <code>gh pr merge</code>, or a shell pipeline with hidden deletes in the middle.</p>
+          <p>The practical fix is a dry-run lane. Before a command gets real access, the agent rehearses it in a constrained sandbox, captures the diff, and proves the command shape matches the declared intent. If the rehearsal cannot be trusted, the live run should not happen.</p>
+          <p>This post walks through a command safety pattern I like for agentic automation: classify the command, run it in a throwaway environment, inspect file and process side effects, then promote only low-surprise commands to a live lane.</p>
+
+          <h2>Why this matters</h2>
+          <p>Shell is still the universal adapter for engineering work. Even if your agent mostly calls structured tools, real workflows still end in commands like test runs, deploy scripts, migration helpers, changelog generators, and repo maintenance tasks.</p>
+          <p>The failure mode is rarely a dramatic joke command. It is more often a plausible command that targets the wrong directory, rewrites a broader file set than intended, leaks environment variables into logs, or passes in rehearsal but fails live because the sandbox hid a missing secret or mounted path.</p>
+          <div class="callout">
+            <strong>Best-practice callout:</strong>
+            <p style="margin: 10px 0 0;">A dry run is only valuable when it produces inspectable evidence: touched paths, output, exit status, and a clear comparison between declared intent and observed side effects.</p>
+          </div>
+
+          <h2>Architecture or workflow overview</h2>
+          <h3>Mermaid flow</h3>
+          <div class="mermaid-block"><pre>flowchart TD
+  A[Agent proposes shell command] --&gt; B[Risk classifier]
+  B --&gt;|low risk| C[Ephemeral dry-run sandbox]
+  B --&gt;|medium or high risk| D[Human approval required]
+  C --&gt; E[Collect stdout, stderr, exit code]
+  C --&gt; F[Capture file diff and touched paths]
+  E --&gt; G[Promotion policy]
+  F --&gt; G
+  G --&gt;|matches intent| H[Live execution lane]
+  G --&gt;|surprising side effects| I[Block and return evidence]</pre></div>
+          <h3>Numbered sequence</h3>
+          <ol>
+            <li>The planner emits a command plus declared intent, expected paths, and allowed side effects.</li>
+            <li>A classifier scores the command for write risk, network risk, credential use, and blast radius.</li>
+            <li>The system runs the command in a throwaway sandbox with narrow mounts and redacted environment variables.</li>
+            <li>The executor captures exit status, touched files, output, and filesystem diff.</li>
+            <li>A promotion policy compares observed behavior to declared intent.</li>
+            <li>Only matching runs get promoted to the live lane, sometimes with fresh approval.</li>
+          </ol>
+
+          <h2>Implementation details</h2>
+          <h3>Represent intent before the shell runs</h3>
+          <p>If the command is free text with no structured envelope, you have almost no safety hooks. I prefer requiring the planner to attach expected writes, allowed network behavior, and whether the command is supposed to be read-only.</p>
+          <div class="code-block"><pre><code>command: "python scripts/rewrite_frontmatter.py blog/*.md"
+working_dir: "/workspace/site"
+intent:
+  summary: "Normalize frontmatter keys in blog markdown posts"
+  mode: "mutating"
+  expected_writes:
+    - "blog/*.md"
+  forbidden_paths:
+    - ".git/"
+    - "secrets/"
+  network: "none"
+  reviewer_note: "Should only rewrite YAML frontmatter, no content body edits"</code></pre></div>
+          <p>Once the command has declared boundaries, you can compare reality against them.</p>
+
+          <h3>Score commands before promotion</h3>
+          <p>A simple risk model catches a lot. You do not need a research paper here, just consistent heuristics.</p>
+          <div class="code-block"><pre><code>from dataclasses import dataclass
+from shlex import split
+
+@dataclass
+class CommandRisk:
+    score: int
+    requires_approval: bool
+    reasons: list[str]
+
+WRITE_TOKENS = {"mv", "cp", "sed", "perl", "python", "node", "terraform", "kubectl", "git", "gh"}
+DANGEROUS_FLAGS = {"--force", "-f", "--delete", "--hard"}
+NETWORK_HINTS = {"curl", "wget", "scp", "rsync", "gh", "npm", "pip"}
+
+
+def classify_command(command: str) -&gt; CommandRisk:
+    tokens = split(command)
+    reasons: list[str] = []
+    score = 0
+
+    if any(token in WRITE_TOKENS for token in tokens):
+        score += 3
+        reasons.append("may mutate files or remote state")
+
+    if any(token in DANGEROUS_FLAGS for token in tokens):
+        score += 3
+        reasons.append("contains force or delete style flag")
+
+    if any(token in NETWORK_HINTS for token in tokens):
+        score += 2
+        reasons.append("may contact external service")
+
+    if "|" in command or "&&" in command or ";" in command:
+        score += 2
+        reasons.append("multi-step shell chain hides intermediate side effects")
+
+    return CommandRisk(score=score, requires_approval=score &gt;= 4, reasons=reasons)</code></pre></div>
+          <p>What I would not do is let the model self-report risk and treat that as truth. The planner can suggest risk, but policy should score independently.</p>
+
+          <h3>Rehearse in a throwaway sandbox</h3>
+          <p>The sandbox should look enough like reality to expose path mistakes, but not enough like reality to cause real damage. That usually means a copy-on-write workspace, read-only secrets by default, and no ambient network unless the command explicitly needs it.</p>
+          <div class="code-block"><pre><code>#!/usr/bin/env bash
+set -euo pipefail
+
+RUN_ID="dryrun-$(date +%s)"
+SANDBOX_ROOT="/tmp/${RUN_ID}"
+mkdir -p "$SANDBOX_ROOT"
+rsync -a --delete ./ "$SANDBOX_ROOT/workspace/"
+
+bubblewrap \
+  --ro-bind /usr /usr \
+  --ro-bind /lib /lib \
+  --ro-bind /lib64 /lib64 \
+  --bind "$SANDBOX_ROOT/workspace" /workspace \
+  --dev /dev \
+  --proc /proc \
+  --unshare-net \
+  --chdir /workspace \
+  /bin/bash -lc "python scripts/rewrite_frontmatter.py blog/*.md"</code></pre></div>
+
+          <h3>Example terminal evidence block</h3>
+          <div class="terminal-block"><pre>$ dryrun execute --task normalize-blog-frontmatter
+risk score: 5
+approval: required
+sandbox: /tmp/dryrun-1748174702/workspace
+exit code: 0
+files changed: 14
+surprise paths: 1
+blocked: yes
+note: touched blog/index.html but intent only allowed blog/*.md</pre></div>
+          <p>That output is much more useful than "the agent thinks it worked." It gives a human something concrete to approve or reject.</p>
+
+          <h2>What went wrong, and the tradeoffs</h2>
+          <h3>Failure mode 1: dry-run success, live-run failure</h3>
+          <p>This happens when the sandbox is too clean. A command may pass in rehearsal and fail live because production has different permissions, mounted tools, secrets, or repo state.</p>
+          <ul>
+            <li>Keep the sandbox environment close to the real runtime.</li>
+            <li>Record which capabilities were mocked or stripped.</li>
+            <li>Require a second promotion gate for commands that depend on credentials or remote services.</li>
+          </ul>
+
+          <h3>Failure mode 2: hidden side effects in shell chains</h3>
+          <p>A chained command like <code>build &amp;&amp; deploy || rollback</code> can be technically one command string but operationally three different risk profiles. If you only review the final status, you miss the intermediate damage.</p>
+          <ul>
+            <li>Split shell chains into explicit steps before execution.</li>
+            <li>Log per-step exit status and side effects.</li>
+            <li>Block promotion when the planner emits opaque one-liners for high-risk tasks.</li>
+          </ul>
+
+          <h3>Failure mode 3: diff noise hides the real mistake</h3>
+          <p>Dry runs are only useful if the resulting evidence is reviewable. If the command reformats 300 files while also changing one sensitive config, the important part gets buried.</p>
+          <ul>
+            <li>Collapse unchanged directories.</li>
+            <li>Highlight forbidden paths first.</li>
+            <li>Compare touched paths against the declared intent before showing full diff detail.</li>
+          </ul>
+
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr><th>Pattern</th><th>Good at</th><th>Weak at</th><th>I would use it when</th></tr>
+              </thead>
+              <tbody>
+                <tr><td>Pure allowlist, no dry run</td><td>Fast policy decisions</td><td>Misses path and context mistakes</td><td>Commands are narrow and strongly typed</td></tr>
+                <tr><td>Dry-run sandbox</td><td>Finding local side effects early</td><td>Can diverge from live env</td><td>Repo edits, scripts, migrations, codegen</td></tr>
+                <tr><td>Live-only with approval</td><td>Human oversight</td><td>Reviewer sees intent, not proof</td><td>One-off manual ops with trusted scripts</td></tr>
+                <tr><td>Full shadow execution plus promotion</td><td>High confidence</td><td>More infra and cost</td><td>Repeated automations with real blast radius</td></tr>
+              </tbody>
+            </table>
+          </div>
+
+          <div class="callout">
+            <strong>Pitfalls section:</strong>
+            <ul style="margin: 10px 0 0;">
+              <li>Do not trust <code>--dry-run</code> flags blindly. Many tools implement them unevenly.</li>
+              <li>Do not run shell chains as opaque strings for high-risk tasks.</li>
+              <li>Do not let the sandbox inherit production secrets by default.</li>
+              <li>Do not auto-promote based only on exit code.</li>
+            </ul>
+          </div>
+
+          <h3>Security concern: logs become a second data leak path</h3>
+          <p>A lot of teams focus on whether the command is safe and forget that stdout and stderr can leak secrets, file contents, or internal URLs. The dry-run lane needs output redaction too.</p>
+          <ul>
+            <li>Treat command output as tainted until scrubbed.</li>
+            <li>Redact env var values before persistence.</li>
+            <li>Cap retained output length and preserve raw logs only in restricted storage.</li>
+          </ul>
+
+          <h2>Practical checklist</h2>
+          <ul>
+            <li>Require every mutating shell command to declare expected write paths.</li>
+            <li>Score commands independently of the model's self-description.</li>
+            <li>Rehearse commands in a fresh sandbox with narrow mounts.</li>
+            <li>Capture path-level diffs, not just stdout and exit code.</li>
+            <li>Block promotion when surprise paths or network access appear.</li>
+            <li>Separate approval for rehearsal from approval for live execution when credentials are involved.</li>
+            <li>Store a promotion receipt with command, diff summary, and reviewer decision.</li>
+          </ul>
+
+          <h2>Conclusion</h2>
+          <p>If an AI agent is going to execute shell commands, the question is not whether you trust the model. The question is whether the system can prove what the command will do before it does it.</p>
+          <p>A dry-run lane is a practical way to get that proof. It turns shell execution from a leap of faith into a staged promotion workflow, which is a much better fit for real repositories and real infrastructure.</p>
+
+          <div class="blog-post-tags"><span class="blog-post-tag">AI Agents</span><span class="blog-post-tag">Shell Safety</span><span class="blog-post-tag">Automation</span><span class="blog-post-tag">DevOps</span><span class="blog-post-tag">Reliability</span></div>
+        </div>
+        <div class="blog-footer">
+          <p><a href="index.html">Back to Blog</a> &bull; <a href="../index.html">Back to Portfolio</a></p>
+        </div>
+      </div>
+    </header>
+  </body>
+</html>

@@ -1,6 +1,14 @@
 {
   "topics": [
     {
+      "date": "2026-05-25",
+      "skill": "Dry-run lanes for shell-executing AI agents",
+      "topic": "Using risk-tiered command classification, ephemeral rehearsal sandboxes, diff previews, and promotion gates so AI agents can prove what a shell step will do before they mutate a real system, CI runner, or production-adjacent repo",
+      "slug": "dry-run-lanes-ai-shell-agents",
+      "title": "Dry-Run Lanes for AI Agents That Need to Execute Shell Commands",
+      "summary": "A practical guide to dry-run lanes for shell-executing AI agents using risk scoring, ephemeral sandboxes, diff previews, and promotion gates so commands prove their intent before they touch a real machine."
+    },
+    {
       "date": "2026-05-24",
       "skill": "Prompt provenance for AI agents",
       "topic": "Using versioned prompt bundles, rendered hashes, behavior diffs, registry-based resolution, and rollback playbooks so prompt edits stop acting like invisible production deploys",
