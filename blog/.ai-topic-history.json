@@ -1,6 +1,14 @@
 {
   "topics": [
     {
+      "date": "2026-05-26",
+      "skill": "Tool output reduction layers for AI agents",
+      "topic": "Using schema-aware reducers, taint labels, citation-preserving summaries, truncation budgets, and escalation paths so tool-heavy agent workflows keep the important evidence without stuffing raw CLI and API output back into the prompt",
+      "slug": "tool-output-reduction-ai-agents",
+      "title": "Tool Output Reduction Layers for AI Agents Without Losing the Important Bits",
+      "summary": "A practical guide to reducing tool output for AI agents with schema-aware reducers, citations, truncation budgets, and escalation rules so raw CLI and API dumps stop bloating prompts or hiding the important signal."
+    },
+    {
       "date": "2026-05-25",
       "skill": "Dry-run lanes for shell-executing AI agents",
       "topic": "Using risk-tiered command classification, ephemeral rehearsal sandboxes, diff previews, and promotion gates so AI agents can prove what a shell step will do before they mutate a real system, CI runner, or production-adjacent repo",
