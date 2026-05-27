@@ -1,6 +1,14 @@
 {
   "topics": [
     {
+      "date": "2026-05-27",
+      "skill": "Repository automation workflow comparison",
+      "topic": "Comparing OpenClaw, Claude Code, and Cursor across scheduled automation, terminal-first repo execution, editor collaboration, approval boundaries, and isolation patterns so teams stop forcing one AI tool to do every kind of work badly",
+      "slug": "openclaw-vs-claude-code-vs-cursor-repo-automation",
+      "title": "OpenClaw vs Claude Code vs Cursor for Repository Automation",
+      "summary": "A practical comparison of OpenClaw, Claude Code, and Cursor for repository automation, with concrete guidance on where each one fits best across scheduled jobs, deep refactors, and editor-first workflows."
+    },
+    {
       "date": "2026-05-26",
       "skill": "Tool output reduction layers for AI agents",
       "topic": "Using schema-aware reducers, taint labels, citation-preserving summaries, truncation budgets, and escalation paths so tool-heavy agent workflows keep the important evidence without stuffing raw CLI and API output back into the prompt",
