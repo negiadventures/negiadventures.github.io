@@ -1,6 +1,14 @@
 {
   "topics": [
     {
+      "date": "2026-05-28",
+      "skill": "Signed tool claims for remote MCP servers",
+      "topic": "Using short-lived signed capability claims, audience-bound verification, replay protection, and policy-scoped tool envelopes so remote MCP servers can authenticate high-value tool calls without falling back to long-lived ambient credentials",
+      "slug": "signed-tool-claims-remote-mcp-servers",
+      "title": "Signed Tool Claims for Remote MCP Servers Without Ambient Access",
+      "summary": "A practical guide to securing remote MCP servers with signed tool claims, short-lived capability tokens, replay protection, and policy checks so agents can call powerful tools without carrying ambient access."
+    },
+    {
       "date": "2026-05-27",
       "skill": "Repository automation workflow comparison",
       "topic": "Comparing OpenClaw, Claude Code, and Cursor across scheduled automation, terminal-first repo execution, editor collaboration, approval boundaries, and isolation patterns so teams stop forcing one AI tool to do every kind of work badly",
