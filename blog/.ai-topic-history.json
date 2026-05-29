@@ -1,6 +1,14 @@
 {
   "topics": [
     {
+      "date": "2026-05-29",
+      "skill": "Webhook inbox architecture for AI agents",
+      "topic": "Using signature verification, durable inbox tables, idempotency keys, worker leases, and replay-safe ledgers so AI agents can process callback-driven work exactly once instead of duplicating side effects whenever providers retry or events arrive out of order",
+      "slug": "webhook-inboxes-ai-agents",
+      "title": "Webhook Inboxes for AI Agents That Do Not Duplicate Side Effects",
+      "summary": "A practical guide to building webhook inboxes for AI agents with signature verification, idempotency keys, durable event ledgers, and retry-safe workers so callbacks do useful work exactly once instead of creating duplicate side effects."
+    },
+    {
       "date": "2026-05-28",
       "skill": "Signed tool claims for remote MCP servers",
       "topic": "Using short-lived signed capability claims, audience-bound verification, replay protection, and policy-scoped tool envelopes so remote MCP servers can authenticate high-value tool calls without falling back to long-lived ambient credentials",
