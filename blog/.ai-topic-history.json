@@ -1,6 +1,14 @@
 {
   "topics": [
     {
+      "date": "2026-05-30",
+      "skill": "Playwright evidence packs for AI-generated UI changes",
+      "topic": "Using Playwright screenshot diffs, DOM assertions, trace bundles, scoped browser coverage, and reviewer summaries so AI-generated frontend patches ship with behavioral proof instead of a hopeful PR screenshot",
+      "slug": "playwright-evidence-ai-ui-changes",
+      "title": "Playwright Evidence Packs for AI-Generated UI Changes",
+      "summary": "A practical guide to reviewing AI-generated frontend changes with Playwright screenshot diffs, trace artifacts, DOM assertions, and evidence packs so UI automation ships with proof instead of hopeful screenshots."
+    },
+    {
       "date": "2026-05-29",
       "skill": "Webhook inbox architecture for AI agents",
       "topic": "Using signature verification, durable inbox tables, idempotency keys, worker leases, and replay-safe ledgers so AI agents can process callback-driven work exactly once instead of duplicating side effects whenever providers retry or events arrive out of order",
