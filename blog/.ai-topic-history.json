@@ -1,6 +1,14 @@
 {
   "topics": [
     {
+      "date": "2026-05-31",
+      "skill": "AI-to-SQL guardrails for analytics agents",
+      "topic": "Using read replicas, statement budgets, query shape allowlists, EXPLAIN plan gates, and audit trails so natural-language analytics agents answer useful data questions without scanning primary tables, leaking sensitive joins, or generating silently expensive SQL",
+      "slug": "ai-to-sql-guardrails-read-replicas-query-budgets",
+      "title": "AI-to-SQL Guardrails With Read Replicas, Query Budgets, and EXPLAIN Gates",
+      "summary": "A practical guide to AI-to-SQL guardrails using read replicas, query budgets, EXPLAIN gates, parameterized templates, and audit logs so natural-language analytics does not turn into runaway database risk."
+    },
+    {
       "date": "2026-05-30",
       "skill": "Playwright evidence packs for AI-generated UI changes",
       "topic": "Using Playwright screenshot diffs, DOM assertions, trace bundles, scoped browser coverage, and reviewer summaries so AI-generated frontend patches ship with behavioral proof instead of a hopeful PR screenshot",
