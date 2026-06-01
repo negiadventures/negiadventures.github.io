@@ -1,6 +1,14 @@
 {
   "topics": [
     {
+      "date": "2026-06-01",
+      "skill": "RAG recall debugging with overlap heatmaps and citation audits",
+      "topic": "Using overlap heatmaps, chunk boundary probes, citation coverage checks, and reranker spot-audits so retrieval teams can see why the right document exists but the wrong chunk keeps winning at answer time",
+      "slug": "rag-recall-debugging-overlap-heatmaps",
+      "title": "Debugging RAG Recall With Overlap Heatmaps and Citation Audits",
+      "summary": "A practical guide to debugging RAG recall with overlap heatmaps, chunk boundary probes, citation audits, and reranker spot-checks so retrieval systems stop missing facts that are already in the corpus."
+    },
+    {
       "date": "2026-05-31",
       "skill": "AI-to-SQL guardrails for analytics agents",
       "topic": "Using read replicas, statement budgets, query shape allowlists, EXPLAIN plan gates, and audit trails so natural-language analytics agents answer useful data questions without scanning primary tables, leaking sensitive joins, or generating silently expensive SQL",
