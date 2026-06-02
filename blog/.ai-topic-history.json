@@ -1,6 +1,14 @@
 {
   "topics": [
     {
+      "date": "2026-06-02",
+      "skill": "Session-aware MCP tool design for multi-user agent systems",
+      "topic": "Using tenant binding, claim-checked session envelopes, scoped leases, approval fingerprints, and audit trails so shared MCP tools stop mixing user context, crossing workspace boundaries, or replaying actions in the wrong conversation",
+      "slug": "session-aware-mcp-tools-multi-user-agents",
+      "title": "Session-Aware MCP Tools for Multi-User Agent Systems",
+      "summary": "A practical guide to building session-aware MCP tools with tenant binding, claim checks, scoped leases, and audit trails so multi-user agent systems stop leaking context or acting in the wrong workspace."
+    },
+    {
       "date": "2026-06-01",
       "skill": "RAG recall debugging with overlap heatmaps and citation audits",
       "topic": "Using overlap heatmaps, chunk boundary probes, citation coverage checks, and reranker spot-audits so retrieval teams can see why the right document exists but the wrong chunk keeps winning at answer time",
