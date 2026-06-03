@@ -1,0 +1,257 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="A practical guide to triaging CI failures for AI coding agents with failure buckets, artifact packs, flaky-test fingerprints, and patch-vs-retry rules so automation stops retrying doomed jobs or patching around broken infrastructure.">
+    <meta name="author" content="Anirudh Negi">
+    <title>CI Failure Triage for AI Coding Agents That Should Not Retry Blindly | Anirudh Negi</title>
+    <link rel="icon" type="image/svg+xml" href="../images/favicon.svg">
+    <link rel="canonical" href="https://negiadventures.github.io/blog/ci-failure-triage-ai-coding-agents.html">
+    <meta property="og:type" content="article">
+    <meta property="og:url" content="https://negiadventures.github.io/blog/ci-failure-triage-ai-coding-agents.html">
+    <meta property="og:title" content="CI Failure Triage for AI Coding Agents That Should Not Retry Blindly | Anirudh Negi">
+    <meta property="og:description" content="A practical guide to triaging CI failures for AI coding agents with failure buckets, artifact packs, flaky-test fingerprints, and patch-vs-retry rules so automation stops retrying doomed jobs or patching around broken infrastructure.">
+    <meta property="og:image" content="data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%27%20viewBox%3D%270%200%201200%20630%27%3E%0A%3Cdefs%3E%0A%20%20%3ClinearGradient%20id%3D%27bg%27%20x1%3D%270%27%20x2%3D%271%27%20y1%3D%270%27%20y2%3D%271%27%3E%0A%20%20%20%20%3Cstop%20offset%3D%270%25%27%20stop-color%3D%27%2307111d%27%2F%3E%0A%20%20%20%20%3Cstop%20offset%3D%27100%25%27%20stop-color%3D%27%23184f78%27%2F%3E%0A%20%20%3C%2FlinearGradient%3E%0A%3C%2Fdefs%3E%0A%3Crect%20width%3D%271200%27%20height%3D%27630%27%20fill%3D%27url%28%23bg%29%27%2F%3E%0A%3Ccircle%20cx%3D%271008%27%20cy%3D%27108%27%20r%3D%27174%27%20fill%3D%27%2322d3ee%27%20fill-opacity%3D%270.14%27%2F%3E%0A%3Ccircle%20cx%3D%27184%27%20cy%3D%27520%27%20r%3D%27220%27%20fill%3D%27%238b5cf6%27%20fill-opacity%3D%270.16%27%2F%3E%0A%3Crect%20x%3D%2778%27%20y%3D%2786%27%20width%3D%271044%27%20height%3D%27458%27%20rx%3D%2730%27%20fill%3D%27%230b1220%27%20stroke%3D%27%2338bdf8%27%20stroke-opacity%3D%270.35%27%2F%3E%0A%3Ctext%20x%3D%27126%27%20y%3D%27166%27%20fill%3D%27white%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2738%27%20font-weight%3D%27700%27%3ECI%20Failure%20Triage%20for%20AI%20Coding%20Agents%3C%2Ftext%3E%0A%3Ctext%20x%3D%27126%27%20y%3D%27226%27%20fill%3D%27%2393c5fd%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2738%27%20font-weight%3D%27700%27%3EThat%20Should%20Not%20Retry%20Blindly%3C%2Ftext%3E%0A%3Ctext%20x%3D%27126%27%20y%3D%27300%27%20fill%3D%27%23cbd5e1%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2728%27%3ESeparate%20code%20bugs%20from%20flaky%20tests%2C%20infra%20outages%2C%20and%20missing%20secrets%3C%2Ftext%3E%0A%3Ctext%20x%3D%27126%27%20y%3D%27336%27%20fill%3D%27%23cbd5e1%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2728%27%3Ebefore%20your%20agent%20burns%20tokens%20patching%20the%20wrong%20thing%3C%2Ftext%3E%0A%3Crect%20x%3D%27126%27%20y%3D%27388%27%20width%3D%27360%27%20height%3D%2754%27%20rx%3D%2714%27%20fill%3D%27%23111c2d%27%20stroke%3D%27%2367e8f9%27%20stroke-opacity%3D%270.45%27%2F%3E%0A%3Ctext%20x%3D%27152%27%20y%3D%27423%27%20fill%3D%27%2367e8f9%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2724%27%3Eretry%20is%20a%20decision%2C%20not%20a%20reflex%3C%2Ftext%3E%0A%3Crect%20x%3D%27776%27%20y%3D%27166%27%20width%3D%27258%27%20height%3D%2758%27%20rx%3D%2714%27%20fill%3D%27%230d1728%27%20stroke%3D%27%2322d3ee%27%20stroke-opacity%3D%270.45%27%2F%3E%0A%3Ctext%20x%3D%27820%27%20y%3D%27204%27%20fill%3D%27%23bae6fd%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2723%27%3Eartifact%20pack%3C%2Ftext%3E%0A%3Crect%20x%3D%27776%27%20y%3D%27266%27%20width%3D%27258%27%20height%3D%2758%27%20rx%3D%2714%27%20fill%3D%27%230d1728%27%20stroke%3D%27%2322d3ee%27%20stroke-opacity%3D%270.45%27%2F%3E%0A%3Ctext%20x%3D%27808%27%20y%3D%27304%27%20fill%3D%27%23bae6fd%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2723%27%3Efailure%20bucket%3C%2Ftext%3E%0A%3Crect%20x%3D%27776%27%20y%3D%27366%27%20width%3D%27258%27%20height%3D%2758%27%20rx%3D%2714%27%20fill%3D%27%230d1728%27%20stroke%3D%27%23a78bfa%27%20stroke-opacity%3D%270.45%27%2F%3E%0A%3Ctext%20x%3D%27830%27%20y%3D%27404%27%20fill%3D%27%23ddd6fe%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2723%27%3Esafe%20lane%3C%2Ftext%3E%0A%3C%2Fsvg%3E">
+    <meta property="article:published_time" content="2026-06-03">
+    <meta property="article:author" content="Anirudh Negi">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:url" content="https://negiadventures.github.io/blog/ci-failure-triage-ai-coding-agents.html">
+    <meta name="twitter:title" content="CI Failure Triage for AI Coding Agents That Should Not Retry Blindly | Anirudh Negi">
+    <meta name="twitter:description" content="A practical guide to triaging CI failures for AI coding agents with failure buckets, artifact packs, flaky-test fingerprints, and patch-vs-retry rules so automation stops retrying doomed jobs or patching around broken infrastructure.">
+    <meta name="twitter:image" content="data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%27%20viewBox%3D%270%200%201200%20630%27%3E%0A%3Cdefs%3E%0A%20%20%3ClinearGradient%20id%3D%27bg%27%20x1%3D%270%27%20x2%3D%271%27%20y1%3D%270%27%20y2%3D%271%27%3E%0A%20%20%20%20%3Cstop%20offset%3D%270%25%27%20stop-color%3D%27%2307111d%27%2F%3E%0A%20%20%20%20%3Cstop%20offset%3D%27100%25%27%20stop-color%3D%27%23184f78%27%2F%3E%0A%20%20%3C%2FlinearGradient%3E%0A%3C%2Fdefs%3E%0A%3Crect%20width%3D%271200%27%20height%3D%27630%27%20fill%3D%27url%28%23bg%29%27%2F%3E%0A%3Ccircle%20cx%3D%271008%27%20cy%3D%27108%27%20r%3D%27174%27%20fill%3D%27%2322d3ee%27%20fill-opacity%3D%270.14%27%2F%3E%0A%3Ccircle%20cx%3D%27184%27%20cy%3D%27520%27%20r%3D%27220%27%20fill%3D%27%238b5cf6%27%20fill-opacity%3D%270.16%27%2F%3E%0A%3Crect%20x%3D%2778%27%20y%3D%2786%27%20width%3D%271044%27%20height%3D%27458%27%20rx%3D%2730%27%20fill%3D%27%230b1220%27%20stroke%3D%27%2338bdf8%27%20stroke-opacity%3D%270.35%27%2F%3E%0A%3Ctext%20x%3D%27126%27%20y%3D%27166%27%20fill%3D%27white%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2738%27%20font-weight%3D%27700%27%3ECI%20Failure%20Triage%20for%20AI%20Coding%20Agents%3C%2Ftext%3E%0A%3Ctext%20x%3D%27126%27%20y%3D%27226%27%20fill%3D%27%2393c5fd%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2738%27%20font-weight%3D%27700%27%3EThat%20Should%20Not%20Retry%20Blindly%3C%2Ftext%3E%0A%3Ctext%20x%3D%27126%27%20y%3D%27300%27%20fill%3D%27%23cbd5e1%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2728%27%3ESeparate%20code%20bugs%20from%20flaky%20tests%2C%20infra%20outages%2C%20and%20missing%20secrets%3C%2Ftext%3E%0A%3Ctext%20x%3D%27126%27%20y%3D%27336%27%20fill%3D%27%23cbd5e1%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2728%27%3Ebefore%20your%20agent%20burns%20tokens%20patching%20the%20wrong%20thing%3C%2Ftext%3E%0A%3Crect%20x%3D%27126%27%20y%3D%27388%27%20width%3D%27360%27%20height%3D%2754%27%20rx%3D%2714%27%20fill%3D%27%23111c2d%27%20stroke%3D%27%2367e8f9%27%20stroke-opacity%3D%270.45%27%2F%3E%0A%3Ctext%20x%3D%27152%27%20y%3D%27423%27%20fill%3D%27%2367e8f9%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2724%27%3Eretry%20is%20a%20decision%2C%20not%20a%20reflex%3C%2Ftext%3E%0A%3Crect%20x%3D%27776%27%20y%3D%27166%27%20width%3D%27258%27%20height%3D%2758%27%20rx%3D%2714%27%20fill%3D%27%230d1728%27%20stroke%3D%27%2322d3ee%27%20stroke-opacity%3D%270.45%27%2F%3E%0A%3Ctext%20x%3D%27820%27%20y%3D%27204%27%20fill%3D%27%23bae6fd%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2723%27%3Eartifact%20pack%3C%2Ftext%3E%0A%3Crect%20x%3D%27776%27%20y%3D%27266%27%20width%3D%27258%27%20height%3D%2758%27%20rx%3D%2714%27%20fill%3D%27%230d1728%27%20stroke%3D%27%2322d3ee%27%20stroke-opacity%3D%270.45%27%2F%3E%0A%3Ctext%20x%3D%27808%27%20y%3D%27304%27%20fill%3D%27%23bae6fd%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2723%27%3Efailure%20bucket%3C%2Ftext%3E%0A%3Crect%20x%3D%27776%27%20y%3D%27366%27%20width%3D%27258%27%20height%3D%2758%27%20rx%3D%2714%27%20fill%3D%27%230d1728%27%20stroke%3D%27%23a78bfa%27%20stroke-opacity%3D%270.45%27%2F%3E%0A%3Ctext%20x%3D%27830%27%20y%3D%27404%27%20fill%3D%27%23ddd6fe%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2723%27%3Esafe%20lane%3C%2Ftext%3E%0A%3C%2Fsvg%3E">
+    <script type="application/ld+json">{
+      "@context": "https://schema.org",
+      "@type": "BlogPosting",
+      "headline": "CI Failure Triage for AI Coding Agents That Should Not Retry Blindly",
+      "description": "A practical guide to triaging CI failures for AI coding agents with failure buckets, artifact packs, flaky-test fingerprints, and patch-vs-retry rules so automation stops retrying doomed jobs or patching around broken infrastructure.",
+      "image": "data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%27%20viewBox%3D%270%200%201200%20630%27%3E%0A%3Cdefs%3E%0A%20%20%3ClinearGradient%20id%3D%27bg%27%20x1%3D%270%27%20x2%3D%271%27%20y1%3D%270%27%20y2%3D%271%27%3E%0A%20%20%20%20%3Cstop%20offset%3D%270%25%27%20stop-color%3D%27%2307111d%27%2F%3E%0A%20%20%20%20%3Cstop%20offset%3D%27100%25%27%20stop-color%3D%27%23184f78%27%2F%3E%0A%20%20%3C%2FlinearGradient%3E%0A%3C%2Fdefs%3E%0A%3Crect%20width%3D%271200%27%20height%3D%27630%27%20fill%3D%27url%28%23bg%29%27%2F%3E%0A%3Ccircle%20cx%3D%271008%27%20cy%3D%27108%27%20r%3D%27174%27%20fill%3D%27%2322d3ee%27%20fill-opacity%3D%270.14%27%2F%3E%0A%3Ccircle%20cx%3D%27184%27%20cy%3D%27520%27%20r%3D%27220%27%20fill%3D%27%238b5cf6%27%20fill-opacity%3D%270.16%27%2F%3E%0A%3Crect%20x%3D%2778%27%20y%3D%2786%27%20width%3D%271044%27%20height%3D%27458%27%20rx%3D%2730%27%20fill%3D%27%230b1220%27%20stroke%3D%27%2338bdf8%27%20stroke-opacity%3D%270.35%27%2F%3E%0A%3Ctext%20x%3D%27126%27%20y%3D%27166%27%20fill%3D%27white%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2738%27%20font-weight%3D%27700%27%3ECI%20Failure%20Triage%20for%20AI%20Coding%20Agents%3C%2Ftext%3E%0A%3Ctext%20x%3D%27126%27%20y%3D%27226%27%20fill%3D%27%2393c5fd%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2738%27%20font-weight%3D%27700%27%3EThat%20Should%20Not%20Retry%20Blindly%3C%2Ftext%3E%0A%3Ctext%20x%3D%27126%27%20y%3D%27300%27%20fill%3D%27%23cbd5e1%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2728%27%3ESeparate%20code%20bugs%20from%20flaky%20tests%2C%20infra%20outages%2C%20and%20missing%20secrets%3C%2Ftext%3E%0A%3Ctext%20x%3D%27126%27%20y%3D%27336%27%20fill%3D%27%23cbd5e1%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2728%27%3Ebefore%20your%20agent%20burns%20tokens%20patching%20the%20wrong%20thing%3C%2Ftext%3E%0A%3Crect%20x%3D%27126%27%20y%3D%27388%27%20width%3D%27360%27%20height%3D%2754%27%20rx%3D%2714%27%20fill%3D%27%23111c2d%27%20stroke%3D%27%2367e8f9%27%20stroke-opacity%3D%270.45%27%2F%3E%0A%3Ctext%20x%3D%27152%27%20y%3D%27423%27%20fill%3D%27%2367e8f9%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2724%27%3Eretry%20is%20a%20decision%2C%20not%20a%20reflex%3C%2Ftext%3E%0A%3Crect%20x%3D%27776%27%20y%3D%27166%27%20width%3D%27258%27%20height%3D%2758%27%20rx%3D%2714%27%20fill%3D%27%230d1728%27%20stroke%3D%27%2322d3ee%27%20stroke-opacity%3D%270.45%27%2F%3E%0A%3Ctext%20x%3D%27820%27%20y%3D%27204%27%20fill%3D%27%23bae6fd%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2723%27%3Eartifact%20pack%3C%2Ftext%3E%0A%3Crect%20x%3D%27776%27%20y%3D%27266%27%20width%3D%27258%27%20height%3D%2758%27%20rx%3D%2714%27%20fill%3D%27%230d1728%27%20stroke%3D%27%2322d3ee%27%20stroke-opacity%3D%270.45%27%2F%3E%0A%3Ctext%20x%3D%27808%27%20y%3D%27304%27%20fill%3D%27%23bae6fd%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2723%27%3Efailure%20bucket%3C%2Ftext%3E%0A%3Crect%20x%3D%27776%27%20y%3D%27366%27%20width%3D%27258%27%20height%3D%2758%27%20rx%3D%2714%27%20fill%3D%27%230d1728%27%20stroke%3D%27%23a78bfa%27%20stroke-opacity%3D%270.45%27%2F%3E%0A%3Ctext%20x%3D%27830%27%20y%3D%27404%27%20fill%3D%27%23ddd6fe%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2723%27%3Esafe%20lane%3C%2Ftext%3E%0A%3C%2Fsvg%3E",
+      "url": "https://negiadventures.github.io/blog/ci-failure-triage-ai-coding-agents.html",
+      "datePublished": "2026-06-03",
+      "author": {
+        "@type": "Person",
+        "name": "Anirudh Negi",
+        "url": "https://negiadventures.github.io"
+      },
+      "publisher": {
+        "@type": "Person",
+        "name": "Anirudh Negi",
+        "url": "https://negiadventures.github.io"
+      }
+    }</script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../stylesheets/stylesheet.css?v=5" media="screen">
+    <style>
+      .blog-post { max-width: 860px; margin: 0 auto; padding: 60px 20px; }
+      .blog-post-header { margin-bottom: 40px; }
+      .blog-post-nav { margin-bottom: 30px; }
+      .blog-post-nav a { color: var(--accent-strong); font-size: 0.95rem; }
+      .blog-post-nav a:hover { color: var(--accent); }
+      .blog-post-title { font-size: 2.5rem; margin-bottom: 16px; }
+      .blog-post-meta { display: flex; gap: 20px; color: var(--text-muted); font-size: 0.95rem; margin-bottom: 30px; flex-wrap: wrap; }
+      .blog-post-image { width: 100%; height: 320px; object-fit: cover; border-radius: 16px; margin-bottom: 30px; border: 1px solid var(--border); }
+      .blog-post-content h2 { font-size: 1.6rem; margin-top: 40px; margin-bottom: 16px; color: var(--text-light); }
+      .blog-post-content h3 { font-size: 1.25rem; margin-top: 28px; margin-bottom: 12px; color: var(--text-light); }
+      .blog-post-content p, .blog-post-content li { line-height: 1.8; color: var(--text-muted); }
+      .blog-post-content p { margin-bottom: 16px; }
+      .blog-post-content ul, .blog-post-content ol { margin-bottom: 20px; padding-left: 24px; }
+      .code-block { background: var(--bg-alt); border: 1px solid var(--border); border-radius: 12px; padding: 20px; margin: 20px 0; overflow-x: auto; }
+      .code-block pre { margin: 0; font-family: var(--mono); font-size: 0.9rem; line-height: 1.65; color: var(--text-light); }
+      .code-block code { color: var(--accent-strong); }
+      .callout { border-radius: 14px; padding: 18px 20px; margin: 22px 0; border: 1px solid var(--border); }
+      .callout p:last-child { margin-bottom: 0; }
+      .callout-warning { background: rgba(251, 191, 36, 0.08); border-color: rgba(251, 191, 36, 0.3); }
+      .callout-best { background: rgba(34, 211, 238, 0.08); border-color: rgba(34, 211, 238, 0.28); }
+      .comparison-table { width: 100%; border-collapse: collapse; margin: 24px 0; font-size: 0.95rem; }
+      .comparison-table th, .comparison-table td { border: 1px solid var(--border); padding: 14px; text-align: left; vertical-align: top; }
+      .comparison-table th { color: var(--text-light); background: var(--bg-alt); }
+      .blog-post-tags { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 40px; padding-top: 30px; border-top: 1px solid var(--border); }
+      .blog-post-tag { background: var(--accent-soft); color: var(--accent-strong); border-radius: 999px; padding: 6px 14px; font-size: 0.85rem; font-family: var(--mono); border: 1px solid transparent; }
+      .blog-footer { margin-top: 60px; padding-top: 30px; border-top: 1px solid var(--border); text-align: center; }
+      .blog-footer a { color: var(--accent-strong); }
+      @media (max-width: 768px) { .blog-post { padding: 40px 16px; } .blog-post-title { font-size: 2rem; } .blog-post-image { height: 220px; } }
+    </style>
+  </head>
+  <body>
+    <a href="../index.html#main" class="skip-link">Skip to main content</a>
+    <header class="site-header">
+      <div class="container blog-post">
+        <div class="blog-post-nav"><a href="index.html">&larr; Back to All Posts</a></div>
+        <div class="blog-post-header">
+          <h1 class="blog-post-title">CI Failure Triage for AI Coding Agents That Should Not Retry Blindly</h1>
+          <div class="blog-post-meta"><span>June 3, 2026</span><span>&bull;</span><span>11 min read</span></div>
+          <img src="data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%27%20viewBox%3D%270%200%201200%20630%27%3E%0A%3Cdefs%3E%0A%20%20%3ClinearGradient%20id%3D%27bg%27%20x1%3D%270%27%20x2%3D%271%27%20y1%3D%270%27%20y2%3D%271%27%3E%0A%20%20%20%20%3Cstop%20offset%3D%270%25%27%20stop-color%3D%27%2307111d%27%2F%3E%0A%20%20%20%20%3Cstop%20offset%3D%27100%25%27%20stop-color%3D%27%23184f78%27%2F%3E%0A%20%20%3C%2FlinearGradient%3E%0A%3C%2Fdefs%3E%0A%3Crect%20width%3D%271200%27%20height%3D%27630%27%20fill%3D%27url%28%23bg%29%27%2F%3E%0A%3Ccircle%20cx%3D%271008%27%20cy%3D%27108%27%20r%3D%27174%27%20fill%3D%27%2322d3ee%27%20fill-opacity%3D%270.14%27%2F%3E%0A%3Ccircle%20cx%3D%27184%27%20cy%3D%27520%27%20r%3D%27220%27%20fill%3D%27%238b5cf6%27%20fill-opacity%3D%270.16%27%2F%3E%0A%3Crect%20x%3D%2778%27%20y%3D%2786%27%20width%3D%271044%27%20height%3D%27458%27%20rx%3D%2730%27%20fill%3D%27%230b1220%27%20stroke%3D%27%2338bdf8%27%20stroke-opacity%3D%270.35%27%2F%3E%0A%3Ctext%20x%3D%27126%27%20y%3D%27166%27%20fill%3D%27white%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2738%27%20font-weight%3D%27700%27%3ECI%20Failure%20Triage%20for%20AI%20Coding%20Agents%3C%2Ftext%3E%0A%3Ctext%20x%3D%27126%27%20y%3D%27226%27%20fill%3D%27%2393c5fd%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2738%27%20font-weight%3D%27700%27%3EThat%20Should%20Not%20Retry%20Blindly%3C%2Ftext%3E%0A%3Ctext%20x%3D%27126%27%20y%3D%27300%27%20fill%3D%27%23cbd5e1%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2728%27%3ESeparate%20code%20bugs%20from%20flaky%20tests%2C%20infra%20outages%2C%20and%20missing%20secrets%3C%2Ftext%3E%0A%3Ctext%20x%3D%27126%27%20y%3D%27336%27%20fill%3D%27%23cbd5e1%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2728%27%3Ebefore%20your%20agent%20burns%20tokens%20patching%20the%20wrong%20thing%3C%2Ftext%3E%0A%3Crect%20x%3D%27126%27%20y%3D%27388%27%20width%3D%27360%27%20height%3D%2754%27%20rx%3D%2714%27%20fill%3D%27%23111c2d%27%20stroke%3D%27%2367e8f9%27%20stroke-opacity%3D%270.45%27%2F%3E%0A%3Ctext%20x%3D%27152%27%20y%3D%27423%27%20fill%3D%27%2367e8f9%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2724%27%3Eretry%20is%20a%20decision%2C%20not%20a%20reflex%3C%2Ftext%3E%0A%3Crect%20x%3D%27776%27%20y%3D%27166%27%20width%3D%27258%27%20height%3D%2758%27%20rx%3D%2714%27%20fill%3D%27%230d1728%27%20stroke%3D%27%2322d3ee%27%20stroke-opacity%3D%270.45%27%2F%3E%0A%3Ctext%20x%3D%27820%27%20y%3D%27204%27%20fill%3D%27%23bae6fd%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2723%27%3Eartifact%20pack%3C%2Ftext%3E%0A%3Crect%20x%3D%27776%27%20y%3D%27266%27%20width%3D%27258%27%20height%3D%2758%27%20rx%3D%2714%27%20fill%3D%27%230d1728%27%20stroke%3D%27%2322d3ee%27%20stroke-opacity%3D%270.45%27%2F%3E%0A%3Ctext%20x%3D%27808%27%20y%3D%27304%27%20fill%3D%27%23bae6fd%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2723%27%3Efailure%20bucket%3C%2Ftext%3E%0A%3Crect%20x%3D%27776%27%20y%3D%27366%27%20width%3D%27258%27%20height%3D%2758%27%20rx%3D%2714%27%20fill%3D%27%230d1728%27%20stroke%3D%27%23a78bfa%27%20stroke-opacity%3D%270.45%27%2F%3E%0A%3Ctext%20x%3D%27830%27%20y%3D%27404%27%20fill%3D%27%23ddd6fe%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2723%27%3Esafe%20lane%3C%2Ftext%3E%0A%3C%2Fsvg%3E" alt="CI Failure Triage for AI Coding Agents That Should Not Retry Blindly" class="blog-post-image">
+        </div>
+        <div class="blog-post-content">
+          <p>Most AI coding pipelines treat a red CI run like a generic retry signal. That is how you end up paying for three more model calls while the real problem is a missing secret, a flaky browser test, or a transient runner outage.</p>
+          <p>A human reviewer usually sees the shape of the failure quickly. Agents need that judgment encoded in the runtime, not improvised from scratch every time the workflow turns red.</p>
+          <p>This pattern is the one I trust most: bucket the failure, preserve a compact artifact pack, then choose between a retry lane, a patch lane, or a human-escalation lane with explicit policy.</p>
+
+          <h2>Why this matters</h2>
+          <p>CI is where a lot of agent systems quietly waste money. The code patcher wakes up for failures it should never touch, retries spin on the same bad signal, and reviewers get a noisy branch plus no clear explanation of what the system believed.</p>
+          <p>The production problem is not just correctness. It is allocation. Code regressions deserve model effort. Infra faults deserve patience. Secret and permission failures deserve a human.</p>
+          <ul>
+            <li>real regressions move faster into a focused patch lane</li>
+            <li>flaky and infra failures stop consuming expensive model turns</li>
+            <li>every automated action becomes easier to audit later</li>
+            <li>PRs carry fewer fake fixes for non-code problems</li>
+          </ul>
+
+          <h2>Architecture or workflow overview</h2>
+          <div class="code-block"><pre><code>flowchart TD
+    A[CI run fails] --&gt; B[Collect artifact pack]
+    B --&gt; C[Failure classifier]
+    C --&gt; D{Bucket}
+    D --&gt;|code regression| E[Patch lane]
+    D --&gt;|flaky test| F[Rerun or quarantine lane]
+    D --&gt;|infra outage| G[Cooldown retry]
+    D --&gt;|secret or config| H[Human escalation]
+    E --&gt; I[Focused patch + verifier]
+    F --&gt; J[Fingerprint failure]
+    G --&gt; K[Retry same SHA]
+    H --&gt; L[Stop automation, attach evidence]</code></pre></div>
+          <p>Retry, patch, and escalation are different products. They should not share the same budget, permissions, or evidence packet.</p>
+
+          <h2>Implementation details</h2>
+          <h3>1) Normalize raw failures into buckets</h3>
+          <p>I would not send a full workflow transcript back into the model first. Start with a small classifier config and obvious string or structured-log signals.</p>
+          <div class="code-block"><pre><code>buckets:
+  code_regression:
+    match_any:
+      - "AssertionError"
+      - "TypeError:"
+      - "undefined is not a function"
+    action: patch
+    max_auto_retries: 0
+  flaky_test:
+    match_any:
+      - "Timeout 30000ms exceeded"
+      - "ECONNRESET during test"
+      - "stale element reference"
+    action: rerun_once
+    max_auto_retries: 1
+  infra_fault:
+    match_any:
+      - "failed to pull image"
+      - "network timed out"
+      - "No space left on device"
+    action: cooldown_retry
+    max_auto_retries: 2
+  secret_or_config:
+    match_any:
+      - "401 Unauthorized"
+      - "Missing required environment variable"
+      - "Resource not accessible by integration"
+    action: escalate
+    max_auto_retries: 0</code></pre></div>
+          <p>This gets the easy cases out of the way and blocks a lot of obviously wrong remediation.</p>
+
+          <h3>2) Persist a compact artifact pack</h3>
+          <p>The artifact pack is the unit I want to store, inspect, and pass to downstream automation. It captures the high-signal evidence without becoming another giant log blob.</p>
+          <div class="code-block"><pre><code>{
+  "run_id": 194281775,
+  "commit_sha": "1d3c5af",
+  "workflow": "test-and-lint",
+  "failed_job": "playwright-e2e",
+  "bucket": "flaky_test",
+  "fingerprint": "playwright-timeout:checkout.spec.ts:guest checkout works",
+  "first_failure_line": "Timeout 30000ms exceeded while waiting for [data-test=place-order]",
+  "suspect_files": ["tests/e2e/checkout.spec.ts", "playwright.config.ts"],
+  "rerun_eligible": true,
+  "links": {
+    "run": "https://github.com/org/repo/actions/runs/194281775",
+    "artifacts": "https://github.com/org/repo/actions/runs/194281775/artifacts"
+  }
+}</code></pre></div>
+          <p>I especially like stable fingerprints because they let you separate one-off failures from recurring test debt.</p>
+
+          <h3>3) Put retry policy behind code, not model optimism</h3>
+          <p>The runtime should decide whether another automated attempt is allowed.</p>
+          <div class="code-block"><pre><code>export function decideNextAction(input: {
+  bucket: 'code_regression' | 'flaky_test' | 'infra_fault' | 'secret_or_config';
+  retriesUsed: number;
+  maxRetries: number;
+  sameFingerprintCount: number;
+}) {
+  if (input.bucket === 'code_regression') {
+    return { action: 'open_patch_lane', reason: 'code evidence present' };
+  }
+
+  if (input.bucket === 'flaky_test' && input.retriesUsed < 1) {
+    return { action: 'rerun_same_sha', reason: 'single rerun allowed for flaky bucket' };
+  }
+
+  if (input.bucket === 'infra_fault' && input.retriesUsed < input.maxRetries) {
+    return { action: 'cooldown_retry', reason: 'runner or network fault likely transient' };
+  }
+
+  return {
+    action: 'escalate',
+    reason: input.sameFingerprintCount > 2
+      ? 'repeated fingerprint suggests systemic issue'
+      : 'policy disallows more automation'
+  };
+}</code></pre></div>
+          <p>This sounds obvious, but it is where a lot of systems quietly improve. The model no longer self-approves another turn.</p>
+
+          <h3>4) Give humans a short triage summary</h3>
+          <div class="code-block"><pre><code>$ triage-ci-failure --run 194281775
+bucket: flaky_test
+fingerprint: playwright-timeout:checkout.spec.ts:guest checkout works
+sha: 1d3c5af
+next-action: rerun_same_sha
+why: single rerun allowed for flaky bucket
+notes: same code passed on previous two commits, failure isolated to e2e shard 3</code></pre></div>
+          <p>A reviewer can absorb that in five seconds, which is exactly what you want when a bot is making repeated decisions on their behalf.</p>
+
+          <h2>What went wrong, and the tradeoffs</h2>
+          <p>Failure buckets drift over time. What used to mean "flaky" can become a genuine regression after a framework upgrade. So the classifier needs periodic review, not blind trust.</p>
+          <p>Artifact packs can also become too thin. If you over-reduce, the patch lane lacks context. If you under-reduce, you are back to stuffing giant logs into prompts.</p>
+          <table class="comparison-table">
+            <thead><tr><th>Bucket</th><th>Best first action</th><th>Risk if misclassified</th><th>What I watch</th></tr></thead>
+            <tbody>
+              <tr><td>Code regression</td><td>Open patch lane</td><td>Missed bug or bad auto-fix</td><td>failing test name, blame window, suspect files</td></tr>
+              <tr><td>Flaky test</td><td>Rerun once, same SHA</td><td>hides real instability</td><td>fingerprint frequency, shard skew, pass-on-rerun rate</td></tr>
+              <tr><td>Infra fault</td><td>Cooldown retry</td><td>wasteful loops during outages</td><td>provider status, runner pull and cache failures</td></tr>
+              <tr><td>Secret or config</td><td>Escalate to human</td><td>impossible patch attempts</td><td>auth errors, env availability, permission scope</td></tr>
+            </tbody>
+          </table>
+          <ul>
+            <li>fork PR permissions often look like failing code when they are actually expected security boundaries</li>
+            <li>rerun-success can hide test-order dependence, so passing on rerun is not the end of the story</li>
+            <li>artifact links need durable retention or incident review gets much worse</li>
+            <li>repeat fingerprints should cap automation before one noisy test burns a week of tokens</li>
+          </ul>
+
+          <div class="callout callout-warning"><p><strong>Pitfall:</strong> do not let the patch lane mutate code after a <code>secret_or_config</code> bucket. If the environment is wrong, code changes are usually just theater.</p></div>
+          <div class="callout callout-best"><p><strong>Best practice:</strong> pass the patch lane only the failing test context, suspect files, and compact artifact pack. Narrow packets are cheaper and easier to verify.</p></div>
+
+          <h2>Practical checklist</h2>
+          <ul>
+            <li>[ ] define a small, reviewable set of CI failure buckets</li>
+            <li>[ ] collect artifact packs with stable fingerprints</li>
+            <li>[ ] separate retry, patch, and escalation lanes in code</li>
+            <li>[ ] cap retries by bucket instead of with one global number</li>
+            <li>[ ] rerun flaky failures on the same commit SHA before changing code</li>
+            <li>[ ] persist recurring fingerprints so chronic flakes are visible</li>
+            <li>[ ] stop automation on auth, secret, and permission failures</li>
+            <li>[ ] attach a short reviewer summary to every decision</li>
+          </ul>
+
+          <h2>Conclusion</h2>
+          <p>AI coding agents get more reliable when CI failure handling stops being one vague fix-it loop.</p>
+          <p>Bucket the failure, preserve the evidence, and make retry a policy decision. That alone cuts a surprising amount of bad patching and noisy automation.</p>
+
+          <h2>References</h2>
+          <ul>
+            <li><a href="https://docs.github.com/actions">GitHub Actions workflow commands and contexts</a></li><li><a href="https://opentelemetry.io/docs/specs/semconv/">OpenTelemetry semantic conventions</a></li><li><a href="https://docs.pytest.org/en/stable/explanation/flaky.html">pytest flaky test guidance</a></li><li><a href="https://buildkite.com/docs/test-engine">Buildkite test analytics concepts</a></li>
+          </ul>
+        </div>
+        <div class="blog-post-tags"><span class="blog-post-tag">AI Agents</span><span class="blog-post-tag">CI/CD</span><span class="blog-post-tag">Reliability</span><span class="blog-post-tag">Test Automation</span><span class="blog-post-tag">GitHub Actions</span></div>
+        <div class="blog-footer"><p><a href="index.html">Browse more posts</a></p></div>
+      </div>
+    </header>
+  </body>
+</html>

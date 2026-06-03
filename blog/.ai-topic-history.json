@@ -1,6 +1,14 @@
 {
   "topics": [
     {
+      "date": "2026-06-03",
+      "skill": "CI failure triage for AI coding agents",
+      "topic": "Using failure buckets, artifact packs, flaky-test fingerprints, and patch-vs-retry lanes so AI coding agents stop retrying doomed CI jobs, masking infra problems, or patching code to satisfy broken pipelines",
+      "slug": "ci-failure-triage-ai-coding-agents",
+      "title": "CI Failure Triage for AI Coding Agents That Should Not Retry Blindly",
+      "summary": "A practical guide to triaging CI failures for AI coding agents with failure buckets, artifact packs, flaky-test fingerprints, and patch-vs-retry rules so automation stops retrying doomed jobs or patching around broken infrastructure."
+    },
+    {
       "date": "2026-06-02",
       "skill": "Session-aware MCP tool design for multi-user agent systems",
       "topic": "Using tenant binding, claim-checked session envelopes, scoped leases, approval fingerprints, and audit trails so shared MCP tools stop mixing user context, crossing workspace boundaries, or replaying actions in the wrong conversation",
