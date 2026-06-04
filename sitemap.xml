@@ -1,5 +1,6 @@
 <?xml version='1.0' encoding='utf-8'?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  <url><loc>https://negiadventures.github.io/blog/architecture-drift-detection-ai-repos.html</loc><lastmod>2026-06-04</lastmod><changefreq>monthly</changefreq><priority>0.8</priority></url>
   <url><loc>https://negiadventures.github.io/blog/ci-failure-triage-ai-coding-agents.html</loc><lastmod>2026-06-03</lastmod><changefreq>monthly</changefreq><priority>0.8</priority></url>
   <url><loc>https://negiadventures.github.io/blog/session-aware-mcp-tools-multi-user-agents.html</loc><lastmod>2026-06-02</lastmod><changefreq>monthly</changefreq><priority>0.8</priority></url>
   <url><loc>https://negiadventures.github.io/blog/rag-recall-debugging-overlap-heatmaps.html</loc><lastmod>2026-06-01</lastmod><changefreq>monthly</changefreq><priority>0.8</priority></url>
