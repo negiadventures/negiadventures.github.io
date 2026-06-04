@@ -1,6 +1,14 @@
 {
   "topics": [
     {
+      "date": "2026-06-04",
+      "skill": "Architecture drift detection for AI-maintained repositories",
+      "topic": "Using lightweight repo maps, import graph diffs, drift scoring, and reviewer-friendly evidence packets so frequent AI-generated patches stop quietly eroding module boundaries and architectural intent",
+      "slug": "architecture-drift-detection-ai-repos",
+      "title": "Architecture Drift Detection for AI-Maintained Repositories",
+      "summary": "A practical guide to catching architecture drift in AI-maintained repositories with repo maps, dependency snapshots, invariants, and reviewer-friendly evidence before small automated edits turn into structural decay."
+    },
+    {
       "date": "2026-06-03",
       "skill": "CI failure triage for AI coding agents",
       "topic": "Using failure buckets, artifact packs, flaky-test fingerprints, and patch-vs-retry lanes so AI coding agents stop retrying doomed CI jobs, masking infra problems, or patching code to satisfy broken pipelines",

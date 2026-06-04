@@ -1,0 +1,266 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="A practical guide to catching architecture drift in AI-maintained repositories with repo maps, dependency snapshots, invariants, and reviewer-friendly evidence before small automated edits turn into structural decay.">
+    <meta name="author" content="Anirudh Negi">
+    <title>Architecture Drift Detection for AI-Maintained Repositories | Anirudh Negi</title>
+    <link rel="icon" type="image/svg+xml" href="../images/favicon.svg">
+    <link rel="canonical" href="https://negiadventures.github.io/blog/architecture-drift-detection-ai-repos.html">
+    <meta property="og:type" content="article">
+    <meta property="og:url" content="https://negiadventures.github.io/blog/architecture-drift-detection-ai-repos.html">
+    <meta property="og:title" content="Architecture Drift Detection for AI-Maintained Repositories | Anirudh Negi">
+    <meta property="og:description" content="A practical guide to catching architecture drift in AI-maintained repositories with repo maps, dependency snapshots, invariants, and reviewer-friendly evidence before small automated edits turn into structural decay.">
+    <meta property="og:image" content="data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A//www.w3.org/2000/svg%27%20viewBox%3D%270%200%201200%20630%27%3E%3Cdefs%3E%3ClinearGradient%20id%3D%27bg%27%20x1%3D%270%27%20x2%3D%271%27%20y1%3D%270%27%20y2%3D%271%27%3E%3Cstop%20offset%3D%270%25%27%20stop-color%3D%27%2307111d%27/%3E%3Cstop%20offset%3D%27100%25%27%20stop-color%3D%27%23174d75%27/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect%20width%3D%271200%27%20height%3D%27630%27%20fill%3D%27url%28%23bg%29%27/%3E%3Ccircle%20cx%3D%271012%27%20cy%3D%27108%27%20r%3D%27174%27%20fill%3D%27%2322d3ee%27%20fill-opacity%3D%270.14%27/%3E%3Ccircle%20cx%3D%27184%27%20cy%3D%27520%27%20r%3D%27218%27%20fill%3D%27%238b5cf6%27%20fill-opacity%3D%270.16%27/%3E%3Crect%20x%3D%2778%27%20y%3D%2786%27%20width%3D%271044%27%20height%3D%27458%27%20rx%3D%2730%27%20fill%3D%27%230b1220%27%20stroke%3D%27%2338bdf8%27%20stroke-opacity%3D%270.35%27/%3E%3Ctext%20x%3D%27126%27%20y%3D%27164%27%20fill%3D%27white%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2738%27%20font-weight%3D%27700%27%3EArchitecture%20Drift%20Detection%20for%20AI-Maintained%3C/text%3E%3Ctext%20x%3D%27126%27%20y%3D%27224%27%20fill%3D%27%2393c5fd%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2738%27%20font-weight%3D%27700%27%3ERepositories%3C/text%3E%3Ctext%20x%3D%27126%27%20y%3D%27298%27%20fill%3D%27%23cbd5e1%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2728%27%3ECatch%20boundary%20erosion%2C%20rogue%20imports%2C%20and%20structural%20drift%3C/text%3E%3Ctext%20x%3D%27126%27%20y%3D%27334%27%20fill%3D%27%23cbd5e1%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2728%27%3Ebefore%20small%20automated%20edits%20quietly%20rot%20the%20repo%3C/text%3E%3Crect%20x%3D%27126%27%20y%3D%27388%27%20width%3D%27390%27%20height%3D%2754%27%20rx%3D%2714%27%20fill%3D%27%23111c2d%27%20stroke%3D%27%2367e8f9%27%20stroke-opacity%3D%270.45%27/%3E%3Ctext%20x%3D%27152%27%20y%3D%27423%27%20fill%3D%27%2367e8f9%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2724%27%3Egood%20agents%20still%20need%20structural%20guardrails%3C/text%3E%3Crect%20x%3D%27774%27%20y%3D%27166%27%20width%3D%27262%27%20height%3D%2758%27%20rx%3D%2714%27%20fill%3D%27%230d1728%27%20stroke%3D%27%2322d3ee%27%20stroke-opacity%3D%270.45%27/%3E%3Ctext%20x%3D%27812%27%20y%3D%27204%27%20fill%3D%27%23bae6fd%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2723%27%3Erepo%20map%3C/text%3E%3Crect%20x%3D%27774%27%20y%3D%27266%27%20width%3D%27262%27%20height%3D%2758%27%20rx%3D%2714%27%20fill%3D%27%230d1728%27%20stroke%3D%27%2322d3ee%27%20stroke-opacity%3D%270.45%27/%3E%3Ctext%20x%3D%27810%27%20y%3D%27304%27%20fill%3D%27%23bae6fd%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2723%27%3Eboundary%20rules%3C/text%3E%3Crect%20x%3D%27774%27%20y%3D%27366%27%20width%3D%27262%27%20height%3D%2758%27%20rx%3D%2714%27%20fill%3D%27%230d1728%27%20stroke%3D%27%23a78bfa%27%20stroke-opacity%3D%270.45%27/%3E%3Ctext%20x%3D%27820%27%20y%3D%27404%27%20fill%3D%27%23ddd6fe%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2723%27%3Ereview%20packet%3C/text%3E%3C/svg%3E">
+    <meta property="article:published_time" content="2026-06-04">
+    <meta property="article:author" content="Anirudh Negi">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:url" content="https://negiadventures.github.io/blog/architecture-drift-detection-ai-repos.html">
+    <meta name="twitter:title" content="Architecture Drift Detection for AI-Maintained Repositories | Anirudh Negi">
+    <meta name="twitter:description" content="A practical guide to catching architecture drift in AI-maintained repositories with repo maps, dependency snapshots, invariants, and reviewer-friendly evidence before small automated edits turn into structural decay.">
+    <meta name="twitter:image" content="data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A//www.w3.org/2000/svg%27%20viewBox%3D%270%200%201200%20630%27%3E%3Cdefs%3E%3ClinearGradient%20id%3D%27bg%27%20x1%3D%270%27%20x2%3D%271%27%20y1%3D%270%27%20y2%3D%271%27%3E%3Cstop%20offset%3D%270%25%27%20stop-color%3D%27%2307111d%27/%3E%3Cstop%20offset%3D%27100%25%27%20stop-color%3D%27%23174d75%27/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect%20width%3D%271200%27%20height%3D%27630%27%20fill%3D%27url%28%23bg%29%27/%3E%3Ccircle%20cx%3D%271012%27%20cy%3D%27108%27%20r%3D%27174%27%20fill%3D%27%2322d3ee%27%20fill-opacity%3D%270.14%27/%3E%3Ccircle%20cx%3D%27184%27%20cy%3D%27520%27%20r%3D%27218%27%20fill%3D%27%238b5cf6%27%20fill-opacity%3D%270.16%27/%3E%3Crect%20x%3D%2778%27%20y%3D%2786%27%20width%3D%271044%27%20height%3D%27458%27%20rx%3D%2730%27%20fill%3D%27%230b1220%27%20stroke%3D%27%2338bdf8%27%20stroke-opacity%3D%270.35%27/%3E%3Ctext%20x%3D%27126%27%20y%3D%27164%27%20fill%3D%27white%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2738%27%20font-weight%3D%27700%27%3EArchitecture%20Drift%20Detection%20for%20AI-Maintained%3C/text%3E%3Ctext%20x%3D%27126%27%20y%3D%27224%27%20fill%3D%27%2393c5fd%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2738%27%20font-weight%3D%27700%27%3ERepositories%3C/text%3E%3Ctext%20x%3D%27126%27%20y%3D%27298%27%20fill%3D%27%23cbd5e1%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2728%27%3ECatch%20boundary%20erosion%2C%20rogue%20imports%2C%20and%20structural%20drift%3C/text%3E%3Ctext%20x%3D%27126%27%20y%3D%27334%27%20fill%3D%27%23cbd5e1%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2728%27%3Ebefore%20small%20automated%20edits%20quietly%20rot%20the%20repo%3C/text%3E%3Crect%20x%3D%27126%27%20y%3D%27388%27%20width%3D%27390%27%20height%3D%2754%27%20rx%3D%2714%27%20fill%3D%27%23111c2d%27%20stroke%3D%27%2367e8f9%27%20stroke-opacity%3D%270.45%27/%3E%3Ctext%20x%3D%27152%27%20y%3D%27423%27%20fill%3D%27%2367e8f9%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2724%27%3Egood%20agents%20still%20need%20structural%20guardrails%3C/text%3E%3Crect%20x%3D%27774%27%20y%3D%27166%27%20width%3D%27262%27%20height%3D%2758%27%20rx%3D%2714%27%20fill%3D%27%230d1728%27%20stroke%3D%27%2322d3ee%27%20stroke-opacity%3D%270.45%27/%3E%3Ctext%20x%3D%27812%27%20y%3D%27204%27%20fill%3D%27%23bae6fd%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2723%27%3Erepo%20map%3C/text%3E%3Crect%20x%3D%27774%27%20y%3D%27266%27%20width%3D%27262%27%20height%3D%2758%27%20rx%3D%2714%27%20fill%3D%27%230d1728%27%20stroke%3D%27%2322d3ee%27%20stroke-opacity%3D%270.45%27/%3E%3Ctext%20x%3D%27810%27%20y%3D%27304%27%20fill%3D%27%23bae6fd%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2723%27%3Eboundary%20rules%3C/text%3E%3Crect%20x%3D%27774%27%20y%3D%27366%27%20width%3D%27262%27%20height%3D%2758%27%20rx%3D%2714%27%20fill%3D%27%230d1728%27%20stroke%3D%27%23a78bfa%27%20stroke-opacity%3D%270.45%27/%3E%3Ctext%20x%3D%27820%27%20y%3D%27404%27%20fill%3D%27%23ddd6fe%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2723%27%3Ereview%20packet%3C/text%3E%3C/svg%3E">
+    <script type="application/ld+json">{
+      "@context": "https://schema.org",
+      "@type": "BlogPosting",
+      "headline": "Architecture Drift Detection for AI-Maintained Repositories",
+      "description": "A practical guide to catching architecture drift in AI-maintained repositories with repo maps, dependency snapshots, invariants, and reviewer-friendly evidence before small automated edits turn into structural decay.",
+      "image": "data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A//www.w3.org/2000/svg%27%20viewBox%3D%270%200%201200%20630%27%3E%3Cdefs%3E%3ClinearGradient%20id%3D%27bg%27%20x1%3D%270%27%20x2%3D%271%27%20y1%3D%270%27%20y2%3D%271%27%3E%3Cstop%20offset%3D%270%25%27%20stop-color%3D%27%2307111d%27/%3E%3Cstop%20offset%3D%27100%25%27%20stop-color%3D%27%23174d75%27/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect%20width%3D%271200%27%20height%3D%27630%27%20fill%3D%27url%28%23bg%29%27/%3E%3Ccircle%20cx%3D%271012%27%20cy%3D%27108%27%20r%3D%27174%27%20fill%3D%27%2322d3ee%27%20fill-opacity%3D%270.14%27/%3E%3Ccircle%20cx%3D%27184%27%20cy%3D%27520%27%20r%3D%27218%27%20fill%3D%27%238b5cf6%27%20fill-opacity%3D%270.16%27/%3E%3Crect%20x%3D%2778%27%20y%3D%2786%27%20width%3D%271044%27%20height%3D%27458%27%20rx%3D%2730%27%20fill%3D%27%230b1220%27%20stroke%3D%27%2338bdf8%27%20stroke-opacity%3D%270.35%27/%3E%3Ctext%20x%3D%27126%27%20y%3D%27164%27%20fill%3D%27white%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2738%27%20font-weight%3D%27700%27%3EArchitecture%20Drift%20Detection%20for%20AI-Maintained%3C/text%3E%3Ctext%20x%3D%27126%27%20y%3D%27224%27%20fill%3D%27%2393c5fd%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2738%27%20font-weight%3D%27700%27%3ERepositories%3C/text%3E%3Ctext%20x%3D%27126%27%20y%3D%27298%27%20fill%3D%27%23cbd5e1%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2728%27%3ECatch%20boundary%20erosion%2C%20rogue%20imports%2C%20and%20structural%20drift%3C/text%3E%3Ctext%20x%3D%27126%27%20y%3D%27334%27%20fill%3D%27%23cbd5e1%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2728%27%3Ebefore%20small%20automated%20edits%20quietly%20rot%20the%20repo%3C/text%3E%3Crect%20x%3D%27126%27%20y%3D%27388%27%20width%3D%27390%27%20height%3D%2754%27%20rx%3D%2714%27%20fill%3D%27%23111c2d%27%20stroke%3D%27%2367e8f9%27%20stroke-opacity%3D%270.45%27/%3E%3Ctext%20x%3D%27152%27%20y%3D%27423%27%20fill%3D%27%2367e8f9%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2724%27%3Egood%20agents%20still%20need%20structural%20guardrails%3C/text%3E%3Crect%20x%3D%27774%27%20y%3D%27166%27%20width%3D%27262%27%20height%3D%2758%27%20rx%3D%2714%27%20fill%3D%27%230d1728%27%20stroke%3D%27%2322d3ee%27%20stroke-opacity%3D%270.45%27/%3E%3Ctext%20x%3D%27812%27%20y%3D%27204%27%20fill%3D%27%23bae6fd%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2723%27%3Erepo%20map%3C/text%3E%3Crect%20x%3D%27774%27%20y%3D%27266%27%20width%3D%27262%27%20height%3D%2758%27%20rx%3D%2714%27%20fill%3D%27%230d1728%27%20stroke%3D%27%2322d3ee%27%20stroke-opacity%3D%270.45%27/%3E%3Ctext%20x%3D%27810%27%20y%3D%27304%27%20fill%3D%27%23bae6fd%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2723%27%3Eboundary%20rules%3C/text%3E%3Crect%20x%3D%27774%27%20y%3D%27366%27%20width%3D%27262%27%20height%3D%2758%27%20rx%3D%2714%27%20fill%3D%27%230d1728%27%20stroke%3D%27%23a78bfa%27%20stroke-opacity%3D%270.45%27/%3E%3Ctext%20x%3D%27820%27%20y%3D%27404%27%20fill%3D%27%23ddd6fe%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2723%27%3Ereview%20packet%3C/text%3E%3C/svg%3E",
+      "url": "https://negiadventures.github.io/blog/architecture-drift-detection-ai-repos.html",
+      "datePublished": "2026-06-04",
+      "author": {
+        "@type": "Person",
+        "name": "Anirudh Negi",
+        "url": "https://negiadventures.github.io"
+      },
+      "publisher": {
+        "@type": "Person",
+        "name": "Anirudh Negi",
+        "url": "https://negiadventures.github.io"
+      }
+    }</script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../stylesheets/stylesheet.css?v=5" media="screen">
+    <style>
+      .blog-post { max-width: 860px; margin: 0 auto; padding: 60px 20px; }
+      .blog-post-header { margin-bottom: 40px; }
+      .blog-post-nav { margin-bottom: 30px; }
+      .blog-post-nav a { color: var(--accent-strong); font-size: 0.95rem; }
+      .blog-post-nav a:hover { color: var(--accent); }
+      .blog-post-title { font-size: 2.5rem; margin-bottom: 16px; }
+      .blog-post-meta { display: flex; gap: 20px; color: var(--text-muted); font-size: 0.95rem; margin-bottom: 30px; flex-wrap: wrap; }
+      .blog-post-image { width: 100%; height: 320px; object-fit: cover; border-radius: 16px; margin-bottom: 30px; border: 1px solid var(--border); }
+      .blog-post-content h2 { font-size: 1.6rem; margin-top: 40px; margin-bottom: 16px; color: var(--text-light); }
+      .blog-post-content h3 { font-size: 1.25rem; margin-top: 28px; margin-bottom: 12px; color: var(--text-light); }
+      .blog-post-content p, .blog-post-content li { line-height: 1.8; color: var(--text-muted); }
+      .blog-post-content p { margin-bottom: 16px; }
+      .blog-post-content ul, .blog-post-content ol { margin-bottom: 20px; padding-left: 24px; }
+      .code-block { background: var(--bg-alt); border: 1px solid var(--border); border-radius: 12px; padding: 20px; margin: 20px 0; overflow-x: auto; }
+      .code-block pre { margin: 0; font-family: var(--mono); font-size: 0.9rem; line-height: 1.65; color: var(--text-light); }
+      .code-block code { color: var(--accent-strong); }
+      .callout { border-radius: 14px; padding: 18px 20px; margin: 22px 0; border: 1px solid var(--border); }
+      .callout p:last-child { margin-bottom: 0; }
+      .callout-warning { background: rgba(251, 191, 36, 0.08); border-color: rgba(251, 191, 36, 0.3); }
+      .callout-best { background: rgba(34, 211, 238, 0.08); border-color: rgba(34, 211, 238, 0.28); }
+      .comparison-table { width: 100%; border-collapse: collapse; margin: 24px 0; font-size: 0.95rem; }
+      .comparison-table th, .comparison-table td { border: 1px solid var(--border); padding: 14px; text-align: left; vertical-align: top; }
+      .comparison-table th { color: var(--text-light); background: var(--bg-alt); }
+      .blog-post-tags { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 40px; padding-top: 30px; border-top: 1px solid var(--border); }
+      .blog-post-tag { background: var(--accent-soft); color: var(--accent-strong); border-radius: 999px; padding: 6px 14px; font-size: 0.85rem; font-family: var(--mono); border: 1px solid transparent; }
+      .blog-footer { margin-top: 60px; padding-top: 30px; border-top: 1px solid var(--border); text-align: center; }
+      .blog-footer a { color: var(--accent-strong); }
+      @media (max-width: 768px) { .blog-post { padding: 40px 16px; } .blog-post-title { font-size: 2rem; } .blog-post-image { height: 220px; } }
+    </style>
+  </head>
+  <body>
+    <a href="../index.html#main" class="skip-link">Skip to main content</a>
+    <header class="site-header">
+      <div class="container blog-post">
+        <div class="blog-post-nav"><a href="index.html">&larr; Back to All Posts</a></div>
+        <div class="blog-post-header">
+          <h1 class="blog-post-title">Architecture Drift Detection for AI-Maintained Repositories</h1>
+          <div class="blog-post-meta"><span>June 4, 2026</span><span>&bull;</span><span>10 min read</span></div>
+          <img src="data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A//www.w3.org/2000/svg%27%20viewBox%3D%270%200%201200%20630%27%3E%3Cdefs%3E%3ClinearGradient%20id%3D%27bg%27%20x1%3D%270%27%20x2%3D%271%27%20y1%3D%270%27%20y2%3D%271%27%3E%3Cstop%20offset%3D%270%25%27%20stop-color%3D%27%2307111d%27/%3E%3Cstop%20offset%3D%27100%25%27%20stop-color%3D%27%23174d75%27/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect%20width%3D%271200%27%20height%3D%27630%27%20fill%3D%27url%28%23bg%29%27/%3E%3Ccircle%20cx%3D%271012%27%20cy%3D%27108%27%20r%3D%27174%27%20fill%3D%27%2322d3ee%27%20fill-opacity%3D%270.14%27/%3E%3Ccircle%20cx%3D%27184%27%20cy%3D%27520%27%20r%3D%27218%27%20fill%3D%27%238b5cf6%27%20fill-opacity%3D%270.16%27/%3E%3Crect%20x%3D%2778%27%20y%3D%2786%27%20width%3D%271044%27%20height%3D%27458%27%20rx%3D%2730%27%20fill%3D%27%230b1220%27%20stroke%3D%27%2338bdf8%27%20stroke-opacity%3D%270.35%27/%3E%3Ctext%20x%3D%27126%27%20y%3D%27164%27%20fill%3D%27white%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2738%27%20font-weight%3D%27700%27%3EArchitecture%20Drift%20Detection%20for%20AI-Maintained%3C/text%3E%3Ctext%20x%3D%27126%27%20y%3D%27224%27%20fill%3D%27%2393c5fd%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2738%27%20font-weight%3D%27700%27%3ERepositories%3C/text%3E%3Ctext%20x%3D%27126%27%20y%3D%27298%27%20fill%3D%27%23cbd5e1%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2728%27%3ECatch%20boundary%20erosion%2C%20rogue%20imports%2C%20and%20structural%20drift%3C/text%3E%3Ctext%20x%3D%27126%27%20y%3D%27334%27%20fill%3D%27%23cbd5e1%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2728%27%3Ebefore%20small%20automated%20edits%20quietly%20rot%20the%20repo%3C/text%3E%3Crect%20x%3D%27126%27%20y%3D%27388%27%20width%3D%27390%27%20height%3D%2754%27%20rx%3D%2714%27%20fill%3D%27%23111c2d%27%20stroke%3D%27%2367e8f9%27%20stroke-opacity%3D%270.45%27/%3E%3Ctext%20x%3D%27152%27%20y%3D%27423%27%20fill%3D%27%2367e8f9%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2724%27%3Egood%20agents%20still%20need%20structural%20guardrails%3C/text%3E%3Crect%20x%3D%27774%27%20y%3D%27166%27%20width%3D%27262%27%20height%3D%2758%27%20rx%3D%2714%27%20fill%3D%27%230d1728%27%20stroke%3D%27%2322d3ee%27%20stroke-opacity%3D%270.45%27/%3E%3Ctext%20x%3D%27812%27%20y%3D%27204%27%20fill%3D%27%23bae6fd%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2723%27%3Erepo%20map%3C/text%3E%3Crect%20x%3D%27774%27%20y%3D%27266%27%20width%3D%27262%27%20height%3D%2758%27%20rx%3D%2714%27%20fill%3D%27%230d1728%27%20stroke%3D%27%2322d3ee%27%20stroke-opacity%3D%270.45%27/%3E%3Ctext%20x%3D%27810%27%20y%3D%27304%27%20fill%3D%27%23bae6fd%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2723%27%3Eboundary%20rules%3C/text%3E%3Crect%20x%3D%27774%27%20y%3D%27366%27%20width%3D%27262%27%20height%3D%2758%27%20rx%3D%2714%27%20fill%3D%27%230d1728%27%20stroke%3D%27%23a78bfa%27%20stroke-opacity%3D%270.45%27/%3E%3Ctext%20x%3D%27820%27%20y%3D%27404%27%20fill%3D%27%23ddd6fe%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2723%27%3Ereview%20packet%3C/text%3E%3C/svg%3E" alt="Architecture Drift Detection for AI-Maintained Repositories" class="blog-post-image">
+        </div>
+        <div class="blog-post-content">
+          <p>Small AI-generated edits usually look harmless in code review. One import crosses a layer boundary. One utility reaches into a feature module because it was convenient. A background worker starts depending on web-layer code because the model saw a function it could reuse.</p>
+          <p>None of that looks dramatic in a single PR. A month later the repo feels softer, harder to reason about, and more expensive to change.</p>
+          <p>If AI is touching a repository every day, you need a structural drift check, not just lint, tests, and human vibes. This post shows the pattern I like: keep a lightweight repo map, snapshot the dependency graph, enforce a few invariants, and attach a reviewer-friendly drift summary to every risky PR.</p>
+
+          <h2>Why this matters</h2>
+          <p>AI coding agents are good at solving local problems. Architecture is not a local problem. It is a constraint across time.</p>
+          <p>That is why drift shows up even when each individual patch seems reasonable. The model optimizes for the shortest valid path in front of it. The repository needs a system that defends boundaries the model cannot reliably hold in working memory.</p>
+          <ul>
+            <li>imports that cross forbidden layers get caught before merge</li>
+            <li>reviewers see structural impact, not just line diffs</li>
+            <li>agent-generated refactors stay easier to audit</li>
+            <li>repo maps stay current enough to guide future runs</li>
+          </ul>
+
+          <h2>Architecture or workflow overview</h2>
+          <div class="code-block"><pre><code>flowchart TD
+    A[Agent proposes patch] --&gt; B[Build repo map snapshot]
+    B --&gt; C[Compute dependency graph diff]
+    C --&gt; D[Evaluate boundary invariants]
+    D --&gt; E{Drift score}
+    E --&gt;|low| F[Attach summary to PR]
+    E --&gt;|medium| G[Request reviewer attention]
+    E --&gt;|high| H[Block auto-merge and escalate]
+    F --&gt; I[Merge or continue verification]
+    G --&gt; I
+    H --&gt; J[Human architectural review]</code></pre></div>
+          <p>The important design choice is that the agent does not decide whether the new structure is acceptable. It produces evidence, and the policy layer scores the change.</p>
+
+          <h2>Implementation details</h2>
+          <h3>1) Keep a lightweight repo map with allowed boundaries</h3>
+          <p>I do not like giant architecture documents for this. They rot fast. A small machine-readable map works better.</p>
+          <div class="code-block"><pre><code>layers:
+  web:
+    paths: ["apps/web/src/**"]
+    canDependOn: ["services", "shared"]
+  services:
+    paths: ["packages/services/**"]
+    canDependOn: ["data", "shared"]
+  data:
+    paths: ["packages/data/**"]
+    canDependOn: ["shared"]
+  shared:
+    paths: ["packages/shared/**"]
+    canDependOn: []
+
+forbiddenImports:
+  - from: "apps/web/src/**"
+    to: "packages/data/**/migrations/**"
+  - from: "packages/shared/**"
+    to: "apps/web/src/**"</code></pre></div>
+          <p>This does two jobs. It gives the verifier something enforceable, and it gives future agents a compact picture of how the repo is supposed to fit together.</p>
+
+          <h3>2) Turn the patch into a graph diff, not just a file diff</h3>
+          <p>Line diffs are not enough when the real risk is structural. I want an import graph delta.</p>
+          <div class="code-block"><pre><code>type Edge = { from: string; to: string };
+
+type DriftReport = {
+  newEdges: Edge[];
+  removedEdges: Edge[];
+  forbiddenEdges: Edge[];
+  crossLayerEdges: Edge[];
+};
+
+export function diffGraphs(before: Edge[], after: Edge[], isForbidden: (e: Edge) =&gt; boolean): DriftReport {
+  const key = (e: Edge) =&gt; `${e.from} -&gt; ${e.to}`;
+  const beforeSet = new Set(before.map(key));
+  const afterSet = new Set(after.map(key));
+
+  const newEdges = after.filter((e) =&gt; !beforeSet.has(key(e)));
+  const removedEdges = before.filter((e) =&gt; !afterSet.has(key(e)));
+  const forbiddenEdges = newEdges.filter(isForbidden);
+
+  return {
+    newEdges,
+    removedEdges,
+    forbiddenEdges,
+    crossLayerEdges: newEdges.filter((e) =&gt; !isForbidden(e) &amp;&amp; e.from.split('/')[0] !== e.to.split('/')[0])
+  };
+}</code></pre></div>
+          <p>This is where a lot of false confidence disappears. The patch that looked tiny now clearly shows a new web-to-data dependency, or a shared package reaching upward into a feature app.</p>
+
+          <h3>3) Score drift so reviewers do not have to infer severity from raw output</h3>
+          <p>Raw graph diffs are still noisy. I prefer a simple scorecard.</p>
+          <div class="code-block"><pre><code>{
+  "changed_files": 7,
+  "new_edges": 5,
+  "removed_edges": 2,
+  "forbidden_edges": 1,
+  "new_layer_crossings": 3,
+  "touches_shared_package": true,
+  "touches_runtime_entrypoint": false,
+  "drift_score": 82,
+  "policy": "human_review_required"
+}</code></pre></div>
+          <table class="comparison-table">
+            <thead><tr><th>Signal</th><th>Why it matters</th><th>Suggested weight</th></tr></thead>
+            <tbody>
+              <tr><td>Forbidden import</td><td>Direct boundary violation</td><td>very high</td></tr>
+              <tr><td>New layer crossing</td><td>Structural complexity increase</td><td>medium</td></tr>
+              <tr><td>Shared package edit</td><td>Wider blast radius</td><td>medium</td></tr>
+              <tr><td>Entry point change</td><td>Runtime behavior can fan out</td><td>medium</td></tr>
+              <tr><td>Pure edge removal</td><td>Usually good, but still inspect</td><td>low</td></tr>
+            </tbody>
+          </table>
+          <p>The point is not mathematical purity. The point is forcing consistency across dozens of agent-generated PRs.</p>
+
+          <h3>4) Attach a terminal-style evidence packet to the PR</h3>
+          <p>If the evidence is annoying to read, nobody reads it.</p>
+          <div class="code-block"><pre><code>$ drift-check --base origin/master --head HEAD
+repo-map: .repo-architecture.yml
+new-edges: 5
+removed-edges: 2
+forbidden-edges: 1
+new-layer-crossings: 3
+score: 82
+policy: human_review_required
+
+forbidden:
+  apps/web/src/features/billing/page.tsx
+    -&gt; packages/data/src/internal/billingLedger.ts
+
+summary:
+  - web layer now depends on data internals
+  - shared package imports increased by 2
+  - patch likely solved a local need by bypassing service boundary</code></pre></div>
+          <p>That summary is what I want beside the normal CI checks. It gives the reviewer a reason to pause without making them read a graph dump.</p>
+
+          <h2>What went wrong, and the tradeoffs</h2>
+          <p>The first failure mode is over-enforcement. If your boundary map is too rigid, the system becomes annoying and people start ignoring it.</p>
+          <p>The second failure mode is stale architecture metadata. A repo map that nobody updates becomes just another fiction layer, and then the agent plus the verifier are both working from bad assumptions.</p>
+          <table class="comparison-table">
+            <thead><tr><th>Approach</th><th>Strength</th><th>Weakness</th><th>When I’d use it</th></tr></thead>
+            <tbody>
+              <tr><td>Static import rules only</td><td>fast and cheap</td><td>misses runtime coupling</td><td>smaller TypeScript or Python repos</td></tr>
+              <tr><td>Full graph snapshots</td><td>richer signal</td><td>heavier setup and more noise</td><td>medium to large repos</td></tr>
+              <tr><td>Reviewer-only architecture checks</td><td>flexible</td><td>inconsistent, easy to miss</td><td>only when repo is changing rarely</td></tr>
+              <tr><td>Agent-generated architecture summaries</td><td>scalable context</td><td>can hallucinate boundary intent</td><td>as evidence, never as sole gate</td></tr>
+            </tbody>
+          </table>
+          <div class="callout callout-warning"><p><strong>Pitfall:</strong> do not let the model update the boundary map automatically in the same PR that violates it. That turns the guardrail into a rubber stamp.</p></div>
+          <div class="callout callout-best"><p><strong>Best practice:</strong> keep the repo map small, reviewable, and tied to real package or directory boundaries. If it takes fifteen minutes to understand, it will not stay alive.</p></div>
+          <ul>
+            <li>generated code may import internal modules that were never meant to be public APIs</li>
+            <li>graph builders can miss dynamic imports, so high-risk areas still need human review</li>
+            <li>monorepos with multiple languages need language-aware parsers or the signal gets patchy</li>
+            <li>drift summaries should be stored with the PR so recurring patterns become visible over time</li>
+          </ul>
+          <p>What I would not do is use a giant LLM summary of the codebase as the architecture source of truth. That can help with explanation, but it is too unstable for policy.</p>
+
+          <h2>Practical checklist</h2>
+          <ul>
+            <li>[ ] define a tiny repo map with paths and allowed dependencies</li>
+            <li>[ ] generate a dependency graph before and after the patch</li>
+            <li>[ ] score new layer crossings and forbidden edges separately</li>
+            <li>[ ] block auto-merge on explicit boundary violations</li>
+            <li>[ ] attach a short reviewer summary, not just raw graph JSON</li>
+            <li>[ ] keep shared packages and entry points on a higher-risk lane</li>
+            <li>[ ] review and update the repo map when architecture actually changes</li>
+            <li>[ ] treat agent summaries as evidence, not policy</li>
+          </ul>
+
+          <h2>Conclusion</h2>
+          <p>AI-maintained repositories need structural checks because local correctness is not enough.</p>
+          <p>A repo map, a graph diff, and a small drift score will catch a surprising amount of architectural decay before it spreads. That is the kind of boring safeguard that keeps frequent automation from slowly softening a codebase.</p>
+
+          <h2>References</h2>
+          <ul>
+            <li><a href="https://github.com/sverweij/dependency-cruiser">dependency-cruiser</a></li>
+            <li><a href="https://github.com/pahen/madge">Madge</a></li>
+            <li><a href="https://nx.dev/features/enforce-module-boundaries">Nx enforce-module-boundaries</a></li>
+            <li><a href="https://www.archunit.org/">ArchUnit</a></li>
+          </ul>
+        </div>
+        <div class="blog-post-tags"><span class="blog-post-tag">AI Agents</span><span class="blog-post-tag">Architecture</span><span class="blog-post-tag">Repo Maintenance</span><span class="blog-post-tag">Dependency Graphs</span><span class="blog-post-tag">Code Review</span></div>
+        <div class="blog-footer"><p><a href="index.html">Browse more posts</a></p></div>
+      </div>
+    </header>
+  </body>
+</html>
