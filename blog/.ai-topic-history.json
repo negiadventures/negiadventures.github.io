@@ -1,6 +1,14 @@
 {
   "topics": [
     {
+      "date": "2026-06-05",
+      "skill": "Approval-aware MCP proxy design for remote tools",
+      "topic": "Using server-side route policy, short-lived signed claims, single-use nonces, approval fingerprints, and scoped credential brokering so remote MCP proxies stop becoming ambient access layers for agent sessions",
+      "slug": "approval-aware-mcp-proxy-remote-tools",
+      "title": "Approval-Aware MCP Proxies for Remote Tool Routing",
+      "summary": "A practical guide to approval-aware MCP proxies with policy checks, short-lived claims, replay defense, scoped credentials, and audit trails so remote tools stay useful without turning every agent session into ambient access."
+    },
+    {
       "date": "2026-06-03",
       "skill": "CI failure triage for AI coding agents",
       "topic": "Using failure buckets, artifact packs, flaky-test fingerprints, and patch-vs-retry lanes so AI coding agents stop retrying doomed CI jobs, masking infra problems, or patching code to satisfy broken pipelines",
