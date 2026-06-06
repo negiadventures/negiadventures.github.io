@@ -1,6 +1,14 @@
 {
   "topics": [
     {
+      "date": "2026-06-06",
+      "skill": "Repository map drift detection for AI coding agents",
+      "topic": "Using AST snapshots, path ownership signals, CI freshness gates, and reviewer-friendly drift reports so checked-in repo maps and architecture summaries stop aging into confident lies that mislead coding agents",
+      "slug": "repo-map-drift-detection-ai-coding-agents",
+      "title": "Repo Map Drift Detection for AI Coding Agents",
+      "summary": "A practical guide to detecting repo map drift for AI coding agents with AST snapshots, ownership signals, CI freshness gates, and evidence packets so repo maps stay aligned with the codebase."
+    },
+    {
       "date": "2026-06-05",
       "skill": "Approval-aware MCP proxy design for remote tools",
       "topic": "Using server-side route policy, short-lived signed claims, single-use nonces, approval fingerprints, and scoped credential brokering so remote MCP proxies stop becoming ambient access layers for agent sessions",
