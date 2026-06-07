@@ -1,0 +1,468 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="A practical guide to routing AI-generated patches with CODEOWNERS, risk scoring, and escalation rules so the right humans review the right changes before automation outruns ownership.">
+    <meta name="author" content="Anirudh Negi">
+    <title>CODEOWNERS-Aware Escalation for AI Coding Agents | Anirudh Negi</title>
+    <link rel="icon" type="image/svg+xml" href="../images/favicon.svg">
+    <link rel="canonical" href="https://negiadventures.github.io/blog/codeowners-aware-escalation-ai-coding-agents.html">
+    <meta property="og:type" content="article">
+    <meta property="og:url" content="https://negiadventures.github.io/blog/codeowners-aware-escalation-ai-coding-agents.html">
+    <meta property="og:title" content="CODEOWNERS-Aware Escalation for AI Coding Agents | Anirudh Negi">
+    <meta property="og:description" content="A practical guide to routing AI-generated patches with CODEOWNERS, risk scoring, and escalation rules so the right humans review the right changes before automation outruns ownership.">
+    <meta property="og:image" content="data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A//www.w3.org/2000/svg%27%20viewBox%3D%270%200%201200%20630%27%3E%3Cdefs%3E%3ClinearGradient%20id%3D%27bg%27%20x1%3D%270%27%20x2%3D%271%27%20y1%3D%270%27%20y2%3D%271%27%3E%3Cstop%20offset%3D%270%25%27%20stop-color%3D%27%2307111d%27/%3E%3Cstop%20offset%3D%27100%25%27%20stop-color%3D%27%23164f63%27/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect%20width%3D%271200%27%20height%3D%27630%27%20fill%3D%27url%28%23bg%29%27/%3E%3Ccircle%20cx%3D%271002%27%20cy%3D%27108%27%20r%3D%27174%27%20fill%3D%27%2322d3ee%27%20fill-opacity%3D%270.14%27/%3E%3Ccircle%20cx%3D%27180%27%20cy%3D%27520%27%20r%3D%27218%27%20fill%3D%27%238b5cf6%27%20fill-opacity%3D%270.16%27/%3E%3Crect%20x%3D%2778%27%20y%3D%2786%27%20width%3D%271044%27%20height%3D%27458%27%20rx%3D%2730%27%20fill%3D%27%230b1220%27%20stroke%3D%27%2338bdf8%27%20stroke-opacity%3D%270.35%27/%3E%3Ctext%20x%3D%27126%27%20y%3D%27166%27%20fill%3D%27white%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2738%27%20font-weight%3D%27700%27%3ECODEOWNERS-Aware%20Escalation%20for%3C/text%3E%3Ctext%20x%3D%27126%27%20y%3D%27226%27%20fill%3D%27%2393c5fd%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2738%27%20font-weight%3D%27700%27%3EAI%20Coding%20Agents%3C/text%3E%3Ctext%20x%3D%27126%27%20y%3D%27300%27%20fill%3D%27%23cbd5e1%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2728%27%3ERoute%20risky%20patches%20to%20the%20right%20reviewers%20before%20automation%3C/text%3E%3Ctext%20x%3D%27126%27%20y%3D%27336%27%20fill%3D%27%23cbd5e1%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2728%27%3Eturns%20ownership%20gaps%20into%20quiet%20production%20surprises%3C/text%3E%3Crect%20x%3D%27126%27%20y%3D%27388%27%20width%3D%27390%27%20height%3D%2754%27%20rx%3D%2714%27%20fill%3D%27%23111c2d%27%20stroke%3D%27%2367e8f9%27%20stroke-opacity%3D%270.45%27/%3E%3Ctext%20x%3D%27152%27%20y%3D%27423%27%20fill%3D%27%2367e8f9%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2724%27%3Eownership%20rules%20need%20risk-aware%20routing%3C/text%3E%3Crect%20x%3D%27776%27%20y%3D%27166%27%20width%3D%27258%27%20height%3D%2758%27%20rx%3D%2714%27%20fill%3D%27%230d1728%27%20stroke%3D%27%2322d3ee%27%20stroke-opacity%3D%270.45%27/%3E%3Ctext%20x%3D%27818%27%20y%3D%27204%27%20fill%3D%27%23bae6fd%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2723%27%3Erisk%20score%3C/text%3E%3Crect%20x%3D%27776%27%20y%3D%27266%27%20width%3D%27258%27%20height%3D%2758%27%20rx%3D%2714%27%20fill%3D%27%230d1728%27%20stroke%3D%27%2322d3ee%27%20stroke-opacity%3D%270.45%27/%3E%3Ctext%20x%3D%27816%27%20y%3D%27304%27%20fill%3D%27%23bae6fd%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2723%27%3Eowner%20match%3C/text%3E%3Crect%20x%3D%27776%27%20y%3D%27366%27%20width%3D%27258%27%20height%3D%2758%27%20rx%3D%2714%27%20fill%3D%27%230d1728%27%20stroke%3D%27%23a78bfa%27%20stroke-opacity%3D%270.45%27/%3E%3Ctext%20x%3D%27812%27%20y%3D%27404%27%20fill%3D%27%23ddd6fe%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2723%27%3Eescalation%20lane%3C/text%3E%3C/svg%3E">
+    <meta property="article:published_time" content="2026-06-07">
+    <meta property="article:author" content="Anirudh Negi">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:url" content="https://negiadventures.github.io/blog/codeowners-aware-escalation-ai-coding-agents.html">
+    <meta name="twitter:title" content="CODEOWNERS-Aware Escalation for AI Coding Agents | Anirudh Negi">
+    <meta name="twitter:description" content="A practical guide to routing AI-generated patches with CODEOWNERS, risk scoring, and escalation rules so the right humans review the right changes before automation outruns ownership.">
+    <meta name="twitter:image" content="data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A//www.w3.org/2000/svg%27%20viewBox%3D%270%200%201200%20630%27%3E%3Cdefs%3E%3ClinearGradient%20id%3D%27bg%27%20x1%3D%270%27%20x2%3D%271%27%20y1%3D%270%27%20y2%3D%271%27%3E%3Cstop%20offset%3D%270%25%27%20stop-color%3D%27%2307111d%27/%3E%3Cstop%20offset%3D%27100%25%27%20stop-color%3D%27%23164f63%27/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect%20width%3D%271200%27%20height%3D%27630%27%20fill%3D%27url%28%23bg%29%27/%3E%3Ccircle%20cx%3D%271002%27%20cy%3D%27108%27%20r%3D%27174%27%20fill%3D%27%2322d3ee%27%20fill-opacity%3D%270.14%27/%3E%3Ccircle%20cx%3D%27180%27%20cy%3D%27520%27%20r%3D%27218%27%20fill%3D%27%238b5cf6%27%20fill-opacity%3D%270.16%27/%3E%3Crect%20x%3D%2778%27%20y%3D%2786%27%20width%3D%271044%27%20height%3D%27458%27%20rx%3D%2730%27%20fill%3D%27%230b1220%27%20stroke%3D%27%2338bdf8%27%20stroke-opacity%3D%270.35%27/%3E%3Ctext%20x%3D%27126%27%20y%3D%27166%27%20fill%3D%27white%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2738%27%20font-weight%3D%27700%27%3ECODEOWNERS-Aware%20Escalation%20for%3C/text%3E%3Ctext%20x%3D%27126%27%20y%3D%27226%27%20fill%3D%27%2393c5fd%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2738%27%20font-weight%3D%27700%27%3EAI%20Coding%20Agents%3C/text%3E%3Ctext%20x%3D%27126%27%20y%3D%27300%27%20fill%3D%27%23cbd5e1%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2728%27%3ERoute%20risky%20patches%20to%20the%20right%20reviewers%20before%20automation%3C/text%3E%3Ctext%20x%3D%27126%27%20y%3D%27336%27%20fill%3D%27%23cbd5e1%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2728%27%3Eturns%20ownership%20gaps%20into%20quiet%20production%20surprises%3C/text%3E%3Crect%20x%3D%27126%27%20y%3D%27388%27%20width%3D%27390%27%20height%3D%2754%27%20rx%3D%2714%27%20fill%3D%27%23111c2d%27%20stroke%3D%27%2367e8f9%27%20stroke-opacity%3D%270.45%27/%3E%3Ctext%20x%3D%27152%27%20y%3D%27423%27%20fill%3D%27%2367e8f9%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2724%27%3Eownership%20rules%20need%20risk-aware%20routing%3C/text%3E%3Crect%20x%3D%27776%27%20y%3D%27166%27%20width%3D%27258%27%20height%3D%2758%27%20rx%3D%2714%27%20fill%3D%27%230d1728%27%20stroke%3D%27%2322d3ee%27%20stroke-opacity%3D%270.45%27/%3E%3Ctext%20x%3D%27818%27%20y%3D%27204%27%20fill%3D%27%23bae6fd%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2723%27%3Erisk%20score%3C/text%3E%3Crect%20x%3D%27776%27%20y%3D%27266%27%20width%3D%27258%27%20height%3D%2758%27%20rx%3D%2714%27%20fill%3D%27%230d1728%27%20stroke%3D%27%2322d3ee%27%20stroke-opacity%3D%270.45%27/%3E%3Ctext%20x%3D%27816%27%20y%3D%27304%27%20fill%3D%27%23bae6fd%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2723%27%3Eowner%20match%3C/text%3E%3Crect%20x%3D%27776%27%20y%3D%27366%27%20width%3D%27258%27%20height%3D%2758%27%20rx%3D%2714%27%20fill%3D%27%230d1728%27%20stroke%3D%27%23a78bfa%27%20stroke-opacity%3D%270.45%27/%3E%3Ctext%20x%3D%27812%27%20y%3D%27404%27%20fill%3D%27%23ddd6fe%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2723%27%3Eescalation%20lane%3C/text%3E%3C/svg%3E">
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "BlogPosting",
+      "headline": "CODEOWNERS-Aware Escalation for AI Coding Agents",
+      "description": "A practical guide to routing AI-generated patches with CODEOWNERS, risk scoring, and escalation rules so the right humans review the right changes before automation outruns ownership.",
+      "image": "data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A//www.w3.org/2000/svg%27%20viewBox%3D%270%200%201200%20630%27%3E%3Cdefs%3E%3ClinearGradient%20id%3D%27bg%27%20x1%3D%270%27%20x2%3D%271%27%20y1%3D%270%27%20y2%3D%271%27%3E%3Cstop%20offset%3D%270%25%27%20stop-color%3D%27%2307111d%27/%3E%3Cstop%20offset%3D%27100%25%27%20stop-color%3D%27%23164f63%27/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect%20width%3D%271200%27%20height%3D%27630%27%20fill%3D%27url%28%23bg%29%27/%3E%3Ccircle%20cx%3D%271002%27%20cy%3D%27108%27%20r%3D%27174%27%20fill%3D%27%2322d3ee%27%20fill-opacity%3D%270.14%27/%3E%3Ccircle%20cx%3D%27180%27%20cy%3D%27520%27%20r%3D%27218%27%20fill%3D%27%238b5cf6%27%20fill-opacity%3D%270.16%27/%3E%3Crect%20x%3D%2778%27%20y%3D%2786%27%20width%3D%271044%27%20height%3D%27458%27%20rx%3D%2730%27%20fill%3D%27%230b1220%27%20stroke%3D%27%2338bdf8%27%20stroke-opacity%3D%270.35%27/%3E%3Ctext%20x%3D%27126%27%20y%3D%27166%27%20fill%3D%27white%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2738%27%20font-weight%3D%27700%27%3ECODEOWNERS-Aware%20Escalation%20for%3C/text%3E%3Ctext%20x%3D%27126%27%20y%3D%27226%27%20fill%3D%27%2393c5fd%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2738%27%20font-weight%3D%27700%27%3EAI%20Coding%20Agents%3C/text%3E%3Ctext%20x%3D%27126%27%20y%3D%27300%27%20fill%3D%27%23cbd5e1%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2728%27%3ERoute%20risky%20patches%20to%20the%20right%20reviewers%20before%20automation%3C/text%3E%3Ctext%20x%3D%27126%27%20y%3D%27336%27%20fill%3D%27%23cbd5e1%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2728%27%3Eturns%20ownership%20gaps%20into%20quiet%20production%20surprises%3C/text%3E%3Crect%20x%3D%27126%27%20y%3D%27388%27%20width%3D%27390%27%20height%3D%2754%27%20rx%3D%2714%27%20fill%3D%27%23111c2d%27%20stroke%3D%27%2367e8f9%27%20stroke-opacity%3D%270.45%27/%3E%3Ctext%20x%3D%27152%27%20y%3D%27423%27%20fill%3D%27%2367e8f9%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2724%27%3Eownership%20rules%20need%20risk-aware%20routing%3C/text%3E%3Crect%20x%3D%27776%27%20y%3D%27166%27%20width%3D%27258%27%20height%3D%2758%27%20rx%3D%2714%27%20fill%3D%27%230d1728%27%20stroke%3D%27%2322d3ee%27%20stroke-opacity%3D%270.45%27/%3E%3Ctext%20x%3D%27818%27%20y%3D%27204%27%20fill%3D%27%23bae6fd%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2723%27%3Erisk%20score%3C/text%3E%3Crect%20x%3D%27776%27%20y%3D%27266%27%20width%3D%27258%27%20height%3D%2758%27%20rx%3D%2714%27%20fill%3D%27%230d1728%27%20stroke%3D%27%2322d3ee%27%20stroke-opacity%3D%270.45%27/%3E%3Ctext%20x%3D%27816%27%20y%3D%27304%27%20fill%3D%27%23bae6fd%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2723%27%3Eowner%20match%3C/text%3E%3Crect%20x%3D%27776%27%20y%3D%27366%27%20width%3D%27258%27%20height%3D%2758%27%20rx%3D%2714%27%20fill%3D%27%230d1728%27%20stroke%3D%27%23a78bfa%27%20stroke-opacity%3D%270.45%27/%3E%3Ctext%20x%3D%27812%27%20y%3D%27404%27%20fill%3D%27%23ddd6fe%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2723%27%3Eescalation%20lane%3C/text%3E%3C/svg%3E",
+      "url": "https://negiadventures.github.io/blog/codeowners-aware-escalation-ai-coding-agents.html",
+      "datePublished": "2026-06-07",
+      "author": {
+        "@type": "Person",
+        "name": "Anirudh Negi",
+        "url": "https://negiadventures.github.io"
+      },
+      "publisher": {
+        "@type": "Person",
+        "name": "Anirudh Negi",
+        "url": "https://negiadventures.github.io"
+      },
+      "keywords": ["AI Coding Agents", "CODEOWNERS", "Code Review", "GitHub", "Workflow Design"]
+    }
+    </script>
+    <script type="module">
+      import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.esm.min.mjs';
+      mermaid.initialize({ startOnLoad: true, theme: 'dark' });
+    </script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../stylesheets/stylesheet.css?v=5" media="screen">
+    <style>
+      .blog-post {
+        max-width: 860px;
+        margin: 0 auto;
+        padding: 60px 20px;
+      }
+      .blog-post-header {
+        margin-bottom: 40px;
+      }
+      .blog-post-nav {
+        margin-bottom: 30px;
+      }
+      .blog-post-nav a {
+        color: var(--accent-strong);
+        font-size: 0.95rem;
+      }
+      .blog-post-nav a:hover {
+        color: var(--accent);
+      }
+      .blog-post-title {
+        font-size: 2.5rem;
+        margin-bottom: 16px;
+      }
+      .blog-post-meta {
+        display: flex;
+        gap: 20px;
+        color: var(--text-muted);
+        font-size: 0.95rem;
+        margin-bottom: 30px;
+        flex-wrap: wrap;
+      }
+      .blog-post-image {
+        width: 100%;
+        height: auto;
+        border-radius: 16px;
+        margin-bottom: 30px;
+        border: 1px solid var(--border);
+        background: var(--bg-alt);
+      }
+      .blog-post-content h2 {
+        font-size: 1.6rem;
+        margin-top: 42px;
+        margin-bottom: 16px;
+        color: var(--text-light);
+      }
+      .blog-post-content h3 {
+        font-size: 1.25rem;
+        margin-top: 28px;
+        margin-bottom: 12px;
+        color: var(--text-light);
+      }
+      .blog-post-content p,
+      .blog-post-content li {
+        line-height: 1.8;
+        color: var(--text-muted);
+      }
+      .blog-post-content ul,
+      .blog-post-content ol {
+        margin-bottom: 20px;
+        padding-left: 24px;
+      }
+      .code-block,
+      .terminal-block,
+      .diagram-block,
+      .callout,
+      .table-wrap {
+        background: var(--bg-alt);
+        border: 1px solid var(--border);
+        border-radius: 14px;
+        padding: 20px;
+        margin: 22px 0;
+      }
+      .code-block pre,
+      .terminal-block pre {
+        margin: 0;
+        overflow-x: auto;
+        font-family: var(--mono);
+        font-size: 0.9rem;
+        line-height: 1.6;
+      }
+      .code-block code {
+        color: var(--accent-strong);
+      }
+      .terminal-block {
+        border-color: rgba(34, 211, 238, 0.28);
+      }
+      .callout strong {
+        color: var(--text-light);
+      }
+      .callout.best {
+        border-color: rgba(34, 211, 238, 0.35);
+        box-shadow: 0 0 0 1px rgba(34, 211, 238, 0.08) inset;
+      }
+      .callout.pitfall {
+        border-color: rgba(244, 114, 182, 0.35);
+        box-shadow: 0 0 0 1px rgba(244, 114, 182, 0.08) inset;
+      }
+      .table-wrap table {
+        width: 100%;
+        border-collapse: collapse;
+      }
+      .table-wrap th,
+      .table-wrap td {
+        text-align: left;
+        padding: 12px 10px;
+        border-bottom: 1px solid var(--border);
+        color: var(--text-muted);
+        vertical-align: top;
+      }
+      .table-wrap th {
+        color: var(--text-light);
+      }
+      .blog-post-tags {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        margin-top: 40px;
+        padding-top: 30px;
+        border-top: 1px solid var(--border);
+      }
+      .blog-post-tag {
+        background: var(--accent-soft);
+        color: var(--accent-strong);
+        border-radius: 999px;
+        padding: 6px 14px;
+        font-size: 0.85rem;
+        font-family: var(--mono);
+        border: 1px solid transparent;
+      }
+      .blog-footer {
+        margin-top: 60px;
+        padding-top: 30px;
+        border-top: 1px solid var(--border);
+        text-align: center;
+      }
+      .blog-footer a {
+        color: var(--accent-strong);
+      }
+      @media (max-width: 768px) {
+        .blog-post {
+          padding: 40px 16px;
+        }
+        .blog-post-title {
+          font-size: 2rem;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <a href="../index.html#main" class="skip-link">Skip to main content</a>
+
+    <header class="site-header">
+      <div class="container blog-post">
+        <div class="blog-post-nav">
+          <a href="index.html">&larr; Back to All Posts</a>
+        </div>
+
+        <div class="blog-post-header">
+          <h1 class="blog-post-title">CODEOWNERS-Aware Escalation for AI Coding Agents</h1>
+          <div class="blog-post-meta">
+            <span>June 7, 2026</span>
+            <span>&bull;</span>
+            <span>11 min read</span>
+            <span>&bull;</span>
+            <span>Review Routing</span>
+          </div>
+          <img src="data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A//www.w3.org/2000/svg%27%20viewBox%3D%270%200%201200%20630%27%3E%3Cdefs%3E%3ClinearGradient%20id%3D%27bg%27%20x1%3D%270%27%20x2%3D%271%27%20y1%3D%270%27%20y2%3D%271%27%3E%3Cstop%20offset%3D%270%25%27%20stop-color%3D%27%2307111d%27/%3E%3Cstop%20offset%3D%27100%25%27%20stop-color%3D%27%23164f63%27/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect%20width%3D%271200%27%20height%3D%27630%27%20fill%3D%27url%28%23bg%29%27/%3E%3Ccircle%20cx%3D%271002%27%20cy%3D%27108%27%20r%3D%27174%27%20fill%3D%27%2322d3ee%27%20fill-opacity%3D%270.14%27/%3E%3Ccircle%20cx%3D%27180%27%20cy%3D%27520%27%20r%3D%27218%27%20fill%3D%27%238b5cf6%27%20fill-opacity%3D%270.16%27/%3E%3Crect%20x%3D%2778%27%20y%3D%2786%27%20width%3D%271044%27%20height%3D%27458%27%20rx%3D%2730%27%20fill%3D%27%230b1220%27%20stroke%3D%27%2338bdf8%27%20stroke-opacity%3D%270.35%27/%3E%3Ctext%20x%3D%27126%27%20y%3D%27166%27%20fill%3D%27white%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2738%27%20font-weight%3D%27700%27%3ECODEOWNERS-Aware%20Escalation%20for%3C/text%3E%3Ctext%20x%3D%27126%27%20y%3D%27226%27%20fill%3D%27%2393c5fd%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2738%27%20font-weight%3D%27700%27%3EAI%20Coding%20Agents%3C/text%3E%3Ctext%20x%3D%27126%27%20y%3D%27300%27%20fill%3D%27%23cbd5e1%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2728%27%3ERoute%20risky%20patches%20to%20the%20right%20reviewers%20before%20automation%3C/text%3E%3Ctext%20x%3D%27126%27%20y%3D%27336%27%20fill%3D%27%23cbd5e1%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2728%27%3Eturns%20ownership%20gaps%20into%20quiet%20production%20surprises%3C/text%3E%3Crect%20x%3D%27126%27%20y%3D%27388%27%20width%3D%27390%27%20height%3D%2754%27%20rx%3D%2714%27%20fill%3D%27%23111c2d%27%20stroke%3D%27%2367e8f9%27%20stroke-opacity%3D%270.45%27/%3E%3Ctext%20x%3D%27152%27%20y%3D%27423%27%20fill%3D%27%2367e8f9%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2724%27%3Eownership%20rules%20need%20risk-aware%20routing%3C/text%3E%3Crect%20x%3D%27776%27%20y%3D%27166%27%20width%3D%27258%27%20height%3D%2758%27%20rx%3D%2714%27%20fill%3D%27%230d1728%27%20stroke%3D%27%2322d3ee%27%20stroke-opacity%3D%270.45%27/%3E%3Ctext%20x%3D%27818%27%20y%3D%27204%27%20fill%3D%27%23bae6fd%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2723%27%3Erisk%20score%3C/text%3E%3Crect%20x%3D%27776%27%20y%3D%27266%27%20width%3D%27258%27%20height%3D%2758%27%20rx%3D%2714%27%20fill%3D%27%230d1728%27%20stroke%3D%27%2322d3ee%27%20stroke-opacity%3D%270.45%27/%3E%3Ctext%20x%3D%27816%27%20y%3D%27304%27%20fill%3D%27%23bae6fd%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2723%27%3Eowner%20match%3C/text%3E%3Crect%20x%3D%27776%27%20y%3D%27366%27%20width%3D%27258%27%20height%3D%2758%27%20rx%3D%2714%27%20fill%3D%27%230d1728%27%20stroke%3D%27%23a78bfa%27%20stroke-opacity%3D%270.45%27/%3E%3Ctext%20x%3D%27812%27%20y%3D%27404%27%20fill%3D%27%23ddd6fe%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2723%27%3Eescalation%20lane%3C/text%3E%3C/svg%3E" alt="CODEOWNERS-Aware Escalation for AI Coding Agents" class="blog-post-image">
+        </div>
+
+        <div class="blog-post-content">
+          <p>AI-generated patches often fail in a boring way. The code compiles, CI passes, and the wrong reviewer clicks approve because the diff landed in a folder they nominally own but do not actually understand.</p>
+          <p>That gets worse when agents move fast. A bot can touch auth middleware, billing jobs, and internal SDK glue in one pull request, then route review using a flat CODEOWNERS match as if all files carry the same risk.</p>
+          <p>The fix is not more reviewers everywhere. It is better escalation. In this post I’ll show how to combine CODEOWNERS, diff classification, and a small risk score so agent-generated patches reach the right humans before ownership drift turns into production cleanup.</p>
+
+          <h2>Why this matters</h2>
+          <p>CODEOWNERS is useful, but it is a routing primitive, not a safety system. It tells you who should be asked, not whether the change is scary, cross-cutting, or sitting in a folder with stale ownership.</p>
+          <p>For AI coding workflows, that distinction matters a lot:</p>
+          <ul>
+            <li>agents tend to edit multiple layers in one run</li>
+            <li>reviewers can over-trust tidy diffs with good commit messages</li>
+            <li>ownership files drift more slowly than team reality</li>
+            <li>risky changes often look mechanically simple</li>
+          </ul>
+          <p>A good review router answers three questions before it requests approval:</p>
+          <ol>
+            <li>Which owners match the files?</li>
+            <li>How risky is the patch?</li>
+            <li>Should approval stay with path owners, or escalate to a broader lane?</li>
+          </ol>
+
+          <h2>Architecture or workflow overview</h2>
+          <div class="diagram-block">
+            <div class="mermaid">
+flowchart LR
+    A[Agent creates patch] --> B[Diff classifier]
+    B --> C[CODEOWNERS matcher]
+    B --> D[Risk scorer]
+    C --> E[Owner coverage check]
+    D --> E
+    E --> F{Escalation lane}
+    F -->|low| G[Path owners only]
+    F -->|medium| H[Path owners plus service reviewer]
+    F -->|high| I[Security, platform, or on-call gate]
+    I --> J[Merge or request changes]
+    H --> J
+    G --> J
+            </div>
+          </div>
+          <p>The core idea is simple. Keep CODEOWNERS for the first pass, but add a second layer that understands file type, blast radius, and ownership confidence.</p>
+
+          <h3>Minimal routing model</h3>
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>Signal</th>
+                  <th>Example</th>
+                  <th>Why it matters</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>Path ownership</td>
+                  <td><code>services/billing/** @payments-team</code></td>
+                  <td>Baseline reviewer routing</td>
+                </tr>
+                <tr>
+                  <td>Risk markers</td>
+                  <td>auth, infra, secrets, migrations</td>
+                  <td>Some files deserve stronger gates</td>
+                </tr>
+                <tr>
+                  <td>Cross-service spread</td>
+                  <td>1 file vs 8 directories</td>
+                  <td>Wide diffs deserve more skepticism</td>
+                </tr>
+                <tr>
+                  <td>Ownership confidence</td>
+                  <td>active owner vs stale team alias</td>
+                  <td>Prevent silent owner drift</td>
+                </tr>
+                <tr>
+                  <td>Agent confidence</td>
+                  <td>low-verification patch vs fully tested patch</td>
+                  <td>Good evidence can lower noise, not eliminate review</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <h2>Implementation details</h2>
+          <p>A practical version fits in one small policy service or CI step.</p>
+
+          <h3>1. Parse CODEOWNERS and map files to candidate reviewers</h3>
+          <div class="code-block"><pre><code>from pathlib import Path
+from codeowners import CodeOwners
+
+owners = CodeOwners(Path(".github/CODEOWNERS").read_text())
+
+def match_owners(changed_files: list[str]) -&gt; dict[str, list[str]]:
+    matches: dict[str, list[str]] = {}
+    for file_path in changed_files:
+        owners_for_path = owners.of(file_path)
+        handles = [entry[1] for entry in owners_for_path]
+        matches[file_path] = handles
+    return matches</code></pre></div>
+          <p>This is the easy part. Most teams already stop here, which is why review routing looks correct while still missing the real decision.</p>
+
+          <h3>2. Add a risk score that looks beyond path matches</h3>
+          <div class="code-block"><pre><code>risk_rules:
+  critical_paths:
+    - "infra/**"
+    - "terraform/**"
+    - "services/auth/**"
+    - "db/migrations/**"
+  sensitive_terms:
+    - "token"
+    - "secret"
+    - "iam"
+    - "encryption"
+  escalation_thresholds:
+    medium: 4
+    high: 7
+  spread_penalty:
+    per_top_level_dir: 1
+  unowned_file_penalty: 3
+  stale_owner_penalty: 2</code></pre></div>
+          <div class="code-block"><pre><code>def score_patch(changed_files: list[str], file_summaries: dict[str, str], owner_matches: dict[str, list[str]], stale_owners: set[str]) -&gt; int:
+    score = 0
+    top_level_dirs = {path.split("/")[0] for path in changed_files if "/" in path}
+    score += len(top_level_dirs)
+
+    for path in changed_files:
+        summary = file_summaries.get(path, "").lower()
+        if path.startswith(("infra/", "terraform/", "services/auth/", "db/migrations/")):
+            score += 3
+        if not owner_matches.get(path):
+            score += 3
+        if any(term in summary for term in ["token", "secret", "iam", "encryption"]):
+            score += 2
+        if any(owner in stale_owners for owner in owner_matches.get(path, [])):
+            score += 2
+
+    return score</code></pre></div>
+          <p>The point is not perfect math. The point is to surface obvious reasons a seemingly normal patch should get a stronger review lane.</p>
+
+          <h3>3. Turn the score into an escalation decision</h3>
+          <div class="code-block"><pre><code>{
+  "patch_id": "pr-1842",
+  "owners": ["@payments-team", "@platform-core"],
+  "risk_score": 8,
+  "coverage": {
+    "matched_files": 11,
+    "unowned_files": 1,
+    "stale_owners": ["@infra-legacy"]
+  },
+  "lane": "high",
+  "required_reviewers": ["@payments-team", "@platform-oncall", "@security-reviewers"],
+  "why": [
+    "touches auth and migration paths",
+    "contains one unowned file",
+    "crosses four top-level directories"
+  ]
+}</code></pre></div>
+          <p>That JSON payload is what I want attached to the PR, not just a raw reviewer list. Humans should see why the escalation happened.</p>
+
+          <div class="terminal-block"><pre>$ review-router classify --pr 1842
+Patch risk: HIGH (8)
+Matched owners: @payments-team, @platform-core
+Unowned files: scripts/backfill_customer_flags.py
+Escalation: add @platform-oncall and @security-reviewers
+Reason: db/migrations touched, auth code changed, ownership gap detected</pre></div>
+
+          <h2>What went wrong and the tradeoffs</h2>
+          <div class="callout pitfall"><strong>Pitfall:</strong> stale CODEOWNERS files create false confidence. A file can technically have an owner while the real expert changed teams months ago. If your routing logic treats any match as trustworthy coverage, the system becomes a clean-looking lie.</div>
+          <p>A cheap fix is to maintain an owner freshness job that flags teams or handles that have not reviewed matching paths in the last 60 to 90 days.</p>
+
+          <p>If you escalate too aggressively, people learn to ignore the router. Security, platform, and staff engineers become default reviewers for routine changes. That kills velocity fast.</p>
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>Lane</th>
+                  <th>Typical patch</th>
+                  <th>Reviewer pattern</th>
+                  <th>Cost</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>Low</td>
+                  <td>docs, UI copy, isolated tests</td>
+                  <td>path owners only</td>
+                  <td>fast</td>
+                </tr>
+                <tr>
+                  <td>Medium</td>
+                  <td>service logic, SDK, background jobs</td>
+                  <td>path owners plus service maintainer</td>
+                  <td>moderate</td>
+                </tr>
+                <tr>
+                  <td>High</td>
+                  <td>auth, secrets, infra, migrations, wide diffs</td>
+                  <td>path owners plus central gate</td>
+                  <td>slow but safer</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <p>Some teams route every agent PR as if it were a blind code dump. That is too blunt. A patch with focused tests, a migration plan, and before/after traces should still get review, but it should not be treated the same as an unverifiable sweep across ten directories.</p>
+          <p>Evidence should reduce uncertainty, not erase risk.</p>
+
+          <div class="callout best"><strong>Best practice:</strong> automatically escalate secret, auth, policy, workflow, and infrastructure changes, and flag newly created executable files even when a path owner exists.</div>
+
+          <h2>Practical checklist</h2>
+          <ul>
+            <li>[ ] Parse CODEOWNERS and show matched owners per file</li>
+            <li>[ ] Detect unowned files and fail closed on critical paths</li>
+            <li>[ ] Score cross-directory spread, not just raw file count</li>
+            <li>[ ] Maintain stale-owner detection from actual review activity</li>
+            <li>[ ] Attach the escalation reasons directly to the PR</li>
+            <li>[ ] Distinguish low, medium, and high review lanes</li>
+            <li>[ ] Require stronger review for infra, auth, secrets, and migrations</li>
+            <li>[ ] Let evidence reduce noise, but never skip human review for risky lanes</li>
+          </ul>
+
+          <h2>What I would keep</h2>
+          <ol>
+            <li>Keep the scoring model small and inspectable.</li>
+            <li>Explain every escalation in plain language.</li>
+            <li>Review the router itself every few weeks, because ownership drift is continuous.</li>
+            <li>Measure false positives, or the system will become background wallpaper.</li>
+          </ol>
+
+          <h2>Conclusion</h2>
+          <p>CODEOWNERS is still the right starting point, but it is not enough for fast AI coding workflows. Once agents can generate plausible multi-file patches on demand, review routing has to become risk-aware, not just path-aware.</p>
+          <p>If I were building this today, I would keep CODEOWNERS, add a tiny risk scorer, and make escalation reasons visible in every PR. That gets you a review system that is still lightweight, but much harder to fool.</p>
+
+          <div class="blog-post-tags">
+            <span class="blog-post-tag">AI Coding Agents</span>
+            <span class="blog-post-tag">CODEOWNERS</span>
+            <span class="blog-post-tag">Code Review</span>
+            <span class="blog-post-tag">GitHub</span>
+            <span class="blog-post-tag">Workflow Design</span>
+          </div>
+        </div>
+
+        <div class="blog-footer">
+          <p><a href="index.html">← Back to all posts</a></p>
+        </div>
+      </div>
+    </header>
+  </body>
+</html>

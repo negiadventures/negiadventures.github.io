@@ -1,6 +1,14 @@
 {
   "topics": [
     {
+      "date": "2026-06-07",
+      "skill": "CODEOWNERS-aware escalation for AI coding agents",
+      "topic": "Using CODEOWNERS matching, risk scoring, stale-owner detection, and escalation lanes so AI-generated patches reach the right reviewers instead of sliding through whichever team alias happened to match the path",
+      "slug": "codeowners-aware-escalation-ai-coding-agents",
+      "title": "CODEOWNERS-Aware Escalation for AI Coding Agents",
+      "summary": "A practical guide to routing AI-generated patches with CODEOWNERS, risk scoring, stale-owner detection, and escalation rules so the right humans review the right changes before automation outruns ownership."
+    },
+    {
       "date": "2026-06-06",
       "skill": "Repository map drift detection for AI coding agents",
       "topic": "Using AST snapshots, path ownership signals, CI freshness gates, and reviewer-friendly drift reports so checked-in repo maps and architecture summaries stop aging into confident lies that mislead coding agents",
