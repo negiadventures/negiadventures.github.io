@@ -1,6 +1,14 @@
 {
   "topics": [
     {
+      "date": "2026-06-08",
+      "skill": "Git bisect workflows for AI coding agents",
+      "topic": "Using verifier scripts, evidence capture, patch checkpoints, and stop conditions so AI coding agents can isolate regressions across wide commit ranges instead of guessing from the latest broken build",
+      "slug": "git-bisect-workflows-ai-coding-agents",
+      "title": "Git Bisect Workflows for AI Coding Agents That Need to Hunt Regressions Fast",
+      "summary": "A practical guide to using Git bisect with AI coding agents through verifier scripts, evidence capture, patch checkpoints, and stop conditions so regression hunts stay fast, reviewable, and grounded in real commits."
+    },
+    {
       "date": "2026-06-07",
       "skill": "CODEOWNERS-aware escalation for AI coding agents",
       "topic": "Using CODEOWNERS matching, risk scoring, stale-owner detection, and escalation lanes so AI-generated patches reach the right reviewers instead of sliding through whichever team alias happened to match the path",
