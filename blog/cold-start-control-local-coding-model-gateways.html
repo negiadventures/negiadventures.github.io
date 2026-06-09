@@ -1,0 +1,200 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="How to keep local coding model gateways responsive with warm pools, health probes, memory-aware routing, and queue control for AI coding workloads.">
+    <meta name="author" content="Anirudh Negi">
+    <title>Cold-Start Control for Local Coding Model Gateways | Anirudh Negi</title>
+    <link rel="icon" type="image/svg+xml" href="../images/favicon.svg">
+    <link rel="canonical" href="https://negiadventures.github.io/blog/cold-start-control-local-coding-model-gateways.html">
+    <meta property="og:type" content="article">
+    <meta property="og:url" content="https://negiadventures.github.io/blog/cold-start-control-local-coding-model-gateways.html">
+    <meta property="og:title" content="Cold-Start Control for Local Coding Model Gateways | Anirudh Negi">
+    <meta property="og:description" content="How to keep local coding model gateways responsive with warm pools, health probes, memory-aware routing, and queue control for AI coding workloads.">
+    <meta property="og:image" content="data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A//www.w3.org/2000/svg%27%20viewBox%3D%270%200%201200%20630%27%3E%0A%3Cdefs%3E%0A%20%20%3ClinearGradient%20id%3D%27bg%27%20x1%3D%270%27%20x2%3D%271%27%20y1%3D%270%27%20y2%3D%271%27%3E%0A%20%20%20%20%3Cstop%20offset%3D%270%25%27%20stop-color%3D%27%2307111d%27/%3E%0A%20%20%20%20%3Cstop%20offset%3D%27100%25%27%20stop-color%3D%27%2314506c%27/%3E%0A%20%20%3C/linearGradient%3E%0A%3C/defs%3E%0A%3Crect%20width%3D%271200%27%20height%3D%27630%27%20fill%3D%27url%28%23bg%29%27/%3E%0A%3Ccircle%20cx%3D%271008%27%20cy%3D%27108%27%20r%3D%27174%27%20fill%3D%27%2322d3ee%27%20fill-opacity%3D%270.14%27/%3E%0A%3Ccircle%20cx%3D%27180%27%20cy%3D%27520%27%20r%3D%27218%27%20fill%3D%27%238b5cf6%27%20fill-opacity%3D%270.16%27/%3E%0A%3Crect%20x%3D%2778%27%20y%3D%2786%27%20width%3D%271044%27%20height%3D%27458%27%20rx%3D%2730%27%20fill%3D%27%230b1220%27%20stroke%3D%27%2338bdf8%27%20stroke-opacity%3D%270.35%27/%3E%0A%3Ctext%20x%3D%27126%27%20y%3D%27166%27%20fill%3D%27white%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2740%27%20font-weight%3D%27700%27%3ECold-Start%20Control%20for%20Local%3C/text%3E%0A%3Ctext%20x%3D%27126%27%20y%3D%27226%27%20fill%3D%27%2393c5fd%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2740%27%20font-weight%3D%27700%27%3ECoding%20Model%20Gateways%3C/text%3E%0A%3Ctext%20x%3D%27126%27%20y%3D%27300%27%20fill%3D%27%23cbd5e1%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2728%27%3EKeep%20one%20model%20warm%2C%20queue%20bursts%20early%2C%20and%20route%20around%20VRAM%20pressure%3C/text%3E%0A%3Ctext%20x%3D%27126%27%20y%3D%27336%27%20fill%3D%27%23cbd5e1%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2728%27%3Ebefore%20your%20first%20token%20turns%20into%20a%20timeout%20and%20a%20broken%20agent%20run%3C/text%3E%0A%3Crect%20x%3D%27126%27%20y%3D%27388%27%20width%3D%27366%27%20height%3D%2754%27%20rx%3D%2714%27%20fill%3D%27%23111c2d%27%20stroke%3D%27%2367e8f9%27%20stroke-opacity%3D%270.45%27/%3E%0A%3Ctext%20x%3D%27152%27%20y%3D%27423%27%20fill%3D%27%2367e8f9%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2724%27%3Elocal%20inference%20needs%20traffic%20shaping%2C%20not%20hope%3C/text%3E%0A%3Crect%20x%3D%27776%27%20y%3D%27166%27%20width%3D%27258%27%20height%3D%2758%27%20rx%3D%2714%27%20fill%3D%27%230d1728%27%20stroke%3D%27%2322d3ee%27%20stroke-opacity%3D%270.45%27/%3E%0A%3Ctext%20x%3D%27828%27%20y%3D%27204%27%20fill%3D%27%23bae6fd%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2723%27%3Ewarm%20pool%3C/text%3E%0A%3Crect%20x%3D%27776%27%20y%3D%27266%27%20width%3D%27258%27%20height%3D%2758%27%20rx%3D%2714%27%20fill%3D%27%230d1728%27%20stroke%3D%27%2322d3ee%27%20stroke-opacity%3D%270.45%27/%3E%0A%3Ctext%20x%3D%27810%27%20y%3D%27304%27%20fill%3D%27%23bae6fd%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2723%27%3Equeue%20budget%3C/text%3E%0A%3Crect%20x%3D%27776%27%20y%3D%27366%27%20width%3D%27258%27%20height%3D%2758%27%20rx%3D%2714%27%20fill%3D%27%230d1728%27%20stroke%3D%27%23a78bfa%27%20stroke-opacity%3D%270.45%27/%3E%0A%3Ctext%20x%3D%27820%27%20y%3D%27404%27%20fill%3D%27%23ddd6fe%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2723%27%3Eroute%20fallback%3C/text%3E%0A%3C/svg%3E">
+    <meta property="article:published_time" content="2026-06-09">
+    <meta property="article:author" content="Anirudh Negi">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:url" content="https://negiadventures.github.io/blog/cold-start-control-local-coding-model-gateways.html">
+    <meta name="twitter:title" content="Cold-Start Control for Local Coding Model Gateways | Anirudh Negi">
+    <meta name="twitter:description" content="How to keep local coding model gateways responsive with warm pools, health probes, memory-aware routing, and queue control for AI coding workloads.">
+    <meta name="twitter:image" content="data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A//www.w3.org/2000/svg%27%20viewBox%3D%270%200%201200%20630%27%3E%0A%3Cdefs%3E%0A%20%20%3ClinearGradient%20id%3D%27bg%27%20x1%3D%270%27%20x2%3D%271%27%20y1%3D%270%27%20y2%3D%271%27%3E%0A%20%20%20%20%3Cstop%20offset%3D%270%25%27%20stop-color%3D%27%2307111d%27/%3E%0A%20%20%20%20%3Cstop%20offset%3D%27100%25%27%20stop-color%3D%27%2314506c%27/%3E%0A%20%20%3C/linearGradient%3E%0A%3C/defs%3E%0A%3Crect%20width%3D%271200%27%20height%3D%27630%27%20fill%3D%27url%28%23bg%29%27/%3E%0A%3Ccircle%20cx%3D%271008%27%20cy%3D%27108%27%20r%3D%27174%27%20fill%3D%27%2322d3ee%27%20fill-opacity%3D%270.14%27/%3E%0A%3Ccircle%20cx%3D%27180%27%20cy%3D%27520%27%20r%3D%27218%27%20fill%3D%27%238b5cf6%27%20fill-opacity%3D%270.16%27/%3E%0A%3Crect%20x%3D%2778%27%20y%3D%2786%27%20width%3D%271044%27%20height%3D%27458%27%20rx%3D%2730%27%20fill%3D%27%230b1220%27%20stroke%3D%27%2338bdf8%27%20stroke-opacity%3D%270.35%27/%3E%0A%3Ctext%20x%3D%27126%27%20y%3D%27166%27%20fill%3D%27white%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2740%27%20font-weight%3D%27700%27%3ECold-Start%20Control%20for%20Local%3C/text%3E%0A%3Ctext%20x%3D%27126%27%20y%3D%27226%27%20fill%3D%27%2393c5fd%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2740%27%20font-weight%3D%27700%27%3ECoding%20Model%20Gateways%3C/text%3E%0A%3Ctext%20x%3D%27126%27%20y%3D%27300%27%20fill%3D%27%23cbd5e1%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2728%27%3EKeep%20one%20model%20warm%2C%20queue%20bursts%20early%2C%20and%20route%20around%20VRAM%20pressure%3C/text%3E%0A%3Ctext%20x%3D%27126%27%20y%3D%27336%27%20fill%3D%27%23cbd5e1%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2728%27%3Ebefore%20your%20first%20token%20turns%20into%20a%20timeout%20and%20a%20broken%20agent%20run%3C/text%3E%0A%3Crect%20x%3D%27126%27%20y%3D%27388%27%20width%3D%27366%27%20height%3D%2754%27%20rx%3D%2714%27%20fill%3D%27%23111c2d%27%20stroke%3D%27%2367e8f9%27%20stroke-opacity%3D%270.45%27/%3E%0A%3Ctext%20x%3D%27152%27%20y%3D%27423%27%20fill%3D%27%2367e8f9%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2724%27%3Elocal%20inference%20needs%20traffic%20shaping%2C%20not%20hope%3C/text%3E%0A%3Crect%20x%3D%27776%27%20y%3D%27166%27%20width%3D%27258%27%20height%3D%2758%27%20rx%3D%2714%27%20fill%3D%27%230d1728%27%20stroke%3D%27%2322d3ee%27%20stroke-opacity%3D%270.45%27/%3E%0A%3Ctext%20x%3D%27828%27%20y%3D%27204%27%20fill%3D%27%23bae6fd%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2723%27%3Ewarm%20pool%3C/text%3E%0A%3Crect%20x%3D%27776%27%20y%3D%27266%27%20width%3D%27258%27%20height%3D%2758%27%20rx%3D%2714%27%20fill%3D%27%230d1728%27%20stroke%3D%27%2322d3ee%27%20stroke-opacity%3D%270.45%27/%3E%0A%3Ctext%20x%3D%27810%27%20y%3D%27304%27%20fill%3D%27%23bae6fd%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2723%27%3Equeue%20budget%3C/text%3E%0A%3Crect%20x%3D%27776%27%20y%3D%27366%27%20width%3D%27258%27%20height%3D%2758%27%20rx%3D%2714%27%20fill%3D%27%230d1728%27%20stroke%3D%27%23a78bfa%27%20stroke-opacity%3D%270.45%27/%3E%0A%3Ctext%20x%3D%27820%27%20y%3D%27404%27%20fill%3D%27%23ddd6fe%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2723%27%3Eroute%20fallback%3C/text%3E%0A%3C/svg%3E">
+    <script type="application/ld+json">{
+      "@context": "https://schema.org",
+      "@type": "BlogPosting",
+      "headline": "Cold-Start Control for Local Coding Model Gateways",
+      "description": "How to keep local coding model gateways responsive with warm pools, health probes, memory-aware routing, and queue control for AI coding workloads.",
+      "image": "data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A//www.w3.org/2000/svg%27%20viewBox%3D%270%200%201200%20630%27%3E%0A%3Cdefs%3E%0A%20%20%3ClinearGradient%20id%3D%27bg%27%20x1%3D%270%27%20x2%3D%271%27%20y1%3D%270%27%20y2%3D%271%27%3E%0A%20%20%20%20%3Cstop%20offset%3D%270%25%27%20stop-color%3D%27%2307111d%27/%3E%0A%20%20%20%20%3Cstop%20offset%3D%27100%25%27%20stop-color%3D%27%2314506c%27/%3E%0A%20%20%3C/linearGradient%3E%0A%3C/defs%3E%0A%3Crect%20width%3D%271200%27%20height%3D%27630%27%20fill%3D%27url%28%23bg%29%27/%3E%0A%3Ccircle%20cx%3D%271008%27%20cy%3D%27108%27%20r%3D%27174%27%20fill%3D%27%2322d3ee%27%20fill-opacity%3D%270.14%27/%3E%0A%3Ccircle%20cx%3D%27180%27%20cy%3D%27520%27%20r%3D%27218%27%20fill%3D%27%238b5cf6%27%20fill-opacity%3D%270.16%27/%3E%0A%3Crect%20x%3D%2778%27%20y%3D%2786%27%20width%3D%271044%27%20height%3D%27458%27%20rx%3D%2730%27%20fill%3D%27%230b1220%27%20stroke%3D%27%2338bdf8%27%20stroke-opacity%3D%270.35%27/%3E%0A%3Ctext%20x%3D%27126%27%20y%3D%27166%27%20fill%3D%27white%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2740%27%20font-weight%3D%27700%27%3ECold-Start%20Control%20for%20Local%3C/text%3E%0A%3Ctext%20x%3D%27126%27%20y%3D%27226%27%20fill%3D%27%2393c5fd%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2740%27%20font-weight%3D%27700%27%3ECoding%20Model%20Gateways%3C/text%3E%0A%3Ctext%20x%3D%27126%27%20y%3D%27300%27%20fill%3D%27%23cbd5e1%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2728%27%3EKeep%20one%20model%20warm%2C%20queue%20bursts%20early%2C%20and%20route%20around%20VRAM%20pressure%3C/text%3E%0A%3Ctext%20x%3D%27126%27%20y%3D%27336%27%20fill%3D%27%23cbd5e1%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2728%27%3Ebefore%20your%20first%20token%20turns%20into%20a%20timeout%20and%20a%20broken%20agent%20run%3C/text%3E%0A%3Crect%20x%3D%27126%27%20y%3D%27388%27%20width%3D%27366%27%20height%3D%2754%27%20rx%3D%2714%27%20fill%3D%27%23111c2d%27%20stroke%3D%27%2367e8f9%27%20stroke-opacity%3D%270.45%27/%3E%0A%3Ctext%20x%3D%27152%27%20y%3D%27423%27%20fill%3D%27%2367e8f9%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2724%27%3Elocal%20inference%20needs%20traffic%20shaping%2C%20not%20hope%3C/text%3E%0A%3Crect%20x%3D%27776%27%20y%3D%27166%27%20width%3D%27258%27%20height%3D%2758%27%20rx%3D%2714%27%20fill%3D%27%230d1728%27%20stroke%3D%27%2322d3ee%27%20stroke-opacity%3D%270.45%27/%3E%0A%3Ctext%20x%3D%27828%27%20y%3D%27204%27%20fill%3D%27%23bae6fd%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2723%27%3Ewarm%20pool%3C/text%3E%0A%3Crect%20x%3D%27776%27%20y%3D%27266%27%20width%3D%27258%27%20height%3D%2758%27%20rx%3D%2714%27%20fill%3D%27%230d1728%27%20stroke%3D%27%2322d3ee%27%20stroke-opacity%3D%270.45%27/%3E%0A%3Ctext%20x%3D%27810%27%20y%3D%27304%27%20fill%3D%27%23bae6fd%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2723%27%3Equeue%20budget%3C/text%3E%0A%3Crect%20x%3D%27776%27%20y%3D%27366%27%20width%3D%27258%27%20height%3D%2758%27%20rx%3D%2714%27%20fill%3D%27%230d1728%27%20stroke%3D%27%23a78bfa%27%20stroke-opacity%3D%270.45%27/%3E%0A%3Ctext%20x%3D%27820%27%20y%3D%27404%27%20fill%3D%27%23ddd6fe%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2723%27%3Eroute%20fallback%3C/text%3E%0A%3C/svg%3E",
+      "url": "https://negiadventures.github.io/blog/cold-start-control-local-coding-model-gateways.html",
+      "datePublished": "2026-06-09",
+      "author": {"@type": "Person", "name": "Anirudh Negi", "url": "https://negiadventures.github.io"},
+      "publisher": {"@type": "Person", "name": "Anirudh Negi", "url": "https://negiadventures.github.io"},
+      "keywords": ["Local LLMs", "Inference Ops", "AI Coding Agents", "Ollama", "vLLM"]
+    }</script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../stylesheets/stylesheet.css?v=5" media="screen">
+    <style>
+      .blog-post { max-width: 860px; margin: 0 auto; padding: 60px 20px; }
+      .blog-post-nav { margin-bottom: 30px; }
+      .blog-post-nav a, .blog-post-content a { color: var(--accent-strong); }
+      .blog-post-nav a:hover, .blog-post-content a:hover { color: var(--accent); }
+      .blog-post-title { font-size: 2.6rem; margin-bottom: 16px; }
+      .blog-post-meta { display: flex; gap: 18px; flex-wrap: wrap; color: var(--text-muted); margin-bottom: 30px; }
+      .blog-post-image { width: 100%; border-radius: 18px; border: 1px solid var(--border); margin-bottom: 30px; }
+      .blog-post-content h2 { font-size: 1.65rem; margin-top: 42px; margin-bottom: 16px; }
+      .blog-post-content h3 { font-size: 1.25rem; margin-top: 28px; margin-bottom: 12px; }
+      .blog-post-content p, .blog-post-content ul, .blog-post-content ol { color: var(--text-muted); line-height: 1.8; margin-bottom: 16px; }
+      .blog-post-content li { margin-bottom: 8px; }
+      .code-block, .terminal-block, .mermaid-block { background: var(--bg-alt); border: 1px solid var(--border); border-radius: 14px; padding: 20px; margin: 22px 0; overflow-x: auto; }
+      .code-block pre, .terminal-block pre, .mermaid-block pre { margin: 0; font-family: var(--mono); font-size: 0.92rem; line-height: 1.65; color: var(--text-light); }
+      .callout { border: 1px solid var(--border); border-left: 4px solid var(--accent); background: rgba(34, 211, 238, 0.08); border-radius: 14px; padding: 18px 18px 18px 20px; margin: 24px 0; color: var(--text-muted); }
+      table { width: 100%; border-collapse: collapse; margin: 24px 0; overflow: hidden; border-radius: 14px; border: 1px solid var(--border); }
+      th, td { padding: 14px 16px; text-align: left; border-bottom: 1px solid var(--border); color: var(--text-muted); vertical-align: top; }
+      th { background: rgba(34, 211, 238, 0.08); color: var(--text-light); }
+      .checklist { background: var(--card); border: 1px solid var(--border); border-radius: 16px; padding: 22px; margin: 24px 0; }
+      .blog-post-tags { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 40px; padding-top: 28px; border-top: 1px solid var(--border); }
+      .blog-post-tag { background: var(--accent-soft); color: var(--accent-strong); border-radius: 999px; padding: 6px 14px; font-size: 0.85rem; font-family: var(--mono); }
+      .blog-footer { margin-top: 60px; padding-top: 30px; border-top: 1px solid var(--border); text-align: center; }
+      @media (max-width: 768px) { .blog-post { padding: 40px 16px; } .blog-post-title { font-size: 2rem; } }
+    </style>
+  </head>
+  <body>
+    <a href="../index.html#main" class="skip-link">Skip to main content</a>
+    <header class="site-header">
+      <div class="container blog-post">
+        <div class="blog-post-nav"><a href="index.html">&larr; Back to All Posts</a></div>
+        <div class="blog-post-header">
+          <h1 class="blog-post-title">Cold-Start Control for Local Coding Model Gateways</h1>
+          <div class="blog-post-meta"><span>June 9, 2026</span><span>&bull;</span><span>9 min read</span><span>&bull;</span><span>Local Inference Ops</span></div>
+          <img src="data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A//www.w3.org/2000/svg%27%20viewBox%3D%270%200%201200%20630%27%3E%0A%3Cdefs%3E%0A%20%20%3ClinearGradient%20id%3D%27bg%27%20x1%3D%270%27%20x2%3D%271%27%20y1%3D%270%27%20y2%3D%271%27%3E%0A%20%20%20%20%3Cstop%20offset%3D%270%25%27%20stop-color%3D%27%2307111d%27/%3E%0A%20%20%20%20%3Cstop%20offset%3D%27100%25%27%20stop-color%3D%27%2314506c%27/%3E%0A%20%20%3C/linearGradient%3E%0A%3C/defs%3E%0A%3Crect%20width%3D%271200%27%20height%3D%27630%27%20fill%3D%27url%28%23bg%29%27/%3E%0A%3Ccircle%20cx%3D%271008%27%20cy%3D%27108%27%20r%3D%27174%27%20fill%3D%27%2322d3ee%27%20fill-opacity%3D%270.14%27/%3E%0A%3Ccircle%20cx%3D%27180%27%20cy%3D%27520%27%20r%3D%27218%27%20fill%3D%27%238b5cf6%27%20fill-opacity%3D%270.16%27/%3E%0A%3Crect%20x%3D%2778%27%20y%3D%2786%27%20width%3D%271044%27%20height%3D%27458%27%20rx%3D%2730%27%20fill%3D%27%230b1220%27%20stroke%3D%27%2338bdf8%27%20stroke-opacity%3D%270.35%27/%3E%0A%3Ctext%20x%3D%27126%27%20y%3D%27166%27%20fill%3D%27white%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2740%27%20font-weight%3D%27700%27%3ECold-Start%20Control%20for%20Local%3C/text%3E%0A%3Ctext%20x%3D%27126%27%20y%3D%27226%27%20fill%3D%27%2393c5fd%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2740%27%20font-weight%3D%27700%27%3ECoding%20Model%20Gateways%3C/text%3E%0A%3Ctext%20x%3D%27126%27%20y%3D%27300%27%20fill%3D%27%23cbd5e1%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2728%27%3EKeep%20one%20model%20warm%2C%20queue%20bursts%20early%2C%20and%20route%20around%20VRAM%20pressure%3C/text%3E%0A%3Ctext%20x%3D%27126%27%20y%3D%27336%27%20fill%3D%27%23cbd5e1%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2728%27%3Ebefore%20your%20first%20token%20turns%20into%20a%20timeout%20and%20a%20broken%20agent%20run%3C/text%3E%0A%3Crect%20x%3D%27126%27%20y%3D%27388%27%20width%3D%27366%27%20height%3D%2754%27%20rx%3D%2714%27%20fill%3D%27%23111c2d%27%20stroke%3D%27%2367e8f9%27%20stroke-opacity%3D%270.45%27/%3E%0A%3Ctext%20x%3D%27152%27%20y%3D%27423%27%20fill%3D%27%2367e8f9%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2724%27%3Elocal%20inference%20needs%20traffic%20shaping%2C%20not%20hope%3C/text%3E%0A%3Crect%20x%3D%27776%27%20y%3D%27166%27%20width%3D%27258%27%20height%3D%2758%27%20rx%3D%2714%27%20fill%3D%27%230d1728%27%20stroke%3D%27%2322d3ee%27%20stroke-opacity%3D%270.45%27/%3E%0A%3Ctext%20x%3D%27828%27%20y%3D%27204%27%20fill%3D%27%23bae6fd%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2723%27%3Ewarm%20pool%3C/text%3E%0A%3Crect%20x%3D%27776%27%20y%3D%27266%27%20width%3D%27258%27%20height%3D%2758%27%20rx%3D%2714%27%20fill%3D%27%230d1728%27%20stroke%3D%27%2322d3ee%27%20stroke-opacity%3D%270.45%27/%3E%0A%3Ctext%20x%3D%27810%27%20y%3D%27304%27%20fill%3D%27%23bae6fd%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2723%27%3Equeue%20budget%3C/text%3E%0A%3Crect%20x%3D%27776%27%20y%3D%27366%27%20width%3D%27258%27%20height%3D%2758%27%20rx%3D%2714%27%20fill%3D%27%230d1728%27%20stroke%3D%27%23a78bfa%27%20stroke-opacity%3D%270.45%27/%3E%0A%3Ctext%20x%3D%27820%27%20y%3D%27404%27%20fill%3D%27%23ddd6fe%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2723%27%3Eroute%20fallback%3C/text%3E%0A%3C/svg%3E" alt="Cold-Start Control for Local Coding Model Gateways" class="blog-post-image">
+        </div>
+        <div class="blog-post-content">
+          <p>Local coding stacks feel great right up until they sit idle for ten minutes. Then the next agent call hits a half-awake model server, spends a minute paging weights back into memory, and times out before the first token arrives.</p>
+          <p>That failure mode looks random from the agent side, but it usually is not. It is a traffic-shaping problem mixed with memory pressure, weak health checks, and a gateway that assumes every request is equally urgent.</p>
+          <p>This post covers a setup I would actually run for a small team: one warm lane, one burst lane, a strict queue budget, and a cheap fallback path. The goal is not maximum benchmark throughput. It is predictable first-token latency for real coding workflows.</p>
+          <h2>Why this matters</h2>
+          <p>Cold starts are more expensive in coding workflows than in chat demos. Agents usually invoke the model after a tool run, retries can duplicate expensive work, and one stalled request can block every other session waiting behind it.</p>
+          <ul>
+            <li>coding agents already consumed time before they ask for tokens</li>
+            <li>local boxes have uneven headroom once editors, browsers, and indexes are open</li>
+            <li>timeouts create misleading failure reports when the real issue is serving latency</li>
+          </ul>
+          <h2>Architecture or workflow overview</h2>
+          <div class="mermaid-block"><pre>flowchart LR
+    A[Agent request] --> B[Gateway]
+    B --> C{Hot model available?}
+    C -- yes --> D[Warm lane]
+    C -- no --> E{Queue budget left?}
+    E -- yes --> F[Wake or load model]
+    F --> D
+    E -- no --> G[Fallback lane or fast failure]
+    D --> H[Stream tokens]
+    H --> I[Latency + memory metrics]
+    I --> B</pre></div>
+          <p>A good local gateway needs admission control, a warm-pool policy, first-token health probes, and a fallback route that preserves reliability when the machine is under pressure.</p>
+          <h2>Implementation details</h2>
+          <h3>Put a real gateway in front of the runtime</h3>
+          <p>The runtime should serve tokens. The gateway should decide whether a request can enter, wait, or reroute.</p>
+          <div class="code-block"><pre><code># gateway-policy.yaml
+models:
+  deep-coder:
+    backend: ollama
+    model: qwen2.5-coder:32b
+    keepWarm: true
+    maxConcurrent: 2
+    maxQueue: 6
+    coldStartBudgetMs: 25000
+    fallback: coder-small
+  coder-small:
+    backend: llama.cpp
+    model: /models/qwen2.5-coder-7b-q4_k_m.gguf
+    keepWarm: true
+    maxConcurrent: 4
+    maxQueue: 12
+    coldStartBudgetMs: 4000
+
+routing:
+  - match: { lane: "high-context" }
+    target: deep-coder
+  - match: { lane: "fast-edit" }
+    target: coder-small</code></pre></div>
+          <p>The gateway should own queue budgets and fallback policy. If every caller talks directly to the runtime, each caller discovers overload too late.</p>
+          <h3>Probe for first-token readiness</h3>
+          <div class="code-block"><pre><code>import time
+import requests
+
+
+def probe_first_token(base_url: str, model: str, timeout_s: float = 8.0) -> dict:
+    started = time.perf_counter()
+    response = requests.post(
+        f"{base_url}/api/generate",
+        json={"model": model, "prompt": "ping", "stream": False, "options": {"num_predict": 1}},
+        timeout=timeout_s,
+    )
+    response.raise_for_status()
+    elapsed_ms = round((time.perf_counter() - started) * 1000)
+    return {"ok": True, "latencyMs": elapsed_ms, "model": model}</code></pre></div>
+          <p>If a probe takes 18 seconds to emit one token, the lane is cold for interactive work. Mark it that way and stop accepting latency-sensitive traffic.</p>
+          <h3>Serialize model wake-ups</h3>
+          <div class="code-block"><pre><code>from asyncio import Lock
+
+wake_locks: dict[str, Lock] = {}
+
+async def ensure_model_ready(model_key: str, load_fn):
+    lock = wake_locks.setdefault(model_key, Lock())
+    async with lock:
+        state = await current_state(model_key)
+        if state.ready:
+            return state
+        await load_fn(model_key)
+        return await current_state(model_key)</code></pre></div>
+          <div class="terminal-block"><pre>$ gateway status
+MODEL         STATE   FIRST TOKEN   QUEUE   MEM
+qwen32b       warm    1180ms        2/6     31.8G
+qwen7b        warm    420ms         1/12    8.6G
+embed-small   warm    90ms          0/20    1.4G
+
+policy: deep-coder fallback -> coder-small after 25000ms cold-start budget</pre></div>
+          <h3>Use memory-aware routing instead of a fixed favorite</h3>
+          <table>
+            <thead><tr><th>Routing choice</th><th>Good for</th><th>Risk</th><th>What I would do</th></tr></thead>
+            <tbody>
+              <tr><td>Always hit the biggest coder</td><td>Best quality when idle</td><td>Terrible burst behavior</td><td>Avoid as the default</td></tr>
+              <tr><td>Always hit the smallest coder</td><td>Fast replies</td><td>Lower patch quality on harder edits</td><td>Use only for trivial lanes</td></tr>
+              <tr><td>Memory-aware primary with fallback</td><td>Mixed workloads</td><td>More routing complexity</td><td>Best overall tradeoff</td></tr>
+              <tr><td>Remote failover after queue budget</td><td>Keeps SLOs intact</td><td>Costs money and adds trust concerns</td><td>Worth it for team use</td></tr>
+            </tbody>
+          </table>
+          <h2>What went wrong and tradeoffs</h2>
+          <div class="callout"><strong>Pitfall:</strong> keep-alive can hide bad capacity planning. If a single resident model leaves almost no breathing room, your next build or browser burst can destabilize the whole box.</div>
+          <div class="callout"><strong>Pitfall:</strong> burst queues feel safe until they become silent latency. Expose queue depth and estimated wait time, or users will assume the system is broken.</div>
+          <p>If you add a remote fallback, treat it as a separate trust lane. Do not forward raw repo context, secrets, or tool output just because the local box is busy.</p>
+          <p>On small shared hosts, the difference between cold and warm first-token latency is often much larger than the quality difference between neighboring quantization levels. That is why cold-start policy deserves first-class treatment.</p>
+          <h2>Practical checklist</h2>
+          <div class="checklist"><ul>
+              <li>[ ] Keep exactly one high-value coding model warm during active hours</li>
+              <li>[ ] Measure first-token readiness, not only port health</li>
+              <li>[ ] Serialize wake-ups per model</li>
+              <li>[ ] Set a queue budget per lane and fail fast after it fills</li>
+              <li>[ ] Reserve a smaller fallback model for short or low-risk tasks</li>
+              <li>[ ] Expose queue depth, first-token latency, and memory headroom in status output</li>
+              <li>[ ] Treat remote fallback as a separate trust boundary</li>
+          </ul></div>
+          <h2>Conclusion</h2>
+          <p>Local coding models do not fail only because the model is weak. They fail because the serving path has no opinion about cold starts, queues, or memory pressure. Add those opinions at the gateway layer and the whole stack feels much more reliable.</p>
+          <h2>References</h2>
+          <ul>
+            <li><a href="https://github.com/ollama/ollama/blob/main/docs/api.md">Ollama API docs</a></li>
+            <li><a href="https://github.com/ggml-org/llama.cpp/tree/master/examples/server">llama.cpp server docs</a></li>
+            <li><a href="https://docs.vllm.ai/">vLLM documentation</a></li>
+          </ul>
+          <div class="blog-post-tags"><span class="blog-post-tag">Local LLMs</span><span class="blog-post-tag">Inference Ops</span><span class="blog-post-tag">AI Coding Agents</span><span class="blog-post-tag">Ollama</span><span class="blog-post-tag">vLLM</span></div>
+        </div>
+        <div class="blog-footer"><p><a href="index.html">← Back to all posts</a></p></div>
+      </div>
+    </header>
+  </body>
+</html>

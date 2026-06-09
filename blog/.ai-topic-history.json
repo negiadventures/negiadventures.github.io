@@ -1,6 +1,14 @@
 {
   "topics": [
     {
+      "date": "2026-06-09",
+      "skill": "Cold-start control for local coding model gateways",
+      "topic": "Using warm pools, first-token probes, serialized wake-ups, and memory-aware routing so local coding agents stop timing out whenever a quantized model unloads between bursts",
+      "slug": "cold-start-control-local-coding-model-gateways",
+      "title": "Cold-Start Control for Local Coding Model Gateways",
+      "summary": "A practical guide to keeping local coding model gateways responsive with warm pools, health probes, memory-aware routing, and bounded queues so the first request after idle time does not become a 90-second timeout."
+    },
+    {
       "date": "2026-06-08",
       "skill": "Git bisect workflows for AI coding agents",
       "topic": "Using verifier scripts, evidence capture, patch checkpoints, and stop conditions so AI coding agents can isolate regressions across wide commit ranges instead of guessing from the latest broken build",
