@@ -1,0 +1,169 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="How to use Git sparse checkout, cone patterns, verifier lanes, and hydration rules so AI coding agents can work inside giant monorepos without dragging the whole repository into every task.">
+    <meta name="author" content="Anirudh Negi">
+    <title>Sparse Checkout Workflows for AI Coding Agents in Large Monorepos | Anirudh Negi</title>
+    <link rel="icon" type="image/svg+xml" href="../images/favicon.svg">
+    <link rel="canonical" href="https://negiadventures.github.io/blog/sparse-checkout-ai-coding-agents-monorepos.html">
+    <meta property="og:type" content="article">
+    <meta property="og:url" content="https://negiadventures.github.io/blog/sparse-checkout-ai-coding-agents-monorepos.html">
+    <meta property="og:title" content="Sparse Checkout Workflows for AI Coding Agents in Large Monorepos | Anirudh Negi">
+    <meta property="og:description" content="How to use Git sparse checkout, cone patterns, verifier lanes, and hydration rules so AI coding agents can work inside giant monorepos without dragging the whole repository into every task.">
+    <meta property="og:image" content="data:image/svg+xml,%3Csvg%20xmlns%3D'http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg'%20viewBox%3D'0%200%201200%20630'%3E%0A%3Cdefs%3E%0A%20%20%3ClinearGradient%20id%3D'bg'%20x1%3D'0'%20x2%3D'1'%20y1%3D'0'%20y2%3D'1'%3E%0A%20%20%20%20%3Cstop%20offset%3D'0%25'%20stop-color%3D'%2307111d'%2F%3E%0A%20%20%20%20%3Cstop%20offset%3D'100%25'%20stop-color%3D'%23174b74'%2F%3E%0A%20%20%3C%2FlinearGradient%3E%0A%3C%2Fdefs%3E%0A%3Crect%20width%3D'1200'%20height%3D'630'%20fill%3D'url(%23bg)'%2F%3E%0A%3Ccircle%20cx%3D'1010'%20cy%3D'110'%20r%3D'174'%20fill%3D'%2322d3ee'%20fill-opacity%3D'0.14'%2F%3E%0A%3Ccircle%20cx%3D'184'%20cy%3D'522'%20r%3D'220'%20fill%3D'%238b5cf6'%20fill-opacity%3D'0.16'%2F%3E%0A%3Crect%20x%3D'78'%20y%3D'86'%20width%3D'1044'%20height%3D'458'%20rx%3D'30'%20fill%3D'%230b1220'%20stroke%3D'%2338bdf8'%20stroke-opacity%3D'0.35'%2F%3E%0A%3Ctext%20x%3D'126'%20y%3D'164'%20fill%3D'white'%20font-family%3D'Arial%2C%20sans-serif'%20font-size%3D'38'%20font-weight%3D'700'%3ESparse%20Checkout%20Workflows%20for%3C%2Ftext%3E%0A%3Ctext%20x%3D'126'%20y%3D'224'%20fill%3D'%2393c5fd'%20font-family%3D'Arial%2C%20sans-serif'%20font-size%3D'38'%20font-weight%3D'700'%3EAI%20Coding%20Agents%20in%20Large%20Monorepos%3C%2Ftext%3E%0A%3Ctext%20x%3D'126'%20y%3D'298'%20fill%3D'%23cbd5e1'%20font-family%3D'Arial%2C%20sans-serif'%20font-size%3D'28'%3EHydrate%20only%20the%20directories%20you%20need%2C%20expand%20context%20on%20purpose%2C%3C%2Ftext%3E%0A%3Ctext%20x%3D'126'%20y%3D'334'%20fill%3D'%23cbd5e1'%20font-family%3D'Arial%2C%20sans-serif'%20font-size%3D'28'%3Eand%20stop%20paying%20token%20and%20disk%20costs%20for%20code%20the%20task%20will%20never%20touch%3C%2Ftext%3E%0A%3Crect%20x%3D'126'%20y%3D'388'%20width%3D'384'%20height%3D'54'%20rx%3D'14'%20fill%3D'%23111c2d'%20stroke%3D'%2367e8f9'%20stroke-opacity%3D'0.45'%2F%3E%0A%3Ctext%20x%3D'152'%20y%3D'423'%20fill%3D'%2367e8f9'%20font-family%3D'Arial%2C%20sans-serif'%20font-size%3D'24'%3Emonorepo%20speed%20comes%20from%20selective%20context%2C%20not%20full-repo%20nostalgia%3C%2Ftext%3E%0A%3Crect%20x%3D'776'%20y%3D'166'%20width%3D'258'%20height%3D'58'%20rx%3D'14'%20fill%3D'%230d1728'%20stroke%3D'%2322d3ee'%20stroke-opacity%3D'0.45'%2F%3E%0A%3Ctext%20x%3D'826'%20y%3D'204'%20fill%3D'%23bae6fd'%20font-family%3D'Arial%2C%20sans-serif'%20font-size%3D'23'%3Econe%20patterns%3C%2Ftext%3E%0A%3Crect%20x%3D'776'%20y%3D'266'%20width%3D'258'%20height%3D'58'%20rx%3D'14'%20fill%3D'%230d1728'%20stroke%3D'%2322d3ee'%20stroke-opacity%3D'0.45'%2F%3E%0A%3Ctext%20x%3D'826'%20y%3D'304'%20fill%3D'%23bae6fd'%20font-family%3D'Arial%2C%20sans-serif'%20font-size%3D'23'%3Ehydrate%20on%20demand%3C%2Ftext%3E%0A%3Crect%20x%3D'776'%20y%3D'366'%20width%3D'258'%20height%3D'58'%20rx%3D'14'%20fill%3D'%230d1728'%20stroke%3D'%23a78bfa'%20stroke-opacity%3D'0.45'%2F%3E%0A%3Ctext%20x%3D'840'%20y%3D'404'%20fill%3D'%23ddd6fe'%20font-family%3D'Arial%2C%20sans-serif'%20font-size%3D'23'%3Efocused%20verify%3C%2Ftext%3E%0A%3C%2Fsvg%3E">
+    <meta property="article:published_time" content="2026-06-10">
+    <meta property="article:author" content="Anirudh Negi">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:url" content="https://negiadventures.github.io/blog/sparse-checkout-ai-coding-agents-monorepos.html">
+    <meta name="twitter:title" content="Sparse Checkout Workflows for AI Coding Agents in Large Monorepos | Anirudh Negi">
+    <meta name="twitter:description" content="How to use Git sparse checkout, cone patterns, verifier lanes, and hydration rules so AI coding agents can work inside giant monorepos without dragging the whole repository into every task.">
+    <meta name="twitter:image" content="data:image/svg+xml,%3Csvg%20xmlns%3D'http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg'%20viewBox%3D'0%200%201200%20630'%3E%0A%3Cdefs%3E%0A%20%20%3ClinearGradient%20id%3D'bg'%20x1%3D'0'%20x2%3D'1'%20y1%3D'0'%20y2%3D'1'%3E%0A%20%20%20%20%3Cstop%20offset%3D'0%25'%20stop-color%3D'%2307111d'%2F%3E%0A%20%20%20%20%3Cstop%20offset%3D'100%25'%20stop-color%3D'%23174b74'%2F%3E%0A%20%20%3C%2FlinearGradient%3E%0A%3C%2Fdefs%3E%0A%3Crect%20width%3D'1200'%20height%3D'630'%20fill%3D'url(%23bg)'%2F%3E%0A%3Ccircle%20cx%3D'1010'%20cy%3D'110'%20r%3D'174'%20fill%3D'%2322d3ee'%20fill-opacity%3D'0.14'%2F%3E%0A%3Ccircle%20cx%3D'184'%20cy%3D'522'%20r%3D'220'%20fill%3D'%238b5cf6'%20fill-opacity%3D'0.16'%2F%3E%0A%3Crect%20x%3D'78'%20y%3D'86'%20width%3D'1044'%20height%3D'458'%20rx%3D'30'%20fill%3D'%230b1220'%20stroke%3D'%2338bdf8'%20stroke-opacity%3D'0.35'%2F%3E%0A%3Ctext%20x%3D'126'%20y%3D'164'%20fill%3D'white'%20font-family%3D'Arial%2C%20sans-serif'%20font-size%3D'38'%20font-weight%3D'700'%3ESparse%20Checkout%20Workflows%20for%3C%2Ftext%3E%0A%3Ctext%20x%3D'126'%20y%3D'224'%20fill%3D'%2393c5fd'%20font-family%3D'Arial%2C%20sans-serif'%20font-size%3D'38'%20font-weight%3D'700'%3EAI%20Coding%20Agents%20in%20Large%20Monorepos%3C%2Ftext%3E%0A%3Ctext%20x%3D'126'%20y%3D'298'%20fill%3D'%23cbd5e1'%20font-family%3D'Arial%2C%20sans-serif'%20font-size%3D'28'%3EHydrate%20only%20the%20directories%20you%20need%2C%20expand%20context%20on%20purpose%2C%3C%2Ftext%3E%0A%3Ctext%20x%3D'126'%20y%3D'334'%20fill%3D'%23cbd5e1'%20font-family%3D'Arial%2C%20sans-serif'%20font-size%3D'28'%3Eand%20stop%20paying%20token%20and%20disk%20costs%20for%20code%20the%20task%20will%20never%20touch%3C%2Ftext%3E%0A%3Crect%20x%3D'126'%20y%3D'388'%20width%3D'384'%20height%3D'54'%20rx%3D'14'%20fill%3D'%23111c2d'%20stroke%3D'%2367e8f9'%20stroke-opacity%3D'0.45'%2F%3E%0A%3Ctext%20x%3D'152'%20y%3D'423'%20fill%3D'%2367e8f9'%20font-family%3D'Arial%2C%20sans-serif'%20font-size%3D'24'%3Emonorepo%20speed%20comes%20from%20selective%20context%2C%20not%20full-repo%20nostalgia%3C%2Ftext%3E%0A%3Crect%20x%3D'776'%20y%3D'166'%20width%3D'258'%20height%3D'58'%20rx%3D'14'%20fill%3D'%230d1728'%20stroke%3D'%2322d3ee'%20stroke-opacity%3D'0.45'%2F%3E%0A%3Ctext%20x%3D'826'%20y%3D'204'%20fill%3D'%23bae6fd'%20font-family%3D'Arial%2C%20sans-serif'%20font-size%3D'23'%3Econe%20patterns%3C%2Ftext%3E%0A%3Crect%20x%3D'776'%20y%3D'266'%20width%3D'258'%20height%3D'58'%20rx%3D'14'%20fill%3D'%230d1728'%20stroke%3D'%2322d3ee'%20stroke-opacity%3D'0.45'%2F%3E%0A%3Ctext%20x%3D'826'%20y%3D'304'%20fill%3D'%23bae6fd'%20font-family%3D'Arial%2C%20sans-serif'%20font-size%3D'23'%3Ehydrate%20on%20demand%3C%2Ftext%3E%0A%3Crect%20x%3D'776'%20y%3D'366'%20width%3D'258'%20height%3D'58'%20rx%3D'14'%20fill%3D'%230d1728'%20stroke%3D'%23a78bfa'%20stroke-opacity%3D'0.45'%2F%3E%0A%3Ctext%20x%3D'840'%20y%3D'404'%20fill%3D'%23ddd6fe'%20font-family%3D'Arial%2C%20sans-serif'%20font-size%3D'23'%3Efocused%20verify%3C%2Ftext%3E%0A%3C%2Fsvg%3E">
+    <script type="application/ld+json">{"@context":"https://schema.org","@type":"BlogPosting","headline":"Sparse Checkout Workflows for AI Coding Agents in Large Monorepos","description":"How to use Git sparse checkout, cone patterns, verifier lanes, and hydration rules so AI coding agents can work inside giant monorepos without dragging the whole repository into every task.","image":"data:image/svg+xml,%3Csvg%20xmlns%3D'http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg'%20viewBox%3D'0%200%201200%20630'%3E%0A%3Cdefs%3E%0A%20%20%3ClinearGradient%20id%3D'bg'%20x1%3D'0'%20x2%3D'1'%20y1%3D'0'%20y2%3D'1'%3E%0A%20%20%20%20%3Cstop%20offset%3D'0%25'%20stop-color%3D'%2307111d'%2F%3E%0A%20%20%20%20%3Cstop%20offset%3D'100%25'%20stop-color%3D'%23174b74'%2F%3E%0A%20%20%3C%2FlinearGradient%3E%0A%3C%2Fdefs%3E%0A%3Crect%20width%3D'1200'%20height%3D'630'%20fill%3D'url(%23bg)'%2F%3E%0A%3Ccircle%20cx%3D'1010'%20cy%3D'110'%20r%3D'174'%20fill%3D'%2322d3ee'%20fill-opacity%3D'0.14'%2F%3E%0A%3Ccircle%20cx%3D'184'%20cy%3D'522'%20r%3D'220'%20fill%3D'%238b5cf6'%20fill-opacity%3D'0.16'%2F%3E%0A%3Crect%20x%3D'78'%20y%3D'86'%20width%3D'1044'%20height%3D'458'%20rx%3D'30'%20fill%3D'%230b1220'%20stroke%3D'%2338bdf8'%20stroke-opacity%3D'0.35'%2F%3E%0A%3Ctext%20x%3D'126'%20y%3D'164'%20fill%3D'white'%20font-family%3D'Arial%2C%20sans-serif'%20font-size%3D'38'%20font-weight%3D'700'%3ESparse%20Checkout%20Workflows%20for%3C%2Ftext%3E%0A%3Ctext%20x%3D'126'%20y%3D'224'%20fill%3D'%2393c5fd'%20font-family%3D'Arial%2C%20sans-serif'%20font-size%3D'38'%20font-weight%3D'700'%3EAI%20Coding%20Agents%20in%20Large%20Monorepos%3C%2Ftext%3E%0A%3Ctext%20x%3D'126'%20y%3D'298'%20fill%3D'%23cbd5e1'%20font-family%3D'Arial%2C%20sans-serif'%20font-size%3D'28'%3EHydrate%20only%20the%20directories%20you%20need%2C%20expand%20context%20on%20purpose%2C%3C%2Ftext%3E%0A%3Ctext%20x%3D'126'%20y%3D'334'%20fill%3D'%23cbd5e1'%20font-family%3D'Arial%2C%20sans-serif'%20font-size%3D'28'%3Eand%20stop%20paying%20token%20and%20disk%20costs%20for%20code%20the%20task%20will%20never%20touch%3C%2Ftext%3E%0A%3Crect%20x%3D'126'%20y%3D'388'%20width%3D'384'%20height%3D'54'%20rx%3D'14'%20fill%3D'%23111c2d'%20stroke%3D'%2367e8f9'%20stroke-opacity%3D'0.45'%2F%3E%0A%3Ctext%20x%3D'152'%20y%3D'423'%20fill%3D'%2367e8f9'%20font-family%3D'Arial%2C%20sans-serif'%20font-size%3D'24'%3Emonorepo%20speed%20comes%20from%20selective%20context%2C%20not%20full-repo%20nostalgia%3C%2Ftext%3E%0A%3Crect%20x%3D'776'%20y%3D'166'%20width%3D'258'%20height%3D'58'%20rx%3D'14'%20fill%3D'%230d1728'%20stroke%3D'%2322d3ee'%20stroke-opacity%3D'0.45'%2F%3E%0A%3Ctext%20x%3D'826'%20y%3D'204'%20fill%3D'%23bae6fd'%20font-family%3D'Arial%2C%20sans-serif'%20font-size%3D'23'%3Econe%20patterns%3C%2Ftext%3E%0A%3Crect%20x%3D'776'%20y%3D'266'%20width%3D'258'%20height%3D'58'%20rx%3D'14'%20fill%3D'%230d1728'%20stroke%3D'%2322d3ee'%20stroke-opacity%3D'0.45'%2F%3E%0A%3Ctext%20x%3D'826'%20y%3D'304'%20fill%3D'%23bae6fd'%20font-family%3D'Arial%2C%20sans-serif'%20font-size%3D'23'%3Ehydrate%20on%20demand%3C%2Ftext%3E%0A%3Crect%20x%3D'776'%20y%3D'366'%20width%3D'258'%20height%3D'58'%20rx%3D'14'%20fill%3D'%230d1728'%20stroke%3D'%23a78bfa'%20stroke-opacity%3D'0.45'%2F%3E%0A%3Ctext%20x%3D'840'%20y%3D'404'%20fill%3D'%23ddd6fe'%20font-family%3D'Arial%2C%20sans-serif'%20font-size%3D'23'%3Efocused%20verify%3C%2Ftext%3E%0A%3C%2Fsvg%3E","url":"https://negiadventures.github.io/blog/sparse-checkout-ai-coding-agents-monorepos.html","datePublished":"2026-06-10","author":{"@type":"Person","name":"Anirudh Negi","url":"https://negiadventures.github.io"},"publisher":{"@type":"Person","name":"Anirudh Negi","url":"https://negiadventures.github.io"},"keywords":["Git","Monorepos","AI Coding Agents","Sparse Checkout","Developer Workflow"]}</script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../stylesheets/stylesheet.css?v=5" media="screen">
+    <style>
+      .blog-post { max-width: 860px; margin: 0 auto; padding: 60px 20px; }
+      .blog-post-nav { margin-bottom: 30px; }
+      .blog-post-nav a, .blog-post-content a { color: var(--accent-strong); }
+      .blog-post-nav a:hover, .blog-post-content a:hover { color: var(--accent); }
+      .blog-post-title { font-size: 2.6rem; margin-bottom: 16px; }
+      .blog-post-meta { display: flex; gap: 18px; flex-wrap: wrap; color: var(--text-muted); margin-bottom: 30px; }
+      .blog-post-image { width: 100%; border-radius: 18px; border: 1px solid var(--border); margin-bottom: 30px; }
+      .blog-post-content h2 { font-size: 1.65rem; margin-top: 42px; margin-bottom: 16px; }
+      .blog-post-content h3 { font-size: 1.25rem; margin-top: 28px; margin-bottom: 12px; }
+      .blog-post-content p, .blog-post-content ul, .blog-post-content ol { color: var(--text-muted); line-height: 1.8; margin-bottom: 16px; }
+      .blog-post-content li { margin-bottom: 8px; }
+      .code-block, .terminal-block, .mermaid-block { background: var(--bg-alt); border: 1px solid var(--border); border-radius: 14px; padding: 20px; margin: 22px 0; overflow-x: auto; }
+      .code-block pre, .terminal-block pre, .mermaid-block pre { margin: 0; font-family: var(--mono); font-size: 0.92rem; line-height: 1.65; color: var(--text-light); }
+      .callout { border: 1px solid var(--border); border-left: 4px solid var(--accent); background: rgba(34, 211, 238, 0.08); border-radius: 14px; padding: 18px 18px 18px 20px; margin: 24px 0; color: var(--text-muted); }
+      table { width: 100%; border-collapse: collapse; margin: 24px 0; overflow: hidden; border-radius: 14px; border: 1px solid var(--border); }
+      th, td { padding: 14px 16px; text-align: left; border-bottom: 1px solid var(--border); color: var(--text-muted); vertical-align: top; }
+      th { background: rgba(34, 211, 238, 0.08); color: var(--text-light); }
+      .checklist { background: var(--card); border: 1px solid var(--border); border-radius: 16px; padding: 22px; margin: 24px 0; }
+      .blog-post-tags { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 40px; padding-top: 28px; border-top: 1px solid var(--border); }
+      .blog-post-tag { background: var(--accent-soft); color: var(--accent-strong); border-radius: 999px; padding: 6px 14px; font-size: 0.85rem; font-family: var(--mono); }
+      .blog-footer { margin-top: 60px; padding-top: 30px; border-top: 1px solid var(--border); text-align: center; }
+      @media (max-width: 768px) { .blog-post { padding: 40px 16px; } .blog-post-title { font-size: 2rem; } }
+    </style>
+  </head>
+  <body>
+    <a href="../index.html#main" class="skip-link">Skip to main content</a>
+    <header class="site-header">
+      <div class="container blog-post">
+        <div class="blog-post-nav"><a href="index.html">&larr; Back to All Posts</a></div>
+        <div class="blog-post-header">
+          <h1 class="blog-post-title">Sparse Checkout Workflows for AI Coding Agents in Large Monorepos</h1>
+          <div class="blog-post-meta"><span>June 10, 2026</span><span>&bull;</span><span>9 min read</span><span>&bull;</span><span>Monorepo Workflows</span></div>
+          <img src="data:image/svg+xml,%3Csvg%20xmlns%3D'http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg'%20viewBox%3D'0%200%201200%20630'%3E%0A%3Cdefs%3E%0A%20%20%3ClinearGradient%20id%3D'bg'%20x1%3D'0'%20x2%3D'1'%20y1%3D'0'%20y2%3D'1'%3E%0A%20%20%20%20%3Cstop%20offset%3D'0%25'%20stop-color%3D'%2307111d'%2F%3E%0A%20%20%20%20%3Cstop%20offset%3D'100%25'%20stop-color%3D'%23174b74'%2F%3E%0A%20%20%3C%2FlinearGradient%3E%0A%3C%2Fdefs%3E%0A%3Crect%20width%3D'1200'%20height%3D'630'%20fill%3D'url(%23bg)'%2F%3E%0A%3Ccircle%20cx%3D'1010'%20cy%3D'110'%20r%3D'174'%20fill%3D'%2322d3ee'%20fill-opacity%3D'0.14'%2F%3E%0A%3Ccircle%20cx%3D'184'%20cy%3D'522'%20r%3D'220'%20fill%3D'%238b5cf6'%20fill-opacity%3D'0.16'%2F%3E%0A%3Crect%20x%3D'78'%20y%3D'86'%20width%3D'1044'%20height%3D'458'%20rx%3D'30'%20fill%3D'%230b1220'%20stroke%3D'%2338bdf8'%20stroke-opacity%3D'0.35'%2F%3E%0A%3Ctext%20x%3D'126'%20y%3D'164'%20fill%3D'white'%20font-family%3D'Arial%2C%20sans-serif'%20font-size%3D'38'%20font-weight%3D'700'%3ESparse%20Checkout%20Workflows%20for%3C%2Ftext%3E%0A%3Ctext%20x%3D'126'%20y%3D'224'%20fill%3D'%2393c5fd'%20font-family%3D'Arial%2C%20sans-serif'%20font-size%3D'38'%20font-weight%3D'700'%3EAI%20Coding%20Agents%20in%20Large%20Monorepos%3C%2Ftext%3E%0A%3Ctext%20x%3D'126'%20y%3D'298'%20fill%3D'%23cbd5e1'%20font-family%3D'Arial%2C%20sans-serif'%20font-size%3D'28'%3EHydrate%20only%20the%20directories%20you%20need%2C%20expand%20context%20on%20purpose%2C%3C%2Ftext%3E%0A%3Ctext%20x%3D'126'%20y%3D'334'%20fill%3D'%23cbd5e1'%20font-family%3D'Arial%2C%20sans-serif'%20font-size%3D'28'%3Eand%20stop%20paying%20token%20and%20disk%20costs%20for%20code%20the%20task%20will%20never%20touch%3C%2Ftext%3E%0A%3Crect%20x%3D'126'%20y%3D'388'%20width%3D'384'%20height%3D'54'%20rx%3D'14'%20fill%3D'%23111c2d'%20stroke%3D'%2367e8f9'%20stroke-opacity%3D'0.45'%2F%3E%0A%3Ctext%20x%3D'152'%20y%3D'423'%20fill%3D'%2367e8f9'%20font-family%3D'Arial%2C%20sans-serif'%20font-size%3D'24'%3Emonorepo%20speed%20comes%20from%20selective%20context%2C%20not%20full-repo%20nostalgia%3C%2Ftext%3E%0A%3Crect%20x%3D'776'%20y%3D'166'%20width%3D'258'%20height%3D'58'%20rx%3D'14'%20fill%3D'%230d1728'%20stroke%3D'%2322d3ee'%20stroke-opacity%3D'0.45'%2F%3E%0A%3Ctext%20x%3D'826'%20y%3D'204'%20fill%3D'%23bae6fd'%20font-family%3D'Arial%2C%20sans-serif'%20font-size%3D'23'%3Econe%20patterns%3C%2Ftext%3E%0A%3Crect%20x%3D'776'%20y%3D'266'%20width%3D'258'%20height%3D'58'%20rx%3D'14'%20fill%3D'%230d1728'%20stroke%3D'%2322d3ee'%20stroke-opacity%3D'0.45'%2F%3E%0A%3Ctext%20x%3D'826'%20y%3D'304'%20fill%3D'%23bae6fd'%20font-family%3D'Arial%2C%20sans-serif'%20font-size%3D'23'%3Ehydrate%20on%20demand%3C%2Ftext%3E%0A%3Crect%20x%3D'776'%20y%3D'366'%20width%3D'258'%20height%3D'58'%20rx%3D'14'%20fill%3D'%230d1728'%20stroke%3D'%23a78bfa'%20stroke-opacity%3D'0.45'%2F%3E%0A%3Ctext%20x%3D'840'%20y%3D'404'%20fill%3D'%23ddd6fe'%20font-family%3D'Arial%2C%20sans-serif'%20font-size%3D'23'%3Efocused%20verify%3C%2Ftext%3E%0A%3C%2Fsvg%3E" alt="Sparse Checkout Workflows for AI Coding Agents in Large Monorepos" class="blog-post-image">
+        </div>
+        <div class="blog-post-content">
+          <p>Most AI coding demos assume the model can see a whole repository, but real monorepos punish that assumption fast. The repo is too large to hydrate casually, the working tree gets noisy, and the agent spends half its budget reading directories that have nothing to do with the bug.</p>
+          <p>That does not just waste tokens. It creates false confidence. The agent sees a partial mess, guesses how the system hangs together, and edits the closest-looking package instead of the right one.</p>
+          <p>What works better is a sparse-checkout workflow with explicit hydration rules, repo-map hints, and verifier lanes that can expand only when the task proves it needs more surface area.</p>
+          <h2>Why this matters</h2>
+          <ul>
+            <li>the agent reads fewer irrelevant files, so context quality improves</li>
+            <li>search results get tighter because unrelated directories are not competing for attention</li>
+            <li>focused verification is easier when the task footprint is explicit</li>
+            <li>reviewers can tell whether the agent stayed inside its lane</li>
+          </ul>
+          <p>If your monorepo has dozens of apps, shared packages, infra folders, and generated code, selective hydration is often a better guardrail than writing longer prompt rules.</p>
+          <h2>Architecture or workflow overview</h2>
+          <div class="mermaid-block"><pre>flowchart LR
+    A[Task request] --> B[Task classifier]
+    B --> C[Seed sparse patterns]
+    C --> D[Hydrated worktree]
+    D --> E[Agent reads and edits]
+    E --> F{Need more paths?}
+    F -- no --> G[Focused verification]
+    F -- yes --> H[Hydrate adjacent paths]
+    H --> E
+    G --> I[Review packet with touched paths]</pre></div>
+          <p>The workflow has four pieces: seed patterns, hydration rules, scoped verification, and touched-path reporting for review.</p>
+          <h2>Implementation details</h2>
+          <h3>Start every task with cone-mode sparse checkout</h3>
+          <div class="code-block"><pre><code>git sparse-checkout init --cone
+git sparse-checkout set   apps/payments-web   packages/ui-kit   packages/auth-client   tooling/eslint-config</code></pre></div>
+          <p>For an AI coding agent, this is better than cloning the full repo and hoping retrieval compensates. The file system itself becomes a guardrail.</p>
+          <h3>Encode seed patterns in task metadata</h3>
+          <div class="code-block"><pre><code># task-manifest.yaml
+task: fix-checkout-button-loading-state
+repoLane: web-frontend
+seedPaths:
+  - apps/payments-web
+  - packages/ui-kit
+  - packages/auth-client
+adjacentHydration:
+  - packages/feature-flags
+  - packages/telemetry
+verify:
+  - pnpm --filter payments-web test loading-button
+  - pnpm --filter payments-web lint
+maxHydrationSteps: 2</code></pre></div>
+          <p>The manifest gives the agent a plausible starting slice, names safe adjacent directories, and limits expansion so one ambiguous error does not become full-repo drift.</p>
+          <h3>Hydrate on evidence, not curiosity</h3>
+          <div class="code-block"><pre><code>from pathlib import Path
+
+
+def should_hydrate(missing_path: str, allowed_prefixes: list[str], touched_files: list[str]) -> bool:
+    path = Path(missing_path)
+    if any(str(path).startswith(prefix) for prefix in allowed_prefixes):
+        return True
+    if any(file.startswith('apps/payments-web/') for file in touched_files) and 'packages/' in str(path):
+        return True
+    return False</code></pre></div>
+          <div class="terminal-block"><pre>$ git sparse-checkout list
+apps/payments-web
+packages/ui-kit
+packages/auth-client
+tooling/eslint-config
+
+$ rg "useCheckoutSession" .
+apps/payments-web/src/routes/checkout.tsx
+packages/auth-client/src/session.ts
+
+$ git sparse-checkout add packages/telemetry
+Hydrated 148 files in 0.7s</pre></div>
+          <h3>Keep verification focused before escalating</h3>
+          <table>
+            <thead><tr><th>Verification lane</th><th>When to use it</th><th>Why it helps</th><th>Risk</th></tr></thead>
+            <tbody>
+              <tr><td>Package-local tests</td><td>First pass after edit</td><td>Fast signal, cheap reruns</td><td>Can miss cross-package drift</td></tr>
+              <tr><td>App-scope build</td><td>When imports moved across boundaries</td><td>Catches broken integration early</td><td>Slower, noisier</td></tr>
+              <tr><td>Repo-wide verification</td><td>Only after meaningful surface expansion</td><td>Final confidence check</td><td>Expensive and often unnecessary</td></tr>
+            </tbody>
+          </table>
+          <h2>What went wrong and tradeoffs</h2>
+          <div class="callout"><strong>Pitfall:</strong> sparse checkout can hide generated code, config roots, or shared schemas that matter at runtime. A patch can look locally correct and still fail once the full repo build runs.</div>
+          <div class="callout"><strong>Pitfall:</strong> teams sometimes overfit seed patterns to historical bugs. That makes the workflow brittle when ownership changes or imports move.</div>
+          <p>I would not let the agent automatically run <code>git sparse-checkout disable</code> after one missing import. If tasks keep needing full-repo visibility, either the classifier is weak or the repo boundaries are not real enough to support focused automation.</p>
+          <p>Sparse checkout is also not a security boundary. Hidden paths are still in Git history and can become visible if the workflow expands carelessly.</p>
+          <h2>Practical checklist</h2>
+          <div class="checklist"><ul>
+            <li>[ ] Use cone mode unless you have a strong reason not to</li>
+            <li>[ ] Store seed paths in task metadata, not only in prompt text</li>
+            <li>[ ] Define allowed adjacent hydration paths up front</li>
+            <li>[ ] Require evidence before expanding the tree</li>
+            <li>[ ] Run package-local verification before repo-wide checks</li>
+            <li>[ ] Capture the final hydrated path list in the review summary</li>
+            <li>[ ] Audit tasks that keep breaking out into near-full repo hydration</li>
+          </ul></div>
+          <h2>Conclusion</h2>
+          <p>Large monorepos punish vague agent context. Sparse checkout gives you a better default: start narrow, hydrate on evidence, and verify in layers. Once the working tree becomes part of the control plane, AI coding agents stop wandering nearly as much.</p>
+          <h2>References</h2>
+          <ul>
+            <li><a href="https://git-scm.com/docs/git-sparse-checkout">Git sparse-checkout documentation</a></li>
+            <li><a href="https://git-scm.com/docs/git-worktree">Git worktree documentation</a></li>
+            <li><a href="https://github.blog/open-source/git/make-your-monorepo-feel-small-with-gits-sparse-index/">GitHub on sparse index</a></li>
+          </ul>
+          <div class="blog-post-tags"><span class="blog-post-tag">Git</span><span class="blog-post-tag">Monorepos</span><span class="blog-post-tag">AI Coding Agents</span><span class="blog-post-tag">Sparse Checkout</span><span class="blog-post-tag">Developer Workflow</span></div>
+        </div>
+        <div class="blog-footer"><p><a href="index.html">← Back to all posts</a></p></div>
+      </div>
+    </header>
+  </body>
+</html>

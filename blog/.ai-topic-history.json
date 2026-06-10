@@ -1,6 +1,14 @@
 {
   "topics": [
     {
+      "date": "2026-06-10",
+      "skill": "Sparse checkout workflows for AI coding agents in large monorepos",
+      "topic": "Using Git sparse checkout, cone patterns, evidence-based hydration, and focused verifier lanes so AI coding agents can work effectively in giant monorepos without dragging the whole repository into every task",
+      "slug": "sparse-checkout-ai-coding-agents-monorepos",
+      "title": "Sparse Checkout Workflows for AI Coding Agents in Large Monorepos",
+      "summary": "A practical guide to using Git sparse checkout, cone mode, verification lanes, and targeted hydration so AI coding agents can move faster in giant monorepos without pretending they need the full repo every time."
+    },
+    {
       "date": "2026-06-09",
       "skill": "Cold-start control for local coding model gateways",
       "topic": "Using warm pools, first-token probes, serialized wake-ups, and memory-aware routing so local coding agents stop timing out whenever a quantized model unloads between bursts",

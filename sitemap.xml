@@ -1,5 +1,6 @@
 <?xml version='1.0' encoding='utf-8'?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  <url><loc>https://negiadventures.github.io/blog/sparse-checkout-ai-coding-agents-monorepos.html</loc><lastmod>2026-06-10</lastmod><changefreq>monthly</changefreq><priority>0.8</priority></url>
   <url><loc>https://negiadventures.github.io/blog/cold-start-control-local-coding-model-gateways.html</loc><lastmod>2026-06-09</lastmod><changefreq>monthly</changefreq><priority>0.8</priority></url>
   <url><loc>https://negiadventures.github.io/blog/git-bisect-workflows-ai-coding-agents.html</loc><lastmod>2026-06-08</lastmod><changefreq>monthly</changefreq><priority>0.8</priority></url>
   <url><loc>https://negiadventures.github.io/blog/codeowners-aware-escalation-ai-coding-agents.html</loc><lastmod>2026-06-07</lastmod><changefreq>monthly</changefreq><priority>0.8</priority></url>
