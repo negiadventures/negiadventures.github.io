@@ -1,6 +1,14 @@
 {
   "topics": [
     {
+      "date": "2026-06-11",
+      "skill": "Golden transcript tests for MCP tool adapters",
+      "topic": "Using captured MCP exchanges, selective normalization, replay harnesses, and drift review gates so tool adapters stop silently changing agent behavior when SDKs, transports, or server payloads evolve",
+      "slug": "golden-transcript-tests-mcp-tool-adapters",
+      "title": "Golden Transcript Tests for MCP Tool Adapters That Must Not Drift",
+      "summary": "A practical guide to testing MCP tool adapters with golden transcripts, schema fixtures, replay harnesses, and drift review so tool behavior stays stable even when transports, SDKs, and agent prompts keep changing."
+    },
+    {
       "date": "2026-06-10",
       "skill": "Sparse checkout workflows for AI coding agents in large monorepos",
       "topic": "Using Git sparse checkout, cone patterns, evidence-based hydration, and focused verifier lanes so AI coding agents can work effectively in giant monorepos without dragging the whole repository into every task",

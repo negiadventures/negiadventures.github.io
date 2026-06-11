@@ -1,0 +1,169 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="How to test MCP tool adapters with golden transcripts, replay harnesses, and schema drift checks so agent tools stay stable in production.">
+    <meta name="author" content="Anirudh Negi">
+    <title>Golden Transcript Tests for MCP Tool Adapters That Must Not Drift | Anirudh Negi</title>
+    <link rel="icon" type="image/svg+xml" href="../images/favicon.svg">
+    <link rel="canonical" href="https://negiadventures.github.io/blog/golden-transcript-tests-mcp-tool-adapters.html">
+    <meta property="og:type" content="article">
+    <meta property="og:url" content="https://negiadventures.github.io/blog/golden-transcript-tests-mcp-tool-adapters.html">
+    <meta property="og:title" content="Golden Transcript Tests for MCP Tool Adapters That Must Not Drift | Anirudh Negi">
+    <meta property="og:description" content="How to test MCP tool adapters with golden transcripts, replay harnesses, and schema drift checks so agent tools stay stable in production.">
+    <meta property="og:image" content="data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A//www.w3.org/2000/svg%27%20viewBox%3D%270%200%201200%20630%27%3E%0A%3Cdefs%3E%3ClinearGradient%20id%3D%27bg%27%20x1%3D%270%27%20x2%3D%271%27%20y1%3D%270%27%20y2%3D%271%27%3E%3Cstop%20offset%3D%270%25%27%20stop-color%3D%27%2307111d%27/%3E%3Cstop%20offset%3D%27100%25%27%20stop-color%3D%27%2318496d%27/%3E%3C/linearGradient%3E%3C/defs%3E%0A%3Crect%20width%3D%271200%27%20height%3D%27630%27%20fill%3D%27url%28%23bg%29%27/%3E%0A%3Ccircle%20cx%3D%271008%27%20cy%3D%27108%27%20r%3D%27176%27%20fill%3D%27%2322d3ee%27%20fill-opacity%3D%270.14%27/%3E%3Ccircle%20cx%3D%27182%27%20cy%3D%27520%27%20r%3D%27220%27%20fill%3D%27%238b5cf6%27%20fill-opacity%3D%270.16%27/%3E%0A%3Crect%20x%3D%2778%27%20y%3D%2786%27%20width%3D%271044%27%20height%3D%27458%27%20rx%3D%2730%27%20fill%3D%27%230b1220%27%20stroke%3D%27%2338bdf8%27%20stroke-opacity%3D%270.35%27/%3E%0A%3Ctext%20x%3D%27126%27%20y%3D%27164%27%20fill%3D%27white%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2738%27%20font-weight%3D%27700%27%3EGolden%20Transcript%20Tests%20for%3C/text%3E%0A%3Ctext%20x%3D%27126%27%20y%3D%27224%27%20fill%3D%27%2393c5fd%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2738%27%20font-weight%3D%27700%27%3EMCP%20Tool%20Adapters%20That%20Must%20Not%20Drift%3C/text%3E%0A%3Ctext%20x%3D%27126%27%20y%3D%27298%27%20fill%3D%27%23cbd5e1%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2728%27%3ECapture%20real%20tool%20exchanges%2C%20replay%20them%20in%20CI%2C%20and%20catch%20silent%20adapter%20breakage%3C/text%3E%0A%3Ctext%20x%3D%27126%27%20y%3D%27334%27%20fill%3D%27%23cbd5e1%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2728%27%3Ebefore%20schema%20tweaks%2C%20SDK%20upgrades%2C%20or%20transport%20changes%20confuse%20your%20agents%3C/text%3E%0A%3Crect%20x%3D%27126%27%20y%3D%27388%27%20width%3D%27398%27%20height%3D%2754%27%20rx%3D%2714%27%20fill%3D%27%23111c2d%27%20stroke%3D%27%2367e8f9%27%20stroke-opacity%3D%270.45%27/%3E%0A%3Ctext%20x%3D%27152%27%20y%3D%27423%27%20fill%3D%27%2367e8f9%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2724%27%3Etool%20reliability%20needs%20replayable%20evidence%2C%20not%20%E2%80%9Cit%20still%20works%20on%20my%20laptop%E2%80%9D%3C/text%3E%0A%3Crect%20x%3D%27776%27%20y%3D%27166%27%20width%3D%27258%27%20height%3D%2758%27%20rx%3D%2714%27%20fill%3D%27%230d1728%27%20stroke%3D%27%2322d3ee%27%20stroke-opacity%3D%270.45%27/%3E%3Ctext%20x%3D%27818%27%20y%3D%27204%27%20fill%3D%27%23bae6fd%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2723%27%3Egolden%20trace%3C/text%3E%0A%3Crect%20x%3D%27776%27%20y%3D%27266%27%20width%3D%27258%27%20height%3D%2758%27%20rx%3D%2714%27%20fill%3D%27%230d1728%27%20stroke%3D%27%2322d3ee%27%20stroke-opacity%3D%270.45%27/%3E%3Ctext%20x%3D%27810%27%20y%3D%27304%27%20fill%3D%27%23bae6fd%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2723%27%3Ereplay%20harness%3C/text%3E%0A%3Crect%20x%3D%27776%27%20y%3D%27366%27%20width%3D%27258%27%20height%3D%2758%27%20rx%3D%2714%27%20fill%3D%27%230d1728%27%20stroke%3D%27%23a78bfa%27%20stroke-opacity%3D%270.45%27/%3E%3Ctext%20x%3D%27830%27%20y%3D%27404%27%20fill%3D%27%23ddd6fe%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2723%27%3Edrift%20gate%3C/text%3E%0A%3C/svg%3E">
+    <meta property="article:published_time" content="2026-06-11">
+    <meta property="article:author" content="Anirudh Negi">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:url" content="https://negiadventures.github.io/blog/golden-transcript-tests-mcp-tool-adapters.html">
+    <meta name="twitter:title" content="Golden Transcript Tests for MCP Tool Adapters That Must Not Drift | Anirudh Negi">
+    <meta name="twitter:description" content="How to test MCP tool adapters with golden transcripts, replay harnesses, and schema drift checks so agent tools stay stable in production.">
+    <meta name="twitter:image" content="data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A//www.w3.org/2000/svg%27%20viewBox%3D%270%200%201200%20630%27%3E%0A%3Cdefs%3E%3ClinearGradient%20id%3D%27bg%27%20x1%3D%270%27%20x2%3D%271%27%20y1%3D%270%27%20y2%3D%271%27%3E%3Cstop%20offset%3D%270%25%27%20stop-color%3D%27%2307111d%27/%3E%3Cstop%20offset%3D%27100%25%27%20stop-color%3D%27%2318496d%27/%3E%3C/linearGradient%3E%3C/defs%3E%0A%3Crect%20width%3D%271200%27%20height%3D%27630%27%20fill%3D%27url%28%23bg%29%27/%3E%0A%3Ccircle%20cx%3D%271008%27%20cy%3D%27108%27%20r%3D%27176%27%20fill%3D%27%2322d3ee%27%20fill-opacity%3D%270.14%27/%3E%3Ccircle%20cx%3D%27182%27%20cy%3D%27520%27%20r%3D%27220%27%20fill%3D%27%238b5cf6%27%20fill-opacity%3D%270.16%27/%3E%0A%3Crect%20x%3D%2778%27%20y%3D%2786%27%20width%3D%271044%27%20height%3D%27458%27%20rx%3D%2730%27%20fill%3D%27%230b1220%27%20stroke%3D%27%2338bdf8%27%20stroke-opacity%3D%270.35%27/%3E%0A%3Ctext%20x%3D%27126%27%20y%3D%27164%27%20fill%3D%27white%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2738%27%20font-weight%3D%27700%27%3EGolden%20Transcript%20Tests%20for%3C/text%3E%0A%3Ctext%20x%3D%27126%27%20y%3D%27224%27%20fill%3D%27%2393c5fd%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2738%27%20font-weight%3D%27700%27%3EMCP%20Tool%20Adapters%20That%20Must%20Not%20Drift%3C/text%3E%0A%3Ctext%20x%3D%27126%27%20y%3D%27298%27%20fill%3D%27%23cbd5e1%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2728%27%3ECapture%20real%20tool%20exchanges%2C%20replay%20them%20in%20CI%2C%20and%20catch%20silent%20adapter%20breakage%3C/text%3E%0A%3Ctext%20x%3D%27126%27%20y%3D%27334%27%20fill%3D%27%23cbd5e1%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2728%27%3Ebefore%20schema%20tweaks%2C%20SDK%20upgrades%2C%20or%20transport%20changes%20confuse%20your%20agents%3C/text%3E%0A%3Crect%20x%3D%27126%27%20y%3D%27388%27%20width%3D%27398%27%20height%3D%2754%27%20rx%3D%2714%27%20fill%3D%27%23111c2d%27%20stroke%3D%27%2367e8f9%27%20stroke-opacity%3D%270.45%27/%3E%0A%3Ctext%20x%3D%27152%27%20y%3D%27423%27%20fill%3D%27%2367e8f9%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2724%27%3Etool%20reliability%20needs%20replayable%20evidence%2C%20not%20%E2%80%9Cit%20still%20works%20on%20my%20laptop%E2%80%9D%3C/text%3E%0A%3Crect%20x%3D%27776%27%20y%3D%27166%27%20width%3D%27258%27%20height%3D%2758%27%20rx%3D%2714%27%20fill%3D%27%230d1728%27%20stroke%3D%27%2322d3ee%27%20stroke-opacity%3D%270.45%27/%3E%3Ctext%20x%3D%27818%27%20y%3D%27204%27%20fill%3D%27%23bae6fd%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2723%27%3Egolden%20trace%3C/text%3E%0A%3Crect%20x%3D%27776%27%20y%3D%27266%27%20width%3D%27258%27%20height%3D%2758%27%20rx%3D%2714%27%20fill%3D%27%230d1728%27%20stroke%3D%27%2322d3ee%27%20stroke-opacity%3D%270.45%27/%3E%3Ctext%20x%3D%27810%27%20y%3D%27304%27%20fill%3D%27%23bae6fd%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2723%27%3Ereplay%20harness%3C/text%3E%0A%3Crect%20x%3D%27776%27%20y%3D%27366%27%20width%3D%27258%27%20height%3D%2758%27%20rx%3D%2714%27%20fill%3D%27%230d1728%27%20stroke%3D%27%23a78bfa%27%20stroke-opacity%3D%270.45%27/%3E%3Ctext%20x%3D%27830%27%20y%3D%27404%27%20fill%3D%27%23ddd6fe%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2723%27%3Edrift%20gate%3C/text%3E%0A%3C/svg%3E">
+    <script type="application/ld+json">{"@context": "https://schema.org", "@type": "BlogPosting", "headline": "Golden Transcript Tests for MCP Tool Adapters That Must Not Drift", "description": "How to test MCP tool adapters with golden transcripts, replay harnesses, and schema drift checks so agent tools stay stable in production.", "image": "data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A//www.w3.org/2000/svg%27%20viewBox%3D%270%200%201200%20630%27%3E%0A%3Cdefs%3E%3ClinearGradient%20id%3D%27bg%27%20x1%3D%270%27%20x2%3D%271%27%20y1%3D%270%27%20y2%3D%271%27%3E%3Cstop%20offset%3D%270%25%27%20stop-color%3D%27%2307111d%27/%3E%3Cstop%20offset%3D%27100%25%27%20stop-color%3D%27%2318496d%27/%3E%3C/linearGradient%3E%3C/defs%3E%0A%3Crect%20width%3D%271200%27%20height%3D%27630%27%20fill%3D%27url%28%23bg%29%27/%3E%0A%3Ccircle%20cx%3D%271008%27%20cy%3D%27108%27%20r%3D%27176%27%20fill%3D%27%2322d3ee%27%20fill-opacity%3D%270.14%27/%3E%3Ccircle%20cx%3D%27182%27%20cy%3D%27520%27%20r%3D%27220%27%20fill%3D%27%238b5cf6%27%20fill-opacity%3D%270.16%27/%3E%0A%3Crect%20x%3D%2778%27%20y%3D%2786%27%20width%3D%271044%27%20height%3D%27458%27%20rx%3D%2730%27%20fill%3D%27%230b1220%27%20stroke%3D%27%2338bdf8%27%20stroke-opacity%3D%270.35%27/%3E%0A%3Ctext%20x%3D%27126%27%20y%3D%27164%27%20fill%3D%27white%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2738%27%20font-weight%3D%27700%27%3EGolden%20Transcript%20Tests%20for%3C/text%3E%0A%3Ctext%20x%3D%27126%27%20y%3D%27224%27%20fill%3D%27%2393c5fd%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2738%27%20font-weight%3D%27700%27%3EMCP%20Tool%20Adapters%20That%20Must%20Not%20Drift%3C/text%3E%0A%3Ctext%20x%3D%27126%27%20y%3D%27298%27%20fill%3D%27%23cbd5e1%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2728%27%3ECapture%20real%20tool%20exchanges%2C%20replay%20them%20in%20CI%2C%20and%20catch%20silent%20adapter%20breakage%3C/text%3E%0A%3Ctext%20x%3D%27126%27%20y%3D%27334%27%20fill%3D%27%23cbd5e1%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2728%27%3Ebefore%20schema%20tweaks%2C%20SDK%20upgrades%2C%20or%20transport%20changes%20confuse%20your%20agents%3C/text%3E%0A%3Crect%20x%3D%27126%27%20y%3D%27388%27%20width%3D%27398%27%20height%3D%2754%27%20rx%3D%2714%27%20fill%3D%27%23111c2d%27%20stroke%3D%27%2367e8f9%27%20stroke-opacity%3D%270.45%27/%3E%0A%3Ctext%20x%3D%27152%27%20y%3D%27423%27%20fill%3D%27%2367e8f9%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2724%27%3Etool%20reliability%20needs%20replayable%20evidence%2C%20not%20%E2%80%9Cit%20still%20works%20on%20my%20laptop%E2%80%9D%3C/text%3E%0A%3Crect%20x%3D%27776%27%20y%3D%27166%27%20width%3D%27258%27%20height%3D%2758%27%20rx%3D%2714%27%20fill%3D%27%230d1728%27%20stroke%3D%27%2322d3ee%27%20stroke-opacity%3D%270.45%27/%3E%3Ctext%20x%3D%27818%27%20y%3D%27204%27%20fill%3D%27%23bae6fd%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2723%27%3Egolden%20trace%3C/text%3E%0A%3Crect%20x%3D%27776%27%20y%3D%27266%27%20width%3D%27258%27%20height%3D%2758%27%20rx%3D%2714%27%20fill%3D%27%230d1728%27%20stroke%3D%27%2322d3ee%27%20stroke-opacity%3D%270.45%27/%3E%3Ctext%20x%3D%27810%27%20y%3D%27304%27%20fill%3D%27%23bae6fd%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2723%27%3Ereplay%20harness%3C/text%3E%0A%3Crect%20x%3D%27776%27%20y%3D%27366%27%20width%3D%27258%27%20height%3D%2758%27%20rx%3D%2714%27%20fill%3D%27%230d1728%27%20stroke%3D%27%23a78bfa%27%20stroke-opacity%3D%270.45%27/%3E%3Ctext%20x%3D%27830%27%20y%3D%27404%27%20fill%3D%27%23ddd6fe%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2723%27%3Edrift%20gate%3C/text%3E%0A%3C/svg%3E", "url": "https://negiadventures.github.io/blog/golden-transcript-tests-mcp-tool-adapters.html", "datePublished": "2026-06-11", "author": {"@type": "Person", "name": "Anirudh Negi", "url": "https://negiadventures.github.io"}, "publisher": {"@type": "Person", "name": "Anirudh Negi", "url": "https://negiadventures.github.io"}, "keywords": ["MCP", "Testing", "Agent Reliability", "Tooling", "Integration"]}</script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../stylesheets/stylesheet.css?v=5" media="screen">
+    <style>
+      .blog-post { max-width: 800px; margin: 0 auto; padding: 60px 20px; }
+      .blog-post-header { margin-bottom: 40px; }
+      .blog-post-nav { margin-bottom: 30px; }
+      .blog-post-nav a { color: var(--accent-strong); font-size: 0.95rem; }
+      .blog-post-nav a:hover { color: var(--accent); }
+      .blog-post-title { font-size: 2.5rem; margin-bottom: 16px; }
+      .blog-post-meta { display: flex; gap: 20px; color: var(--text-muted); font-size: 0.95rem; margin-bottom: 30px; flex-wrap: wrap; }
+      .blog-post-image { width: 100%; height: 300px; object-fit: cover; border-radius: 16px; margin-bottom: 30px; border: 1px solid var(--border); background: var(--bg-alt); }
+      .blog-post-content h2 { font-size: 1.6rem; margin-top: 40px; margin-bottom: 16px; color: var(--text-light); }
+      .blog-post-content h3 { font-size: 1.25rem; margin-top: 30px; margin-bottom: 12px; color: var(--text-light); }
+      .blog-post-content p, .blog-post-content li { line-height: 1.8; color: var(--text-muted); }
+      .blog-post-content p, .blog-post-content ul, .blog-post-content ol { margin-bottom: 18px; }
+      .blog-post-content ol { padding-left: 24px; }
+      .blog-post-content a { color: var(--accent-strong); }
+      .code-block { background: var(--bg-alt); border: 1px solid var(--border); border-radius: 12px; padding: 20px; margin: 20px 0; overflow-x: auto; }
+      .code-block pre { margin: 0; font-family: var(--mono); font-size: 0.9rem; line-height: 1.6; color: var(--text-light); white-space: pre-wrap; }
+      .table-wrap { overflow-x: auto; margin: 24px 0; }
+      table { width: 100%; border-collapse: collapse; border: 1px solid var(--border); }
+      th, td { padding: 14px; text-align: left; border-bottom: 1px solid var(--border); vertical-align: top; }
+      th { color: var(--text-light); background: rgba(56, 189, 248, 0.08); }
+      .callout { border: 1px solid var(--border); border-left: 4px solid var(--accent); border-radius: 12px; padding: 16px 18px; background: rgba(56, 189, 248, 0.06); margin: 22px 0; color: var(--text-muted); }
+      .callout strong { color: var(--text-light); }
+      .blog-post-tags { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 40px; padding-top: 30px; border-top: 1px solid var(--border); }
+      .blog-post-tag { background: var(--accent-soft); color: var(--accent-strong); border-radius: 999px; padding: 6px 14px; font-size: 0.85rem; font-family: var(--mono); border: 1px solid transparent; }
+      .blog-footer { margin-top: 60px; padding-top: 30px; border-top: 1px solid var(--border); text-align: center; }
+      @media (max-width: 768px) { .blog-post { padding: 40px 16px; } .blog-post-title { font-size: 2rem; } .blog-post-image { height: 200px; } }
+    </style>
+  </head>
+  <body>
+    <a href="../index.html#main" class="skip-link">Skip to main content</a>
+    <header class="site-header">
+      <div class="container blog-post">
+        <div class="blog-post-nav"><a href="index.html">&larr; Back to All Posts</a></div>
+        <div class="blog-post-header">
+          <h1 class="blog-post-title">Golden Transcript Tests for MCP Tool Adapters That Must Not Drift</h1>
+          <div class="blog-post-meta"><span>June 11, 2026</span><span>&bull;</span><span>10 min read</span></div>
+          <img src="data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A//www.w3.org/2000/svg%27%20viewBox%3D%270%200%201200%20630%27%3E%0A%3Cdefs%3E%3ClinearGradient%20id%3D%27bg%27%20x1%3D%270%27%20x2%3D%271%27%20y1%3D%270%27%20y2%3D%271%27%3E%3Cstop%20offset%3D%270%25%27%20stop-color%3D%27%2307111d%27/%3E%3Cstop%20offset%3D%27100%25%27%20stop-color%3D%27%2318496d%27/%3E%3C/linearGradient%3E%3C/defs%3E%0A%3Crect%20width%3D%271200%27%20height%3D%27630%27%20fill%3D%27url%28%23bg%29%27/%3E%0A%3Ccircle%20cx%3D%271008%27%20cy%3D%27108%27%20r%3D%27176%27%20fill%3D%27%2322d3ee%27%20fill-opacity%3D%270.14%27/%3E%3Ccircle%20cx%3D%27182%27%20cy%3D%27520%27%20r%3D%27220%27%20fill%3D%27%238b5cf6%27%20fill-opacity%3D%270.16%27/%3E%0A%3Crect%20x%3D%2778%27%20y%3D%2786%27%20width%3D%271044%27%20height%3D%27458%27%20rx%3D%2730%27%20fill%3D%27%230b1220%27%20stroke%3D%27%2338bdf8%27%20stroke-opacity%3D%270.35%27/%3E%0A%3Ctext%20x%3D%27126%27%20y%3D%27164%27%20fill%3D%27white%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2738%27%20font-weight%3D%27700%27%3EGolden%20Transcript%20Tests%20for%3C/text%3E%0A%3Ctext%20x%3D%27126%27%20y%3D%27224%27%20fill%3D%27%2393c5fd%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2738%27%20font-weight%3D%27700%27%3EMCP%20Tool%20Adapters%20That%20Must%20Not%20Drift%3C/text%3E%0A%3Ctext%20x%3D%27126%27%20y%3D%27298%27%20fill%3D%27%23cbd5e1%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2728%27%3ECapture%20real%20tool%20exchanges%2C%20replay%20them%20in%20CI%2C%20and%20catch%20silent%20adapter%20breakage%3C/text%3E%0A%3Ctext%20x%3D%27126%27%20y%3D%27334%27%20fill%3D%27%23cbd5e1%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2728%27%3Ebefore%20schema%20tweaks%2C%20SDK%20upgrades%2C%20or%20transport%20changes%20confuse%20your%20agents%3C/text%3E%0A%3Crect%20x%3D%27126%27%20y%3D%27388%27%20width%3D%27398%27%20height%3D%2754%27%20rx%3D%2714%27%20fill%3D%27%23111c2d%27%20stroke%3D%27%2367e8f9%27%20stroke-opacity%3D%270.45%27/%3E%0A%3Ctext%20x%3D%27152%27%20y%3D%27423%27%20fill%3D%27%2367e8f9%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2724%27%3Etool%20reliability%20needs%20replayable%20evidence%2C%20not%20%E2%80%9Cit%20still%20works%20on%20my%20laptop%E2%80%9D%3C/text%3E%0A%3Crect%20x%3D%27776%27%20y%3D%27166%27%20width%3D%27258%27%20height%3D%2758%27%20rx%3D%2714%27%20fill%3D%27%230d1728%27%20stroke%3D%27%2322d3ee%27%20stroke-opacity%3D%270.45%27/%3E%3Ctext%20x%3D%27818%27%20y%3D%27204%27%20fill%3D%27%23bae6fd%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2723%27%3Egolden%20trace%3C/text%3E%0A%3Crect%20x%3D%27776%27%20y%3D%27266%27%20width%3D%27258%27%20height%3D%2758%27%20rx%3D%2714%27%20fill%3D%27%230d1728%27%20stroke%3D%27%2322d3ee%27%20stroke-opacity%3D%270.45%27/%3E%3Ctext%20x%3D%27810%27%20y%3D%27304%27%20fill%3D%27%23bae6fd%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2723%27%3Ereplay%20harness%3C/text%3E%0A%3Crect%20x%3D%27776%27%20y%3D%27366%27%20width%3D%27258%27%20height%3D%2758%27%20rx%3D%2714%27%20fill%3D%27%230d1728%27%20stroke%3D%27%23a78bfa%27%20stroke-opacity%3D%270.45%27/%3E%3Ctext%20x%3D%27830%27%20y%3D%27404%27%20fill%3D%27%23ddd6fe%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2723%27%3Edrift%20gate%3C/text%3E%0A%3C/svg%3E" alt="Golden Transcript Tests for MCP Tool Adapters That Must Not Drift" class="blog-post-image">
+        </div>
+        <div class="blog-post-content">
+          <p>Most MCP tool breakage is boring at first. A field gets renamed, a tool starts returning a warning block before the real payload, or a transport upgrade changes ordering just enough to confuse the adapter layer. The agent does not crash dramatically. It just starts making worse decisions.</p>
+          <p>That is why I like golden transcript tests for MCP adapters. Instead of only unit-testing helper functions, you capture real request and response exchanges, replay them in CI, and diff the behavior at the boundary where the agent actually depends on it.</p>
+          <p>This post walks through the harness shape, what to record, what not to freeze too tightly, and the drift checks I would wire in before trusting a tool server upgrade.</p>
+          <h2>Why this matters</h2>
+          <p>Schema-first contracts are necessary, but they are not enough. Real MCP integrations fail in the seams between schema validation, transport framing, auth decoration, retry wrappers, and adapter-specific cleanup.</p>
+          <ul><li>the tool call validates, but the adapter drops a nested field the planner depended on</li><li>the server starts returning richer errors, but the adapter collapses them into a generic failure</li><li>an SDK upgrade changes null handling and snapshot noise hides a real regression</li><li>the agent prompt expects one stable shape, but the adapter now emits another</li></ul>
+          <h2>Architecture or workflow overview</h2>
+          <div class="code-block"><pre>Real MCP session
+    -> capture transcript
+    -> normalize volatile fields
+    -> store golden fixture
+    -> replay harness in CI
+    -> semantic assertions
+    -> drift review gate</pre></div>
+          <ol><li>Record a real tool interaction from staging or a developer run.</li><li>Strip timestamps, request IDs, and expiring secrets.</li><li>Save the transcript with a scenario name.</li><li>Replay it through the adapter on every relevant change.</li><li>Fail on meaningful drift, not cosmetic serialization changes.</li></ol>
+          <h2>Implementation details</h2>
+          <h3>Record transcripts at the adapter boundary</h3>
+          <p>I would capture requests and responses after auth decoration but before agent-specific summarization. That keeps the fixture close to the real contract without freezing secrets or planner fluff.</p>
+          <div class="code-block"><pre><code>import { writeFileSync } from 'node:fs';
+import { randomUUID } from 'node:crypto';
+
+export function recordTranscript(scenario, messages) {
+  const normalized = messages.map((msg) => ({
+    ...msg,
+    payload: scrubVolatileFields(msg.payload),
+  }));
+
+  const transcript = {
+    id: randomUUID(),
+    scenario,
+    recordedAt: 'REDACTED_TIMESTAMP',
+    messages: normalized,
+  };
+
+  writeFileSync(`testdata/mcp/${scenario}.json`, JSON.stringify(transcript, null, 2));
+}</code></pre></div>
+          <p>The important detail is selective normalization. If you scrub too aggressively, the replay stops protecting you. If you freeze every byte, harmless churn drowns the signal.</p>
+          <h3>Replay transcripts against the adapter</h3>
+          <p>A lot of teams already test the upstream server. That still leaves your adapter layer untested, which is exactly where mapping bugs, pagination mistakes, and error squashing tend to live.</p>
+          <div class="code-block"><pre><code>import { readFileSync } from 'node:fs';
+import { strict as assert } from 'node:assert';
+
+export async function replayScenario(name) {
+  const transcript = JSON.parse(readFileSync(`testdata/mcp/${name}.json`, 'utf8'));
+  const adapter = createAdapter({ baseUrl: 'http://localhost:8787' });
+
+  for (const message of transcript.messages) {
+    if (message.direction !== 'request') continue;
+    const result = await adapter.invoke(message.method, message.payload);
+    const expected = nextExpectedResponse(transcript.messages, message.method);
+    assert.deepEqual(normalizeForAssertion(result), normalizeForAssertion(expected.payload));
+  }
+}</code></pre></div>
+          <p>This is where I would encode behavior-level assertions too: required fields still exist, severities keep their meaning, pagination tokens remain resumable, and retryability hints survive upgrades.</p>
+          <h3>Add a drift review gate</h3>
+          <div class="code-block"><pre><code>name: mcp-adapter-replay
+on:
+  pull_request:
+    paths:
+      - 'src/mcp/**'
+      - 'testdata/mcp/**'
+      - 'package.json'
+
+jobs:
+  replay:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: npm ci
+      - run: npm run test:mcp-replay
+      - run: npm run test:mcp-contracts</code></pre></div>
+          <p>Not every diff should fail forever. The useful pattern is explicit fixture refresh policy, whether that is a label, trailer, or PR checklist.</p>
+          <div class="code-block"><pre>Scenario: github-issue-create
+Method: tools/call github.issue.create
+
+- expected result.error.severity = "retryable"
++ actual   result.error.severity = "fatal"
+
+- expected result.output.issue.number = 418
++ actual   result.output.issue = null
+
+Adapter drift detected after sdk upgrade 2.9.1 -> 3.0.0</pre></div>
+          <h2>Comparison table</h2>
+          <div class="table-wrap"><table><thead><tr><th>Technique</th><th>What it catches well</th><th>What it misses</th><th>Best use</th></tr></thead><tbody><tr><td>Unit tests</td><td>small helpers and parsing branches</td><td>real protocol drift</td><td>tight local logic</td></tr><tr><td>JSON schema validation</td><td>shape mismatches</td><td>semantic meaning changes</td><td>fail-closed boundaries</td></tr><tr><td>Golden transcripts</td><td>end-to-end adapter drift</td><td>totally new scenarios</td><td>regression protection</td></tr><tr><td>Live smoke tests</td><td>auth and deployment wiring</td><td>deterministic assertions</td><td>staging confidence</td></tr></tbody></table></div>
+          <h2>What went wrong and tradeoffs</h2>
+          <p>Fixtures become weak if they are too synthetic, too scrubbed, or too noisy. Start from captured sessions, redact carefully, and keep semantic assertions separate from cosmetic normalization.</p>
+          <div class="callout"><strong>Pitfall:</strong> do not record tool results after the agent has already summarized them for itself. That tests prompt formatting, not the adapter contract.</div>
+          <div class="callout"><strong>Best practice:</strong> keep a small curated set of high-value scenarios, like happy path, permission denied, pagination, partial failure, and retryable upstream outage.</div>
+          <p>I would not try to snapshot every tool call variant. That becomes maintenance theater. Five to twelve scenarios per important tool is usually enough to catch real drift without training everyone to ignore failures.</p>
+          <h2>Practical checklist</h2>
+          <ul><li>use golden transcript tests when the tool feeds structured multi-step agent decisions</li><li>capture three real scenarios for the highest-risk tool first</li><li>normalize only IDs, tokens, and timestamps</li><li>add at least one semantic assertion per scenario</li><li>require an explicit fixture refresh note in CI review</li></ul>
+          <h2>Conclusion</h2>
+          <p>Golden transcript tests are not glamorous, but they are one of the cleanest ways to keep MCP tool adapters honest. When the agent depends on a tool boundary, replayable evidence beats confidence every time.</p>
+          <h2>References</h2>
+          <ul><li><a href="https://modelcontextprotocol.io/">Model Context Protocol specification</a></li><li><a href="https://docs.github.com/actions/using-workflows/workflow-syntax-for-github-actions">GitHub Actions workflow syntax</a></li><li><a href="https://json-schema.org/">JSON Schema</a></li></ul>
+          <div class="blog-post-tags"><span class="blog-post-tag">MCP</span><span class="blog-post-tag">Testing</span><span class="blog-post-tag">Agent Reliability</span><span class="blog-post-tag">Tooling</span><span class="blog-post-tag">Integration</span></div>
+        </div>
+        <div class="blog-footer"><a href="index.html">← Back to all posts</a></div>
+      </div>
+    </header>
+  </body>
+</html>
