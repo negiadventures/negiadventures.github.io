@@ -1,6 +1,14 @@
 {
   "topics": [
     {
+      "date": "2026-06-12",
+      "skill": "Embedding model migrations for RAG systems",
+      "topic": "Using dual indexes, overlap audits, labeled recall sets, shadow traffic, and rollback aliases so production RAG teams can upgrade embedding models without quietly losing the evidence their users actually need",
+      "slug": "embedding-model-migrations-rag-systems",
+      "title": "Embedding Model Migrations for RAG Systems Without Recall Regressions",
+      "summary": "A practical guide to migrating embedding models in production RAG systems with dual indexing, overlap audits, shadow queries, and rollback lanes so better benchmarks do not quietly lower real recall."
+    },
+    {
       "date": "2026-06-11",
       "skill": "Golden transcript tests for MCP tool adapters",
       "topic": "Using captured MCP exchanges, selective normalization, replay harnesses, and drift review gates so tool adapters stop silently changing agent behavior when SDKs, transports, or server payloads evolve",
