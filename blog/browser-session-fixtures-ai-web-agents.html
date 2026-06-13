@@ -1,0 +1,225 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="A practical guide to building browser session fixtures for AI web agents with seeded auth state, DOM waits, replayable traces, and reset hooks so web workflows stay reviewable instead of becoming flaky demos.">
+    <meta name="author" content="Anirudh Negi">
+    <title>Browser Session Fixtures for AI Web Agents Without Flaky Demos | Anirudh Negi</title>
+    <link rel="icon" type="image/svg+xml" href="../images/favicon.svg">
+    <link rel="canonical" href="https://negiadventures.github.io/blog/browser-session-fixtures-ai-web-agents.html">
+    <meta property="og:type" content="article">
+    <meta property="og:url" content="https://negiadventures.github.io/blog/browser-session-fixtures-ai-web-agents.html">
+    <meta property="og:title" content="Browser Session Fixtures for AI Web Agents Without Flaky Demos | Anirudh Negi">
+    <meta property="og:description" content="A practical guide to building browser session fixtures for AI web agents with seeded auth state, DOM waits, replayable traces, and reset hooks so web workflows stay reviewable instead of becoming flaky demos.">
+    <meta property="og:image" content="data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A//www.w3.org/2000/svg%27%20viewBox%3D%270%200%201200%20630%27%3E%0A%3Cdefs%3E%3ClinearGradient%20id%3D%27bg%27%20x1%3D%270%27%20x2%3D%271%27%20y1%3D%270%27%20y2%3D%271%27%3E%3Cstop%20offset%3D%270%25%27%20stop-color%3D%27%2307111d%27/%3E%3Cstop%20offset%3D%27100%25%27%20stop-color%3D%27%23184a72%27/%3E%3C/linearGradient%3E%3C/defs%3E%0A%3Crect%20width%3D%271200%27%20height%3D%27630%27%20fill%3D%27url%28%23bg%29%27/%3E%0A%3Ccircle%20cx%3D%271010%27%20cy%3D%27110%27%20r%3D%27176%27%20fill%3D%27%2322d3ee%27%20fill-opacity%3D%270.14%27/%3E%3Ccircle%20cx%3D%27184%27%20cy%3D%27520%27%20r%3D%27220%27%20fill%3D%27%238b5cf6%27%20fill-opacity%3D%270.16%27/%3E%0A%3Crect%20x%3D%2778%27%20y%3D%2786%27%20width%3D%271044%27%20height%3D%27458%27%20rx%3D%2730%27%20fill%3D%27%230b1220%27%20stroke%3D%27%2338bdf8%27%20stroke-opacity%3D%270.35%27/%3E%0A%3Ctext%20x%3D%27126%27%20y%3D%27164%27%20fill%3D%27white%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2738%27%20font-weight%3D%27700%27%3EBrowser%20Session%20Fixtures%20for%3C/text%3E%0A%3Ctext%20x%3D%27126%27%20y%3D%27224%27%20fill%3D%27%2393c5fd%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2738%27%20font-weight%3D%27700%27%3EAI%20Web%20Agents%20Without%20Flaky%20Demos%3C/text%3E%0A%3Ctext%20x%3D%27126%27%20y%3D%27298%27%20fill%3D%27%23cbd5e1%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2728%27%3ESeed%20auth%20state%2C%20freeze%20test%20data%2C%20and%20reset%20each%20run%20before%3C/text%3E%0A%3Ctext%20x%3D%27126%27%20y%3D%27334%27%20fill%3D%27%23cbd5e1%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2728%27%3Ea%20browser-using%20agent%20mistakes%20timing%20drift%20for%20product%20behavior%3C/text%3E%0A%3Crect%20x%3D%27126%27%20y%3D%27388%27%20width%3D%27388%27%20height%3D%2754%27%20rx%3D%2714%27%20fill%3D%27%23111c2d%27%20stroke%3D%27%2367e8f9%27%20stroke-opacity%3D%270.45%27/%3E%0A%3Ctext%20x%3D%27152%27%20y%3D%27423%27%20fill%3D%27%2367e8f9%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2724%27%3Ebrowser%20automation%20needs%20fixtures%2C%20not%20wishful%20waits%3C/text%3E%0A%3Crect%20x%3D%27776%27%20y%3D%27166%27%20width%3D%27258%27%20height%3D%2758%27%20rx%3D%2714%27%20fill%3D%27%230d1728%27%20stroke%3D%27%2322d3ee%27%20stroke-opacity%3D%270.45%27/%3E%3Ctext%20x%3D%27820%27%20y%3D%27204%27%20fill%3D%27%23bae6fd%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2723%27%3Eseeded%20session%3C/text%3E%0A%3Crect%20x%3D%27776%27%20y%3D%27266%27%20width%3D%27258%27%20height%3D%2758%27%20rx%3D%2714%27%20fill%3D%27%230d1728%27%20stroke%3D%27%2322d3ee%27%20stroke-opacity%3D%270.45%27/%3E%3Ctext%20x%3D%27814%27%20y%3D%27304%27%20fill%3D%27%23bae6fd%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2723%27%3Etrace%20replay%3C/text%3E%0A%3Crect%20x%3D%27776%27%20y%3D%27366%27%20width%3D%27258%27%20height%3D%2758%27%20rx%3D%2714%27%20fill%3D%27%230d1728%27%20stroke%3D%27%23a78bfa%27%20stroke-opacity%3D%270.45%27/%3E%3Ctext%20x%3D%27832%27%20y%3D%27404%27%20fill%3D%27%23ddd6fe%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2723%27%3Ereset%20hook%3C/text%3E%0A%3C/svg%3E">
+    <meta property="article:published_time" content="2026-06-13">
+    <meta property="article:author" content="Anirudh Negi">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:url" content="https://negiadventures.github.io/blog/browser-session-fixtures-ai-web-agents.html">
+    <meta name="twitter:title" content="Browser Session Fixtures for AI Web Agents Without Flaky Demos | Anirudh Negi">
+    <meta name="twitter:description" content="A practical guide to building browser session fixtures for AI web agents with seeded auth state, DOM waits, replayable traces, and reset hooks so web workflows stay reviewable instead of becoming flaky demos.">
+    <meta name="twitter:image" content="data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A//www.w3.org/2000/svg%27%20viewBox%3D%270%200%201200%20630%27%3E%0A%3Cdefs%3E%3ClinearGradient%20id%3D%27bg%27%20x1%3D%270%27%20x2%3D%271%27%20y1%3D%270%27%20y2%3D%271%27%3E%3Cstop%20offset%3D%270%25%27%20stop-color%3D%27%2307111d%27/%3E%3Cstop%20offset%3D%27100%25%27%20stop-color%3D%27%23184a72%27/%3E%3C/linearGradient%3E%3C/defs%3E%0A%3Crect%20width%3D%271200%27%20height%3D%27630%27%20fill%3D%27url%28%23bg%29%27/%3E%0A%3Ccircle%20cx%3D%271010%27%20cy%3D%27110%27%20r%3D%27176%27%20fill%3D%27%2322d3ee%27%20fill-opacity%3D%270.14%27/%3E%3Ccircle%20cx%3D%27184%27%20cy%3D%27520%27%20r%3D%27220%27%20fill%3D%27%238b5cf6%27%20fill-opacity%3D%270.16%27/%3E%0A%3Crect%20x%3D%2778%27%20y%3D%2786%27%20width%3D%271044%27%20height%3D%27458%27%20rx%3D%2730%27%20fill%3D%27%230b1220%27%20stroke%3D%27%2338bdf8%27%20stroke-opacity%3D%270.35%27/%3E%0A%3Ctext%20x%3D%27126%27%20y%3D%27164%27%20fill%3D%27white%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2738%27%20font-weight%3D%27700%27%3EBrowser%20Session%20Fixtures%20for%3C/text%3E%0A%3Ctext%20x%3D%27126%27%20y%3D%27224%27%20fill%3D%27%2393c5fd%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2738%27%20font-weight%3D%27700%27%3EAI%20Web%20Agents%20Without%20Flaky%20Demos%3C/text%3E%0A%3Ctext%20x%3D%27126%27%20y%3D%27298%27%20fill%3D%27%23cbd5e1%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2728%27%3ESeed%20auth%20state%2C%20freeze%20test%20data%2C%20and%20reset%20each%20run%20before%3C/text%3E%0A%3Ctext%20x%3D%27126%27%20y%3D%27334%27%20fill%3D%27%23cbd5e1%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2728%27%3Ea%20browser-using%20agent%20mistakes%20timing%20drift%20for%20product%20behavior%3C/text%3E%0A%3Crect%20x%3D%27126%27%20y%3D%27388%27%20width%3D%27388%27%20height%3D%2754%27%20rx%3D%2714%27%20fill%3D%27%23111c2d%27%20stroke%3D%27%2367e8f9%27%20stroke-opacity%3D%270.45%27/%3E%0A%3Ctext%20x%3D%27152%27%20y%3D%27423%27%20fill%3D%27%2367e8f9%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2724%27%3Ebrowser%20automation%20needs%20fixtures%2C%20not%20wishful%20waits%3C/text%3E%0A%3Crect%20x%3D%27776%27%20y%3D%27166%27%20width%3D%27258%27%20height%3D%2758%27%20rx%3D%2714%27%20fill%3D%27%230d1728%27%20stroke%3D%27%2322d3ee%27%20stroke-opacity%3D%270.45%27/%3E%3Ctext%20x%3D%27820%27%20y%3D%27204%27%20fill%3D%27%23bae6fd%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2723%27%3Eseeded%20session%3C/text%3E%0A%3Crect%20x%3D%27776%27%20y%3D%27266%27%20width%3D%27258%27%20height%3D%2758%27%20rx%3D%2714%27%20fill%3D%27%230d1728%27%20stroke%3D%27%2322d3ee%27%20stroke-opacity%3D%270.45%27/%3E%3Ctext%20x%3D%27814%27%20y%3D%27304%27%20fill%3D%27%23bae6fd%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2723%27%3Etrace%20replay%3C/text%3E%0A%3Crect%20x%3D%27776%27%20y%3D%27366%27%20width%3D%27258%27%20height%3D%2758%27%20rx%3D%2714%27%20fill%3D%27%230d1728%27%20stroke%3D%27%23a78bfa%27%20stroke-opacity%3D%270.45%27/%3E%3Ctext%20x%3D%27832%27%20y%3D%27404%27%20fill%3D%27%23ddd6fe%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2723%27%3Ereset%20hook%3C/text%3E%0A%3C/svg%3E">
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "BlogPosting",
+      "headline": "Browser Session Fixtures for AI Web Agents Without Flaky Demos",
+      "description": "A practical guide to building browser session fixtures for AI web agents with seeded auth state, DOM waits, replayable traces, and reset hooks so web workflows stay reviewable instead of becoming flaky demos.",
+      "image": "data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A//www.w3.org/2000/svg%27%20viewBox%3D%270%200%201200%20630%27%3E%0A%3Cdefs%3E%3ClinearGradient%20id%3D%27bg%27%20x1%3D%270%27%20x2%3D%271%27%20y1%3D%270%27%20y2%3D%271%27%3E%3Cstop%20offset%3D%270%25%27%20stop-color%3D%27%2307111d%27/%3E%3Cstop%20offset%3D%27100%25%27%20stop-color%3D%27%23184a72%27/%3E%3C/linearGradient%3E%3C/defs%3E%0A%3Crect%20width%3D%271200%27%20height%3D%27630%27%20fill%3D%27url%28%23bg%29%27/%3E%0A%3Ccircle%20cx%3D%271010%27%20cy%3D%27110%27%20r%3D%27176%27%20fill%3D%27%2322d3ee%27%20fill-opacity%3D%270.14%27/%3E%3Ccircle%20cx%3D%27184%27%20cy%3D%27520%27%20r%3D%27220%27%20fill%3D%27%238b5cf6%27%20fill-opacity%3D%270.16%27/%3E%0A%3Crect%20x%3D%2778%27%20y%3D%2786%27%20width%3D%271044%27%20height%3D%27458%27%20rx%3D%2730%27%20fill%3D%27%230b1220%27%20stroke%3D%27%2338bdf8%27%20stroke-opacity%3D%270.35%27/%3E%0A%3Ctext%20x%3D%27126%27%20y%3D%27164%27%20fill%3D%27white%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2738%27%20font-weight%3D%27700%27%3EBrowser%20Session%20Fixtures%20for%3C/text%3E%0A%3Ctext%20x%3D%27126%27%20y%3D%27224%27%20fill%3D%27%2393c5fd%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2738%27%20font-weight%3D%27700%27%3EAI%20Web%20Agents%20Without%20Flaky%20Demos%3C/text%3E%0A%3Ctext%20x%3D%27126%27%20y%3D%27298%27%20fill%3D%27%23cbd5e1%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2728%27%3ESeed%20auth%20state%2C%20freeze%20test%20data%2C%20and%20reset%20each%20run%20before%3C/text%3E%0A%3Ctext%20x%3D%27126%27%20y%3D%27334%27%20fill%3D%27%23cbd5e1%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2728%27%3Ea%20browser-using%20agent%20mistakes%20timing%20drift%20for%20product%20behavior%3C/text%3E%0A%3Crect%20x%3D%27126%27%20y%3D%27388%27%20width%3D%27388%27%20height%3D%2754%27%20rx%3D%2714%27%20fill%3D%27%23111c2d%27%20stroke%3D%27%2367e8f9%27%20stroke-opacity%3D%270.45%27/%3E%0A%3Ctext%20x%3D%27152%27%20y%3D%27423%27%20fill%3D%27%2367e8f9%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2724%27%3Ebrowser%20automation%20needs%20fixtures%2C%20not%20wishful%20waits%3C/text%3E%0A%3Crect%20x%3D%27776%27%20y%3D%27166%27%20width%3D%27258%27%20height%3D%2758%27%20rx%3D%2714%27%20fill%3D%27%230d1728%27%20stroke%3D%27%2322d3ee%27%20stroke-opacity%3D%270.45%27/%3E%3Ctext%20x%3D%27820%27%20y%3D%27204%27%20fill%3D%27%23bae6fd%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2723%27%3Eseeded%20session%3C/text%3E%0A%3Crect%20x%3D%27776%27%20y%3D%27266%27%20width%3D%27258%27%20height%3D%2758%27%20rx%3D%2714%27%20fill%3D%27%230d1728%27%20stroke%3D%27%2322d3ee%27%20stroke-opacity%3D%270.45%27/%3E%3Ctext%20x%3D%27814%27%20y%3D%27304%27%20fill%3D%27%23bae6fd%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2723%27%3Etrace%20replay%3C/text%3E%0A%3Crect%20x%3D%27776%27%20y%3D%27366%27%20width%3D%27258%27%20height%3D%2758%27%20rx%3D%2714%27%20fill%3D%27%230d1728%27%20stroke%3D%27%23a78bfa%27%20stroke-opacity%3D%270.45%27/%3E%3Ctext%20x%3D%27832%27%20y%3D%27404%27%20fill%3D%27%23ddd6fe%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2723%27%3Ereset%20hook%3C/text%3E%0A%3C/svg%3E",
+      "url": "https://negiadventures.github.io/blog/browser-session-fixtures-ai-web-agents.html",
+      "datePublished": "2026-06-13",
+      "dateModified": "2026-06-13",
+      "author": {
+        "@type": "Person",
+        "name": "Anirudh Negi",
+        "url": "https://negiadventures.github.io"
+      },
+      "publisher": {
+        "@type": "Person",
+        "name": "Anirudh Negi",
+        "url": "https://negiadventures.github.io"
+      },
+      "keywords": ["Browser Automation", "AI Agents", "Playwright", "Reliability", "Test Infrastructure"]
+    }
+    </script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../stylesheets/stylesheet.css?v=5" media="screen">
+    <style>
+      .blog-post { max-width: 800px; margin: 0 auto; padding: 60px 20px; }
+      .blog-post-header { margin-bottom: 40px; }
+      .blog-post-nav { margin-bottom: 30px; }
+      .blog-post-nav a, .blog-footer a { color: var(--accent-strong); }
+      .blog-post-nav a:hover, .blog-footer a:hover { color: var(--accent); }
+      .blog-post-title { font-size: 2.5rem; margin-bottom: 16px; }
+      .blog-post-meta { display: flex; gap: 20px; color: var(--text-muted); font-size: 0.95rem; margin-bottom: 30px; flex-wrap: wrap; }
+      .blog-post-image { width: 100%; height: 300px; object-fit: cover; border-radius: 16px; margin-bottom: 30px; border: 1px solid var(--border); background: var(--bg-alt); }
+      .blog-post-content h2 { font-size: 1.6rem; margin-top: 40px; margin-bottom: 16px; color: var(--text-light); }
+      .blog-post-content h3 { font-size: 1.25rem; margin-top: 30px; margin-bottom: 12px; color: var(--text-light); }
+      .blog-post-content p, .blog-post-content li { line-height: 1.8; color: var(--text-muted); }
+      .blog-post-content p { margin-bottom: 16px; }
+      .blog-post-content ul, .blog-post-content ol { margin-bottom: 20px; padding-left: 24px; }
+      .code-block { background: var(--bg-alt); border: 1px solid var(--border); border-radius: 12px; padding: 20px; margin: 20px 0; overflow-x: auto; }
+      .code-block pre { margin: 0; font-family: var(--mono); font-size: 0.9rem; line-height: 1.6; color: var(--text-light); white-space: pre-wrap; }
+      .callout { border-left: 4px solid var(--accent); background: rgba(34, 211, 238, 0.08); padding: 16px 18px; border-radius: 12px; margin: 20px 0; }
+      .callout.warning { border-left-color: #f59e0b; background: rgba(245, 158, 11, 0.08); }
+      .callout strong { color: var(--text-light); }
+      .diagram-card, .table-wrap { background: var(--bg-alt); border: 1px solid var(--border); border-radius: 16px; padding: 18px; margin: 24px 0; overflow-x: auto; }
+      table { width: 100%; border-collapse: collapse; }
+      th, td { text-align: left; padding: 12px 14px; border-bottom: 1px solid var(--border); color: var(--text-muted); vertical-align: top; }
+      th { color: var(--text-light); }
+      .checklist li::marker { color: var(--accent-strong); }
+      .blog-post-tags { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 40px; padding-top: 30px; border-top: 1px solid var(--border); }
+      .blog-post-tag { background: var(--accent-soft); color: var(--accent-strong); border-radius: 999px; padding: 6px 14px; font-size: 0.85rem; font-family: var(--mono); border: 1px solid transparent; }
+      .blog-footer { margin-top: 60px; padding-top: 30px; border-top: 1px solid var(--border); text-align: center; }
+      @media (max-width: 768px) { .blog-post { padding: 40px 16px; } .blog-post-title { font-size: 2rem; } .blog-post-image { height: 200px; } }
+    </style>
+  </head>
+  <body>
+    <a href="../index.html#main" class="skip-link">Skip to main content</a>
+    <header class="site-header">
+      <div class="container blog-post">
+        <div class="blog-post-nav"><a href="index.html">&larr; Back to All Posts</a></div>
+        <div class="blog-post-header">
+          <h1 class="blog-post-title">Browser Session Fixtures for AI Web Agents Without Flaky Demos</h1>
+          <div class="blog-post-meta"><span>June 13, 2026</span><span>&bull;</span><span>9 min read</span></div>
+          <img src="data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A//www.w3.org/2000/svg%27%20viewBox%3D%270%200%201200%20630%27%3E%0A%3Cdefs%3E%3ClinearGradient%20id%3D%27bg%27%20x1%3D%270%27%20x2%3D%271%27%20y1%3D%270%27%20y2%3D%271%27%3E%3Cstop%20offset%3D%270%25%27%20stop-color%3D%27%2307111d%27/%3E%3Cstop%20offset%3D%27100%25%27%20stop-color%3D%27%23184a72%27/%3E%3C/linearGradient%3E%3C/defs%3E%0A%3Crect%20width%3D%271200%27%20height%3D%27630%27%20fill%3D%27url%28%23bg%29%27/%3E%0A%3Ccircle%20cx%3D%271010%27%20cy%3D%27110%27%20r%3D%27176%27%20fill%3D%27%2322d3ee%27%20fill-opacity%3D%270.14%27/%3E%3Ccircle%20cx%3D%27184%27%20cy%3D%27520%27%20r%3D%27220%27%20fill%3D%27%238b5cf6%27%20fill-opacity%3D%270.16%27/%3E%0A%3Crect%20x%3D%2778%27%20y%3D%2786%27%20width%3D%271044%27%20height%3D%27458%27%20rx%3D%2730%27%20fill%3D%27%230b1220%27%20stroke%3D%27%2338bdf8%27%20stroke-opacity%3D%270.35%27/%3E%0A%3Ctext%20x%3D%27126%27%20y%3D%27164%27%20fill%3D%27white%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2738%27%20font-weight%3D%27700%27%3EBrowser%20Session%20Fixtures%20for%3C/text%3E%0A%3Ctext%20x%3D%27126%27%20y%3D%27224%27%20fill%3D%27%2393c5fd%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2738%27%20font-weight%3D%27700%27%3EAI%20Web%20Agents%20Without%20Flaky%20Demos%3C/text%3E%0A%3Ctext%20x%3D%27126%27%20y%3D%27298%27%20fill%3D%27%23cbd5e1%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2728%27%3ESeed%20auth%20state%2C%20freeze%20test%20data%2C%20and%20reset%20each%20run%20before%3C/text%3E%0A%3Ctext%20x%3D%27126%27%20y%3D%27334%27%20fill%3D%27%23cbd5e1%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2728%27%3Ea%20browser-using%20agent%20mistakes%20timing%20drift%20for%20product%20behavior%3C/text%3E%0A%3Crect%20x%3D%27126%27%20y%3D%27388%27%20width%3D%27388%27%20height%3D%2754%27%20rx%3D%2714%27%20fill%3D%27%23111c2d%27%20stroke%3D%27%2367e8f9%27%20stroke-opacity%3D%270.45%27/%3E%0A%3Ctext%20x%3D%27152%27%20y%3D%27423%27%20fill%3D%27%2367e8f9%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2724%27%3Ebrowser%20automation%20needs%20fixtures%2C%20not%20wishful%20waits%3C/text%3E%0A%3Crect%20x%3D%27776%27%20y%3D%27166%27%20width%3D%27258%27%20height%3D%2758%27%20rx%3D%2714%27%20fill%3D%27%230d1728%27%20stroke%3D%27%2322d3ee%27%20stroke-opacity%3D%270.45%27/%3E%3Ctext%20x%3D%27820%27%20y%3D%27204%27%20fill%3D%27%23bae6fd%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2723%27%3Eseeded%20session%3C/text%3E%0A%3Crect%20x%3D%27776%27%20y%3D%27266%27%20width%3D%27258%27%20height%3D%2758%27%20rx%3D%2714%27%20fill%3D%27%230d1728%27%20stroke%3D%27%2322d3ee%27%20stroke-opacity%3D%270.45%27/%3E%3Ctext%20x%3D%27814%27%20y%3D%27304%27%20fill%3D%27%23bae6fd%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2723%27%3Etrace%20replay%3C/text%3E%0A%3Crect%20x%3D%27776%27%20y%3D%27366%27%20width%3D%27258%27%20height%3D%2758%27%20rx%3D%2714%27%20fill%3D%27%230d1728%27%20stroke%3D%27%23a78bfa%27%20stroke-opacity%3D%270.45%27/%3E%3Ctext%20x%3D%27832%27%20y%3D%27404%27%20fill%3D%27%23ddd6fe%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2723%27%3Ereset%20hook%3C/text%3E%0A%3C/svg%3E" alt="Browser Session Fixtures for AI Web Agents Without Flaky Demos" class="blog-post-image">
+        </div>
+        <div class="blog-post-content">
+          <p>AI web agents tend to look impressive right up until they hit the same login wall, stale modal, or half-loaded dashboard for the third run in a row. Then the problem is no longer reasoning quality, it is state drift.</p>
+          <p>A lot of teams blame the model when the real issue is that the browser environment changes underneath it. Session cookies expire, demo accounts mutate, async widgets race, and one run leaves the next run in a weird state.</p>
+          <p>This guide shows how to build browser session fixtures for AI web agents with seeded auth state, deterministic reset hooks, trace capture, and a narrow contract for what the agent is allowed to assume before it starts clicking.</p>
+          <h2>Why this matters</h2>
+          <p>If your browser-using agent touches real products, reliability comes from controlling the page state before the model ever sees the DOM. A stable fixture layer makes agent evals more meaningful, keeps debugging honest, and stops reviewers from mistaking lucky runs for durable workflows.</p>
+          <div class="callout"><strong>Bottom line:</strong> browser agents need environment discipline more than extra prompt prose.</div>
+          <h2>Architecture or workflow overview</h2>
+          <div class="diagram-card"><pre><code>fixture spec
+  -> state seeder
+  -> browser context with stored auth
+  -> agent run with DOM guards
+  -> trace and screenshot capture
+  -> reset hook
+  -> pass-fail evidence packet</code></pre></div>
+          <div class="code-block"><pre><code class="language-mermaid">flowchart LR
+    A[Fixture spec] --> B[Seed account and test data]
+    B --> C[Load browser context with auth state]
+    C --> D[Agent run with DOM guards]
+    D --> E[Trace, screenshots, terminal notes]
+    E --> F[Reset hook]
+    F --> G[Evidence packet for review or eval]</code></pre></div>
+          <h2>Implementation details</h2>
+          <h3>1. Define the fixture contract before the agent starts</h3>
+          <p>The fixture should describe the account, page entry point, seeded resources, and reset behavior. Keep it explicit enough that a human reviewer can tell what state the agent is relying on.</p>
+          <div class="code-block"><pre><code>name: billing-upgrade-fixture
+base_url: https://staging.example.com
+entry_path: /app/billing
+account:
+  email: agent-billing-fixture@example.com
+  role: owner
+seed:
+  plan: starter
+  invoices: 3
+  payment_method: visa-test
+assert_ready:
+  - text=Current plan
+  - data-testid=billing-summary
+reset:
+  endpoint: POST /internal/test/reset-billing-fixture
+artifacts:
+  trace: true
+  screenshots: true
+  console: true</code></pre></div>
+          <p>This becomes the agreement between product state and agent behavior. If the run fails before the ready assertions pass, I treat that as fixture failure, not agent failure.</p>
+          <h3>2. Separate session setup from agent execution</h3>
+          <p>I would not let the agent spend tokens logging in unless login itself is the task under test. Preload auth state and hand the agent a clean context.</p>
+          <div class="code-block"><pre><code>import { chromium, type BrowserContext } from '@playwright/test';
+
+export async function createFixtureContext(storageStatePath: string): Promise&lt;BrowserContext&gt; {
+  const browser = await chromium.launch({ headless: true });
+  return browser.newContext({
+    storageState: storageStatePath,
+    viewport: { width: 1440, height: 960 },
+    ignoreHTTPSErrors: true
+  });
+}
+
+export async function openFixturePage(context: BrowserContext, url: string) {
+  const page = await context.newPage();
+  await page.goto(url, { waitUntil: 'domcontentloaded' });
+  await page.getByTestId('billing-summary').waitFor();
+  return page;
+}</code></pre></div>
+          <p>That one decision removes a huge amount of test flake. It also makes traces more useful because the run starts where the actual workflow starts.</p>
+          <h3>3. Add DOM guards that fail early and loudly</h3>
+          <p>Browser agents get into trouble when they act on partially ready interfaces. A few deterministic guards are cheaper than letting the model improvise around loading states.</p>
+          <div class="code-block"><pre><code>from playwright.sync_api import Page, TimeoutError as PlaywrightTimeoutError
+
+READY_SELECTORS = [
+    "[data-testid='billing-summary']",
+    "text=Current plan",
+]
+
+
+def wait_for_fixture_ready(page: Page, timeout_ms: int = 8000) -> None:
+    try:
+        for selector in READY_SELECTORS:
+            page.locator(selector).first.wait_for(timeout=timeout_ms)
+    except PlaywrightTimeoutError as exc:
+        page.screenshot(path="artifacts/fixture-not-ready.png", full_page=True)
+        raise RuntimeError("fixture failed readiness checks before agent execution") from exc</code></pre></div>
+          <div class="callout warning"><strong>Pitfall:</strong> generic sleep calls make failures slower and harder to classify. Product-owned ready markers are much better evidence.</div>
+          <h3>4. Capture replayable evidence, not just pass-fail text</h3>
+          <p>For browser workflows, traces and screenshots matter more than long natural-language summaries. The best debugging loop is one where you can replay the exact run.</p>
+          <div class="code-block"><pre><code>npx playwright test tests/agent-billing.spec.ts   --trace=on   --video=retain-on-failure   --reporter=line
+
+npx playwright show-trace test-results/agent-billing/trace.zip</code></pre></div>
+          <div class="code-block"><pre><code>[fixture] reset complete in 420ms
+[fixture] auth state loaded from .auth/billing-owner.json
+[fixture] ready selectors satisfied
+[agent] opened upgrade modal
+[agent] selected annual plan
+[agent] failed on missing confirm button
+[artifacts] trace.zip, final.png, console.log</code></pre></div>
+          <h2>Tradeoff table</h2>
+          <div class="table-wrap"><table><thead><tr><th>Approach</th><th>What it optimizes</th><th>Failure mode</th><th>My take</th></tr></thead><tbody><tr><td>Agent logs in every run</td><td>Realism</td><td>Slow, brittle, token-heavy</td><td>Only for auth-specific tests</td></tr><tr><td>Shared long-lived demo account</td><td>Convenience</td><td>Hidden state drift between runs</td><td>I would avoid this</td></tr><tr><td>Seeded fixture account plus reset hook</td><td>Determinism</td><td>Requires backend support</td><td>Best default</td></tr><tr><td>Snapshotting whole browser storage forever</td><td>Speed</td><td>Stale auth and silent UI drift</td><td>Useful only with rotation checks</td></tr></tbody></table></div>
+          <h2>What went wrong and the tradeoffs</h2>
+          <h3>Stale storage state can create fake confidence</h3>
+          <p>A saved auth file feels deterministic until the backend changes a cookie format or feature flag shape. Then the browser opens fine but the product behaves differently.</p>
+          <p><strong>What I would not do:</strong> treat storage state files as permanent assets. Rotate and verify them.</p>
+          <h3>Reset hooks need ownership and limits</h3>
+          <p>The fastest fixtures usually rely on internal reset endpoints or seeded DB helpers. That is great for reliability, but it adds a privileged test surface that needs access controls and auditability.</p>
+          <p><strong>Security concern:</strong> keep reset hooks off public networks and scope them to non-production data only.</p>
+          <h3>Flake often comes from widgets, not the model</h3>
+          <p>Rich dashboards with client-side hydration, toasts, and nested modals can create timing bugs that look like reasoning bugs. If the DOM is not stable, the agent should not be acting yet.</p>
+          <p><strong>Best practice:</strong> prefer <code>data-testid=page-ready</code> style markers over generic waits.</p>
+          <h3>Some workflows are not good fixture candidates</h3>
+          <p>OAuth handoffs, captcha flows, and email-based approval links are usually too environment-specific for deterministic browser-agent evaluation.</p>
+          <p><strong>My bias:</strong> test the product logic around those steps, not the human-verification ceremony itself.</p>
+          <h2>Practical checklist</h2>
+          <ul class="checklist">
+            <li>Create one fixture spec per high-value workflow</li>
+            <li>Pre-seed auth state unless login is the task under test</li>
+            <li>Add product-owned ready markers before agent execution begins</li>
+            <li>Capture trace, screenshot, and console artifacts on every failure</li>
+            <li>Reset account and test data after every run</li>
+            <li>Rotate storage state files and verify them in CI</li>
+            <li>Keep reset hooks private and non-production only</li>
+          </ul>
+          <h2>References</h2>
+          <ul>
+            <li><a href="https://playwright.dev/docs/trace-viewer">Playwright trace viewer</a></li>
+            <li><a href="https://playwright.dev/docs/auth">Playwright authentication guide</a></li>
+            <li><a href="https://developer.chrome.com/docs/devtools/performance">Chrome DevTools performance traces</a></li>
+          </ul>
+          <h2>Conclusion</h2>
+          <p>Browser agents get called flaky when the real system around them is flaky. Once you add fixture specs, session seeding, ready guards, and replayable traces, you can finally tell the difference between a bad model decision and a bad browser environment.</p>
+          <p>That distinction is the difference between demo energy and engineering.</p>
+          <div class="blog-post-tags"><span class="blog-post-tag">Browser Automation</span><span class="blog-post-tag">AI Agents</span><span class="blog-post-tag">Playwright</span><span class="blog-post-tag">Reliability</span><span class="blog-post-tag">Test Infrastructure</span></div>
+        </div>
+        <div class="blog-footer"><p><a href="index.html">← Back to all posts</a></p></div>
+      </div>
+    </header>
+  </body>
+</html>

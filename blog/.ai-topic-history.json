@@ -1,6 +1,14 @@
 {
   "topics": [
     {
+      "date": "2026-06-13",
+      "skill": "Browser session fixtures for AI web agents",
+      "topic": "Using seeded auth state, reset hooks, DOM readiness guards, and replayable traces so browser-using AI agents stop failing for environmental reasons that look like reasoning bugs",
+      "slug": "browser-session-fixtures-ai-web-agents",
+      "title": "Browser Session Fixtures for AI Web Agents Without Flaky Demos",
+      "summary": "A practical guide to building browser session fixtures for AI web agents with seeded auth state, DOM waits, replayable traces, and reset hooks so web workflows stay deterministic, reviewable, and much less flaky."
+    },
+    {
       "date": "2026-06-12",
       "skill": "Embedding model migrations for RAG systems",
       "topic": "Using dual indexes, overlap audits, labeled recall sets, shadow traffic, and rollback aliases so production RAG teams can upgrade embedding models without quietly losing the evidence their users actually need",
