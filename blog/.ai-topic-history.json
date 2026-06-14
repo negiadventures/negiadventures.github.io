@@ -1,6 +1,14 @@
 {
   "topics": [
     {
+      "date": "2026-06-14",
+      "skill": "Reranker budgets for AI coding agent code retrieval",
+      "topic": "Using exact-match promotion, merged candidate evidence, cross-encoder rerank slices, and latency caps so AI coding agents retrieve the right code paths without turning every lookup into a slow expensive search stack",
+      "slug": "reranker-budgets-code-retrieval-ai-coding-agents",
+      "title": "Reranker Budgets for AI Coding Agents That Need Better Code Retrieval",
+      "summary": "A practical guide to using reranker budgets, exact-match promotion, cross-encoder slices, and latency caps so AI coding agents retrieve better code context without turning every lookup into an expensive search tax."
+    },
+    {
       "date": "2026-06-13",
       "skill": "Browser session fixtures for AI web agents",
       "topic": "Using seeded auth state, reset hooks, DOM readiness guards, and replayable traces so browser-using AI agents stop failing for environmental reasons that look like reasoning bugs",
