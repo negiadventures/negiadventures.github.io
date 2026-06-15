@@ -1,6 +1,14 @@
 {
   "topics": [
     {
+      "date": "2026-06-15",
+      "skill": "Incremental code index refresh for AI coding agents",
+      "topic": "Using commit-driven dirty sets, symbol-level invalidation, bounded backfills, and freshness ledgers so repository retrieval stays current without paying the cost and downtime of full index rebuilds after every burst of code churn",
+      "slug": "incremental-code-index-refresh-ai-coding-agents",
+      "title": "Incremental Code Index Refresh for AI Coding Agents Without Full Rebuilds",
+      "summary": "A practical guide to incremental code index refresh for AI coding agents with change feeds, symbol-level dirty sets, bounded backfills, and rollback lanes so large repos stay searchable without constant full reindexing."
+    },
+    {
       "date": "2026-06-14",
       "skill": "Reranker budgets for AI coding agent code retrieval",
       "topic": "Using exact-match promotion, merged candidate evidence, cross-encoder rerank slices, and latency caps so AI coding agents retrieve the right code paths without turning every lookup into a slow expensive search stack",
