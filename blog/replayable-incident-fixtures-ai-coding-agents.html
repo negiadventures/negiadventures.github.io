@@ -1,0 +1,249 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="How to build replayable incident fixtures for AI coding agents with sanitized bug packets, verifier scripts, and deterministic replay loops.">
+    <meta name="author" content="Anirudh Negi">
+    <title>Replayable Incident Fixtures for AI Coding Agents Without Ghost Bugs | Anirudh Negi</title>
+    <link rel="icon" type="image/svg+xml" href="../images/favicon.svg">
+    <link rel="canonical" href="https://negiadventures.github.io/blog/replayable-incident-fixtures-ai-coding-agents.html">
+    <meta property="og:type" content="article">
+    <meta property="og:url" content="https://negiadventures.github.io/blog/replayable-incident-fixtures-ai-coding-agents.html">
+    <meta property="og:title" content="Replayable Incident Fixtures for AI Coding Agents Without Ghost Bugs | Anirudh Negi">
+    <meta property="og:description" content="How to build replayable incident fixtures for AI coding agents with sanitized bug packets, verifier scripts, and deterministic replay loops.">
+    <meta property="og:image" content="data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A//www.w3.org/2000/svg%27%20viewBox%3D%270%200%201200%20630%27%3E%0A%3Cdefs%3E%3ClinearGradient%20id%3D%27bg%27%20x1%3D%270%27%20x2%3D%271%27%20y1%3D%270%27%20y2%3D%271%27%3E%3Cstop%20offset%3D%270%25%27%20stop-color%3D%27%2307111d%27/%3E%3Cstop%20offset%3D%27100%25%27%20stop-color%3D%27%23184a72%27/%3E%3C/linearGradient%3E%3C/defs%3E%0A%3Crect%20width%3D%271200%27%20height%3D%27630%27%20fill%3D%27url%28%23bg%29%27/%3E%0A%3Ccircle%20cx%3D%271010%27%20cy%3D%27110%27%20r%3D%27176%27%20fill%3D%27%2322d3ee%27%20fill-opacity%3D%270.14%27/%3E%3Ccircle%20cx%3D%27184%27%20cy%3D%27520%27%20r%3D%27220%27%20fill%3D%27%238b5cf6%27%20fill-opacity%3D%270.16%27/%3E%0A%3Crect%20x%3D%2778%27%20y%3D%2786%27%20width%3D%271044%27%20height%3D%27458%27%20rx%3D%2730%27%20fill%3D%27%230b1220%27%20stroke%3D%27%2338bdf8%27%20stroke-opacity%3D%270.35%27/%3E%0A%3Ctext%20x%3D%27126%27%20y%3D%27164%27%20fill%3D%27white%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2738%27%20font-weight%3D%27700%27%3EReplayable%20Incident%20Fixtures%20for%3C/text%3E%0A%3Ctext%20x%3D%27126%27%20y%3D%27224%27%20fill%3D%27%2393c5fd%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2738%27%20font-weight%3D%27700%27%3EAI%20Coding%20Agents%20Without%20Ghost%20Bugs%3C/text%3E%0A%3Ctext%20x%3D%27126%27%20y%3D%27298%27%20fill%3D%27%23cbd5e1%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2728%27%3ECapture%20the%20failing%20request%2C%20freeze%20the%20dependencies%2C%20and%20give%20the%20agent%20a%3C/text%3E%0A%3Ctext%20x%3D%27126%27%20y%3D%27334%27%20fill%3D%27%23cbd5e1%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2728%27%3Edeterministic%20replay%20lane%20before%20vague%20prod-only%20bugs%20turn%20into%20guessing%3C/text%3E%0A%3Crect%20x%3D%27126%27%20y%3D%27388%27%20width%3D%27390%27%20height%3D%2754%27%20rx%3D%2714%27%20fill%3D%27%23111c2d%27%20stroke%3D%27%2367e8f9%27%20stroke-opacity%3D%270.45%27/%3E%0A%3Ctext%20x%3D%27152%27%20y%3D%27423%27%20fill%3D%27%2367e8f9%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2724%27%3Eincident%20response%20gets%20faster%20when%20bugs%20are%20portable%3C/text%3E%0A%3Crect%20x%3D%27776%27%20y%3D%27166%27%20width%3D%27258%27%20height%3D%2758%27%20rx%3D%2714%27%20fill%3D%27%230d1728%27%20stroke%3D%27%2322d3ee%27%20stroke-opacity%3D%270.45%27/%3E%3Ctext%20x%3D%27810%27%20y%3D%27204%27%20fill%3D%27%23bae6fd%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2723%27%3Esanitized%20input%3C/text%3E%0A%3Crect%20x%3D%27776%27%20y%3D%27266%27%20width%3D%27258%27%20height%3D%2758%27%20rx%3D%2714%27%20fill%3D%27%230d1728%27%20stroke%3D%27%2322d3ee%27%20stroke-opacity%3D%270.45%27/%3E%3Ctext%20x%3D%27808%27%20y%3D%27304%27%20fill%3D%27%23bae6fd%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2723%27%3Everifier%20script%3C/text%3E%0A%3Crect%20x%3D%27776%27%20y%3D%27366%27%20width%3D%27258%27%20height%3D%2758%27%20rx%3D%2714%27%20fill%3D%27%230d1728%27%20stroke%3D%27%23a78bfa%27%20stroke-opacity%3D%270.45%27/%3E%3Ctext%20x%3D%27822%27%20y%3D%27404%27%20fill%3D%27%23ddd6fe%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2723%27%3Eexpiry%20policy%3C/text%3E%0A%3C/svg%3E">
+    <meta property="article:published_time" content="2026-06-16">
+    <meta property="article:author" content="Anirudh Negi">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:url" content="https://negiadventures.github.io/blog/replayable-incident-fixtures-ai-coding-agents.html">
+    <meta name="twitter:title" content="Replayable Incident Fixtures for AI Coding Agents Without Ghost Bugs | Anirudh Negi">
+    <meta name="twitter:description" content="How to build replayable incident fixtures for AI coding agents with sanitized bug packets, verifier scripts, and deterministic replay loops.">
+    <meta name="twitter:image" content="data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A//www.w3.org/2000/svg%27%20viewBox%3D%270%200%201200%20630%27%3E%0A%3Cdefs%3E%3ClinearGradient%20id%3D%27bg%27%20x1%3D%270%27%20x2%3D%271%27%20y1%3D%270%27%20y2%3D%271%27%3E%3Cstop%20offset%3D%270%25%27%20stop-color%3D%27%2307111d%27/%3E%3Cstop%20offset%3D%27100%25%27%20stop-color%3D%27%23184a72%27/%3E%3C/linearGradient%3E%3C/defs%3E%0A%3Crect%20width%3D%271200%27%20height%3D%27630%27%20fill%3D%27url%28%23bg%29%27/%3E%0A%3Ccircle%20cx%3D%271010%27%20cy%3D%27110%27%20r%3D%27176%27%20fill%3D%27%2322d3ee%27%20fill-opacity%3D%270.14%27/%3E%3Ccircle%20cx%3D%27184%27%20cy%3D%27520%27%20r%3D%27220%27%20fill%3D%27%238b5cf6%27%20fill-opacity%3D%270.16%27/%3E%0A%3Crect%20x%3D%2778%27%20y%3D%2786%27%20width%3D%271044%27%20height%3D%27458%27%20rx%3D%2730%27%20fill%3D%27%230b1220%27%20stroke%3D%27%2338bdf8%27%20stroke-opacity%3D%270.35%27/%3E%0A%3Ctext%20x%3D%27126%27%20y%3D%27164%27%20fill%3D%27white%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2738%27%20font-weight%3D%27700%27%3EReplayable%20Incident%20Fixtures%20for%3C/text%3E%0A%3Ctext%20x%3D%27126%27%20y%3D%27224%27%20fill%3D%27%2393c5fd%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2738%27%20font-weight%3D%27700%27%3EAI%20Coding%20Agents%20Without%20Ghost%20Bugs%3C/text%3E%0A%3Ctext%20x%3D%27126%27%20y%3D%27298%27%20fill%3D%27%23cbd5e1%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2728%27%3ECapture%20the%20failing%20request%2C%20freeze%20the%20dependencies%2C%20and%20give%20the%20agent%20a%3C/text%3E%0A%3Ctext%20x%3D%27126%27%20y%3D%27334%27%20fill%3D%27%23cbd5e1%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2728%27%3Edeterministic%20replay%20lane%20before%20vague%20prod-only%20bugs%20turn%20into%20guessing%3C/text%3E%0A%3Crect%20x%3D%27126%27%20y%3D%27388%27%20width%3D%27390%27%20height%3D%2754%27%20rx%3D%2714%27%20fill%3D%27%23111c2d%27%20stroke%3D%27%2367e8f9%27%20stroke-opacity%3D%270.45%27/%3E%0A%3Ctext%20x%3D%27152%27%20y%3D%27423%27%20fill%3D%27%2367e8f9%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2724%27%3Eincident%20response%20gets%20faster%20when%20bugs%20are%20portable%3C/text%3E%0A%3Crect%20x%3D%27776%27%20y%3D%27166%27%20width%3D%27258%27%20height%3D%2758%27%20rx%3D%2714%27%20fill%3D%27%230d1728%27%20stroke%3D%27%2322d3ee%27%20stroke-opacity%3D%270.45%27/%3E%3Ctext%20x%3D%27810%27%20y%3D%27204%27%20fill%3D%27%23bae6fd%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2723%27%3Esanitized%20input%3C/text%3E%0A%3Crect%20x%3D%27776%27%20y%3D%27266%27%20width%3D%27258%27%20height%3D%2758%27%20rx%3D%2714%27%20fill%3D%27%230d1728%27%20stroke%3D%27%2322d3ee%27%20stroke-opacity%3D%270.45%27/%3E%3Ctext%20x%3D%27808%27%20y%3D%27304%27%20fill%3D%27%23bae6fd%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2723%27%3Everifier%20script%3C/text%3E%0A%3Crect%20x%3D%27776%27%20y%3D%27366%27%20width%3D%27258%27%20height%3D%2758%27%20rx%3D%2714%27%20fill%3D%27%230d1728%27%20stroke%3D%27%23a78bfa%27%20stroke-opacity%3D%270.45%27/%3E%3Ctext%20x%3D%27822%27%20y%3D%27404%27%20fill%3D%27%23ddd6fe%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2723%27%3Eexpiry%20policy%3C/text%3E%0A%3C/svg%3E">
+    <script type="application/ld+json">{
+      "@context": "https://schema.org",
+      "@type": "BlogPosting",
+      "headline": "Replayable Incident Fixtures for AI Coding Agents Without Ghost Bugs",
+      "description": "How to build replayable incident fixtures for AI coding agents with sanitized bug packets, verifier scripts, and deterministic replay loops.",
+      "image": "data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A//www.w3.org/2000/svg%27%20viewBox%3D%270%200%201200%20630%27%3E%0A%3Cdefs%3E%3ClinearGradient%20id%3D%27bg%27%20x1%3D%270%27%20x2%3D%271%27%20y1%3D%270%27%20y2%3D%271%27%3E%3Cstop%20offset%3D%270%25%27%20stop-color%3D%27%2307111d%27/%3E%3Cstop%20offset%3D%27100%25%27%20stop-color%3D%27%23184a72%27/%3E%3C/linearGradient%3E%3C/defs%3E%0A%3Crect%20width%3D%271200%27%20height%3D%27630%27%20fill%3D%27url%28%23bg%29%27/%3E%0A%3Ccircle%20cx%3D%271010%27%20cy%3D%27110%27%20r%3D%27176%27%20fill%3D%27%2322d3ee%27%20fill-opacity%3D%270.14%27/%3E%3Ccircle%20cx%3D%27184%27%20cy%3D%27520%27%20r%3D%27220%27%20fill%3D%27%238b5cf6%27%20fill-opacity%3D%270.16%27/%3E%0A%3Crect%20x%3D%2778%27%20y%3D%2786%27%20width%3D%271044%27%20height%3D%27458%27%20rx%3D%2730%27%20fill%3D%27%230b1220%27%20stroke%3D%27%2338bdf8%27%20stroke-opacity%3D%270.35%27/%3E%0A%3Ctext%20x%3D%27126%27%20y%3D%27164%27%20fill%3D%27white%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2738%27%20font-weight%3D%27700%27%3EReplayable%20Incident%20Fixtures%20for%3C/text%3E%0A%3Ctext%20x%3D%27126%27%20y%3D%27224%27%20fill%3D%27%2393c5fd%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2738%27%20font-weight%3D%27700%27%3EAI%20Coding%20Agents%20Without%20Ghost%20Bugs%3C/text%3E%0A%3Ctext%20x%3D%27126%27%20y%3D%27298%27%20fill%3D%27%23cbd5e1%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2728%27%3ECapture%20the%20failing%20request%2C%20freeze%20the%20dependencies%2C%20and%20give%20the%20agent%20a%3C/text%3E%0A%3Ctext%20x%3D%27126%27%20y%3D%27334%27%20fill%3D%27%23cbd5e1%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2728%27%3Edeterministic%20replay%20lane%20before%20vague%20prod-only%20bugs%20turn%20into%20guessing%3C/text%3E%0A%3Crect%20x%3D%27126%27%20y%3D%27388%27%20width%3D%27390%27%20height%3D%2754%27%20rx%3D%2714%27%20fill%3D%27%23111c2d%27%20stroke%3D%27%2367e8f9%27%20stroke-opacity%3D%270.45%27/%3E%0A%3Ctext%20x%3D%27152%27%20y%3D%27423%27%20fill%3D%27%2367e8f9%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2724%27%3Eincident%20response%20gets%20faster%20when%20bugs%20are%20portable%3C/text%3E%0A%3Crect%20x%3D%27776%27%20y%3D%27166%27%20width%3D%27258%27%20height%3D%2758%27%20rx%3D%2714%27%20fill%3D%27%230d1728%27%20stroke%3D%27%2322d3ee%27%20stroke-opacity%3D%270.45%27/%3E%3Ctext%20x%3D%27810%27%20y%3D%27204%27%20fill%3D%27%23bae6fd%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2723%27%3Esanitized%20input%3C/text%3E%0A%3Crect%20x%3D%27776%27%20y%3D%27266%27%20width%3D%27258%27%20height%3D%2758%27%20rx%3D%2714%27%20fill%3D%27%230d1728%27%20stroke%3D%27%2322d3ee%27%20stroke-opacity%3D%270.45%27/%3E%3Ctext%20x%3D%27808%27%20y%3D%27304%27%20fill%3D%27%23bae6fd%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2723%27%3Everifier%20script%3C/text%3E%0A%3Crect%20x%3D%27776%27%20y%3D%27366%27%20width%3D%27258%27%20height%3D%2758%27%20rx%3D%2714%27%20fill%3D%27%230d1728%27%20stroke%3D%27%23a78bfa%27%20stroke-opacity%3D%270.45%27/%3E%3Ctext%20x%3D%27822%27%20y%3D%27404%27%20fill%3D%27%23ddd6fe%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2723%27%3Eexpiry%20policy%3C/text%3E%0A%3C/svg%3E",
+      "url": "https://negiadventures.github.io/blog/replayable-incident-fixtures-ai-coding-agents.html",
+      "datePublished": "2026-06-16",
+      "author": {"@type": "Person", "name": "Anirudh Negi", "url": "https://negiadventures.github.io"},
+      "publisher": {"@type": "Person", "name": "Anirudh Negi", "url": "https://negiadventures.github.io"}
+    }</script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../stylesheets/stylesheet.css?v=5" media="screen">
+    <style>
+      .blog-post { max-width: 800px; margin: 0 auto; padding: 60px 20px; }
+      .blog-post-header { margin-bottom: 40px; }
+      .blog-post-nav { margin-bottom: 30px; }
+      .blog-post-nav a { color: var(--accent-strong); font-size: 0.95rem; }
+      .blog-post-nav a:hover { color: var(--accent); }
+      .blog-post-title { font-size: 2.5rem; margin-bottom: 16px; }
+      .blog-post-meta { display: flex; gap: 20px; color: var(--text-muted); font-size: 0.95rem; margin-bottom: 30px; flex-wrap: wrap; }
+      .blog-post-image { width: 100%; height: 300px; object-fit: cover; border-radius: 16px; margin-bottom: 30px; border: 1px solid var(--border); background: var(--bg-alt); }
+      .blog-post-content h2 { font-size: 1.6rem; margin-top: 40px; margin-bottom: 16px; color: var(--text-light); }
+      .blog-post-content h3 { font-size: 1.3rem; margin-top: 30px; margin-bottom: 12px; color: var(--text-light); }
+      .blog-post-content p { line-height: 1.8; margin-bottom: 16px; color: var(--text-muted); }
+      .blog-post-content ul, .blog-post-content ol { line-height: 1.8; margin-bottom: 20px; color: var(--text-muted); padding-left: 24px; }
+      .blog-post-content li { margin-bottom: 8px; }
+      .code-block { background: var(--bg-alt); border: 1px solid var(--border); border-radius: 12px; padding: 20px; margin: 20px 0; overflow-x: auto; }
+      .code-block pre { margin: 0; font-family: var(--mono); font-size: 0.9rem; line-height: 1.6; color: var(--text-light); }
+      .code-block code { color: var(--accent-strong); }
+      .callout { border-left: 4px solid var(--accent); background: rgba(34, 211, 238, 0.08); padding: 18px 18px 18px 20px; border-radius: 12px; margin: 24px 0; color: var(--text-muted); }
+      .table-wrap { overflow-x: auto; margin: 24px 0; }
+      table { width: 100%; border-collapse: collapse; font-size: 0.95rem; }
+      th, td { border: 1px solid var(--border); padding: 12px 14px; text-align: left; vertical-align: top; }
+      th { color: var(--text-light); background: rgba(148, 163, 184, 0.08); }
+      .blog-post-tags { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 40px; padding-top: 30px; border-top: 1px solid var(--border); }
+      .blog-post-tag { background: var(--accent-soft); color: var(--accent-strong); border-radius: 999px; padding: 6px 14px; font-size: 0.85rem; font-family: var(--mono); border: 1px solid transparent; }
+      .blog-footer { margin-top: 60px; padding-top: 30px; border-top: 1px solid var(--border); text-align: center; }
+      .blog-footer a { color: var(--accent-strong); }
+      @media (max-width: 768px) { .blog-post { padding: 40px 16px; } .blog-post-title { font-size: 2rem; } .blog-post-image { height: 200px; } }
+    </style>
+    <script type="module">
+      import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.esm.min.mjs';
+      mermaid.initialize({ startOnLoad: true, theme: 'dark' });
+    </script>
+  </head>
+  <body>
+    <a href="../index.html#main" class="skip-link">Skip to main content</a>
+    <header class="site-header">
+      <div class="container blog-post">
+        <div class="blog-post-nav"><a href="index.html">&larr; Back to All Posts</a></div>
+        <div class="blog-post-header">
+          <h1 class="blog-post-title">Replayable Incident Fixtures for AI Coding Agents Without Ghost Bugs</h1>
+          <div class="blog-post-meta"><span>June 16, 2026</span><span>&bull;</span><span>11 min read</span></div>
+          <img src="data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A//www.w3.org/2000/svg%27%20viewBox%3D%270%200%201200%20630%27%3E%0A%3Cdefs%3E%3ClinearGradient%20id%3D%27bg%27%20x1%3D%270%27%20x2%3D%271%27%20y1%3D%270%27%20y2%3D%271%27%3E%3Cstop%20offset%3D%270%25%27%20stop-color%3D%27%2307111d%27/%3E%3Cstop%20offset%3D%27100%25%27%20stop-color%3D%27%23184a72%27/%3E%3C/linearGradient%3E%3C/defs%3E%0A%3Crect%20width%3D%271200%27%20height%3D%27630%27%20fill%3D%27url%28%23bg%29%27/%3E%0A%3Ccircle%20cx%3D%271010%27%20cy%3D%27110%27%20r%3D%27176%27%20fill%3D%27%2322d3ee%27%20fill-opacity%3D%270.14%27/%3E%3Ccircle%20cx%3D%27184%27%20cy%3D%27520%27%20r%3D%27220%27%20fill%3D%27%238b5cf6%27%20fill-opacity%3D%270.16%27/%3E%0A%3Crect%20x%3D%2778%27%20y%3D%2786%27%20width%3D%271044%27%20height%3D%27458%27%20rx%3D%2730%27%20fill%3D%27%230b1220%27%20stroke%3D%27%2338bdf8%27%20stroke-opacity%3D%270.35%27/%3E%0A%3Ctext%20x%3D%27126%27%20y%3D%27164%27%20fill%3D%27white%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2738%27%20font-weight%3D%27700%27%3EReplayable%20Incident%20Fixtures%20for%3C/text%3E%0A%3Ctext%20x%3D%27126%27%20y%3D%27224%27%20fill%3D%27%2393c5fd%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2738%27%20font-weight%3D%27700%27%3EAI%20Coding%20Agents%20Without%20Ghost%20Bugs%3C/text%3E%0A%3Ctext%20x%3D%27126%27%20y%3D%27298%27%20fill%3D%27%23cbd5e1%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2728%27%3ECapture%20the%20failing%20request%2C%20freeze%20the%20dependencies%2C%20and%20give%20the%20agent%20a%3C/text%3E%0A%3Ctext%20x%3D%27126%27%20y%3D%27334%27%20fill%3D%27%23cbd5e1%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2728%27%3Edeterministic%20replay%20lane%20before%20vague%20prod-only%20bugs%20turn%20into%20guessing%3C/text%3E%0A%3Crect%20x%3D%27126%27%20y%3D%27388%27%20width%3D%27390%27%20height%3D%2754%27%20rx%3D%2714%27%20fill%3D%27%23111c2d%27%20stroke%3D%27%2367e8f9%27%20stroke-opacity%3D%270.45%27/%3E%0A%3Ctext%20x%3D%27152%27%20y%3D%27423%27%20fill%3D%27%2367e8f9%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2724%27%3Eincident%20response%20gets%20faster%20when%20bugs%20are%20portable%3C/text%3E%0A%3Crect%20x%3D%27776%27%20y%3D%27166%27%20width%3D%27258%27%20height%3D%2758%27%20rx%3D%2714%27%20fill%3D%27%230d1728%27%20stroke%3D%27%2322d3ee%27%20stroke-opacity%3D%270.45%27/%3E%3Ctext%20x%3D%27810%27%20y%3D%27204%27%20fill%3D%27%23bae6fd%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2723%27%3Esanitized%20input%3C/text%3E%0A%3Crect%20x%3D%27776%27%20y%3D%27266%27%20width%3D%27258%27%20height%3D%2758%27%20rx%3D%2714%27%20fill%3D%27%230d1728%27%20stroke%3D%27%2322d3ee%27%20stroke-opacity%3D%270.45%27/%3E%3Ctext%20x%3D%27808%27%20y%3D%27304%27%20fill%3D%27%23bae6fd%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2723%27%3Everifier%20script%3C/text%3E%0A%3Crect%20x%3D%27776%27%20y%3D%27366%27%20width%3D%27258%27%20height%3D%2758%27%20rx%3D%2714%27%20fill%3D%27%230d1728%27%20stroke%3D%27%23a78bfa%27%20stroke-opacity%3D%270.45%27/%3E%3Ctext%20x%3D%27822%27%20y%3D%27404%27%20fill%3D%27%23ddd6fe%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2723%27%3Eexpiry%20policy%3C/text%3E%0A%3C/svg%3E" alt="Replayable Incident Fixtures for AI Coding Agents Without Ghost Bugs" class="blog-post-image">
+        </div>
+        <div class="blog-post-content">
+          <p>Production bugs are annoying enough when a human can reproduce them locally. They get worse when an AI coding agent is asked to help, but the only evidence is a screenshot, a stack trace fragment, and a memory like "it broke on one customer payload around 2 PM." That is how you get polished guesses instead of fixes.</p>
+          <p>The pattern that has worked best for me is to package incidents into replayable fixtures. The goal is simple: capture just enough sanitized evidence to reproduce the failure in a deterministic lane, then let the agent work against that lane instead of production folklore.</p>
+          <p>In this post, I’ll show how to structure an incident fixture packet, how to replay it safely, and where this approach breaks down.</p>
+
+          <h2>Why this matters</h2>
+          <p>AI coding agents are strongest when the task has bounded inputs, clear verifier commands, and short feedback loops. Incident work usually has the opposite shape.</p>
+          <ul>
+            <li>partial logs</li>
+            <li>drifting dependencies</li>
+            <li>hidden secrets in payloads</li>
+            <li>production-only side effects</li>
+            <li>confused humans adding details after the fact</li>
+          </ul>
+          <p>If you hand an agent raw prod access, you create security risk. If you hand it vague incident notes, you get fiction. Replayable fixtures split the difference. They preserve the evidence while keeping the repair loop local, reviewable, and safe.</p>
+          <p>Useful references: <a href="https://git-scm.com/docs/git-bisect" target="_blank" rel="noreferrer">Git bisect</a>, <a href="https://opentelemetry.io/docs/specs/semconv/" target="_blank" rel="noreferrer">OpenTelemetry semantic conventions</a>, and the <a href="https://cheatsheetseries.owasp.org/cheatsheets/Logging_Cheat_Sheet.html" target="_blank" rel="noreferrer">OWASP Logging Cheat Sheet</a>.</p>
+
+          <h2>Architecture and workflow overview</h2>
+          <div class="code-block"><pre class="mermaid">flowchart LR
+    A[Production incident] --&gt; B[Capture request, trace IDs, env facts]
+    B --&gt; C[Sanitize payload and secrets]
+    C --&gt; D[Write fixture packet to repo or secure artifact store]
+    D --&gt; E[Run verifier script locally or in CI]
+    E --&gt; F[Agent proposes patch]
+    F --&gt; G[Verifier replays fixture again]
+    G --&gt; H[Human reviews evidence and patch]</pre></div>
+          <p>I like the fixture packet to contain a sanitized request or event payload, an expected failure signature, dependency versions or image digests, a verifier command, and expiry metadata.</p>
+
+          <h2>Implementation details</h2>
+          <h3>1. Define a fixture manifest that the verifier can trust</h3>
+          <p>Keep the schema small. The agent does not need every production detail.</p>
+          <div class="code-block"><pre><code># fixtures/incidents/payment-timeout-2026-06-16/fixture.yaml
+id: payment-timeout-2026-06-16
+service: billing-api
+entrypoint: tests/replay_payment_timeout.py
+input: sanitized-request.json
+expected_failure:
+  type: TimeoutError
+  contains: "downstream risk score request exceeded 1500ms"
+environment:
+  image: ghcr.io/acme/billing-api@sha256:4d9d...
+  python: "3.12.4"
+  feature_flags:
+    risk_score_v2: true
+ownership:
+  created_by: sre-oncall
+  expires_on: 2026-07-16
+  jira: INC-4821</code></pre></div>
+          <p>This keeps the replay lane inspectable. It also gives the agent a single source of truth for how the bug should fail before the patch and how it should pass after.</p>
+
+          <h3>2. Sanitize hard before you serialize</h3>
+          <p>The biggest failure mode here is quietly checking sensitive data into a repo. I prefer explicit scrubbers over best-effort regex hope.</p>
+          <div class="code-block"><pre><code>import json
+from copy import deepcopy
+
+SENSITIVE_KEYS = {"email", "ssn", "token", "authorization", "card_number"}
+
+
+def sanitize_event(event: dict) -&gt; dict:
+    clean = deepcopy(event)
+
+    def walk(node):
+        if isinstance(node, dict):
+            for key, value in list(node.items()):
+                if key.lower() in SENSITIVE_KEYS:
+                    node[key] = "[REDACTED]"
+                else:
+                    walk(value)
+        elif isinstance(node, list):
+            for item in node:
+                walk(item)
+
+    walk(clean)
+    return clean</code></pre></div>
+
+          <h3>3. Make the replay command boring and scriptable</h3>
+          <p>A replay script should return non-zero on failure, print the failure signature, and avoid network dependence wherever possible.</p>
+          <div class="code-block"><pre><code>import json
+import subprocess
+import sys
+from pathlib import Path
+
+fixture_dir = Path("fixtures/incidents/payment-timeout-2026-06-16")
+request_path = fixture_dir / "sanitized-request.json"
+
+payload = json.loads(request_path.read_text())
+
+result = subprocess.run(
+    ["python", "scripts/run_local_request.py", "--fixture", str(request_path), "--offline-downstream"],
+    capture_output=True,
+    text=True,
+)
+
+print(result.stdout)
+print(result.stderr)
+
+if "TimeoutError" not in result.stderr:
+    print("expected timeout signature missing")
+    sys.exit(1)</code></pre></div>
+
+          <h3>Example terminal output</h3>
+          <div class="code-block"><pre><code>$ python tests/replay_payment_timeout.py
+loaded fixture: payment-timeout-2026-06-16
+mock downstream latency: 1800ms
+request_id: replay-7c2d5f
+TimeoutError: downstream risk score request exceeded 1500ms
+exit code: 1</code></pre></div>
+
+          <div class="callout"><strong>Pitfall:</strong> do not ask the agent to inspect production directly if a replay packet can answer the same question. Replay first, escalate later.</div>
+
+          <h2>Tradeoffs and what went wrong</h2>
+          <div class="table-wrap">
+            <table>
+              <thead><tr><th>Choice</th><th>Upside</th><th>Downside</th><th>When I use it</th></tr></thead>
+              <tbody>
+                <tr><td>Check fixtures into repo</td><td>Reviewable, versioned, easy for agents</td><td>Risk of stale or sensitive data</td><td>Small sanitized payloads</td></tr>
+                <tr><td>Store fixtures as CI artifacts</td><td>Better for large traces</td><td>Harder to diff in code review</td><td>Big logs or binary inputs</td></tr>
+                <tr><td>Full container snapshot</td><td>High fidelity</td><td>Heavy, slow, expensive</td><td>Nasty dependency drift bugs</td></tr>
+                <tr><td>Minimal manifest plus replay mocks</td><td>Fast and cheap</td><td>Can miss integration behavior</td><td>Most app-layer incidents</td></tr>
+              </tbody>
+            </table>
+          </div>
+
+          <h3>Hidden dependency drift</h3>
+          <p>I’ve seen a fixture reproduce fine on Monday and fail differently on Thursday because a local dependency moved. Pin runtime versions or container digests whenever the bug smells timing-related or parser-related.</p>
+
+          <h3>Over-sanitized inputs</h3>
+          <p>Sometimes the sanitizer strips the exact field shape that triggers the bug. When that happens, preserve the structure and redact only values. Shape is often more important than content.</p>
+
+          <h3>Production-only side effects</h3>
+          <p>Some bugs depend on queue timing, cold caches, or vendor behavior. In those cases, a fixture packet still helps, but you may need a shadow integration lane instead of a pure local replay.</p>
+
+          <h3>Fixture rot</h3>
+          <p>If incident packets never expire, the repo becomes a graveyard of misleading evidence. Treat fixtures like test data with owners and TTLs.</p>
+
+          <h2>Best practices checklist</h2>
+          <ul>
+            <li>Capture the failing input as close to the incident as possible.</li>
+            <li>Sanitize deterministically before an agent ever sees the payload.</li>
+            <li>Store one verifier command in the manifest.</li>
+            <li>Pin the runtime or container when dependency drift matters.</li>
+            <li>Prefer structural redaction over deleting fields entirely.</li>
+            <li>Add an expiry date and owner to every fixture.</li>
+            <li>Re-run the same fixture after the patch, not a hand-waved approximation.</li>
+            <li>Keep a short note about what the fixture does not model.</li>
+          </ul>
+
+          <h2>What I would do again</h2>
+          <p>If I were setting this up from scratch, I would start with three things only: a tiny fixture manifest, a deterministic sanitizer, and a one-command verifier. That gets most of the benefit quickly. You can add trace bundles, container snapshots, or CI replay lanes later when the incidents justify the extra weight.</p>
+
+          <h2>Conclusion</h2>
+          <p>Replayable incident fixtures make AI coding agents more useful because they turn vague production pain into bounded engineering work. The core idea is not fancy. Capture the evidence, scrub it safely, replay it deterministically, and expire it when it stops being trustworthy.</p>
+          <p>That is a much better debugging loop than asking an agent to fix a ghost.</p>
+
+          <div class="blog-post-tags">
+            <span class="blog-post-tag">AI Coding Agents</span>
+            <span class="blog-post-tag">Incident Response</span>
+            <span class="blog-post-tag">Debugging</span>
+            <span class="blog-post-tag">Reliability</span>
+            <span class="blog-post-tag">Fixtures</span>
+          </div>
+        </div>
+        <div class="blog-footer">
+          <p><a href="index.html">Back to Blog</a> &bull; <a href="../index.html">Back to Portfolio</a></p>
+        </div>
+      </div>
+    </header>
+  </body>
+</html>

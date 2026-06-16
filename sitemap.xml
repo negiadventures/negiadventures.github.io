@@ -1,5 +1,6 @@
 <?xml version='1.0' encoding='utf-8'?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  <url><loc>https://negiadventures.github.io/blog/replayable-incident-fixtures-ai-coding-agents.html</loc><lastmod>2026-06-16</lastmod><changefreq>monthly</changefreq><priority>0.8</priority></url>
   <url><loc>https://negiadventures.github.io/blog/incremental-code-index-refresh-ai-coding-agents.html</loc><lastmod>2026-06-15</lastmod><changefreq>monthly</changefreq><priority>0.8</priority></url>
   <url><loc>https://negiadventures.github.io/blog/reranker-budgets-code-retrieval-ai-coding-agents.html</loc><lastmod>2026-06-14</lastmod><changefreq>monthly</changefreq><priority>0.8</priority></url>
   <url><loc>https://negiadventures.github.io/blog/browser-session-fixtures-ai-web-agents.html</loc><lastmod>2026-06-13</lastmod><changefreq>monthly</changefreq><priority>0.8</priority></url>

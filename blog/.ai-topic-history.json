@@ -1,6 +1,14 @@
 {
   "topics": [
     {
+      "date": "2026-06-16",
+      "skill": "Replayable incident fixtures for AI coding agents",
+      "topic": "Using sanitized incident packets, dependency pins, deterministic verifier scripts, and expiry metadata so AI coding agents can debug production failures without direct prod access or vague handoffs",
+      "slug": "replayable-incident-fixtures-ai-coding-agents",
+      "title": "Replayable Incident Fixtures for AI Coding Agents Without Ghost Bugs",
+      "summary": "A practical guide to capturing replayable incident fixtures for AI coding agents with sanitized inputs, dependency snapshots, deterministic verifier scripts, and expiry rules so bug hunts stop depending on production access and vague memory."
+    },
+    {
       "date": "2026-06-15",
       "skill": "Incremental code index refresh for AI coding agents",
       "topic": "Using commit-driven dirty sets, symbol-level invalidation, bounded backfills, and freshness ledgers so repository retrieval stays current without paying the cost and downtime of full index rebuilds after every burst of code churn",
