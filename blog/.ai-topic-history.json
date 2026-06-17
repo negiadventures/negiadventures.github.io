@@ -1,6 +1,14 @@
 {
   "topics": [
     {
+      "date": "2026-06-17",
+      "skill": "Diff-scoped test selection for AI coding agents",
+      "topic": "Using changed-file fingerprints, dependency graph expansion, coverage fallbacks, flaky-test quarantines, and confidence thresholds so AI coding agents can verify patches quickly without paying the latency and noise cost of running the full test suite on every small edit",
+      "slug": "diff-scoped-test-selection-ai-coding-agents",
+      "title": "Diff-Scoped Test Selection for AI Coding Agents Without Full Test Suite Thrash",
+      "summary": "A practical guide to diff-scoped test selection for AI coding agents using changed-file fingerprints, dependency graph expansion, coverage fallbacks, and flaky-test guardrails so patch verification stays fast without pretending every edit deserves the full test suite."
+    },
+    {
       "date": "2026-06-16",
       "skill": "Replayable incident fixtures for AI coding agents",
       "topic": "Using sanitized incident packets, dependency pins, deterministic verifier scripts, and expiry metadata so AI coding agents can debug production failures without direct prod access or vague handoffs",
