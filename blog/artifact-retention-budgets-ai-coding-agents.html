@@ -1,0 +1,252 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="Set artifact retention budgets for AI coding agents so logs, traces, screenshots, and test bundles stay reviewable without turning storage and privacy risk into a quiet tax.">
+    <meta name="author" content="Anirudh Negi">
+    <title>Artifact Retention Budgets for AI Coding Agents Without Evidence Hoarding | Anirudh Negi</title>
+    <link rel="icon" type="image/svg+xml" href="../images/favicon.svg">
+    <link rel="canonical" href="https://negiadventures.github.io/blog/artifact-retention-budgets-ai-coding-agents.html">
+    <meta property="og:type" content="article">
+    <meta property="og:url" content="https://negiadventures.github.io/blog/artifact-retention-budgets-ai-coding-agents.html">
+    <meta property="og:title" content="Artifact Retention Budgets for AI Coding Agents Without Evidence Hoarding | Anirudh Negi">
+    <meta property="og:description" content="Set artifact retention budgets for AI coding agents so logs, traces, screenshots, and test bundles stay reviewable without turning storage and privacy risk into a quiet tax.">
+    <meta property="og:image" content="data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A//www.w3.org/2000/svg%27%20viewBox%3D%270%200%201200%20630%27%3E%0A%3Cdefs%3E%0A%20%20%3ClinearGradient%20id%3D%27bg%27%20x1%3D%270%27%20x2%3D%271%27%20y1%3D%270%27%20y2%3D%271%27%3E%0A%20%20%20%20%3Cstop%20offset%3D%270%25%27%20stop-color%3D%27%2307111d%27/%3E%0A%20%20%20%20%3Cstop%20offset%3D%27100%25%27%20stop-color%3D%27%23194a76%27/%3E%0A%20%20%3C/linearGradient%3E%0A%3C/defs%3E%0A%3Crect%20width%3D%271200%27%20height%3D%27630%27%20fill%3D%27url%28%23bg%29%27/%3E%0A%3Ccircle%20cx%3D%271008%27%20cy%3D%27108%27%20r%3D%27176%27%20fill%3D%27%2322d3ee%27%20fill-opacity%3D%270.14%27/%3E%0A%3Ccircle%20cx%3D%27184%27%20cy%3D%27520%27%20r%3D%27220%27%20fill%3D%27%238b5cf6%27%20fill-opacity%3D%270.16%27/%3E%0A%3Crect%20x%3D%2778%27%20y%3D%2786%27%20width%3D%271044%27%20height%3D%27458%27%20rx%3D%2730%27%20fill%3D%27%230b1220%27%20stroke%3D%27%2338bdf8%27%20stroke-opacity%3D%270.35%27/%3E%0A%3Ctext%20x%3D%27126%27%20y%3D%27164%27%20fill%3D%27white%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2738%27%20font-weight%3D%27700%27%3EArtifact%20Retention%20Budgets%20for%3C/text%3E%0A%3Ctext%20x%3D%27126%27%20y%3D%27224%27%20fill%3D%27%2393c5fd%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2738%27%20font-weight%3D%27700%27%3EAI%20Coding%20Agents%20Without%20Evidence%20Hoarding%3C/text%3E%0A%3Ctext%20x%3D%27126%27%20y%3D%27298%27%20fill%3D%27%23cbd5e1%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2728%27%3EKeep%20the%20screenshots%2C%20traces%2C%20and%20logs%20that%20help%20humans%20review%20and%20debug%2C%3C/text%3E%0A%3Ctext%20x%3D%27126%27%20y%3D%27334%27%20fill%3D%27%23cbd5e1%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2728%27%3Ethen%20expire%20or%20compact%20everything%20else%20before%20storage%20and%20privacy%20costs%20pile%20up.%3C/text%3E%0A%3Crect%20x%3D%27126%27%20y%3D%27388%27%20width%3D%27370%27%20height%3D%2754%27%20rx%3D%2714%27%20fill%3D%27%23111c2d%27%20stroke%3D%27%2367e8f9%27%20stroke-opacity%3D%270.45%27/%3E%0A%3Ctext%20x%3D%27152%27%20y%3D%27423%27%20fill%3D%27%2367e8f9%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2724%27%3Eevidence%20should%20age%20on%20purpose%2C%20not%20by%20accident%3C/text%3E%0A%3Crect%20x%3D%27776%27%20y%3D%27166%27%20width%3D%27258%27%20height%3D%2758%27%20rx%3D%2714%27%20fill%3D%27%230d1728%27%20stroke%3D%27%2322d3ee%27%20stroke-opacity%3D%270.45%27/%3E%3Ctext%20x%3D%27824%27%20y%3D%27204%27%20fill%3D%27%23bae6fd%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2723%27%3Eraw%20artifacts%3C/text%3E%0A%3Crect%20x%3D%27776%27%20y%3D%27266%27%20width%3D%27258%27%20height%3D%2758%27%20rx%3D%2714%27%20fill%3D%27%230d1728%27%20stroke%3D%27%2322d3ee%27%20stroke-opacity%3D%270.45%27/%3E%3Ctext%20x%3D%27816%27%20y%3D%27304%27%20fill%3D%27%23bae6fd%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2723%27%3Ecompact%20bundle%3C/text%3E%0A%3Crect%20x%3D%27776%27%20y%3D%27366%27%20width%3D%27258%27%20height%3D%2758%27%20rx%3D%2714%27%20fill%3D%27%230d1728%27%20stroke%3D%27%23a78bfa%27%20stroke-opacity%3D%270.45%27/%3E%3Ctext%20x%3D%27818%27%20y%3D%27404%27%20fill%3D%27%23ddd6fe%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2723%27%3Eexpiry%20policy%3C/text%3E%0A%3C/svg%3E">
+    <meta property="article:published_time" content="2026-06-18">
+    <meta property="article:author" content="Anirudh Negi">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:url" content="https://negiadventures.github.io/blog/artifact-retention-budgets-ai-coding-agents.html">
+    <meta name="twitter:title" content="Artifact Retention Budgets for AI Coding Agents Without Evidence Hoarding | Anirudh Negi">
+    <meta name="twitter:description" content="Set artifact retention budgets for AI coding agents so logs, traces, screenshots, and test bundles stay reviewable without turning storage and privacy risk into a quiet tax.">
+    <meta name="twitter:image" content="data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A//www.w3.org/2000/svg%27%20viewBox%3D%270%200%201200%20630%27%3E%0A%3Cdefs%3E%0A%20%20%3ClinearGradient%20id%3D%27bg%27%20x1%3D%270%27%20x2%3D%271%27%20y1%3D%270%27%20y2%3D%271%27%3E%0A%20%20%20%20%3Cstop%20offset%3D%270%25%27%20stop-color%3D%27%2307111d%27/%3E%0A%20%20%20%20%3Cstop%20offset%3D%27100%25%27%20stop-color%3D%27%23194a76%27/%3E%0A%20%20%3C/linearGradient%3E%0A%3C/defs%3E%0A%3Crect%20width%3D%271200%27%20height%3D%27630%27%20fill%3D%27url%28%23bg%29%27/%3E%0A%3Ccircle%20cx%3D%271008%27%20cy%3D%27108%27%20r%3D%27176%27%20fill%3D%27%2322d3ee%27%20fill-opacity%3D%270.14%27/%3E%0A%3Ccircle%20cx%3D%27184%27%20cy%3D%27520%27%20r%3D%27220%27%20fill%3D%27%238b5cf6%27%20fill-opacity%3D%270.16%27/%3E%0A%3Crect%20x%3D%2778%27%20y%3D%2786%27%20width%3D%271044%27%20height%3D%27458%27%20rx%3D%2730%27%20fill%3D%27%230b1220%27%20stroke%3D%27%2338bdf8%27%20stroke-opacity%3D%270.35%27/%3E%0A%3Ctext%20x%3D%27126%27%20y%3D%27164%27%20fill%3D%27white%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2738%27%20font-weight%3D%27700%27%3EArtifact%20Retention%20Budgets%20for%3C/text%3E%0A%3Ctext%20x%3D%27126%27%20y%3D%27224%27%20fill%3D%27%2393c5fd%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2738%27%20font-weight%3D%27700%27%3EAI%20Coding%20Agents%20Without%20Evidence%20Hoarding%3C/text%3E%0A%3Ctext%20x%3D%27126%27%20y%3D%27298%27%20fill%3D%27%23cbd5e1%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2728%27%3EKeep%20the%20screenshots%2C%20traces%2C%20and%20logs%20that%20help%20humans%20review%20and%20debug%2C%3C/text%3E%0A%3Ctext%20x%3D%27126%27%20y%3D%27334%27%20fill%3D%27%23cbd5e1%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2728%27%3Ethen%20expire%20or%20compact%20everything%20else%20before%20storage%20and%20privacy%20costs%20pile%20up.%3C/text%3E%0A%3Crect%20x%3D%27126%27%20y%3D%27388%27%20width%3D%27370%27%20height%3D%2754%27%20rx%3D%2714%27%20fill%3D%27%23111c2d%27%20stroke%3D%27%2367e8f9%27%20stroke-opacity%3D%270.45%27/%3E%0A%3Ctext%20x%3D%27152%27%20y%3D%27423%27%20fill%3D%27%2367e8f9%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2724%27%3Eevidence%20should%20age%20on%20purpose%2C%20not%20by%20accident%3C/text%3E%0A%3Crect%20x%3D%27776%27%20y%3D%27166%27%20width%3D%27258%27%20height%3D%2758%27%20rx%3D%2714%27%20fill%3D%27%230d1728%27%20stroke%3D%27%2322d3ee%27%20stroke-opacity%3D%270.45%27/%3E%3Ctext%20x%3D%27824%27%20y%3D%27204%27%20fill%3D%27%23bae6fd%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2723%27%3Eraw%20artifacts%3C/text%3E%0A%3Crect%20x%3D%27776%27%20y%3D%27266%27%20width%3D%27258%27%20height%3D%2758%27%20rx%3D%2714%27%20fill%3D%27%230d1728%27%20stroke%3D%27%2322d3ee%27%20stroke-opacity%3D%270.45%27/%3E%3Ctext%20x%3D%27816%27%20y%3D%27304%27%20fill%3D%27%23bae6fd%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2723%27%3Ecompact%20bundle%3C/text%3E%0A%3Crect%20x%3D%27776%27%20y%3D%27366%27%20width%3D%27258%27%20height%3D%2758%27%20rx%3D%2714%27%20fill%3D%27%230d1728%27%20stroke%3D%27%23a78bfa%27%20stroke-opacity%3D%270.45%27/%3E%3Ctext%20x%3D%27818%27%20y%3D%27404%27%20fill%3D%27%23ddd6fe%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2723%27%3Eexpiry%20policy%3C/text%3E%0A%3C/svg%3E">
+    <script type="application/ld+json">{"@context": "https://schema.org", "@type": "BlogPosting", "headline": "Artifact Retention Budgets for AI Coding Agents Without Evidence Hoarding", "description": "Set artifact retention budgets for AI coding agents so logs, traces, screenshots, and test bundles stay reviewable without turning storage and privacy risk into a quiet tax.", "image": "data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A//www.w3.org/2000/svg%27%20viewBox%3D%270%200%201200%20630%27%3E%0A%3Cdefs%3E%0A%20%20%3ClinearGradient%20id%3D%27bg%27%20x1%3D%270%27%20x2%3D%271%27%20y1%3D%270%27%20y2%3D%271%27%3E%0A%20%20%20%20%3Cstop%20offset%3D%270%25%27%20stop-color%3D%27%2307111d%27/%3E%0A%20%20%20%20%3Cstop%20offset%3D%27100%25%27%20stop-color%3D%27%23194a76%27/%3E%0A%20%20%3C/linearGradient%3E%0A%3C/defs%3E%0A%3Crect%20width%3D%271200%27%20height%3D%27630%27%20fill%3D%27url%28%23bg%29%27/%3E%0A%3Ccircle%20cx%3D%271008%27%20cy%3D%27108%27%20r%3D%27176%27%20fill%3D%27%2322d3ee%27%20fill-opacity%3D%270.14%27/%3E%0A%3Ccircle%20cx%3D%27184%27%20cy%3D%27520%27%20r%3D%27220%27%20fill%3D%27%238b5cf6%27%20fill-opacity%3D%270.16%27/%3E%0A%3Crect%20x%3D%2778%27%20y%3D%2786%27%20width%3D%271044%27%20height%3D%27458%27%20rx%3D%2730%27%20fill%3D%27%230b1220%27%20stroke%3D%27%2338bdf8%27%20stroke-opacity%3D%270.35%27/%3E%0A%3Ctext%20x%3D%27126%27%20y%3D%27164%27%20fill%3D%27white%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2738%27%20font-weight%3D%27700%27%3EArtifact%20Retention%20Budgets%20for%3C/text%3E%0A%3Ctext%20x%3D%27126%27%20y%3D%27224%27%20fill%3D%27%2393c5fd%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2738%27%20font-weight%3D%27700%27%3EAI%20Coding%20Agents%20Without%20Evidence%20Hoarding%3C/text%3E%0A%3Ctext%20x%3D%27126%27%20y%3D%27298%27%20fill%3D%27%23cbd5e1%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2728%27%3EKeep%20the%20screenshots%2C%20traces%2C%20and%20logs%20that%20help%20humans%20review%20and%20debug%2C%3C/text%3E%0A%3Ctext%20x%3D%27126%27%20y%3D%27334%27%20fill%3D%27%23cbd5e1%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2728%27%3Ethen%20expire%20or%20compact%20everything%20else%20before%20storage%20and%20privacy%20costs%20pile%20up.%3C/text%3E%0A%3Crect%20x%3D%27126%27%20y%3D%27388%27%20width%3D%27370%27%20height%3D%2754%27%20rx%3D%2714%27%20fill%3D%27%23111c2d%27%20stroke%3D%27%2367e8f9%27%20stroke-opacity%3D%270.45%27/%3E%0A%3Ctext%20x%3D%27152%27%20y%3D%27423%27%20fill%3D%27%2367e8f9%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2724%27%3Eevidence%20should%20age%20on%20purpose%2C%20not%20by%20accident%3C/text%3E%0A%3Crect%20x%3D%27776%27%20y%3D%27166%27%20width%3D%27258%27%20height%3D%2758%27%20rx%3D%2714%27%20fill%3D%27%230d1728%27%20stroke%3D%27%2322d3ee%27%20stroke-opacity%3D%270.45%27/%3E%3Ctext%20x%3D%27824%27%20y%3D%27204%27%20fill%3D%27%23bae6fd%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2723%27%3Eraw%20artifacts%3C/text%3E%0A%3Crect%20x%3D%27776%27%20y%3D%27266%27%20width%3D%27258%27%20height%3D%2758%27%20rx%3D%2714%27%20fill%3D%27%230d1728%27%20stroke%3D%27%2322d3ee%27%20stroke-opacity%3D%270.45%27/%3E%3Ctext%20x%3D%27816%27%20y%3D%27304%27%20fill%3D%27%23bae6fd%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2723%27%3Ecompact%20bundle%3C/text%3E%0A%3Crect%20x%3D%27776%27%20y%3D%27366%27%20width%3D%27258%27%20height%3D%2758%27%20rx%3D%2714%27%20fill%3D%27%230d1728%27%20stroke%3D%27%23a78bfa%27%20stroke-opacity%3D%270.45%27/%3E%3Ctext%20x%3D%27818%27%20y%3D%27404%27%20fill%3D%27%23ddd6fe%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2723%27%3Eexpiry%20policy%3C/text%3E%0A%3C/svg%3E", "url": "https://negiadventures.github.io/blog/artifact-retention-budgets-ai-coding-agents.html", "datePublished": "2026-06-18", "author": {"@type": "Person", "name": "Anirudh Negi", "url": "https://negiadventures.github.io"}, "publisher": {"@type": "Person", "name": "Anirudh Negi", "url": "https://negiadventures.github.io"}, "keywords": ["AI Coding Agents", "Artifact Retention", "Evidence Ops", "Reviewability", "Storage"]}</script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../stylesheets/stylesheet.css?v=5" media="screen">
+    <style>
+      .blog-post { max-width: 860px; margin: 0 auto; padding: 60px 20px; }
+      .blog-post-header { margin-bottom: 40px; }
+      .blog-post-nav { margin-bottom: 30px; }
+      .blog-post-nav a { color: var(--accent-strong); font-size: 0.95rem; }
+      .blog-post-nav a:hover { color: var(--accent); }
+      .blog-post-title { font-size: 2.5rem; margin-bottom: 16px; }
+      .blog-post-meta { display: flex; gap: 20px; color: var(--text-muted); font-size: 0.95rem; margin-bottom: 30px; flex-wrap: wrap; }
+      .blog-post-image { width: 100%; height: 300px; object-fit: cover; border-radius: 16px; margin-bottom: 30px; border: 1px solid var(--border); background: var(--bg-alt); }
+      .blog-post-content h2 { font-size: 1.65rem; margin-top: 42px; margin-bottom: 16px; color: var(--text-light); }
+      .blog-post-content h3 { font-size: 1.25rem; margin-top: 30px; margin-bottom: 12px; color: var(--text-light); }
+      .blog-post-content p, .blog-post-content li { line-height: 1.8; color: var(--text-muted); }
+      .blog-post-content ul, .blog-post-content ol { margin-bottom: 20px; padding-left: 24px; }
+      .code-block { background: var(--bg-alt); border: 1px solid var(--border); border-radius: 12px; padding: 20px; margin: 20px 0; overflow-x: auto; }
+      .code-block pre { margin: 0; font-family: var(--mono); font-size: 0.9rem; line-height: 1.6; color: var(--text-light); }
+      .code-block code { color: var(--accent-strong); }
+      .diagram-card, .callout, .table-wrap { background: var(--card); border: 1px solid var(--border); border-radius: 16px; padding: 20px; margin: 24px 0; }
+      .callout strong { color: var(--text-light); }
+      .callout.pitfall { border-color: rgba(248, 113, 113, 0.35); background: rgba(127, 29, 29, 0.14); }
+      .callout.best { border-color: rgba(34, 197, 94, 0.35); background: rgba(20, 83, 45, 0.14); }
+      table { width: 100%; border-collapse: collapse; font-size: 0.95rem; }
+      th, td { text-align: left; padding: 12px 14px; border-bottom: 1px solid var(--border); color: var(--text-muted); vertical-align: top; }
+      th { color: var(--text-light); }
+      .blog-post-tags { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 40px; padding-top: 30px; border-top: 1px solid var(--border); }
+      .blog-post-tag { background: var(--accent-soft); color: var(--accent-strong); border-radius: 999px; padding: 6px 14px; font-size: 0.85rem; font-family: var(--mono); border: 1px solid transparent; }
+      .blog-footer { margin-top: 60px; padding-top: 30px; border-top: 1px solid var(--border); text-align: center; }
+      .blog-footer a { color: var(--accent-strong); }
+      @media (max-width: 768px) { .blog-post { padding: 40px 16px; } .blog-post-title { font-size: 2rem; } .blog-post-image { height: 220px; } }
+    </style>
+  </head>
+  <body>
+    <a href="../index.html#main" class="skip-link">Skip to main content</a>
+    <header class="site-header">
+      <div class="container blog-post">
+        <div class="blog-post-nav"><a href="index.html">&larr; Back to All Posts</a></div>
+        <div class="blog-post-header">
+          <h1 class="blog-post-title">Artifact Retention Budgets for AI Coding Agents Without Evidence Hoarding</h1>
+          <div class="blog-post-meta">
+            <span>June 18, 2026</span>
+            <span>&bull;</span>
+            <span>11 min read</span>
+            <span>&bull;</span>
+            <span>Evidence Ops</span>
+          </div>
+          <img src="data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A//www.w3.org/2000/svg%27%20viewBox%3D%270%200%201200%20630%27%3E%0A%3Cdefs%3E%0A%20%20%3ClinearGradient%20id%3D%27bg%27%20x1%3D%270%27%20x2%3D%271%27%20y1%3D%270%27%20y2%3D%271%27%3E%0A%20%20%20%20%3Cstop%20offset%3D%270%25%27%20stop-color%3D%27%2307111d%27/%3E%0A%20%20%20%20%3Cstop%20offset%3D%27100%25%27%20stop-color%3D%27%23194a76%27/%3E%0A%20%20%3C/linearGradient%3E%0A%3C/defs%3E%0A%3Crect%20width%3D%271200%27%20height%3D%27630%27%20fill%3D%27url%28%23bg%29%27/%3E%0A%3Ccircle%20cx%3D%271008%27%20cy%3D%27108%27%20r%3D%27176%27%20fill%3D%27%2322d3ee%27%20fill-opacity%3D%270.14%27/%3E%0A%3Ccircle%20cx%3D%27184%27%20cy%3D%27520%27%20r%3D%27220%27%20fill%3D%27%238b5cf6%27%20fill-opacity%3D%270.16%27/%3E%0A%3Crect%20x%3D%2778%27%20y%3D%2786%27%20width%3D%271044%27%20height%3D%27458%27%20rx%3D%2730%27%20fill%3D%27%230b1220%27%20stroke%3D%27%2338bdf8%27%20stroke-opacity%3D%270.35%27/%3E%0A%3Ctext%20x%3D%27126%27%20y%3D%27164%27%20fill%3D%27white%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2738%27%20font-weight%3D%27700%27%3EArtifact%20Retention%20Budgets%20for%3C/text%3E%0A%3Ctext%20x%3D%27126%27%20y%3D%27224%27%20fill%3D%27%2393c5fd%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2738%27%20font-weight%3D%27700%27%3EAI%20Coding%20Agents%20Without%20Evidence%20Hoarding%3C/text%3E%0A%3Ctext%20x%3D%27126%27%20y%3D%27298%27%20fill%3D%27%23cbd5e1%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2728%27%3EKeep%20the%20screenshots%2C%20traces%2C%20and%20logs%20that%20help%20humans%20review%20and%20debug%2C%3C/text%3E%0A%3Ctext%20x%3D%27126%27%20y%3D%27334%27%20fill%3D%27%23cbd5e1%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2728%27%3Ethen%20expire%20or%20compact%20everything%20else%20before%20storage%20and%20privacy%20costs%20pile%20up.%3C/text%3E%0A%3Crect%20x%3D%27126%27%20y%3D%27388%27%20width%3D%27370%27%20height%3D%2754%27%20rx%3D%2714%27%20fill%3D%27%23111c2d%27%20stroke%3D%27%2367e8f9%27%20stroke-opacity%3D%270.45%27/%3E%0A%3Ctext%20x%3D%27152%27%20y%3D%27423%27%20fill%3D%27%2367e8f9%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2724%27%3Eevidence%20should%20age%20on%20purpose%2C%20not%20by%20accident%3C/text%3E%0A%3Crect%20x%3D%27776%27%20y%3D%27166%27%20width%3D%27258%27%20height%3D%2758%27%20rx%3D%2714%27%20fill%3D%27%230d1728%27%20stroke%3D%27%2322d3ee%27%20stroke-opacity%3D%270.45%27/%3E%3Ctext%20x%3D%27824%27%20y%3D%27204%27%20fill%3D%27%23bae6fd%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2723%27%3Eraw%20artifacts%3C/text%3E%0A%3Crect%20x%3D%27776%27%20y%3D%27266%27%20width%3D%27258%27%20height%3D%2758%27%20rx%3D%2714%27%20fill%3D%27%230d1728%27%20stroke%3D%27%2322d3ee%27%20stroke-opacity%3D%270.45%27/%3E%3Ctext%20x%3D%27816%27%20y%3D%27304%27%20fill%3D%27%23bae6fd%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2723%27%3Ecompact%20bundle%3C/text%3E%0A%3Crect%20x%3D%27776%27%20y%3D%27366%27%20width%3D%27258%27%20height%3D%2758%27%20rx%3D%2714%27%20fill%3D%27%230d1728%27%20stroke%3D%27%23a78bfa%27%20stroke-opacity%3D%270.45%27/%3E%3Ctext%20x%3D%27818%27%20y%3D%27404%27%20fill%3D%27%23ddd6fe%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2723%27%3Eexpiry%20policy%3C/text%3E%0A%3C/svg%3E" alt="Artifact Retention Budgets for AI Coding Agents Without Evidence Hoarding" class="blog-post-image">
+        </div>
+        <div class="blog-post-content">
+          <p>A lot of AI coding systems get the first half of reviewability right. They save everything. Screenshots, traces, test logs, shell output, prompt packets, diff previews, replay fixtures. Then a month later the storage bucket is huge, search is slow, privacy review is tense, and nobody knows which artifacts still matter.</p>
+          <p>The opposite failure is just as bad. Teams prune aggressively, then discover the one flaky browser trace or verifier log they needed is already gone when a regression lands. That is how “we have observability” quietly turns into “we had observability for 48 hours.”</p>
+          <p>What matters is not maximum retention. It is intentional retention. This guide walks through a practical artifact budget model for AI coding agents, how to compact evidence without losing review value, and what I would absolutely not keep forever.</p>
+
+          <h2>Why this matters</h2>
+          <p>AI coding agents create more side-channel evidence than human developers do in a normal commit flow. A single run can produce model request metadata, patch previews, verifier logs, browser screenshots, and failure packets for retries or incident replay.</p>
+          <p>That evidence is useful for PR review, incident response, and governance. But keeping every raw artifact forever is a bad production habit. Storage cost rises, privacy risk expands, and retrieval quality gets worse because the evidence index fills up with stale junk.</p>
+
+          <h2>Architecture or workflow overview</h2>
+          <div class="diagram-card">
+            <div class="code-block"><pre><code>Agent run
+  -> Artifact collector
+     -> Raw artifact store (short TTL)
+     -> Compaction worker
+        -> Review bundle (medium TTL)
+        -> Redacted long-term ledger
+     -> Expiry sweeper</code></pre></div>
+          </div>
+          <div class="code-block"><pre><code>flowchart LR
+    A[Agent run] --> B[Artifact collector]
+    B --> C[Raw artifact store]
+    C --> D[Compaction worker]
+    D --> E[Review bundle]
+    D --> F[Redacted long-term ledger]
+    C --> G[Short TTL raw bucket]
+    E --> H[PR review and incident debugging]
+    F --> I[Searchable audit history]
+    G --> J[Expiry sweeper]</code></pre></div>
+          <p>The workflow I like has three lanes: a raw lane with high detail and short TTL, a compact review bundle lane for humans, and a long-term ledger lane with only the metadata worth keeping.</p>
+
+          <h2>Implementation details</h2>
+          <h3>1. Define a retention manifest per artifact class</h3>
+          <p>The easiest mistake is storing everything with one TTL. Different artifact classes have different value curves.</p>
+          <div class="code-block"><pre><code>artifact_classes:
+  browser_trace:
+    raw_ttl_days: 7
+    compact_ttl_days: 30
+    long_term: false
+    redact: [cookies, auth_headers]
+  verifier_log:
+    raw_ttl_days: 14
+    compact_ttl_days: 90
+    long_term: true
+    compact_strategy: summarize_failures
+  patch_packet:
+    raw_ttl_days: 30
+    compact_ttl_days: 180
+    long_term: true
+    compact_strategy: keep_diff_and_checks
+  model_io:
+    raw_ttl_days: 3
+    compact_ttl_days: 14
+    long_term: false
+    redact: [user_content, secrets]</code></pre></div>
+          <p>Browser traces are large and privacy-sensitive, verifier logs stay useful longer, and raw model I/O is usually the first thing I delete unless there is a hard compliance reason to keep it.</p>
+
+          <h3>2. Emit compact evidence bundles for the runs humans will revisit</h3>
+          <div class="code-block"><pre><code>{
+  "run_id": "run_2026_06_18_1842",
+  "repo": "negiadventures/negiadventures.github.io",
+  "commit": "abc1234",
+  "task": "publish daily technical blog post",
+  "artifacts": {
+    "diff": "artifacts/diff.patch",
+    "tests": [
+      {
+        "name": "html-link-check",
+        "status": "passed"
+      },
+      {
+        "name": "sitemap-validate",
+        "status": "passed"
+      }
+    ],
+    "screenshots": [
+      "artifacts/blog-card.png"
+    ],
+    "key_logs": [
+      "artifacts/build-summary.log"
+    ]
+  },
+  "risk_flags": [
+    "direct_master_push"
+  ],
+  "retention": {
+    "raw_expires_at": "2026-06-25T12:00:00Z",
+    "bundle_expires_at": "2026-09-16T12:00:00Z"
+  }
+}</code></pre></div>
+          <p>This bundle is what I would link from a PR, incident ticket, or run history page. It should be compact, searchable, and obvious to review.</p>
+
+          <h3>3. Run compaction as a first-class worker</h3>
+          <div class="code-block"><pre><code>from datetime import datetime, timedelta
+
+RETENTION_RULES = {
+    "browser_trace": {"raw_days": 7, "compact_days": 30},
+    "verifier_log": {"raw_days": 14, "compact_days": 90},
+    "patch_packet": {"raw_days": 30, "compact_days": 180},
+}
+
+def plan_retention(artifact_type: str, created_at: datetime) -> dict:
+    rule = RETENTION_RULES[artifact_type]
+    return {
+        "raw_delete_at": created_at + timedelta(days=rule["raw_days"]),
+        "bundle_delete_at": created_at + timedelta(days=rule["compact_days"]),
+    }
+
+
+def should_compact(run_record: dict) -> bool:
+    return (
+        run_record["status"] in {"failed", "merged", "escalated"}
+        or run_record.get("risk_score", 0) >= 7
+    )</code></pre></div>
+          <p>Retention only works when compaction is part of the pipeline. Otherwise cleanup becomes a promise that slowly dies in a backlog.</p>
+
+          <h3>4. Keep a terminal-friendly retention summary</h3>
+          <div class="code-block"><pre><code>$ retention-sweeper --window 24h
+run_1842  raw=deleted  compact=kept   ledger=kept   reason=merged_with_risk_flag
+run_1843  raw=kept     compact=queued ledger=queued reason=failed_browser_verifier
+run_1844  raw=deleted  compact=none   ledger=kept   reason=low_risk_pass
+bucket_savings=18.4GB
+redaction_failures=0</code></pre></div>
+          <p>If this summary is missing, operators stop trusting the cleanup job and start keeping everything forever “just in case.”</p>
+
+          <h2>Comparison table</h2>
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr><th>Strategy</th><th>Review quality</th><th>Storage cost</th><th>Privacy exposure</th><th>Debug value after 30 days</th></tr>
+              </thead>
+              <tbody>
+                <tr><td>Keep everything forever</td><td>High at first, noisy later</td><td>Very high</td><td>Very high</td><td>High, but expensive and messy</td></tr>
+                <tr><td>Summary only</td><td>Medium</td><td>Low</td><td>Low</td><td>Poor for real replay</td></tr>
+                <tr><td>Compact and expire by class</td><td>High</td><td>Moderate</td><td>Moderate to low</td><td>High where it matters</td></tr>
+              </tbody>
+            </table>
+          </div>
+
+          <h2>What went wrong and the tradeoffs</h2>
+          <h3>Failure mode 1: raw prompt retention becomes a secret leak</h3>
+          <p>Teams often justify storing model I/O because it helps with prompt debugging. That is true right until a tool output contains a token, customer payload, or internal URL that should never have lived in long-term storage.</p>
+          <p>My rule is simple: raw model I/O should expire quickly unless it already passed a redaction boundary. If you need long-term debugging, keep normalized fields and hashes, not raw payloads.</p>
+
+          <h3>Failure mode 2: over-compaction destroys replay value</h3>
+          <p>If a browser failure becomes a one-line summary like “selector timeout in checkout flow,” you threw away the evidence that actually mattered. High-risk or user-visible runs still need one durable trace or screenshot path.</p>
+
+          <h3>Failure mode 3: retention ignores merge outcome</h3>
+          <p>A failed run and a merged run should not age the same way. Merged risky changes deserve longer-lived proof. Rejected low-signal attempts usually do not.</p>
+
+          <div class="callout pitfall"><strong>Pitfall:</strong> If your search index still points at expired artifacts without saying so, operators assume the system is broken instead of intentionally pruned.</div>
+          <div class="callout best"><strong>Best practice:</strong> Store retention state next to every artifact reference, and update search documents when compaction or deletion happens.</div>
+
+          <h2>Practical checklist</h2>
+          <ul>
+            <li>Split artifacts into raw, compact bundle, and long-term ledger lanes.</li>
+            <li>Set TTLs by artifact class, not one global retention number.</li>
+            <li>Redact before long-term storage, not after an incident.</li>
+            <li>Keep one reviewer-friendly bundle per important run.</li>
+            <li>Extend retention for merged, escalated, or incident-linked runs.</li>
+            <li>Make retention sweeps observable with small terminal summaries.</li>
+            <li>Mark expired artifacts clearly in search and audit views.</li>
+            <li>Review retention cost and privacy posture monthly.</li>
+          </ul>
+
+          <h2>Conclusion</h2>
+          <p>AI coding agents produce a lot of evidence. That is good, as long as the evidence ages intentionally. The goal is not infinite retention. The goal is to keep the artifacts that still explain why a change was safe, why a run failed, and what a human needs to trust the system later.</p>
+          <p>If I were setting this up from scratch, I would start with class-based TTLs, compact review bundles, and aggressive deletion of raw model I/O. That gets most of the reviewability upside without paying the long-term tax of evidence hoarding.</p>
+
+          <div class="blog-post-tags"><span class="blog-post-tag">AI Coding Agents</span><span class="blog-post-tag">Artifact Retention</span><span class="blog-post-tag">Evidence Ops</span><span class="blog-post-tag">Reviewability</span><span class="blog-post-tag">Storage</span></div>
+        </div>
+        <div class="blog-footer">
+          <p><a href="index.html">Back to Blog</a> &bull; <a href="../index.html">Back to Portfolio</a></p>
+          <p style="margin-top: 16px; font-size: 0.9rem;"><em>Technical notes on practical AI systems, workflows, and reliability tradeoffs.</em></p>
+        </div>
+      </div>
+    </header>
+  </body>
+</html>

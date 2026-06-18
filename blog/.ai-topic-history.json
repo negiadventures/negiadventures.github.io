@@ -1,6 +1,14 @@
 {
   "topics": [
     {
+      "date": "2026-06-18",
+      "skill": "Artifact retention budgets for AI coding agents",
+      "topic": "Using class-based TTLs, compact review bundles, redaction boundaries, merge-aware retention, and expiry sweepers so AI coding agent evidence stays useful for review and incident response without turning storage and privacy risk into a quiet tax",
+      "slug": "artifact-retention-budgets-ai-coding-agents",
+      "title": "Artifact Retention Budgets for AI Coding Agents Without Evidence Hoarding",
+      "summary": "A practical guide to setting artifact retention budgets for AI coding agents so logs, traces, screenshots, and test bundles stay useful for review and incident response without turning storage, privacy, and retrieval costs into a quiet tax."
+    },
+    {
       "date": "2026-06-17",
       "skill": "Diff-scoped test selection for AI coding agents",
       "topic": "Using changed-file fingerprints, dependency graph expansion, coverage fallbacks, flaky-test quarantines, and confidence thresholds so AI coding agents can verify patches quickly without paying the latency and noise cost of running the full test suite on every small edit",
