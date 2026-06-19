@@ -1,6 +1,14 @@
 {
   "topics": [
     {
+      "date": "2026-06-19",
+      "skill": "Checkpointed workspaces for AI coding agents",
+      "topic": "Using filesystem snapshots, resumable task manifests, verifier-aware rollback points, and diff checkpoints so AI coding agents can recover from bad edits or broken experiments without restarting every long debug loop from scratch",
+      "slug": "checkpointed-workspaces-ai-coding-agents",
+      "title": "Checkpointed Workspaces for AI Coding Agents Without Restarting Every Debug Loop",
+      "summary": "A practical guide to checkpointed workspaces for AI coding agents using filesystem snapshots, resumable manifests, rollback points, and verifier-aware recovery so long debugging loops survive bad edits without wasting time on full restarts."
+    },
+    {
       "date": "2026-06-18",
       "skill": "Artifact retention budgets for AI coding agents",
       "topic": "Using class-based TTLs, compact review bundles, redaction boundaries, merge-aware retention, and expiry sweepers so AI coding agent evidence stays useful for review and incident response without turning storage and privacy risk into a quiet tax",
