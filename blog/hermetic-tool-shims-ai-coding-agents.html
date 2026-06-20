@@ -1,0 +1,217 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="Use hermetic wrapper scripts, environment pinsets, path allowlists, and normalized tool output so AI coding agents call CLIs reproducibly across laptops, CI, and remote sandboxes.">
+    <meta name="author" content="Anirudh Negi">
+    <title>Hermetic Tool Shims for AI Coding Agents Without Laptop-Specific Surprises | Anirudh Negi</title>
+    <link rel="icon" type="image/svg+xml" href="../images/favicon.svg">
+    <link rel="canonical" href="https://negiadventures.github.io/blog/hermetic-tool-shims-ai-coding-agents.html">
+    <meta property="og:type" content="article">
+    <meta property="og:url" content="https://negiadventures.github.io/blog/hermetic-tool-shims-ai-coding-agents.html">
+    <meta property="og:title" content="Hermetic Tool Shims for AI Coding Agents Without Laptop-Specific Surprises | Anirudh Negi">
+    <meta property="og:description" content="Use hermetic wrapper scripts, environment pinsets, path allowlists, and normalized tool output so AI coding agents call CLIs reproducibly across laptops, CI, and remote sandboxes.">
+    <meta property="og:image" content="data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A//www.w3.org/2000/svg%27%20viewBox%3D%270%200%201200%20630%27%3E%3Cdefs%3E%3ClinearGradient%20id%3D%27bg%27%20x1%3D%270%27%20x2%3D%271%27%20y1%3D%270%27%20y2%3D%271%27%3E%3Cstop%20offset%3D%270%25%27%20stop-color%3D%27%2307111d%27/%3E%3Cstop%20offset%3D%27100%25%27%20stop-color%3D%27%231b4c73%27/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect%20width%3D%271200%27%20height%3D%27630%27%20fill%3D%27url%28%23bg%29%27/%3E%3Ccircle%20cx%3D%271006%27%20cy%3D%27112%27%20r%3D%27176%27%20fill%3D%27%2322d3ee%27%20fill-opacity%3D%270.14%27/%3E%3Ccircle%20cx%3D%27190%27%20cy%3D%27520%27%20r%3D%27220%27%20fill%3D%27%238b5cf6%27%20fill-opacity%3D%270.16%27/%3E%3Crect%20x%3D%2778%27%20y%3D%2786%27%20width%3D%271044%27%20height%3D%27458%27%20rx%3D%2730%27%20fill%3D%27%230b1220%27%20stroke%3D%27%2338bdf8%27%20stroke-opacity%3D%270.35%27/%3E%3Ctext%20x%3D%27126%27%20y%3D%27164%27%20fill%3D%27white%27%20font-family%3D%27Arial,%20sans-serif%27%20font-size%3D%2738%27%20font-weight%3D%27700%27%3EHermetic%20Tool%20Shims%20for%20AI%20Coding%20Agents%3C/text%3E%3Ctext%20x%3D%27126%27%20y%3D%27224%27%20fill%3D%27%2393c5fd%27%20font-family%3D%27Arial,%20sans-serif%27%20font-size%3D%2738%27%20font-weight%3D%27700%27%3EWithout%20Laptop-Specific%20Surprises%3C/text%3E%3Ctext%20x%3D%27126%27%20y%3D%27298%27%20fill%3D%27%23cbd5e1%27%20font-family%3D%27Arial,%20sans-serif%27%20font-size%3D%2728%27%3EWrap%20git,%20node,%20pytest,%20and%20repo%20utilities%20behind%20one%20stable%20execution%20lane%3C/text%3E%3Ctext%20x%3D%27126%27%20y%3D%27334%27%20fill%3D%27%23cbd5e1%27%20font-family%3D%27Arial,%20sans-serif%27%20font-size%3D%2728%27%3Eso%20agent%20runs%20behave%20the%20same%20on%20a%20laptop,%20in%20CI,%20and%20inside%20remote%20sandboxes.%3C/text%3E%3Crect%20x%3D%27126%27%20y%3D%27388%27%20width%3D%27404%27%20height%3D%2754%27%20rx%3D%2714%27%20fill%3D%27%23111c2d%27%20stroke%3D%27%2367e8f9%27%20stroke-opacity%3D%270.45%27/%3E%3Ctext%20x%3D%27152%27%20y%3D%27423%27%20fill%3D%27%2367e8f9%27%20font-family%3D%27Arial,%20sans-serif%27%20font-size%3D%2724%27%3Ereproducibility%20starts%20at%20the%20tool%20boundary,%20not%20inside%20the%20prompt%3C/text%3E%3Crect%20x%3D%27776%27%20y%3D%27166%27%20width%3D%27258%27%20height%3D%2758%27%20rx%3D%2714%27%20fill%3D%27%230d1728%27%20stroke%3D%27%2322d3ee%27%20stroke-opacity%3D%270.45%27/%3E%3Ctext%20x%3D%27826%27%20y%3D%27204%27%20fill%3D%27%23bae6fd%27%20font-family%3D%27Arial,%20sans-serif%27%20font-size%3D%2723%27%3Eshim%20entrypoint%3C/text%3E%3Crect%20x%3D%27776%27%20y%3D%27266%27%20width%3D%27258%27%20height%3D%2758%27%20rx%3D%2714%27%20fill%3D%27%230d1728%27%20stroke%3D%27%2322d3ee%27%20stroke-opacity%3D%270.45%27/%3E%3Ctext%20x%3D%27812%27%20y%3D%27304%27%20fill%3D%27%23bae6fd%27%20font-family%3D%27Arial,%20sans-serif%27%20font-size%3D%2723%27%3Epinned%20env%3C/text%3E%3Crect%20x%3D%27776%27%20y%3D%27366%27%20width%3D%27258%27%20height%3D%2758%27%20rx%3D%2714%27%20fill%3D%27%230d1728%27%20stroke%3D%27%23a78bfa%27%20stroke-opacity%3D%270.45%27/%3E%3Ctext%20x%3D%27806%27%20y%3D%27404%27%20fill%3D%27%23ddd6fe%27%20font-family%3D%27Arial,%20sans-serif%27%20font-size%3D%2723%27%3Enormalized%20output%3C/text%3E%3C/svg%3E">
+    <meta property="article:published_time" content="2026-06-20">
+    <meta property="article:author" content="Anirudh Negi">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:url" content="https://negiadventures.github.io/blog/hermetic-tool-shims-ai-coding-agents.html">
+    <meta name="twitter:title" content="Hermetic Tool Shims for AI Coding Agents Without Laptop-Specific Surprises | Anirudh Negi">
+    <meta name="twitter:description" content="Use hermetic wrapper scripts, environment pinsets, path allowlists, and normalized tool output so AI coding agents call CLIs reproducibly across laptops, CI, and remote sandboxes.">
+    <meta name="twitter:image" content="data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A//www.w3.org/2000/svg%27%20viewBox%3D%270%200%201200%20630%27%3E%3Cdefs%3E%3ClinearGradient%20id%3D%27bg%27%20x1%3D%270%27%20x2%3D%271%27%20y1%3D%270%27%20y2%3D%271%27%3E%3Cstop%20offset%3D%270%25%27%20stop-color%3D%27%2307111d%27/%3E%3Cstop%20offset%3D%27100%25%27%20stop-color%3D%27%231b4c73%27/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect%20width%3D%271200%27%20height%3D%27630%27%20fill%3D%27url%28%23bg%29%27/%3E%3Ccircle%20cx%3D%271006%27%20cy%3D%27112%27%20r%3D%27176%27%20fill%3D%27%2322d3ee%27%20fill-opacity%3D%270.14%27/%3E%3Ccircle%20cx%3D%27190%27%20cy%3D%27520%27%20r%3D%27220%27%20fill%3D%27%238b5cf6%27%20fill-opacity%3D%270.16%27/%3E%3Crect%20x%3D%2778%27%20y%3D%2786%27%20width%3D%271044%27%20height%3D%27458%27%20rx%3D%2730%27%20fill%3D%27%230b1220%27%20stroke%3D%27%2338bdf8%27%20stroke-opacity%3D%270.35%27/%3E%3Ctext%20x%3D%27126%27%20y%3D%27164%27%20fill%3D%27white%27%20font-family%3D%27Arial,%20sans-serif%27%20font-size%3D%2738%27%20font-weight%3D%27700%27%3EHermetic%20Tool%20Shims%20for%20AI%20Coding%20Agents%3C/text%3E%3Ctext%20x%3D%27126%27%20y%3D%27224%27%20fill%3D%27%2393c5fd%27%20font-family%3D%27Arial,%20sans-serif%27%20font-size%3D%2738%27%20font-weight%3D%27700%27%3EWithout%20Laptop-Specific%20Surprises%3C/text%3E%3Ctext%20x%3D%27126%27%20y%3D%27298%27%20fill%3D%27%23cbd5e1%27%20font-family%3D%27Arial,%20sans-serif%27%20font-size%3D%2728%27%3EWrap%20git,%20node,%20pytest,%20and%20repo%20utilities%20behind%20one%20stable%20execution%20lane%3C/text%3E%3Ctext%20x%3D%27126%27%20y%3D%27334%27%20fill%3D%27%23cbd5e1%27%20font-family%3D%27Arial,%20sans-serif%27%20font-size%3D%2728%27%3Eso%20agent%20runs%20behave%20the%20same%20on%20a%20laptop,%20in%20CI,%20and%20inside%20remote%20sandboxes.%3C/text%3E%3Crect%20x%3D%27126%27%20y%3D%27388%27%20width%3D%27404%27%20height%3D%2754%27%20rx%3D%2714%27%20fill%3D%27%23111c2d%27%20stroke%3D%27%2367e8f9%27%20stroke-opacity%3D%270.45%27/%3E%3Ctext%20x%3D%27152%27%20y%3D%27423%27%20fill%3D%27%2367e8f9%27%20font-family%3D%27Arial,%20sans-serif%27%20font-size%3D%2724%27%3Ereproducibility%20starts%20at%20the%20tool%20boundary,%20not%20inside%20the%20prompt%3C/text%3E%3Crect%20x%3D%27776%27%20y%3D%27166%27%20width%3D%27258%27%20height%3D%2758%27%20rx%3D%2714%27%20fill%3D%27%230d1728%27%20stroke%3D%27%2322d3ee%27%20stroke-opacity%3D%270.45%27/%3E%3Ctext%20x%3D%27826%27%20y%3D%27204%27%20fill%3D%27%23bae6fd%27%20font-family%3D%27Arial,%20sans-serif%27%20font-size%3D%2723%27%3Eshim%20entrypoint%3C/text%3E%3Crect%20x%3D%27776%27%20y%3D%27266%27%20width%3D%27258%27%20height%3D%2758%27%20rx%3D%2714%27%20fill%3D%27%230d1728%27%20stroke%3D%27%2322d3ee%27%20stroke-opacity%3D%270.45%27/%3E%3Ctext%20x%3D%27812%27%20y%3D%27304%27%20fill%3D%27%23bae6fd%27%20font-family%3D%27Arial,%20sans-serif%27%20font-size%3D%2723%27%3Epinned%20env%3C/text%3E%3Crect%20x%3D%27776%27%20y%3D%27366%27%20width%3D%27258%27%20height%3D%2758%27%20rx%3D%2714%27%20fill%3D%27%230d1728%27%20stroke%3D%27%23a78bfa%27%20stroke-opacity%3D%270.45%27/%3E%3Ctext%20x%3D%27806%27%20y%3D%27404%27%20fill%3D%27%23ddd6fe%27%20font-family%3D%27Arial,%20sans-serif%27%20font-size%3D%2723%27%3Enormalized%20output%3C/text%3E%3C/svg%3E">
+    <script type="application/ld+json">{"@context":"https://schema.org","@type":"BlogPosting","headline":"Hermetic Tool Shims for AI Coding Agents Without Laptop-Specific Surprises","description":"Use hermetic wrapper scripts, environment pinsets, path allowlists, and normalized tool output so AI coding agents call CLIs reproducibly across laptops, CI, and remote sandboxes.","image":"data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A//www.w3.org/2000/svg%27%20viewBox%3D%270%200%201200%20630%27%3E%3Cdefs%3E%3ClinearGradient%20id%3D%27bg%27%20x1%3D%270%27%20x2%3D%271%27%20y1%3D%270%27%20y2%3D%271%27%3E%3Cstop%20offset%3D%270%25%27%20stop-color%3D%27%2307111d%27/%3E%3Cstop%20offset%3D%27100%25%27%20stop-color%3D%27%231b4c73%27/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect%20width%3D%271200%27%20height%3D%27630%27%20fill%3D%27url%28%23bg%29%27/%3E%3Ccircle%20cx%3D%271006%27%20cy%3D%27112%27%20r%3D%27176%27%20fill%3D%27%2322d3ee%27%20fill-opacity%3D%270.14%27/%3E%3Ccircle%20cx%3D%27190%27%20cy%3D%27520%27%20r%3D%27220%27%20fill%3D%27%238b5cf6%27%20fill-opacity%3D%270.16%27/%3E%3Crect%20x%3D%2778%27%20y%3D%2786%27%20width%3D%271044%27%20height%3D%27458%27%20rx%3D%2730%27%20fill%3D%27%230b1220%27%20stroke%3D%27%2338bdf8%27%20stroke-opacity%3D%270.35%27/%3E%3Ctext%20x%3D%27126%27%20y%3D%27164%27%20fill%3D%27white%27%20font-family%3D%27Arial,%20sans-serif%27%20font-size%3D%2738%27%20font-weight%3D%27700%27%3EHermetic%20Tool%20Shims%20for%20AI%20Coding%20Agents%3C/text%3E%3Ctext%20x%3D%27126%27%20y%3D%27224%27%20fill%3D%27%2393c5fd%27%20font-family%3D%27Arial,%20sans-serif%27%20font-size%3D%2738%27%20font-weight%3D%27700%27%3EWithout%20Laptop-Specific%20Surprises%3C/text%3E%3Ctext%20x%3D%27126%27%20y%3D%27298%27%20fill%3D%27%23cbd5e1%27%20font-family%3D%27Arial,%20sans-serif%27%20font-size%3D%2728%27%3EWrap%20git,%20node,%20pytest,%20and%20repo%20utilities%20behind%20one%20stable%20execution%20lane%3C/text%3E%3Ctext%20x%3D%27126%27%20y%3D%27334%27%20fill%3D%27%23cbd5e1%27%20font-family%3D%27Arial,%20sans-serif%27%20font-size%3D%2728%27%3Eso%20agent%20runs%20behave%20the%20same%20on%20a%20laptop,%20in%20CI,%20and%20inside%20remote%20sandboxes.%3C/text%3E%3Crect%20x%3D%27126%27%20y%3D%27388%27%20width%3D%27404%27%20height%3D%2754%27%20rx%3D%2714%27%20fill%3D%27%23111c2d%27%20stroke%3D%27%2367e8f9%27%20stroke-opacity%3D%270.45%27/%3E%3Ctext%20x%3D%27152%27%20y%3D%27423%27%20fill%3D%27%2367e8f9%27%20font-family%3D%27Arial,%20sans-serif%27%20font-size%3D%2724%27%3Ereproducibility%20starts%20at%20the%20tool%20boundary,%20not%20inside%20the%20prompt%3C/text%3E%3Crect%20x%3D%27776%27%20y%3D%27166%27%20width%3D%27258%27%20height%3D%2758%27%20rx%3D%2714%27%20fill%3D%27%230d1728%27%20stroke%3D%27%2322d3ee%27%20stroke-opacity%3D%270.45%27/%3E%3Ctext%20x%3D%27826%27%20y%3D%27204%27%20fill%3D%27%23bae6fd%27%20font-family%3D%27Arial,%20sans-serif%27%20font-size%3D%2723%27%3Eshim%20entrypoint%3C/text%3E%3Crect%20x%3D%27776%27%20y%3D%27266%27%20width%3D%27258%27%20height%3D%2758%27%20rx%3D%2714%27%20fill%3D%27%230d1728%27%20stroke%3D%27%2322d3ee%27%20stroke-opacity%3D%270.45%27/%3E%3Ctext%20x%3D%27812%27%20y%3D%27304%27%20fill%3D%27%23bae6fd%27%20font-family%3D%27Arial,%20sans-serif%27%20font-size%3D%2723%27%3Epinned%20env%3C/text%3E%3Crect%20x%3D%27776%27%20y%3D%27366%27%20width%3D%27258%27%20height%3D%2758%27%20rx%3D%2714%27%20fill%3D%27%230d1728%27%20stroke%3D%27%23a78bfa%27%20stroke-opacity%3D%270.45%27/%3E%3Ctext%20x%3D%27806%27%20y%3D%27404%27%20fill%3D%27%23ddd6fe%27%20font-family%3D%27Arial,%20sans-serif%27%20font-size%3D%2723%27%3Enormalized%20output%3C/text%3E%3C/svg%3E","url":"https://negiadventures.github.io/blog/hermetic-tool-shims-ai-coding-agents.html","datePublished":"2026-06-20","author":{"@type":"Person","name":"Anirudh Negi","url":"https://negiadventures.github.io"},"publisher":{"@type":"Person","name":"Anirudh Negi","url":"https://negiadventures.github.io"},"keywords":["AI Coding Agents","Tooling","Reproducibility","Developer Workflow","CI"]}</script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../stylesheets/stylesheet.css?v=5" media="screen">
+    <style>
+      .blog-post { max-width: 860px; margin: 0 auto; padding: 60px 20px; }
+      .blog-post-header { margin-bottom: 40px; }
+      .blog-post-nav { margin-bottom: 30px; }
+      .blog-post-nav a { color: var(--accent-strong); font-size: 0.95rem; }
+      .blog-post-nav a:hover { color: var(--accent); }
+      .blog-post-title { font-size: 2.5rem; margin-bottom: 16px; }
+      .blog-post-meta { display: flex; gap: 20px; color: var(--text-muted); font-size: 0.95rem; margin-bottom: 30px; flex-wrap: wrap; }
+      .blog-post-image { width: 100%; height: 300px; object-fit: cover; border-radius: 16px; margin-bottom: 30px; border: 1px solid var(--border); background: var(--bg-alt); }
+      .blog-post-content h2 { font-size: 1.65rem; margin-top: 42px; margin-bottom: 16px; color: var(--text-light); }
+      .blog-post-content h3 { font-size: 1.25rem; margin-top: 30px; margin-bottom: 12px; color: var(--text-light); }
+      .blog-post-content p, .blog-post-content li { line-height: 1.8; color: var(--text-muted); }
+      .blog-post-content ul, .blog-post-content ol { margin-bottom: 20px; padding-left: 24px; }
+      .code-block { background: var(--bg-alt); border: 1px solid var(--border); border-radius: 12px; padding: 20px; margin: 20px 0; overflow-x: auto; }
+      .code-block pre { margin: 0; font-family: var(--mono); font-size: 0.9rem; line-height: 1.6; color: var(--text-light); white-space: pre-wrap; }
+      .code-block code { color: var(--accent-strong); }
+      .diagram-card, .callout, .table-wrap { background: var(--card); border: 1px solid var(--border); border-radius: 16px; padding: 20px; margin: 24px 0; }
+      .callout.pitfall { border-color: rgba(248, 113, 113, 0.35); background: rgba(127, 29, 29, 0.14); }
+      .callout.best { border-color: rgba(34, 197, 94, 0.35); background: rgba(20, 83, 45, 0.14); }
+      .callout strong { color: var(--text-light); }
+      table { width: 100%; border-collapse: collapse; font-size: 0.95rem; }
+      th, td { text-align: left; padding: 12px 14px; border-bottom: 1px solid var(--border); color: var(--text-muted); vertical-align: top; }
+      th { color: var(--text-light); }
+      a.inline-link { color: var(--accent-strong); }
+      .blog-post-tags { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 40px; padding-top: 30px; border-top: 1px solid var(--border); }
+      .blog-post-tag { background: var(--accent-soft); color: var(--accent-strong); border-radius: 999px; padding: 6px 14px; font-size: 0.85rem; font-family: var(--mono); border: 1px solid transparent; }
+      .blog-footer { margin-top: 60px; padding-top: 30px; border-top: 1px solid var(--border); text-align: center; }
+      .blog-footer a { color: var(--accent-strong); }
+      @media (max-width: 768px) { .blog-post { padding: 40px 16px; } .blog-post-title { font-size: 2rem; } .blog-post-image { height: 220px; } }
+    </style>
+  </head>
+  <body>
+    <a href="../index.html#main" class="skip-link">Skip to main content</a>
+    <header class="site-header">
+      <div class="container blog-post">
+        <div class="blog-post-nav"><a href="index.html">&larr; Back to All Posts</a></div>
+        <div class="blog-post-header">
+          <h1 class="blog-post-title">Hermetic Tool Shims for AI Coding Agents Without Laptop-Specific Surprises</h1>
+          <div class="blog-post-meta">
+            <span>June 20, 2026</span>
+            <span>&bull;</span>
+            <span>11 min read</span>
+            <span>&bull;</span>
+            <span>Tooling Reliability</span>
+          </div>
+          <img src="data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A//www.w3.org/2000/svg%27%20viewBox%3D%270%200%201200%20630%27%3E%3Cdefs%3E%3ClinearGradient%20id%3D%27bg%27%20x1%3D%270%27%20x2%3D%271%27%20y1%3D%270%27%20y2%3D%271%27%3E%3Cstop%20offset%3D%270%25%27%20stop-color%3D%27%2307111d%27/%3E%3Cstop%20offset%3D%27100%25%27%20stop-color%3D%27%231b4c73%27/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect%20width%3D%271200%27%20height%3D%27630%27%20fill%3D%27url%28%23bg%29%27/%3E%3Ccircle%20cx%3D%271006%27%20cy%3D%27112%27%20r%3D%27176%27%20fill%3D%27%2322d3ee%27%20fill-opacity%3D%270.14%27/%3E%3Ccircle%20cx%3D%27190%27%20cy%3D%27520%27%20r%3D%27220%27%20fill%3D%27%238b5cf6%27%20fill-opacity%3D%270.16%27/%3E%3Crect%20x%3D%2778%27%20y%3D%2786%27%20width%3D%271044%27%20height%3D%27458%27%20rx%3D%2730%27%20fill%3D%27%230b1220%27%20stroke%3D%27%2338bdf8%27%20stroke-opacity%3D%270.35%27/%3E%3Ctext%20x%3D%27126%27%20y%3D%27164%27%20fill%3D%27white%27%20font-family%3D%27Arial,%20sans-serif%27%20font-size%3D%2738%27%20font-weight%3D%27700%27%3EHermetic%20Tool%20Shims%20for%20AI%20Coding%20Agents%3C/text%3E%3Ctext%20x%3D%27126%27%20y%3D%27224%27%20fill%3D%27%2393c5fd%27%20font-family%3D%27Arial,%20sans-serif%27%20font-size%3D%2738%27%20font-weight%3D%27700%27%3EWithout%20Laptop-Specific%20Surprises%3C/text%3E%3Ctext%20x%3D%27126%27%20y%3D%27298%27%20fill%3D%27%23cbd5e1%27%20font-family%3D%27Arial,%20sans-serif%27%20font-size%3D%2728%27%3EWrap%20git,%20node,%20pytest,%20and%20repo%20utilities%20behind%20one%20stable%20execution%20lane%3C/text%3E%3Ctext%20x%3D%27126%27%20y%3D%27334%27%20fill%3D%27%23cbd5e1%27%20font-family%3D%27Arial,%20sans-serif%27%20font-size%3D%2728%27%3Eso%20agent%20runs%20behave%20the%20same%20on%20a%20laptop,%20in%20CI,%20and%20inside%20remote%20sandboxes.%3C/text%3E%3Crect%20x%3D%27126%27%20y%3D%27388%27%20width%3D%27404%27%20height%3D%2754%27%20rx%3D%2714%27%20fill%3D%27%23111c2d%27%20stroke%3D%27%2367e8f9%27%20stroke-opacity%3D%270.45%27/%3E%3Ctext%20x%3D%27152%27%20y%3D%27423%27%20fill%3D%27%2367e8f9%27%20font-family%3D%27Arial,%20sans-serif%27%20font-size%3D%2724%27%3Ereproducibility%20starts%20at%20the%20tool%20boundary,%20not%20inside%20the%20prompt%3C/text%3E%3Crect%20x%3D%27776%27%20y%3D%27166%27%20width%3D%27258%27%20height%3D%2758%27%20rx%3D%2714%27%20fill%3D%27%230d1728%27%20stroke%3D%27%2322d3ee%27%20stroke-opacity%3D%270.45%27/%3E%3Ctext%20x%3D%27826%27%20y%3D%27204%27%20fill%3D%27%23bae6fd%27%20font-family%3D%27Arial,%20sans-serif%27%20font-size%3D%2723%27%3Eshim%20entrypoint%3C/text%3E%3Crect%20x%3D%27776%27%20y%3D%27266%27%20width%3D%27258%27%20height%3D%2758%27%20rx%3D%2714%27%20fill%3D%27%230d1728%27%20stroke%3D%27%2322d3ee%27%20stroke-opacity%3D%270.45%27/%3E%3Ctext%20x%3D%27812%27%20y%3D%27304%27%20fill%3D%27%23bae6fd%27%20font-family%3D%27Arial,%20sans-serif%27%20font-size%3D%2723%27%3Epinned%20env%3C/text%3E%3Crect%20x%3D%27776%27%20y%3D%27366%27%20width%3D%27258%27%20height%3D%2758%27%20rx%3D%2714%27%20fill%3D%27%230d1728%27%20stroke%3D%27%23a78bfa%27%20stroke-opacity%3D%270.45%27/%3E%3Ctext%20x%3D%27806%27%20y%3D%27404%27%20fill%3D%27%23ddd6fe%27%20font-family%3D%27Arial,%20sans-serif%27%20font-size%3D%2723%27%3Enormalized%20output%3C/text%3E%3C/svg%3E" alt="Hermetic Tool Shims for AI Coding Agents Without Laptop-Specific Surprises" class="blog-post-image">
+        </div>
+        <div class="blog-post-content">
+          <p>AI coding agents often fail for embarrassingly small reasons. The agent asks for <code>npm test</code>, but one laptop uses Node 22, CI uses Node 20, and the remote sandbox has a different <code>PATH</code> ordering plus a stale global binary. The prompt looks fine. The patch might even be fine. The tool boundary is what drifted.</p>
+          <p>Most teams try to fix that with more instructions. “Always use pnpm.” “Run from repo root.” “Never call the system Python.” That helps for a day or two, then a new runner image, a local shell alias, or a plugin-installed binary breaks the assumptions again.</p>
+          <p>A better pattern is to make tool execution hermetic. Give the agent one stable wrapper per important tool, pin what matters, normalize what comes back, and fail closed when the environment is wrong.</p>
+          <h2>Why this matters</h2>
+          <p>The most expensive AI coding failures are not always reasoning failures. They are often tool drift failures that look like reasoning failures. A linter exits differently on macOS than Linux. A formatter prints colorized stderr that breaks a parser. A package manager prompt waits for TTY input inside a non-interactive worker.</p>
+          <p>Hermetic shims reduce that surface area. They move execution policy out of the prompt and into a small reviewed layer that can enforce versions, working directories, allowed subcommands, and output shape.</p>
+          <h2>Architecture or workflow overview</h2>
+          <div class="diagram-card"><div class="code-block"><pre><code>Agent plan
+  -&gt; shim name + structured args
+     -&gt; policy check
+        -&gt; pinned environment load
+           -&gt; real tool execution
+              -&gt; output normalization
+                 -&gt; verifier or next step</code></pre></div></div>
+          <div class="code-block"><pre><code>flowchart LR
+    A[Agent task] --&gt; B[Tool shim entrypoint]
+    B --&gt; C[Policy and arg validation]
+    C --&gt; D[Pinned env or runtime manifest]
+    D --&gt; E[Real CLI execution]
+    E --&gt; F[Normalize stdout stderr exit code]
+    F --&gt; G[Agent retry or verifier lane]</code></pre></div>
+          <p>The flow is simple on purpose. The agent never talks to raw ambient tools directly. It talks to reviewed entrypoints that keep execution reproducible.</p>
+          <h2>Implementation details</h2>
+          <h3>1. Define the tool contract in a manifest</h3>
+          <div class="code-block"><pre><code>tools:
+  test:
+    exec: ["pnpm", "test", "--reporter=json"]
+    cwd: repo_root
+    env:
+      NODE_ENV: test
+      FORCE_COLOR: "0"
+    runtime:
+      node: ".tool-versions"
+    allowArgs:
+      - "--filter"
+      - "--runInBand"
+  lint:
+    exec: ["pnpm", "eslint", ".", "-f", "json"]
+    cwd: repo_root
+    env:
+      FORCE_COLOR: "0"
+    allowArgs:
+      - "--fix"
+  pytest:
+    exec: ["python3", "-m", "pytest", "-q", "--color=no"]
+    cwd: repo_root
+    runtime:
+      python: ".python-version"</code></pre></div>
+          <h3>2. Wrap the real tool with policy and environment checks</h3>
+          <div class="code-block"><pre><code>from pathlib import Path
+import subprocess
+
+
+def run_tool(tool_name: str, extra_args: list[str]) -&gt; dict:
+    manifest = load_manifest(Path('.agent-tools.yml'))
+    spec = manifest['tools'][tool_name]
+
+    validate_args(extra_args, spec.get('allowArgs', []))
+    env = build_env(spec)
+    cmd = spec['exec'] + extra_args
+
+    proc = subprocess.run(
+        cmd,
+        cwd=resolve_cwd(spec['cwd']),
+        env=env,
+        capture_output=True,
+        text=True,
+        timeout=900,
+    )
+
+    return normalize_result(tool_name, cmd, proc)</code></pre></div>
+          <div class="code-block"><pre><code>def normalize_result(tool_name: str, cmd: list[str], proc) -&gt; dict:
+    return {
+        'tool': tool_name,
+        'command': cmd,
+        'exit_code': proc.returncode,
+        'stdout': strip_ansi(proc.stdout),
+        'stderr': strip_ansi(proc.stderr),
+        'status': 'passed' if proc.returncode == 0 else 'failed',
+    }</code></pre></div>
+          <h3>3. Pin the runtime where drift actually happens</h3>
+          <div class="code-block"><pre><code>#!/usr/bin/env bash
+set -euo pipefail
+
+export FORCE_COLOR=0
+export CI=1
+
+NODE_VERSION=$(cat .nvmrc)
+PY_VERSION=$(cat .python-version)
+
+echo "runtime node=${NODE_VERSION} python=${PY_VERSION}" >&2
+exec "$@"</code></pre></div>
+          <h3>4. Normalize interactivity and machine-specific noise</h3>
+          <div class="code-block"><pre><code>{
+  "tool": "test",
+  "status": "failed",
+  "exit_code": 1,
+  "runtime": {
+    "node": "22.11.0",
+    "python": "3.12.4"
+  },
+  "cwd": "/workspace/repo",
+  "stdout": "{\"numFailedTests\":1,\"numPassedTests\":182}",
+  "stderr": "runtime node=22.11.0 python=3.12.4"
+}</code></pre></div>
+          <h2>Comparison table</h2>
+          <div class="table-wrap"><table><thead><tr><th>Approach</th><th>Reliability</th><th>Reviewability</th><th>Setup cost</th><th>Where it breaks</th></tr></thead><tbody><tr><td>Direct shell calls from the agent</td><td>Low</td><td>Low</td><td>Low</td><td>PATH drift, prompts, per-machine aliases</td></tr><tr><td>Prompt-only tool conventions</td><td>Medium for small teams</td><td>Low</td><td>Low</td><td>Rules rot, humans forget, agents still improvise</td></tr><tr><td>Hermetic shims with manifests</td><td>High</td><td>High</td><td>Medium</td><td>Requires maintenance when toolchain changes</td></tr></tbody></table></div>
+          <h2>What went wrong and the tradeoffs</h2>
+          <h3>Failure mode 1: the shim becomes a secret second build system</h3>
+          <p>If the wrapper layer quietly adds flags, paths, or env vars that the normal developer workflow does not use, you create two truths.</p>
+          <h3>Failure mode 2: pinning too little</h3>
+          <p>Teams often pin package versions but forget shell behavior, locale, color, pager settings, or working directory assumptions.</p>
+          <h3>Failure mode 3: pinning too much</h3>
+          <p>Going fully hermetic for every tool can slow normal iteration. I prefer a narrow shim layer for high-value tools: test, lint, format, package install, migrations, and repo-specific scripts.</p>
+          <div class="callout pitfall"><strong>Pitfall:</strong> Do not let the shim pass through arbitrary trailing shell fragments like <code>-- &amp;&amp; rm -rf tmp</code>. If the wrapper boundary is not strict, you have recreated raw shell execution with extra ceremony.</div>
+          <div class="callout best"><strong>Best practice:</strong> Print a short environment fingerprint on every run, disable TTY-only behavior by default, and normalize stdout and stderr into one schema that other automation can trust.</div>
+          <h2>Before vs after</h2>
+          <div class="code-block"><pre><code>Before:
+$ npm test
+Need to install the following packages:
+  jest@29.7.0
+Ok to proceed? (y)
+
+After:
+$ tool-shim run test --filter agent-runtime
+runtime node=22.11.0 python=3.12.4
+policy cwd=/workspace/repo interactive=false
+status=passed exit_code=0 tool=test</code></pre></div>
+          <h2>Practical checklist</h2>
+          <ul><li>Put important tools behind reviewed shim names instead of raw shell strings.</li><li>Pin runtimes from repo-local manifests like <code>.nvmrc</code>, <code>.python-version</code>, or <code>.tool-versions</code>.</li><li>Disable color, pagers, prompts, and spinners by default.</li><li>Allowlist arguments instead of forwarding arbitrary extra flags.</li><li>Emit a normalized result envelope with exit code, stdout, stderr, cwd, and runtime fingerprint.</li><li>Keep the shim behavior close to the developer workflow so it does not become a second hidden build system.</li><li>Add smoke tests for the shim itself in CI.</li><li>Log the exact resolved binary and version when a run fails.</li></ul>
+          <h2>References</h2>
+          <ul><li><a class="inline-link" href="https://modelcontextprotocol.io/introduction">Model Context Protocol overview</a></li><li><a class="inline-link" href="https://asdf-vm.com/">asdf version manager</a></li><li><a class="inline-link" href="https://direnv.net/">direnv</a></li><li><a class="inline-link" href="https://docs.github.com/actions/using-workflows/workflow-commands-for-github-actions">GitHub Actions workflow commands and environment files</a></li></ul>
+          <h2>Conclusion</h2>
+          <p>If an AI coding agent depends on real tools, then the tool boundary deserves the same engineering discipline as prompts and verifiers. Hermetic shims are not flashy, but they remove a huge class of laptop-specific, runner-specific, and shell-specific surprises.</p>
+          <p>If I were setting this up today, I would start with five wrappers only: test, lint, format, install, and one repo-specific utility. That is enough to make agent runs far more reproducible without turning the whole repo into a platform rewrite.</p>
+          <div class="blog-post-tags"><span class="blog-post-tag">AI Coding Agents</span><span class="blog-post-tag">Tooling</span><span class="blog-post-tag">Reproducibility</span><span class="blog-post-tag">Developer Workflow</span><span class="blog-post-tag">CI</span></div>
+        </div>
+        <div class="blog-footer"><p><a href="index.html">Back to Blog</a> &bull; <a href="../index.html">Back to Portfolio</a></p><p style="margin-top: 16px; font-size: 0.9rem;"><em>Technical notes on practical AI systems, workflows, and reliability tradeoffs.</em></p></div>
+      </div>
+    </header>
+  </body>
+</html>

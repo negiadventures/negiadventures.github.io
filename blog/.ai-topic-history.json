@@ -1,6 +1,14 @@
 {
   "topics": [
     {
+      "date": "2026-06-20",
+      "skill": "Hermetic tool shims for AI coding agents",
+      "topic": "Using wrapper scripts, pinned environment manifests, path allowlists, and output normalization so AI coding agents can call compilers, linters, package managers, and repo utilities reproducibly across laptops, CI runners, and remote sandboxes without machine-specific drift",
+      "slug": "hermetic-tool-shims-ai-coding-agents",
+      "title": "Hermetic Tool Shims for AI Coding Agents Without Laptop-Specific Surprises",
+      "summary": "A practical guide to hermetic tool shims for AI coding agents using wrapper scripts, pinned environments, path allowlists, and output normalization so local and remote runs stop failing for machine-specific reasons."
+    },
+    {
       "date": "2026-06-19",
       "skill": "Checkpointed workspaces for AI coding agents",
       "topic": "Using filesystem snapshots, resumable task manifests, verifier-aware rollback points, and diff checkpoints so AI coding agents can recover from bad edits or broken experiments without restarting every long debug loop from scratch",
