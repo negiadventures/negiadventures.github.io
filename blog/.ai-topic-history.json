@@ -1,6 +1,14 @@
 {
   "topics": [
     {
+      "date": "2026-06-21",
+      "skill": "Dependency cache warming for AI coding agents",
+      "topic": "Using lockfile-keyed warm stores, package-manager fetch phases, BuildKit cache mounts, and bootstrap telemetry so AI coding agents stop burning most of each run on repeated dependency downloads and flaky cold installs",
+      "slug": "dependency-cache-warming-ai-coding-agents",
+      "title": "Dependency Cache Warming for AI Coding Agents Without Cold Install Thrash",
+      "summary": "A practical guide to warming pnpm, uv, Docker BuildKit, and CI caches so AI coding agents stop wasting runs on repeated dependency installs and flaky bootstrap latency."
+    },
+    {
       "date": "2026-06-20",
       "skill": "Hermetic tool shims for AI coding agents",
       "topic": "Using wrapper scripts, pinned environment manifests, path allowlists, and output normalization so AI coding agents can call compilers, linters, package managers, and repo utilities reproducibly across laptops, CI runners, and remote sandboxes without machine-specific drift",
