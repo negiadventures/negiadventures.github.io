@@ -1,6 +1,14 @@
 {
   "topics": [
     {
+      "date": "2026-06-22",
+      "skill": "Lease-based workspace locks for parallel AI coding agents",
+      "topic": "Using TTL-backed path leases, heartbeat renewals, overlap-aware scheduling, and stale-lock sweeps so concurrent coding agents can edit the same repository safely without clobbering each other\u2019s work or reusing poisoned worktrees",
+      "slug": "lease-based-workspace-locks-ai-coding-agents",
+      "title": "Lease-Based Workspace Locks for Parallel AI Coding Agents Without Patch Collisions",
+      "summary": "A practical guide to lease-based workspace locks for parallel AI coding agents using TTL-backed claims, path scopes, heartbeats, and stale-lock recovery so concurrent runs stop clobbering the same files."
+    },
+    {
       "date": "2026-06-21",
       "skill": "Dependency cache warming for AI coding agents",
       "topic": "Using lockfile-keyed warm stores, package-manager fetch phases, BuildKit cache mounts, and bootstrap telemetry so AI coding agents stop burning most of each run on repeated dependency downloads and flaky cold installs",
