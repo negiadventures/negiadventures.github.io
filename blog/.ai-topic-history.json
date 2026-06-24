@@ -1,6 +1,14 @@
 {
   "topics": [
     {
+      "date": "2026-06-24",
+      "skill": "Transcript compaction ledgers for long-running AI coding agents",
+      "topic": "Using turn snapshots, pinned evidence blocks, recency decay, and verifier-triggered refreshes so long-running coding agents keep enough context to stay useful without stuffing stale transcripts back into every call",
+      "slug": "transcript-compaction-ledgers-ai-coding-agents",
+      "title": "Transcript Compaction Ledgers for Long-Running AI Coding Agents",
+      "summary": "A practical guide to transcript compaction ledgers for long-running AI coding agents using turn snapshots, pinned evidence, refresh triggers, and recency decay so long sessions stay useful without growing into stale prompt ballast."
+    },
+    {
       "date": "2026-06-23",
       "skill": "Tool timeout budgets for AI coding agents",
       "topic": "Using deadline ladders, cancellation signals, retry classes, stdout heartbeat checks, and verifier-aware fallback lanes so AI coding agents stop losing entire runs to one hung shell command, slow API, or silently stalled browser step",
