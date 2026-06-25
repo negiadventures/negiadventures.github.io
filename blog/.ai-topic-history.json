@@ -1,6 +1,14 @@
 {
   "topics": [
     {
+      "date": "2026-06-25",
+      "skill": "Secret scanning gates for AI-generated pull requests",
+      "topic": "Using diff-first scanning, entropy heuristics, reviewed allowlists, and push-time enforcement so AI-generated pull requests stop leaking copied tokens, test credentials, and accidental secrets into permanent Git history",
+      "slug": "secret-scanning-gates-ai-generated-prs",
+      "title": "Secret Scanning Gates for AI-Generated Pull Requests Without Credential Leaks",
+      "summary": "A practical guide to secret scanning gates for AI-generated pull requests using diff-first scans, entropy heuristics, allowlisted baselines, and push-time blockers so generated patches do not quietly ship tokens, keys, or copied credentials."
+    },
+    {
       "date": "2026-06-24",
       "skill": "Transcript compaction ledgers for long-running AI coding agents",
       "topic": "Using turn snapshots, pinned evidence blocks, recency decay, and verifier-triggered refreshes so long-running coding agents keep enough context to stay useful without stuffing stale transcripts back into every call",
