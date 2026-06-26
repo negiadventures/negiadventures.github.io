@@ -1,6 +1,14 @@
 {
   "topics": [
     {
+      "date": "2026-06-26",
+      "skill": "LLM judge calibration for AI coding agent evals",
+      "topic": "Using anchor cases, pairwise scoring, disagreement audits, and hard-verifier-first scorecards so teams can trust quality trends in AI coding agent evals without mistaking judge drift for actual model improvement",
+      "slug": "llm-judge-calibration-ai-coding-agent-evals",
+      "title": "LLM Judge Calibration for AI Coding Agent Evals Without Score Drift",
+      "summary": "A practical guide to calibrating LLM judges for AI coding agent evals with anchor cases, pairwise scoring, disagreement audits, and human spot checks so quality scores stay useful instead of turning into prompt theater."
+    },
+    {
       "date": "2026-06-24",
       "skill": "Transcript compaction ledgers for long-running AI coding agents",
       "topic": "Using turn snapshots, pinned evidence blocks, recency decay, and verifier-triggered refreshes so long-running coding agents keep enough context to stay useful without stuffing stale transcripts back into every call",

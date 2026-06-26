@@ -1,0 +1,205 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="A practical guide to calibrating LLM judges for AI coding agent evals with anchor cases, pairwise scoring, disagreement audits, and human spot checks so quality scores stay useful instead of turning into prompt theater.">
+    <meta name="author" content="Anirudh Negi">
+    <title>LLM Judge Calibration for AI Coding Agent Evals Without Score Drift | Anirudh Negi</title>
+    <link rel="icon" type="image/svg+xml" href="../images/favicon.svg">
+    <link rel="canonical" href="https://negiadventures.github.io/blog/llm-judge-calibration-ai-coding-agent-evals.html">
+    <meta property="og:type" content="article">
+    <meta property="og:url" content="https://negiadventures.github.io/blog/llm-judge-calibration-ai-coding-agent-evals.html">
+    <meta property="og:title" content="LLM Judge Calibration for AI Coding Agent Evals Without Score Drift | Anirudh Negi">
+    <meta property="og:description" content="A practical guide to calibrating LLM judges for AI coding agent evals with anchor cases, pairwise scoring, disagreement audits, and human spot checks so quality scores stay useful instead of turning into prompt theater.">
+    <meta property="og:image" content="data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A//www.w3.org/2000/svg%27%20viewBox%3D%270%200%201200%20630%27%3E%3Cdefs%3E%3ClinearGradient%20id%3D%27bg%27%20x1%3D%270%27%20x2%3D%271%27%20y1%3D%270%27%20y2%3D%271%27%3E%3Cstop%20offset%3D%270%25%27%20stop-color%3D%27%2307111d%27/%3E%3Cstop%20offset%3D%27100%25%27%20stop-color%3D%27%23174c72%27/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect%20width%3D%271200%27%20height%3D%27630%27%20fill%3D%27url%28%23bg%29%27/%3E%3Ccircle%20cx%3D%271008%27%20cy%3D%27110%27%20r%3D%27178%27%20fill%3D%27%2322d3ee%27%20fill-opacity%3D%270.14%27/%3E%3Ccircle%20cx%3D%27182%27%20cy%3D%27518%27%20r%3D%27224%27%20fill%3D%27%238b5cf6%27%20fill-opacity%3D%270.16%27/%3E%3Crect%20x%3D%2778%27%20y%3D%2786%27%20width%3D%271044%27%20height%3D%27458%27%20rx%3D%2730%27%20fill%3D%27%230b1220%27%20stroke%3D%27%2338bdf8%27%20stroke-opacity%3D%270.35%27/%3E%3Ctext%20x%3D%27126%27%20y%3D%27164%27%20fill%3D%27white%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2738%27%20font-weight%3D%27700%27%3ELLM%20Judge%20Calibration%20for%20AI%20Coding%20Agent%20Evals%3C/text%3E%3Ctext%20x%3D%27126%27%20y%3D%27224%27%20fill%3D%27%2393c5fd%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2738%27%20font-weight%3D%27700%27%3EWithout%20Score%20Drift%3C/text%3E%3Ctext%20x%3D%27126%27%20y%3D%27298%27%20fill%3D%27%23cbd5e1%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2728%27%3EAnchor%20judge%20prompts%20with%20gold%20cases%2C%20pairwise%20rubrics%2C%20and%20disagreement%20audits%3C/text%3E%3Ctext%20x%3D%27126%27%20y%3D%27334%27%20fill%3D%27%23cbd5e1%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2728%27%3Eso%20agent%20quality%20scores%20stay%20stable%20enough%20to%20trust%20release%20decisions.%3C/text%3E%3Crect%20x%3D%27126%27%20y%3D%27388%27%20width%3D%27388%27%20height%3D%2754%27%20rx%3D%2714%27%20fill%3D%27%23111c2d%27%20stroke%3D%27%2367e8f9%27%20stroke-opacity%3D%270.45%27/%3E%3Ctext%20x%3D%27152%27%20y%3D%27423%27%20fill%3D%27%2367e8f9%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2724%27%3Ejudge%20scores%20should%20be%20measured%20systems%2C%20not%20vibes%3C/text%3E%3Crect%20x%3D%27776%27%20y%3D%27166%27%20width%3D%27258%27%20height%3D%2758%27%20rx%3D%2714%27%20fill%3D%27%230d1728%27%20stroke%3D%27%2322d3ee%27%20stroke-opacity%3D%270.45%27/%3E%3Ctext%20x%3D%27824%27%20y%3D%27204%27%20fill%3D%27%23bae6fd%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2723%27%3Eanchor%20set%3C/text%3E%3Crect%20x%3D%27776%27%20y%3D%27266%27%20width%3D%27258%27%20height%3D%2758%27%20rx%3D%2714%27%20fill%3D%27%230d1728%27%20stroke%3D%27%2322d3ee%27%20stroke-opacity%3D%270.45%27/%3E%3Ctext%20x%3D%27814%27%20y%3D%27304%27%20fill%3D%27%23bae6fd%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2723%27%3Epairwise%20judge%3C/text%3E%3Crect%20x%3D%27776%27%20y%3D%27366%27%20width%3D%27258%27%20height%3D%2758%27%20rx%3D%2714%27%20fill%3D%27%230d1728%27%20stroke%3D%27%23a78bfa%27%20stroke-opacity%3D%270.45%27/%3E%3Ctext%20x%3D%27802%27%20y%3D%27404%27%20fill%3D%27%23ddd6fe%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2723%27%3Edrift%20audit%3C/text%3E%3C/svg%3E">
+    <meta property="article:published_time" content="2026-06-26">
+    <meta property="article:author" content="Anirudh Negi">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:url" content="https://negiadventures.github.io/blog/llm-judge-calibration-ai-coding-agent-evals.html">
+    <meta name="twitter:title" content="LLM Judge Calibration for AI Coding Agent Evals Without Score Drift | Anirudh Negi">
+    <meta name="twitter:description" content="A practical guide to calibrating LLM judges for AI coding agent evals with anchor cases, pairwise scoring, disagreement audits, and human spot checks so quality scores stay useful instead of turning into prompt theater.">
+    <meta name="twitter:image" content="data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A//www.w3.org/2000/svg%27%20viewBox%3D%270%200%201200%20630%27%3E%3Cdefs%3E%3ClinearGradient%20id%3D%27bg%27%20x1%3D%270%27%20x2%3D%271%27%20y1%3D%270%27%20y2%3D%271%27%3E%3Cstop%20offset%3D%270%25%27%20stop-color%3D%27%2307111d%27/%3E%3Cstop%20offset%3D%27100%25%27%20stop-color%3D%27%23174c72%27/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect%20width%3D%271200%27%20height%3D%27630%27%20fill%3D%27url%28%23bg%29%27/%3E%3Ccircle%20cx%3D%271008%27%20cy%3D%27110%27%20r%3D%27178%27%20fill%3D%27%2322d3ee%27%20fill-opacity%3D%270.14%27/%3E%3Ccircle%20cx%3D%27182%27%20cy%3D%27518%27%20r%3D%27224%27%20fill%3D%27%238b5cf6%27%20fill-opacity%3D%270.16%27/%3E%3Crect%20x%3D%2778%27%20y%3D%2786%27%20width%3D%271044%27%20height%3D%27458%27%20rx%3D%2730%27%20fill%3D%27%230b1220%27%20stroke%3D%27%2338bdf8%27%20stroke-opacity%3D%270.35%27/%3E%3Ctext%20x%3D%27126%27%20y%3D%27164%27%20fill%3D%27white%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2738%27%20font-weight%3D%27700%27%3ELLM%20Judge%20Calibration%20for%20AI%20Coding%20Agent%20Evals%3C/text%3E%3Ctext%20x%3D%27126%27%20y%3D%27224%27%20fill%3D%27%2393c5fd%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2738%27%20font-weight%3D%27700%27%3EWithout%20Score%20Drift%3C/text%3E%3Ctext%20x%3D%27126%27%20y%3D%27298%27%20fill%3D%27%23cbd5e1%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2728%27%3EAnchor%20judge%20prompts%20with%20gold%20cases%2C%20pairwise%20rubrics%2C%20and%20disagreement%20audits%3C/text%3E%3Ctext%20x%3D%27126%27%20y%3D%27334%27%20fill%3D%27%23cbd5e1%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2728%27%3Eso%20agent%20quality%20scores%20stay%20stable%20enough%20to%20trust%20release%20decisions.%3C/text%3E%3Crect%20x%3D%27126%27%20y%3D%27388%27%20width%3D%27388%27%20height%3D%2754%27%20rx%3D%2714%27%20fill%3D%27%23111c2d%27%20stroke%3D%27%2367e8f9%27%20stroke-opacity%3D%270.45%27/%3E%3Ctext%20x%3D%27152%27%20y%3D%27423%27%20fill%3D%27%2367e8f9%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2724%27%3Ejudge%20scores%20should%20be%20measured%20systems%2C%20not%20vibes%3C/text%3E%3Crect%20x%3D%27776%27%20y%3D%27166%27%20width%3D%27258%27%20height%3D%2758%27%20rx%3D%2714%27%20fill%3D%27%230d1728%27%20stroke%3D%27%2322d3ee%27%20stroke-opacity%3D%270.45%27/%3E%3Ctext%20x%3D%27824%27%20y%3D%27204%27%20fill%3D%27%23bae6fd%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2723%27%3Eanchor%20set%3C/text%3E%3Crect%20x%3D%27776%27%20y%3D%27266%27%20width%3D%27258%27%20height%3D%2758%27%20rx%3D%2714%27%20fill%3D%27%230d1728%27%20stroke%3D%27%2322d3ee%27%20stroke-opacity%3D%270.45%27/%3E%3Ctext%20x%3D%27814%27%20y%3D%27304%27%20fill%3D%27%23bae6fd%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2723%27%3Epairwise%20judge%3C/text%3E%3Crect%20x%3D%27776%27%20y%3D%27366%27%20width%3D%27258%27%20height%3D%2758%27%20rx%3D%2714%27%20fill%3D%27%230d1728%27%20stroke%3D%27%23a78bfa%27%20stroke-opacity%3D%270.45%27/%3E%3Ctext%20x%3D%27802%27%20y%3D%27404%27%20fill%3D%27%23ddd6fe%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2723%27%3Edrift%20audit%3C/text%3E%3C/svg%3E">
+    <script type="application/ld+json">{"@context": "https://schema.org", "@type": "BlogPosting", "headline": "LLM Judge Calibration for AI Coding Agent Evals Without Score Drift", "description": "A practical guide to calibrating LLM judges for AI coding agent evals with anchor cases, pairwise scoring, disagreement audits, and human spot checks so quality scores stay useful instead of turning into prompt theater.", "image": "data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A//www.w3.org/2000/svg%27%20viewBox%3D%270%200%201200%20630%27%3E%3Cdefs%3E%3ClinearGradient%20id%3D%27bg%27%20x1%3D%270%27%20x2%3D%271%27%20y1%3D%270%27%20y2%3D%271%27%3E%3Cstop%20offset%3D%270%25%27%20stop-color%3D%27%2307111d%27/%3E%3Cstop%20offset%3D%27100%25%27%20stop-color%3D%27%23174c72%27/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect%20width%3D%271200%27%20height%3D%27630%27%20fill%3D%27url%28%23bg%29%27/%3E%3Ccircle%20cx%3D%271008%27%20cy%3D%27110%27%20r%3D%27178%27%20fill%3D%27%2322d3ee%27%20fill-opacity%3D%270.14%27/%3E%3Ccircle%20cx%3D%27182%27%20cy%3D%27518%27%20r%3D%27224%27%20fill%3D%27%238b5cf6%27%20fill-opacity%3D%270.16%27/%3E%3Crect%20x%3D%2778%27%20y%3D%2786%27%20width%3D%271044%27%20height%3D%27458%27%20rx%3D%2730%27%20fill%3D%27%230b1220%27%20stroke%3D%27%2338bdf8%27%20stroke-opacity%3D%270.35%27/%3E%3Ctext%20x%3D%27126%27%20y%3D%27164%27%20fill%3D%27white%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2738%27%20font-weight%3D%27700%27%3ELLM%20Judge%20Calibration%20for%20AI%20Coding%20Agent%20Evals%3C/text%3E%3Ctext%20x%3D%27126%27%20y%3D%27224%27%20fill%3D%27%2393c5fd%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2738%27%20font-weight%3D%27700%27%3EWithout%20Score%20Drift%3C/text%3E%3Ctext%20x%3D%27126%27%20y%3D%27298%27%20fill%3D%27%23cbd5e1%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2728%27%3EAnchor%20judge%20prompts%20with%20gold%20cases%2C%20pairwise%20rubrics%2C%20and%20disagreement%20audits%3C/text%3E%3Ctext%20x%3D%27126%27%20y%3D%27334%27%20fill%3D%27%23cbd5e1%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2728%27%3Eso%20agent%20quality%20scores%20stay%20stable%20enough%20to%20trust%20release%20decisions.%3C/text%3E%3Crect%20x%3D%27126%27%20y%3D%27388%27%20width%3D%27388%27%20height%3D%2754%27%20rx%3D%2714%27%20fill%3D%27%23111c2d%27%20stroke%3D%27%2367e8f9%27%20stroke-opacity%3D%270.45%27/%3E%3Ctext%20x%3D%27152%27%20y%3D%27423%27%20fill%3D%27%2367e8f9%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2724%27%3Ejudge%20scores%20should%20be%20measured%20systems%2C%20not%20vibes%3C/text%3E%3Crect%20x%3D%27776%27%20y%3D%27166%27%20width%3D%27258%27%20height%3D%2758%27%20rx%3D%2714%27%20fill%3D%27%230d1728%27%20stroke%3D%27%2322d3ee%27%20stroke-opacity%3D%270.45%27/%3E%3Ctext%20x%3D%27824%27%20y%3D%27204%27%20fill%3D%27%23bae6fd%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2723%27%3Eanchor%20set%3C/text%3E%3Crect%20x%3D%27776%27%20y%3D%27266%27%20width%3D%27258%27%20height%3D%2758%27%20rx%3D%2714%27%20fill%3D%27%230d1728%27%20stroke%3D%27%2322d3ee%27%20stroke-opacity%3D%270.45%27/%3E%3Ctext%20x%3D%27814%27%20y%3D%27304%27%20fill%3D%27%23bae6fd%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2723%27%3Epairwise%20judge%3C/text%3E%3Crect%20x%3D%27776%27%20y%3D%27366%27%20width%3D%27258%27%20height%3D%2758%27%20rx%3D%2714%27%20fill%3D%27%230d1728%27%20stroke%3D%27%23a78bfa%27%20stroke-opacity%3D%270.45%27/%3E%3Ctext%20x%3D%27802%27%20y%3D%27404%27%20fill%3D%27%23ddd6fe%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2723%27%3Edrift%20audit%3C/text%3E%3C/svg%3E", "url": "https://negiadventures.github.io/blog/llm-judge-calibration-ai-coding-agent-evals.html", "datePublished": "2026-06-26", "author": {"@type": "Person", "name": "Anirudh Negi", "url": "https://negiadventures.github.io"}, "publisher": {"@type": "Person", "name": "Anirudh Negi", "url": "https://negiadventures.github.io"}, "keywords": ["Evals", "AI Coding Agents", "LLM Judge", "Reliability"]}</script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../stylesheets/stylesheet.css?v=5" media="screen">
+    <style>
+      .blog-post { max-width: 840px; margin: 0 auto; padding: 60px 20px; }
+      .blog-post-nav { margin-bottom: 30px; }
+      .blog-post-nav a { color: var(--accent-strong); font-size: 0.95rem; }
+      .blog-post-nav a:hover { color: var(--accent); }
+      .blog-post-title { font-size: 2.5rem; margin-bottom: 16px; }
+      .blog-post-meta { display: flex; gap: 20px; color: var(--text-muted); font-size: 0.95rem; margin-bottom: 30px; flex-wrap: wrap; }
+      .blog-post-image, .diagram-image { width: 100%; border-radius: 16px; border: 1px solid var(--border); }
+      .blog-post-image { height: 300px; object-fit: cover; margin-bottom: 30px; }
+      .diagram-image { margin: 24px 0; background: var(--bg-alt); }
+      .blog-post-content h2 { font-size: 1.6rem; margin-top: 40px; margin-bottom: 16px; color: var(--text-light); }
+      .blog-post-content h3 { font-size: 1.3rem; margin-top: 30px; margin-bottom: 12px; color: var(--text-light); }
+      .blog-post-content p, .blog-post-content li { line-height: 1.8; color: var(--text-muted); }
+      .blog-post-content ul, .blog-post-content ol { margin-bottom: 20px; padding-left: 24px; }
+      .code-block { background: var(--bg-alt); border: 1px solid var(--border); border-radius: 12px; padding: 20px; margin: 20px 0; overflow-x: auto; }
+      .code-block pre { margin: 0; font-family: var(--mono); font-size: 0.9rem; line-height: 1.6; color: var(--text-light); white-space: pre-wrap; }
+      .code-block code { color: var(--accent-strong); }
+      table { width: 100%; border-collapse: collapse; margin: 24px 0; background: var(--bg-alt); border: 1px solid var(--border); border-radius: 12px; overflow: hidden; }
+      th, td { padding: 14px 16px; text-align: left; border-bottom: 1px solid var(--border); color: var(--text-muted); vertical-align: top; }
+      th { color: var(--text-light); background: rgba(56, 189, 248, 0.08); }
+      .callout { border-radius: 14px; padding: 18px 20px; margin: 24px 0; border: 1px solid var(--border); }
+      .callout strong { color: var(--text-light); }
+      .callout-warning { background: rgba(248, 113, 113, 0.08); border-color: rgba(248, 113, 113, 0.28); }
+      .callout-success { background: rgba(52, 211, 153, 0.08); border-color: rgba(52, 211, 153, 0.28); }
+      .blog-post-tags { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 40px; padding-top: 30px; border-top: 1px solid var(--border); }
+      .blog-post-tag { background: var(--accent-soft); color: var(--accent-strong); border-radius: 999px; padding: 6px 14px; font-size: 0.85rem; font-family: var(--mono); }
+      .blog-footer { margin-top: 60px; padding-top: 30px; border-top: 1px solid var(--border); text-align: center; }
+      .blog-footer a { color: var(--accent-strong); }
+      .blog-footer a:hover { color: var(--accent); }
+      @media (max-width: 768px) { .blog-post { padding: 40px 16px; } .blog-post-title { font-size: 2rem; } .blog-post-image { height: 220px; } }
+    </style>
+  </head>
+  <body>
+    <a href="../index.html#main" class="skip-link">Skip to main content</a>
+    <header class="site-header">
+      <div class="container blog-post">
+        <div class="blog-post-nav"><a href="index.html">&larr; Back to All Posts</a></div>
+        <div class="blog-post-header">
+          <h1 class="blog-post-title">LLM Judge Calibration for AI Coding Agent Evals Without Score Drift</h1>
+          <div class="blog-post-meta"><span>June 26, 2026</span><span>&bull;</span><span>10 min read</span></div>
+          <img src="data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A//www.w3.org/2000/svg%27%20viewBox%3D%270%200%201200%20630%27%3E%3Cdefs%3E%3ClinearGradient%20id%3D%27bg%27%20x1%3D%270%27%20x2%3D%271%27%20y1%3D%270%27%20y2%3D%271%27%3E%3Cstop%20offset%3D%270%25%27%20stop-color%3D%27%2307111d%27/%3E%3Cstop%20offset%3D%27100%25%27%20stop-color%3D%27%23174c72%27/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect%20width%3D%271200%27%20height%3D%27630%27%20fill%3D%27url%28%23bg%29%27/%3E%3Ccircle%20cx%3D%271008%27%20cy%3D%27110%27%20r%3D%27178%27%20fill%3D%27%2322d3ee%27%20fill-opacity%3D%270.14%27/%3E%3Ccircle%20cx%3D%27182%27%20cy%3D%27518%27%20r%3D%27224%27%20fill%3D%27%238b5cf6%27%20fill-opacity%3D%270.16%27/%3E%3Crect%20x%3D%2778%27%20y%3D%2786%27%20width%3D%271044%27%20height%3D%27458%27%20rx%3D%2730%27%20fill%3D%27%230b1220%27%20stroke%3D%27%2338bdf8%27%20stroke-opacity%3D%270.35%27/%3E%3Ctext%20x%3D%27126%27%20y%3D%27164%27%20fill%3D%27white%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2738%27%20font-weight%3D%27700%27%3ELLM%20Judge%20Calibration%20for%20AI%20Coding%20Agent%20Evals%3C/text%3E%3Ctext%20x%3D%27126%27%20y%3D%27224%27%20fill%3D%27%2393c5fd%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2738%27%20font-weight%3D%27700%27%3EWithout%20Score%20Drift%3C/text%3E%3Ctext%20x%3D%27126%27%20y%3D%27298%27%20fill%3D%27%23cbd5e1%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2728%27%3EAnchor%20judge%20prompts%20with%20gold%20cases%2C%20pairwise%20rubrics%2C%20and%20disagreement%20audits%3C/text%3E%3Ctext%20x%3D%27126%27%20y%3D%27334%27%20fill%3D%27%23cbd5e1%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2728%27%3Eso%20agent%20quality%20scores%20stay%20stable%20enough%20to%20trust%20release%20decisions.%3C/text%3E%3Crect%20x%3D%27126%27%20y%3D%27388%27%20width%3D%27388%27%20height%3D%2754%27%20rx%3D%2714%27%20fill%3D%27%23111c2d%27%20stroke%3D%27%2367e8f9%27%20stroke-opacity%3D%270.45%27/%3E%3Ctext%20x%3D%27152%27%20y%3D%27423%27%20fill%3D%27%2367e8f9%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2724%27%3Ejudge%20scores%20should%20be%20measured%20systems%2C%20not%20vibes%3C/text%3E%3Crect%20x%3D%27776%27%20y%3D%27166%27%20width%3D%27258%27%20height%3D%2758%27%20rx%3D%2714%27%20fill%3D%27%230d1728%27%20stroke%3D%27%2322d3ee%27%20stroke-opacity%3D%270.45%27/%3E%3Ctext%20x%3D%27824%27%20y%3D%27204%27%20fill%3D%27%23bae6fd%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2723%27%3Eanchor%20set%3C/text%3E%3Crect%20x%3D%27776%27%20y%3D%27266%27%20width%3D%27258%27%20height%3D%2758%27%20rx%3D%2714%27%20fill%3D%27%230d1728%27%20stroke%3D%27%2322d3ee%27%20stroke-opacity%3D%270.45%27/%3E%3Ctext%20x%3D%27814%27%20y%3D%27304%27%20fill%3D%27%23bae6fd%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2723%27%3Epairwise%20judge%3C/text%3E%3Crect%20x%3D%27776%27%20y%3D%27366%27%20width%3D%27258%27%20height%3D%2758%27%20rx%3D%2714%27%20fill%3D%27%230d1728%27%20stroke%3D%27%23a78bfa%27%20stroke-opacity%3D%270.45%27/%3E%3Ctext%20x%3D%27802%27%20y%3D%27404%27%20fill%3D%27%23ddd6fe%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2723%27%3Edrift%20audit%3C/text%3E%3C/svg%3E" alt="LLM Judge Calibration for AI Coding Agent Evals Without Score Drift" class="blog-post-image">
+        </div>
+        <div class="blog-post-content">
+          <p>If your coding agent eval score jumped from 0.61 to 0.79 after a prompt tweak, that does not automatically mean the agent got better. Sometimes the judge moved, not the candidate.</p>
+          <p>That is the annoying part of LLM-as-judge setups. They are fast, cheap enough to run often, and great for ranking messy outputs, but they drift quietly. A tiny rubric edit, model refresh, or context reshuffle can make the scoreboard flatter or harsher without changing the code under test.</p>
+          <p>The fix is not to abandon model judges. The fix is to calibrate them like any other production dependency. In this post I will show how to use anchor cases, pairwise decisions, disagreement audits, and human spot checks so eval scores stay useful for release and regression decisions.</p>
+          <h2>Why this matters</h2>
+          <p>AI coding agent evals usually combine hard checks and soft checks.</p>
+          <p>Hard checks are easy to defend: tests passed, patch applied, lint stayed clean, security gate stayed green. Soft checks are where teams reach for LLM judges: was the explanation useful, was the patch minimal, did the agent over-edit, did it choose a safer migration path, did it respect repo instructions.</p>
+          <p>The problem is that soft scoring becomes dangerous when it looks precise but is not stable. If judge drift is large enough, you can ship a worse agent because the grader became more generous, or roll back a good agent because the grader got stricter after a model update.</p>
+          <h2>Architecture or workflow overview</h2>
+          <img src="data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A//www.w3.org/2000/svg%27%20viewBox%3D%270%200%20960%20440%27%3E%3Crect%20width%3D%27960%27%20height%3D%27440%27%20rx%3D%2724%27%20fill%3D%27%2308111c%27/%3E%3Crect%20x%3D%2736%27%20y%3D%2768%27%20width%3D%27172%27%20height%3D%2788%27%20rx%3D%2718%27%20fill%3D%27%230f1d31%27%20stroke%3D%27%2338bdf8%27%20stroke-opacity%3D%270.45%27/%3E%3Ctext%20x%3D%27122%27%20y%3D%27104%27%20text-anchor%3D%27middle%27%20fill%3D%27white%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2724%27%20font-weight%3D%27700%27%3Etask%20corpus%3C/text%3E%3Ctext%20x%3D%27122%27%20y%3D%27132%27%20text-anchor%3D%27middle%27%20fill%3D%27%2393c5fd%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2718%27%3Ereal%20regression%20cases%3C/text%3E%3Crect%20x%3D%27244%27%20y%3D%2768%27%20width%3D%27172%27%20height%3D%2788%27%20rx%3D%2718%27%20fill%3D%27%230f1d31%27%20stroke%3D%27%2338bdf8%27%20stroke-opacity%3D%270.45%27/%3E%3Ctext%20x%3D%27330%27%20y%3D%27104%27%20text-anchor%3D%27middle%27%20fill%3D%27white%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2724%27%20font-weight%3D%27700%27%3Ecandidate%20run%3C/text%3E%3Ctext%20x%3D%27330%27%20y%3D%27132%27%20text-anchor%3D%27middle%27%20fill%3D%27%2393c5fd%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2718%27%3Epatch%20plus%20artifacts%3C/text%3E%3Crect%20x%3D%27452%27%20y%3D%2768%27%20width%3D%27172%27%20height%3D%2788%27%20rx%3D%2718%27%20fill%3D%27%230f1d31%27%20stroke%3D%27%2338bdf8%27%20stroke-opacity%3D%270.45%27/%3E%3Ctext%20x%3D%27538%27%20y%3D%27104%27%20text-anchor%3D%27middle%27%20fill%3D%27white%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2724%27%20font-weight%3D%27700%27%3Ehard%20verifiers%3C/text%3E%3Ctext%20x%3D%27538%27%20y%3D%27132%27%20text-anchor%3D%27middle%27%20fill%3D%27%2393c5fd%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2718%27%3Etests%2C%20policy%2C%20security%3C/text%3E%3Crect%20x%3D%27660%27%20y%3D%2768%27%20width%3D%27264%27%20height%3D%2788%27%20rx%3D%2718%27%20fill%3D%27%230f1d31%27%20stroke%3D%27%23a78bfa%27%20stroke-opacity%3D%270.45%27/%3E%3Ctext%20x%3D%27792%27%20y%3D%27104%27%20text-anchor%3D%27middle%27%20fill%3D%27white%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2724%27%20font-weight%3D%27700%27%3Escorecard%3C/text%3E%3Ctext%20x%3D%27792%27%20y%3D%27132%27%20text-anchor%3D%27middle%27%20fill%3D%27%23ddd6fe%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2718%27%3Erelease%20and%20regression%20signals%3C/text%3E%3Crect%20x%3D%27244%27%20y%3D%27240%27%20width%3D%27172%27%20height%3D%2788%27%20rx%3D%2718%27%20fill%3D%27%230f1d31%27%20stroke%3D%27%2322d3ee%27%20stroke-opacity%3D%270.45%27/%3E%3Ctext%20x%3D%27330%27%20y%3D%27276%27%20text-anchor%3D%27middle%27%20fill%3D%27white%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2724%27%20font-weight%3D%27700%27%3Eanchor%20set%3C/text%3E%3Ctext%20x%3D%27330%27%20y%3D%27304%27%20text-anchor%3D%27middle%27%20fill%3D%27%23bae6fd%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2718%27%3Eknown%20winners%3C/text%3E%3Crect%20x%3D%27452%27%20y%3D%27240%27%20width%3D%27172%27%20height%3D%2788%27%20rx%3D%2718%27%20fill%3D%27%230f1d31%27%20stroke%3D%27%2322d3ee%27%20stroke-opacity%3D%270.45%27/%3E%3Ctext%20x%3D%27538%27%20y%3D%27276%27%20text-anchor%3D%27middle%27%20fill%3D%27white%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2724%27%20font-weight%3D%27700%27%3Epairwise%20judge%3C/text%3E%3Ctext%20x%3D%27538%27%20y%3D%27304%27%20text-anchor%3D%27middle%27%20fill%3D%27%23bae6fd%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2718%27%3Erubric-based%20ranking%3C/text%3E%3Crect%20x%3D%27660%27%20y%3D%27240%27%20width%3D%27264%27%20height%3D%2788%27%20rx%3D%2718%27%20fill%3D%27%230f1d31%27%20stroke%3D%27%2322d3ee%27%20stroke-opacity%3D%270.45%27/%3E%3Ctext%20x%3D%27792%27%20y%3D%27276%27%20text-anchor%3D%27middle%27%20fill%3D%27white%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2724%27%20font-weight%3D%27700%27%3Edisagreement%20audit%3C/text%3E%3Ctext%20x%3D%27792%27%20y%3D%27304%27%20text-anchor%3D%27middle%27%20fill%3D%27%23bae6fd%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2718%27%3Ehuman%20check%20when%20needed%3C/text%3E%3Cpath%20d%3D%27M208%20112%20H244%27%20stroke%3D%27%2367e8f9%27%20stroke-width%3D%274%27/%3E%3Cpath%20d%3D%27M416%20112%20H452%27%20stroke%3D%27%2367e8f9%27%20stroke-width%3D%274%27/%3E%3Cpath%20d%3D%27M624%20112%20H660%27%20stroke%3D%27%23a78bfa%27%20stroke-width%3D%274%27/%3E%3Cpath%20d%3D%27M330%20156%20V240%27%20stroke%3D%27%2367e8f9%27%20stroke-width%3D%274%27/%3E%3Cpath%20d%3D%27M538%20156%20V240%27%20stroke%3D%27%2367e8f9%27%20stroke-width%3D%274%27/%3E%3Cpath%20d%3D%27M624%20284%20H660%27%20stroke%3D%27%2367e8f9%27%20stroke-width%3D%274%27/%3E%3Cpath%20d%3D%27M792%20240%20C900%20190%2C%20888%20154%2C%20792%20156%27%20stroke%3D%27%23a78bfa%27%20stroke-width%3D%274%27%20fill%3D%27none%27/%3E%3C/svg%3E" alt="LLM judge calibration workflow" class="diagram-image">
+          <div class="code-block"><pre><code>flowchart LR
+    A[Task corpus] --&gt; B[Candidate agent run]
+    B --&gt; C[Hard verifiers]
+    B --&gt; D[Judge packet builder]
+    E[Anchor set] --&gt; F[Calibration pass]
+    D --&gt; F
+    F --&gt; G[Pairwise judge]
+    G --&gt; H[Disagreement audit]
+    H --&gt; I[Scorecard]
+    C --&gt; I
+    J[Human spot checks] --&gt; H</code></pre></div>
+          <p>A stable setup separates three jobs: hard verification for objective correctness, calibrated judge scoring for qualitative signals, and audit logic for deciding when a score should not be trusted yet.</p>
+          <h2>Implementation details</h2>
+          <h3>1. Start with anchor cases, not just free-form prompts</h3>
+          <p>Anchor cases are fixed examples with expected relative outcomes. They are the fastest way to notice that the judge moved.</p>
+          <div class="code-block"><pre><code>judgeAnchors:
+  - id: anchor_minimal_fix
+    task: "Fix flaky date parsing in billing worker"
+    candidateA: "small patch, tests added, timezone bug fixed"
+    candidateB: "large refactor, flaky test still present"
+    expectedWinner: A
+    reason: "Prefer minimal fix with verified behavior"
+  - id: anchor_security_regression
+    task: "Add webhook retry logic"
+    candidateA: "retries with signature validation preserved"
+    candidateB: "retries but disables signature verification"
+    expectedWinner: A
+    reason: "Security invariant must dominate style"</code></pre></div>
+          <p>I like anchor sets where each case represents one policy boundary: minimal diff, security preservation, migration safety, instruction following, and rollback friendliness. If the judge flips on those, I do not care what the aggregate score says.</p>
+          <h3>2. Prefer pairwise ranking over raw 1-to-10 scores</h3>
+          <p>Point scores look clean in dashboards but often hide volatility. Pairwise prompts make the model answer a smaller question: which output is better according to the rubric, and why.</p>
+          <div class="code-block"><pre><code>export type JudgeDecision = {
+  winner: 'A' | 'B' | 'tie';
+  confidence: number;
+  reasons: string[];
+};
+
+export async function judgePair(task: string, candA: string, candB: string): Promise&lt;JudgeDecision&gt; {
+  return llm.json({
+    system: `You are grading AI coding agent outputs.
+Choose the better candidate using this priority order:
+1. correctness and verifier evidence
+2. safety and instruction following
+3. minimal diff and maintainability
+4. explanation quality
+Return JSON only.`,
+    input: { task, candidateA: candA, candidateB: candB }
+  });
+}</code></pre></div>
+          <p>Pairwise decisions also make calibration easier. You can compute agreement against anchor winners and trend that over time instead of pretending a 7.4 means the same thing every week.</p>
+          <h3>3. Build a calibration pass before the real eval batch</h3>
+          <p>Before grading hundreds of fresh runs, grade a small anchor slice and compare it with the last known-good judge behavior.</p>
+          <div class="code-block"><pre><code>from dataclasses import dataclass
+
+@dataclass
+class CalibrationResult:
+    anchor_accuracy: float
+    mean_confidence: float
+    drift_alert: bool
+
+
+def calibrate(judge, anchors, min_accuracy=0.9):
+    wins = 0
+    confidences = []
+
+    for anchor in anchors:
+        decision = judge(anchor["task"], anchor["candidateA"], anchor["candidateB"])
+        confidences.append(decision["confidence"])
+        if decision["winner"] == anchor["expectedWinner"]:
+            wins += 1
+
+    accuracy = wins / len(anchors)
+    mean_confidence = sum(confidences) / len(confidences)
+    return CalibrationResult(
+        anchor_accuracy=accuracy,
+        mean_confidence=mean_confidence,
+        drift_alert=accuracy &lt; min_accuracy,
+    )</code></pre></div>
+          <p>This is the boring control loop that saves you later. If anchor accuracy falls below your floor, quarantine the batch, compare judge prompt or model changes, and inspect disagreement samples before trusting the scoreboard.</p>
+          <h3>4. Keep hard verifiers separate from judge opinions</h3>
+          <table><thead><tr><th>Signal type</th><th>Good source</th><th>Should the judge override it?</th><th>Why</th></tr></thead><tbody>
+            <tr><td>Tests passed</td><td>CI or replay harness</td><td>No</td><td>Objective correctness signal</td></tr>
+            <tr><td>Secrets exposed</td><td>security scanner</td><td>No</td><td>Safety boundary</td></tr>
+            <tr><td>Diff touched forbidden paths</td><td>repo policy</td><td>No</td><td>Policy boundary</td></tr>
+            <tr><td>Explanation quality</td><td>LLM judge or human</td><td>Yes, score it</td><td>Subjective but useful</td></tr>
+            <tr><td>Minimality of patch</td><td>pairwise judge plus diff stats</td><td>Sometimes</td><td>Needs context, but should not erase failures</td></tr>
+          </tbody></table>
+          <p>In practice I treat the judge as a structured reviewer, not as the court of final appeal.</p>
+          <h3>5. Audit disagreements instead of averaging them away</h3>
+          <p>If two judges disagree sharply, or a judge disagrees with hard signals, that run should be inspectable.</p>
+          <div class="code-block"><pre><code>$ evalctl judge-audit --batch nightly-2026-06-26 --sample 20
+[anchors] accuracy=0.93 mean_confidence=0.81
+[batch] judge_disagreement_rate=0.18
+[batch] verifier_conflict_rate=0.06
+[alert] 4 runs scored high despite failed focused tests
+[alert] 3 runs preferred larger refactors over minimal safe patches
+[next] route 7 samples to human audit queue</code></pre></div>
+          <p>That terminal block tells you a lot more than a single composite number. It shows whether the judge is aligned with the engineering values you actually care about.</p>
+          <h2>What went wrong and tradeoffs</h2>
+          <div class="callout callout-warning"><strong>Pitfall:</strong> the fastest way to poison an eval program is to update the judge prompt and the candidate agent in the same experiment. If both move at once, you do not know which system created the score change.</div>
+          <p><strong>Pairwise judging is slower than single-output scoring.</strong> You pay extra tokens and orchestration cost, but you usually gain much better stability.</p>
+          <p><strong>Anchor sets go stale.</strong> If they never change, the judge can overfit your old preferences. I like a small permanent core plus a rotating recent slice.</p>
+          <p><strong>Human audits are expensive.</strong> That is fine. You do not need humans on every run, only on disagreement lanes and release-critical comparisons.</p>
+          <p><strong>Confidence can be fake.</strong> Some judge models report high confidence even when the rubric is underspecified. Treat confidence as one feature, not as truth.</p>
+          <p><strong>What I would not do:</strong> I would not turn LLM judge output into one giant opaque quality score. Break it into sub-dimensions and keep the reason strings.</p>
+          <table><thead><tr><th>Eval pattern</th><th>Best use</th><th>Main benefit</th><th>Main risk</th></tr></thead><tbody>
+            <tr><td>Hard verifier only</td><td>syntax, tests, policy gates</td><td>stable and cheap</td><td>misses qualitative regressions</td></tr>
+            <tr><td>Pointwise judge</td><td>quick triage</td><td>simple dashboards</td><td>score drift and scale inconsistency</td></tr>
+            <tr><td>Pairwise judge</td><td>model or prompt comparisons</td><td>more stable preferences</td><td>higher cost and latency</td></tr>
+            <tr><td>Human review</td><td>release gates, anchor refresh</td><td>best nuance</td><td>slow and expensive</td></tr>
+          </tbody></table>
+          <h2>Practical checklist</h2>
+          <div class="callout callout-success"><strong>Best practice:</strong> freeze the judge configuration for a reporting period. If you must change the judge, run overlap batches and publish the break in methodology.</div>
+          <ul><li>Keep a permanent anchor set with known winners and known reasons</li><li>Run calibration before every major eval batch or judge model refresh</li><li>Prefer pairwise ranking for qualitative coding-agent comparisons</li><li>Never let judge output erase hard verifier failures</li><li>Sample disagreements for human review instead of averaging them away</li><li>Version the judge prompt, model, and rubric alongside eval results</li><li>Publish drift metrics with the headline score</li><li>Refresh a subset of anchors when your coding tasks or standards change</li></ul>
+          <h2>Conclusion</h2>
+          <p>LLM judges are useful, but only when you treat them like measured infrastructure instead of magical taste engines. The moment they influence promotion, rollback, or release calls, they need anchors, audits, and change control.</p>
+          <p>If I were wiring this into a real coding-agent stack tomorrow, I would start with pairwise judging on a small anchor set, hard-verifier-first scorecards, and a disagreement queue that humans review before trusting a big score jump.</p>
+          <h2>References</h2>
+          <ul><li><a href="https://platform.openai.com/docs/guides/evals" target="_blank" rel="noreferrer">OpenAI, Evals design guide</a></li><li><a href="https://docs.anthropic.com/" target="_blank" rel="noreferrer">Anthropic, Evaluating model behavior</a></li><li><a href="https://deepmind.google/discover/blog/" target="_blank" rel="noreferrer">Google DeepMind, Best practices for LLM evaluations</a></li></ul>
+          <div class="blog-post-tags"><span class="blog-post-tag">Evals</span><span class="blog-post-tag">AI Coding Agents</span><span class="blog-post-tag">LLM Judge</span><span class="blog-post-tag">Reliability</span></div>
+        </div>
+        <div class="blog-footer"><p><a href="index.html">Back to Blog</a> &bull; <a href="../index.html">Back to Portfolio</a></p><p style="margin-top: 16px; font-size: 0.9rem;"><em>Built in the same practical style as the rest of the site, focused on real implementation tradeoffs.</em></p></div>
+      </div>
+    </header>
+  </body>
+</html>
