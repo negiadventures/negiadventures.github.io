@@ -1,6 +1,14 @@
 {
   "topics": [
     {
+      "date": "2026-06-27",
+      "skill": "GPU memory headroom policies for local coding model gateways",
+      "topic": "Using per-lane VRAM floors, KV cache reserves, projected-memory admission checks, and early fallback routing so local coding gateways stay responsive under long prompts and mixed concurrency instead of crashing into allocator thrash and OOM failures",
+      "slug": "gpu-memory-headroom-local-coding-model-gateways",
+      "title": "GPU Memory Headroom Policies for Local Coding Model Gateways Without OOM Roulette",
+      "summary": "A practical guide to GPU memory headroom policies for local coding model gateways with KV cache reserves, prompt budgets, admission control, and fallback lanes so local coding agents stop falling over during peak load."
+    },
+    {
       "date": "2026-06-26",
       "skill": "LLM judge calibration for AI coding agent evals",
       "topic": "Using anchor cases, pairwise scoring, disagreement audits, and hard-verifier-first scorecards so teams can trust quality trends in AI coding agent evals without mistaking judge drift for actual model improvement",

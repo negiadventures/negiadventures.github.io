@@ -1,0 +1,230 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="A practical guide to GPU memory headroom policies for local coding model gateways using admission control, KV cache reserves, prompt budgets, and fallback lanes so coding agents stop crashing into OOM roulette.">
+    <meta name="author" content="Anirudh Negi">
+    <title>GPU Memory Headroom Policies for Local Coding Model Gateways Without OOM Roulette | Anirudh Negi</title>
+    <link rel="icon" type="image/svg+xml" href="../images/favicon.svg">
+    <link rel="canonical" href="https://negiadventures.github.io/blog/gpu-memory-headroom-local-coding-model-gateways.html">
+    <meta property="og:type" content="article">
+    <meta property="og:url" content="https://negiadventures.github.io/blog/gpu-memory-headroom-local-coding-model-gateways.html">
+    <meta property="og:title" content="GPU Memory Headroom Policies for Local Coding Model Gateways Without OOM Roulette | Anirudh Negi">
+    <meta property="og:description" content="A practical guide to GPU memory headroom policies for local coding model gateways using admission control, KV cache reserves, prompt budgets, and fallback lanes so coding agents stop crashing into OOM roulette.">
+    <meta property="og:image" content="data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A//www.w3.org/2000/svg%27%20viewBox%3D%270%200%201200%20630%27%3E%0A%3Cdefs%3E%3ClinearGradient%20id%3D%27bg%27%20x1%3D%270%27%20x2%3D%271%27%20y1%3D%270%27%20y2%3D%271%27%3E%3Cstop%20offset%3D%270%25%27%20stop-color%3D%27%2307111d%27/%3E%3Cstop%20offset%3D%27100%25%27%20stop-color%3D%27%231a4d77%27/%3E%3C/linearGradient%3E%3C/defs%3E%0A%3Crect%20width%3D%271200%27%20height%3D%27630%27%20fill%3D%27url%28%23bg%29%27/%3E%0A%3Ccircle%20cx%3D%271008%27%20cy%3D%27108%27%20r%3D%27178%27%20fill%3D%27%2322d3ee%27%20fill-opacity%3D%270.14%27/%3E%3Ccircle%20cx%3D%27186%27%20cy%3D%27520%27%20r%3D%27220%27%20fill%3D%27%238b5cf6%27%20fill-opacity%3D%270.16%27/%3E%0A%3Crect%20x%3D%2778%27%20y%3D%2786%27%20width%3D%271044%27%20height%3D%27458%27%20rx%3D%2730%27%20fill%3D%27%230b1220%27%20stroke%3D%27%2338bdf8%27%20stroke-opacity%3D%270.35%27/%3E%0A%3Ctext%20x%3D%27126%27%20y%3D%27164%27%20fill%3D%27white%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2738%27%20font-weight%3D%27700%27%3EGPU%20Memory%20Headroom%20Policies%20for%3C/text%3E%0A%3Ctext%20x%3D%27126%27%20y%3D%27224%27%20fill%3D%27%2393c5fd%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2738%27%20font-weight%3D%27700%27%3ELocal%20Coding%20Model%20Gateways%20Without%20OOM%20Roulette%3C/text%3E%0A%3Ctext%20x%3D%27126%27%20y%3D%27298%27%20fill%3D%27%23cbd5e1%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2728%27%3EReserve%20KV%20cache%2C%20budget%20prompts%2C%20and%20shed%20load%20before%20local%20coding%3C/text%3E%0A%3Ctext%20x%3D%27126%27%20y%3D%27334%27%20fill%3D%27%23cbd5e1%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2728%27%3Eagents%20turn%20one%20busy%20GPU%20into%20random%20latency%20spikes%20and%20hard%20crashes.%3C/text%3E%0A%3Crect%20x%3D%27126%27%20y%3D%27388%27%20width%3D%27372%27%20height%3D%2754%27%20rx%3D%2714%27%20fill%3D%27%23111c2d%27%20stroke%3D%27%2367e8f9%27%20stroke-opacity%3D%270.45%27/%3E%0A%3Ctext%20x%3D%27152%27%20y%3D%27423%27%20fill%3D%27%2367e8f9%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2724%27%3Ememory%20headroom%20is%20a%20policy%20problem%2C%20not%20just%20a%20hardware%20problem%3C/text%3E%0A%3Crect%20x%3D%27776%27%20y%3D%27166%27%20width%3D%27258%27%20height%3D%2758%27%20rx%3D%2714%27%20fill%3D%27%230d1728%27%20stroke%3D%27%2322d3ee%27%20stroke-opacity%3D%270.45%27/%3E%3Ctext%20x%3D%27828%27%20y%3D%27204%27%20fill%3D%27%23bae6fd%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2723%27%3EVRAM%20floor%3C/text%3E%0A%3Crect%20x%3D%27776%27%20y%3D%27266%27%20width%3D%27258%27%20height%3D%2758%27%20rx%3D%2714%27%20fill%3D%27%230d1728%27%20stroke%3D%27%2322d3ee%27%20stroke-opacity%3D%270.45%27/%3E%3Ctext%20x%3D%27814%27%20y%3D%27304%27%20fill%3D%27%23bae6fd%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2723%27%3EKV%20reserve%3C/text%3E%0A%3Crect%20x%3D%27776%27%20y%3D%27366%27%20width%3D%27258%27%20height%3D%2758%27%20rx%3D%2714%27%20fill%3D%27%230d1728%27%20stroke%3D%27%23a78bfa%27%20stroke-opacity%3D%270.45%27/%3E%3Ctext%20x%3D%27806%27%20y%3D%27404%27%20fill%3D%27%23ddd6fe%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2723%27%3Efallback%20lane%3C/text%3E%0A%3C/svg%3E">
+    <meta property="article:published_time" content="2026-06-27">
+    <meta property="article:author" content="Anirudh Negi">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:url" content="https://negiadventures.github.io/blog/gpu-memory-headroom-local-coding-model-gateways.html">
+    <meta name="twitter:title" content="GPU Memory Headroom Policies for Local Coding Model Gateways Without OOM Roulette | Anirudh Negi">
+    <meta name="twitter:description" content="A practical guide to GPU memory headroom policies for local coding model gateways using admission control, KV cache reserves, prompt budgets, and fallback lanes so coding agents stop crashing into OOM roulette.">
+    <meta name="twitter:image" content="data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A//www.w3.org/2000/svg%27%20viewBox%3D%270%200%201200%20630%27%3E%0A%3Cdefs%3E%3ClinearGradient%20id%3D%27bg%27%20x1%3D%270%27%20x2%3D%271%27%20y1%3D%270%27%20y2%3D%271%27%3E%3Cstop%20offset%3D%270%25%27%20stop-color%3D%27%2307111d%27/%3E%3Cstop%20offset%3D%27100%25%27%20stop-color%3D%27%231a4d77%27/%3E%3C/linearGradient%3E%3C/defs%3E%0A%3Crect%20width%3D%271200%27%20height%3D%27630%27%20fill%3D%27url%28%23bg%29%27/%3E%0A%3Ccircle%20cx%3D%271008%27%20cy%3D%27108%27%20r%3D%27178%27%20fill%3D%27%2322d3ee%27%20fill-opacity%3D%270.14%27/%3E%3Ccircle%20cx%3D%27186%27%20cy%3D%27520%27%20r%3D%27220%27%20fill%3D%27%238b5cf6%27%20fill-opacity%3D%270.16%27/%3E%0A%3Crect%20x%3D%2778%27%20y%3D%2786%27%20width%3D%271044%27%20height%3D%27458%27%20rx%3D%2730%27%20fill%3D%27%230b1220%27%20stroke%3D%27%2338bdf8%27%20stroke-opacity%3D%270.35%27/%3E%0A%3Ctext%20x%3D%27126%27%20y%3D%27164%27%20fill%3D%27white%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2738%27%20font-weight%3D%27700%27%3EGPU%20Memory%20Headroom%20Policies%20for%3C/text%3E%0A%3Ctext%20x%3D%27126%27%20y%3D%27224%27%20fill%3D%27%2393c5fd%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2738%27%20font-weight%3D%27700%27%3ELocal%20Coding%20Model%20Gateways%20Without%20OOM%20Roulette%3C/text%3E%0A%3Ctext%20x%3D%27126%27%20y%3D%27298%27%20fill%3D%27%23cbd5e1%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2728%27%3EReserve%20KV%20cache%2C%20budget%20prompts%2C%20and%20shed%20load%20before%20local%20coding%3C/text%3E%0A%3Ctext%20x%3D%27126%27%20y%3D%27334%27%20fill%3D%27%23cbd5e1%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2728%27%3Eagents%20turn%20one%20busy%20GPU%20into%20random%20latency%20spikes%20and%20hard%20crashes.%3C/text%3E%0A%3Crect%20x%3D%27126%27%20y%3D%27388%27%20width%3D%27372%27%20height%3D%2754%27%20rx%3D%2714%27%20fill%3D%27%23111c2d%27%20stroke%3D%27%2367e8f9%27%20stroke-opacity%3D%270.45%27/%3E%0A%3Ctext%20x%3D%27152%27%20y%3D%27423%27%20fill%3D%27%2367e8f9%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2724%27%3Ememory%20headroom%20is%20a%20policy%20problem%2C%20not%20just%20a%20hardware%20problem%3C/text%3E%0A%3Crect%20x%3D%27776%27%20y%3D%27166%27%20width%3D%27258%27%20height%3D%2758%27%20rx%3D%2714%27%20fill%3D%27%230d1728%27%20stroke%3D%27%2322d3ee%27%20stroke-opacity%3D%270.45%27/%3E%3Ctext%20x%3D%27828%27%20y%3D%27204%27%20fill%3D%27%23bae6fd%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2723%27%3EVRAM%20floor%3C/text%3E%0A%3Crect%20x%3D%27776%27%20y%3D%27266%27%20width%3D%27258%27%20height%3D%2758%27%20rx%3D%2714%27%20fill%3D%27%230d1728%27%20stroke%3D%27%2322d3ee%27%20stroke-opacity%3D%270.45%27/%3E%3Ctext%20x%3D%27814%27%20y%3D%27304%27%20fill%3D%27%23bae6fd%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2723%27%3EKV%20reserve%3C/text%3E%0A%3Crect%20x%3D%27776%27%20y%3D%27366%27%20width%3D%27258%27%20height%3D%2758%27%20rx%3D%2714%27%20fill%3D%27%230d1728%27%20stroke%3D%27%23a78bfa%27%20stroke-opacity%3D%270.45%27/%3E%3Ctext%20x%3D%27806%27%20y%3D%27404%27%20fill%3D%27%23ddd6fe%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2723%27%3Efallback%20lane%3C/text%3E%0A%3C/svg%3E">
+    <script type="application/ld+json">{
+      "@context": "https://schema.org",
+      "@type": "BlogPosting",
+      "headline": "GPU Memory Headroom Policies for Local Coding Model Gateways Without OOM Roulette",
+      "description": "A practical guide to GPU memory headroom policies for local coding model gateways using admission control, KV cache reserves, prompt budgets, and fallback lanes so coding agents stop crashing into OOM roulette.",
+      "image": "data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A//www.w3.org/2000/svg%27%20viewBox%3D%270%200%201200%20630%27%3E%0A%3Cdefs%3E%3ClinearGradient%20id%3D%27bg%27%20x1%3D%270%27%20x2%3D%271%27%20y1%3D%270%27%20y2%3D%271%27%3E%3Cstop%20offset%3D%270%25%27%20stop-color%3D%27%2307111d%27/%3E%3Cstop%20offset%3D%27100%25%27%20stop-color%3D%27%231a4d77%27/%3E%3C/linearGradient%3E%3C/defs%3E%0A%3Crect%20width%3D%271200%27%20height%3D%27630%27%20fill%3D%27url%28%23bg%29%27/%3E%0A%3Ccircle%20cx%3D%271008%27%20cy%3D%27108%27%20r%3D%27178%27%20fill%3D%27%2322d3ee%27%20fill-opacity%3D%270.14%27/%3E%3Ccircle%20cx%3D%27186%27%20cy%3D%27520%27%20r%3D%27220%27%20fill%3D%27%238b5cf6%27%20fill-opacity%3D%270.16%27/%3E%0A%3Crect%20x%3D%2778%27%20y%3D%2786%27%20width%3D%271044%27%20height%3D%27458%27%20rx%3D%2730%27%20fill%3D%27%230b1220%27%20stroke%3D%27%2338bdf8%27%20stroke-opacity%3D%270.35%27/%3E%0A%3Ctext%20x%3D%27126%27%20y%3D%27164%27%20fill%3D%27white%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2738%27%20font-weight%3D%27700%27%3EGPU%20Memory%20Headroom%20Policies%20for%3C/text%3E%0A%3Ctext%20x%3D%27126%27%20y%3D%27224%27%20fill%3D%27%2393c5fd%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2738%27%20font-weight%3D%27700%27%3ELocal%20Coding%20Model%20Gateways%20Without%20OOM%20Roulette%3C/text%3E%0A%3Ctext%20x%3D%27126%27%20y%3D%27298%27%20fill%3D%27%23cbd5e1%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2728%27%3EReserve%20KV%20cache%2C%20budget%20prompts%2C%20and%20shed%20load%20before%20local%20coding%3C/text%3E%0A%3Ctext%20x%3D%27126%27%20y%3D%27334%27%20fill%3D%27%23cbd5e1%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2728%27%3Eagents%20turn%20one%20busy%20GPU%20into%20random%20latency%20spikes%20and%20hard%20crashes.%3C/text%3E%0A%3Crect%20x%3D%27126%27%20y%3D%27388%27%20width%3D%27372%27%20height%3D%2754%27%20rx%3D%2714%27%20fill%3D%27%23111c2d%27%20stroke%3D%27%2367e8f9%27%20stroke-opacity%3D%270.45%27/%3E%0A%3Ctext%20x%3D%27152%27%20y%3D%27423%27%20fill%3D%27%2367e8f9%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2724%27%3Ememory%20headroom%20is%20a%20policy%20problem%2C%20not%20just%20a%20hardware%20problem%3C/text%3E%0A%3Crect%20x%3D%27776%27%20y%3D%27166%27%20width%3D%27258%27%20height%3D%2758%27%20rx%3D%2714%27%20fill%3D%27%230d1728%27%20stroke%3D%27%2322d3ee%27%20stroke-opacity%3D%270.45%27/%3E%3Ctext%20x%3D%27828%27%20y%3D%27204%27%20fill%3D%27%23bae6fd%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2723%27%3EVRAM%20floor%3C/text%3E%0A%3Crect%20x%3D%27776%27%20y%3D%27266%27%20width%3D%27258%27%20height%3D%2758%27%20rx%3D%2714%27%20fill%3D%27%230d1728%27%20stroke%3D%27%2322d3ee%27%20stroke-opacity%3D%270.45%27/%3E%3Ctext%20x%3D%27814%27%20y%3D%27304%27%20fill%3D%27%23bae6fd%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2723%27%3EKV%20reserve%3C/text%3E%0A%3Crect%20x%3D%27776%27%20y%3D%27366%27%20width%3D%27258%27%20height%3D%2758%27%20rx%3D%2714%27%20fill%3D%27%230d1728%27%20stroke%3D%27%23a78bfa%27%20stroke-opacity%3D%270.45%27/%3E%3Ctext%20x%3D%27806%27%20y%3D%27404%27%20fill%3D%27%23ddd6fe%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2723%27%3Efallback%20lane%3C/text%3E%0A%3C/svg%3E",
+      "url": "https://negiadventures.github.io/blog/gpu-memory-headroom-local-coding-model-gateways.html",
+      "datePublished": "2026-06-27",
+      "author": { "@type": "Person", "name": "Anirudh Negi", "url": "https://negiadventures.github.io" },
+      "publisher": { "@type": "Person", "name": "Anirudh Negi", "url": "https://negiadventures.github.io" }
+    }</script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../stylesheets/stylesheet.css?v=5" media="screen">
+    <style>
+      .blog-post { max-width: 800px; margin: 0 auto; padding: 60px 20px; }
+      .blog-post-header { margin-bottom: 40px; }
+      .blog-post-nav { margin-bottom: 30px; }
+      .blog-post-nav a { color: var(--accent-strong); font-size: 0.95rem; }
+      .blog-post-nav a:hover { color: var(--accent); }
+      .blog-post-title { font-size: 2.5rem; margin-bottom: 16px; }
+      .blog-post-meta { display: flex; gap: 20px; color: var(--text-muted); font-size: 0.95rem; margin-bottom: 30px; flex-wrap: wrap; }
+      .blog-post-image { width: 100%; height: 300px; object-fit: cover; border-radius: 16px; margin-bottom: 30px; border: 1px solid var(--border); background: var(--bg-alt); }
+      .blog-post-content h2 { font-size: 1.6rem; margin-top: 40px; margin-bottom: 16px; color: var(--text-light); }
+      .blog-post-content h3 { font-size: 1.3rem; margin-top: 30px; margin-bottom: 12px; color: var(--text-light); }
+      .blog-post-content p { line-height: 1.8; margin-bottom: 16px; color: var(--text-muted); }
+      .blog-post-content ul, .blog-post-content ol { line-height: 1.8; margin-bottom: 20px; color: var(--text-muted); padding-left: 24px; }
+      .blog-post-content li { margin-bottom: 8px; }
+      .code-block { background: var(--bg-alt); border: 1px solid var(--border); border-radius: 12px; padding: 20px; margin: 20px 0; overflow-x: auto; }
+      .code-block pre, .code-block code { margin: 0; font-family: var(--mono); font-size: 0.9rem; line-height: 1.6; color: var(--accent-strong); white-space: pre; }
+      .callout { border-left: 4px solid var(--accent); background: rgba(34, 211, 238, 0.08); padding: 16px 18px; border-radius: 12px; margin: 24px 0; color: var(--text-muted); }
+      .terminal-block { background: #07111d; border: 1px solid var(--border); border-radius: 12px; padding: 20px; margin: 20px 0; overflow-x: auto; }
+      .terminal-block pre { margin: 0; color: #cbd5e1; font-family: var(--mono); font-size: 0.9rem; line-height: 1.6; }
+      .diagram-block { background: linear-gradient(180deg, rgba(8, 15, 28, 0.96), rgba(12, 22, 38, 0.96)); border: 1px solid var(--border); border-radius: 16px; padding: 18px; margin: 20px 0; }
+      .diagram-block svg { width: 100%; height: auto; display: block; }
+      table { width: 100%; border-collapse: collapse; margin: 24px 0; }
+      th, td { border: 1px solid var(--border); padding: 12px; text-align: left; vertical-align: top; }
+      th { color: var(--text-light); background: var(--bg-alt); }
+      td { color: var(--text-muted); }
+      .blog-post-tags { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 40px; padding-top: 30px; border-top: 1px solid var(--border); }
+      .blog-post-tag { background: var(--accent-soft); color: var(--accent-strong); border-radius: 999px; padding: 6px 14px; font-size: 0.85rem; font-family: var(--mono); border: 1px solid transparent; transition: border-color 0.2s ease; }
+      .blog-footer { margin-top: 60px; padding-top: 30px; border-top: 1px solid var(--border); text-align: center; }
+      .blog-footer a { color: var(--accent-strong); }
+      .blog-footer a:hover { color: var(--accent); }
+      @media (max-width: 768px) { .blog-post { padding: 40px 16px; } .blog-post-title { font-size: 2rem; } .blog-post-image { height: 200px; } }
+    </style>
+  </head>
+  <body>
+    <a href="../index.html#main" class="skip-link">Skip to main content</a>
+    <header class="site-header">
+      <div class="container blog-post">
+        <div class="blog-post-nav"><a href="index.html">&larr; Back to All Posts</a></div>
+        <div class="blog-post-header">
+          <h1 class="blog-post-title">GPU Memory Headroom Policies for Local Coding Model Gateways Without OOM Roulette</h1>
+          <div class="blog-post-meta"><span>June 27, 2026</span><span>&bull;</span><span>9 min read</span></div>
+          <img src="data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A//www.w3.org/2000/svg%27%20viewBox%3D%270%200%201200%20630%27%3E%0A%3Cdefs%3E%3ClinearGradient%20id%3D%27bg%27%20x1%3D%270%27%20x2%3D%271%27%20y1%3D%270%27%20y2%3D%271%27%3E%3Cstop%20offset%3D%270%25%27%20stop-color%3D%27%2307111d%27/%3E%3Cstop%20offset%3D%27100%25%27%20stop-color%3D%27%231a4d77%27/%3E%3C/linearGradient%3E%3C/defs%3E%0A%3Crect%20width%3D%271200%27%20height%3D%27630%27%20fill%3D%27url%28%23bg%29%27/%3E%0A%3Ccircle%20cx%3D%271008%27%20cy%3D%27108%27%20r%3D%27178%27%20fill%3D%27%2322d3ee%27%20fill-opacity%3D%270.14%27/%3E%3Ccircle%20cx%3D%27186%27%20cy%3D%27520%27%20r%3D%27220%27%20fill%3D%27%238b5cf6%27%20fill-opacity%3D%270.16%27/%3E%0A%3Crect%20x%3D%2778%27%20y%3D%2786%27%20width%3D%271044%27%20height%3D%27458%27%20rx%3D%2730%27%20fill%3D%27%230b1220%27%20stroke%3D%27%2338bdf8%27%20stroke-opacity%3D%270.35%27/%3E%0A%3Ctext%20x%3D%27126%27%20y%3D%27164%27%20fill%3D%27white%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2738%27%20font-weight%3D%27700%27%3EGPU%20Memory%20Headroom%20Policies%20for%3C/text%3E%0A%3Ctext%20x%3D%27126%27%20y%3D%27224%27%20fill%3D%27%2393c5fd%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2738%27%20font-weight%3D%27700%27%3ELocal%20Coding%20Model%20Gateways%20Without%20OOM%20Roulette%3C/text%3E%0A%3Ctext%20x%3D%27126%27%20y%3D%27298%27%20fill%3D%27%23cbd5e1%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2728%27%3EReserve%20KV%20cache%2C%20budget%20prompts%2C%20and%20shed%20load%20before%20local%20coding%3C/text%3E%0A%3Ctext%20x%3D%27126%27%20y%3D%27334%27%20fill%3D%27%23cbd5e1%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2728%27%3Eagents%20turn%20one%20busy%20GPU%20into%20random%20latency%20spikes%20and%20hard%20crashes.%3C/text%3E%0A%3Crect%20x%3D%27126%27%20y%3D%27388%27%20width%3D%27372%27%20height%3D%2754%27%20rx%3D%2714%27%20fill%3D%27%23111c2d%27%20stroke%3D%27%2367e8f9%27%20stroke-opacity%3D%270.45%27/%3E%0A%3Ctext%20x%3D%27152%27%20y%3D%27423%27%20fill%3D%27%2367e8f9%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2724%27%3Ememory%20headroom%20is%20a%20policy%20problem%2C%20not%20just%20a%20hardware%20problem%3C/text%3E%0A%3Crect%20x%3D%27776%27%20y%3D%27166%27%20width%3D%27258%27%20height%3D%2758%27%20rx%3D%2714%27%20fill%3D%27%230d1728%27%20stroke%3D%27%2322d3ee%27%20stroke-opacity%3D%270.45%27/%3E%3Ctext%20x%3D%27828%27%20y%3D%27204%27%20fill%3D%27%23bae6fd%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2723%27%3EVRAM%20floor%3C/text%3E%0A%3Crect%20x%3D%27776%27%20y%3D%27266%27%20width%3D%27258%27%20height%3D%2758%27%20rx%3D%2714%27%20fill%3D%27%230d1728%27%20stroke%3D%27%2322d3ee%27%20stroke-opacity%3D%270.45%27/%3E%3Ctext%20x%3D%27814%27%20y%3D%27304%27%20fill%3D%27%23bae6fd%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2723%27%3EKV%20reserve%3C/text%3E%0A%3Crect%20x%3D%27776%27%20y%3D%27366%27%20width%3D%27258%27%20height%3D%2758%27%20rx%3D%2714%27%20fill%3D%27%230d1728%27%20stroke%3D%27%23a78bfa%27%20stroke-opacity%3D%270.45%27/%3E%3Ctext%20x%3D%27806%27%20y%3D%27404%27%20fill%3D%27%23ddd6fe%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2723%27%3Efallback%20lane%3C/text%3E%0A%3C/svg%3E" alt="GPU Memory Headroom Policies for Local Coding Model Gateways Without OOM Roulette" class="blog-post-image">
+        </div>
+        <div class="blog-post-content">
+          <p>Running coding models locally feels great right up until the GPU falls off a cliff. A slightly longer prompt, one extra concurrent request, or a larger KV cache can turn a fast gateway into OOM roulette.</p>
+          <p>The annoying part is that these failures often look random. One run finishes in 8 seconds, the next dies with allocator errors, and the one after that limps along with terrible latency because the runtime is thrashing instead of refusing work cleanly.</p>
+          <p>This post is about the policy layer I wish more local model setups had. Not just more VRAM, but concrete headroom rules: reserve memory for KV growth, cap prompt budgets, admit requests by lane, and fall back before the box melts.</p>
+          <h2>Why this matters</h2>
+          <p>If you use local coding gateways for terminal agents, editor integrations, or OpenAI-compatible wrappers, GPU memory becomes a shared production resource. The model weights are only part of the bill.</p>
+          <ul>
+            <li>Long prompts and giant diffs grow KV usage quickly.</li>
+            <li>Mixed workloads fragment memory in ugly ways.</li>
+            <li>Concurrency hides danger until the busiest request arrives.</li>
+            <li>Slowdowns are often worse than clean rejects because they erode trust.</li>
+          </ul>
+          <h2>Architecture or workflow overview</h2>
+          <div class="diagram-block">
+            <svg viewBox="0 0 760 250" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Gateway admission flow diagram">
+              <rect x="20" y="88" width="120" height="64" rx="14" fill="#0d1728" stroke="#22d3ee" stroke-opacity="0.45"/>
+              <text x="80" y="123" text-anchor="middle" fill="#bae6fd" font-family="Arial, sans-serif" font-size="16">Agent</text>
+              <text x="80" y="143" text-anchor="middle" fill="#bae6fd" font-family="Arial, sans-serif" font-size="16">request</text>
+              <rect x="185" y="88" width="155" height="64" rx="14" fill="#0d1728" stroke="#22d3ee" stroke-opacity="0.45"/>
+              <text x="262" y="123" text-anchor="middle" fill="#bae6fd" font-family="Arial, sans-serif" font-size="16">Admission</text>
+              <text x="262" y="143" text-anchor="middle" fill="#bae6fd" font-family="Arial, sans-serif" font-size="16">check</text>
+              <rect x="388" y="72" width="162" height="96" rx="16" fill="#111c2d" stroke="#67e8f9" stroke-opacity="0.45"/>
+              <text x="469" y="108" text-anchor="middle" fill="#e2e8f0" font-family="Arial, sans-serif" font-size="16">Enough VRAM floor</text>
+              <text x="469" y="130" text-anchor="middle" fill="#e2e8f0" font-family="Arial, sans-serif" font-size="16">and KV reserve?</text>
+              <rect x="600" y="32" width="130" height="64" rx="14" fill="#0d1728" stroke="#22d3ee" stroke-opacity="0.45"/>
+              <text x="665" y="67" text-anchor="middle" fill="#bae6fd" font-family="Arial, sans-serif" font-size="16">Run locally</text>
+              <rect x="600" y="154" width="130" height="64" rx="14" fill="#1a1330" stroke="#a78bfa" stroke-opacity="0.45"/>
+              <text x="665" y="189" text-anchor="middle" fill="#ddd6fe" font-family="Arial, sans-serif" font-size="16">Fallback lane</text>
+              <line x1="140" y1="120" x2="185" y2="120" stroke="#67e8f9" stroke-width="2"/>
+              <line x1="340" y1="120" x2="388" y2="120" stroke="#67e8f9" stroke-width="2"/>
+              <line x1="550" y1="100" x2="600" y2="64" stroke="#67e8f9" stroke-width="2"/>
+              <line x1="550" y1="140" x2="600" y2="186" stroke="#a78bfa" stroke-width="2"/>
+              <text x="570" y="88" fill="#67e8f9" font-family="Arial, sans-serif" font-size="14">yes</text>
+              <text x="566" y="169" fill="#ddd6fe" font-family="Arial, sans-serif" font-size="14">no</text>
+            </svg>
+          </div>
+          <div class="code-block"><pre><code>flowchart LR
+    A[Agent request] --&gt; B[Gateway admission check]
+    B --&gt; C{{Enough free VRAM and KV reserve?}}
+    C -- yes --&gt; D[Load lane profile]
+    D --&gt; E[Run model with prompt budget]
+    E --&gt; F[Emit tokens and telemetry]
+    C -- no --&gt; G[Fallback lane]
+    G --&gt; H[Smaller quant or remote model]
+    F --&gt; I[Update headroom ledger]
+    H --&gt; I</code></pre></div>
+          <p>I treat the gateway as three policy layers: a static floor for weights and fragmentation, a dynamic reserve for KV cache growth, and an admission policy that either runs, queues, rejects, or reroutes work.</p>
+          <h2>Implementation details</h2>
+          <h3>1) Define lane budgets instead of one global limit</h3>
+          <p>A short edit and a 24k-token patch review do not have the same memory shape. Put them in separate lanes.</p>
+          <div class="code-block"><pre><code>lanes:
+  fast-edit:
+    maxInputTokens: 6000
+    maxOutputTokens: 1200
+    concurrency: 2
+    minFreeVramMb: 7000
+    kvReserveMb: 5000
+    fallback: qwen-coder-14b-q4
+
+  deep-review:
+    maxInputTokens: 24000
+    maxOutputTokens: 2400
+    concurrency: 1
+    minFreeVramMb: 12000
+    kvReserveMb: 9000
+    fallback: remote-gpt-5.1-mini</code></pre></div>
+          <p>The important part is not the exact numbers. It is having numbers at all, per lane, before traffic arrives.</p>
+          <h3>2) Admit work using projected memory, not current free VRAM alone</h3>
+          <p>Current free VRAM is only a snapshot. You need to estimate how much the request will grow once prompt ingestion and generation begin.</p>
+          <div class="code-block"><pre><code>from dataclasses import dataclass
+
+@dataclass
+class LaneBudget:
+    min_free_vram_mb: int
+    kv_reserve_mb: int
+    max_input_tokens: int
+    max_output_tokens: int
+
+
+def can_admit(req, lane: LaneBudget, gpu):
+    if req.input_tokens &gt; lane.max_input_tokens:
+        return False, "prompt_budget_exceeded"
+
+    projected_kv_mb = estimate_kv_cache_mb(
+        model=req.model,
+        input_tokens=req.input_tokens,
+        output_tokens=min(req.max_output_tokens, lane.max_output_tokens),
+    )
+
+    projected_total = gpu.runtime_overhead_mb + projected_kv_mb + lane.kv_reserve_mb
+    free_after_admit = gpu.free_vram_mb - projected_total
+
+    if free_after_admit &lt; lane.min_free_vram_mb:
+        return False, "insufficient_headroom"
+
+    return True, "admit"</code></pre></div>
+          <p>Even a rough estimator is enough to stop the most avoidable crashes.</p>
+          <h3>3) Log memory pressure as a product metric</h3>
+          <p>If the first sign of trouble is a dead process, the gateway is already under-observed.</p>
+          <div class="terminal-block"><pre>$ gateway status --recent
+lane         req_id   prompt  projected_kv  free_before  outcome
+fast-edit    a18f92   4200    1810 MB       10344 MB     admit
+deep-review  b51d77   23800   7420 MB       11888 MB     fallback:remote
+fast-edit    c90a11   6100    2470 MB       6622 MB      reject:prompt_budget</pre></div>
+          <p>Those three fields tell you whether the real problem is prompt inflation, oversubscription, or a bad reserve policy.</p>
+          <h2>What went wrong / tradeoffs</h2>
+          <p><strong>Failure mode 1:</strong> sizing the GPU for weights only. The model may fit, but coding prompts make KV growth the real memory event.</p>
+          <p><strong>Failure mode 2:</strong> sharing one GPU with embeddings, reranking, OCR, and generation while pretending the free VRAM number means the same thing all day.</p>
+          <p><strong>Failure mode 3:</strong> falling back too late. If the gateway already spent 12 seconds ingesting a huge prompt, you already lost the user experience.</p>
+          <div class="callout"><strong>Pitfall:</strong> Prompt compression can hide the symptom without fixing the system. If your box only survives after aggressive summarization, the real issue may be the quant choice, concurrency level, or reserve policy.</div>
+          <table>
+            <thead><tr><th>Approach</th><th>Upside</th><th>Downside</th><th>Best fit</th></tr></thead>
+            <tbody>
+              <tr><td>Static overprovisioning</td><td>Simple</td><td>Wastes capacity and still fails under spikes</td><td>Single-user workstation</td></tr>
+              <tr><td>Adaptive admission control</td><td>Best reliability per GPU</td><td>Needs telemetry and lane design</td><td>Shared local gateway</td></tr>
+              <tr><td>Early remote fallback</td><td>Protects UX during peaks</td><td>Adds cost and routing complexity</td><td>Always-on team setup</td></tr>
+              <tr><td>Queue everything</td><td>Avoids hard rejects</td><td>Latency gets unpredictable fast</td><td>Background jobs only</td></tr>
+            </tbody>
+          </table>
+          <h2>Practical checklist or decision framework</h2>
+          <div class="callout"><strong>Best-practice checklist</strong><br>
+            - define per-lane prompt and output budgets<br>
+            - reserve explicit KV headroom, not just total free VRAM<br>
+            - reject or reroute before memory gets critical<br>
+            - avoid letting embeddings silently consume the same safety margin<br>
+            - log admission outcomes so drift is visible<br>
+            - test with worst-case diffs, not only happy-path prompts<br>
+            - keep one cheap fallback lane for peak moments
+          </div>
+          <h2>References</h2>
+          <ul>
+            <li><a href="https://developer.nvidia.com/dcgm">NVIDIA DCGM</a>, for GPU telemetry and health metrics.</li>
+            <li><a href="https://docs.vllm.ai/">vLLM documentation</a>, for serving and memory-related runtime behavior.</li>
+            <li><a href="https://github.com/ggml-org/llama.cpp">llama.cpp</a>, for practical local inference tuning and KV cache tradeoffs.</li>
+          </ul>
+          <h2>Conclusion</h2>
+          <p>Local coding gateways get much more trustworthy once memory becomes an explicit scheduling policy. Reserve room for KV growth, classify requests into lanes, and fall back early. The box stops feeling temperamental and starts behaving like a real service.</p>
+          <div class="blog-post-tags">
+            <span class="blog-post-tag">Local LLMs</span>
+            <span class="blog-post-tag">Inference Ops</span>
+            <span class="blog-post-tag">AI Coding Agents</span>
+            <span class="blog-post-tag">GPU Memory</span>
+            <span class="blog-post-tag">Reliability</span>
+          </div>
+        </div>
+        <div class="blog-footer"><a href="index.html">&larr; Back to All Posts</a></div>
+      </div>
+    </header>
+  </body>
+</html>
