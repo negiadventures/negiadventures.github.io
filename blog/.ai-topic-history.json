@@ -1,6 +1,14 @@
 {
   "topics": [
     {
+      "date": "2026-06-28",
+      "skill": "Prompt cache segmentation for shared AI coding gateways",
+      "topic": "Using tenant-aware cache keys, frozen system prefixes, trust-lane separation, TTL classes, and invalidation ledgers so shared coding gateways can reuse expensive prompt prefixes without leaking context across users, repos, or approval boundaries",
+      "slug": "prompt-cache-segmentation-shared-ai-coding-gateways",
+      "title": "Prompt Cache Segmentation for Shared AI Coding Gateways Without Cross-Tenant Leakage",
+      "summary": "A practical guide to prompt cache segmentation for shared AI coding gateways using tenant-aware keys, prefix freezing, trust lanes, TTL classes, and invalidation ledgers so teams get cache wins without leaking context or serving stale prompts."
+    },
+    {
       "date": "2026-06-27",
       "skill": "GPU memory headroom policies for local coding model gateways",
       "topic": "Using per-lane VRAM floors, KV cache reserves, projected-memory admission checks, and early fallback routing so local coding gateways stay responsive under long prompts and mixed concurrency instead of crashing into allocator thrash and OOM failures",
