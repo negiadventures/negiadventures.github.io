@@ -1,6 +1,14 @@
 {
   "topics": [
     {
+      "date": "2026-06-29",
+      "skill": "Secret scanning gates for AI-generated patches",
+      "topic": "Using staged secret detectors, diff-only scans, entropy allowlists, push protection mirrors, and evidence bundles so AI coding agents do not leak tokens, private keys, or customer credentials while moving fast through automated patch workflows",
+      "slug": "secret-scanning-gates-ai-generated-patches",
+      "title": "Secret Scanning Gates for AI-Generated Patches Before They Leave the Repo",
+      "summary": "A practical guide to secret scanning gates for AI-generated patches using diff-aware detectors, entropy filters, allowlists, push protection mirrors, and reviewer evidence so coding agents do not turn speed into credential leaks."
+    },
+    {
       "date": "2026-06-28",
       "skill": "Prompt cache segmentation for shared AI coding gateways",
       "topic": "Using tenant-aware cache keys, frozen system prefixes, trust-lane separation, TTL classes, and invalidation ledgers so shared coding gateways can reuse expensive prompt prefixes without leaking context across users, repos, or approval boundaries",
