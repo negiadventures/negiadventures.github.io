@@ -1,6 +1,14 @@
 {
   "topics": [
     {
+      "date": "2026-06-30",
+      "skill": "Container cache poisoning defenses for AI coding runners",
+      "topic": "Using immutable base digests, namespace-scoped cache keys, provenance attestations, and restore-time verification so AI coding runners can reuse container layers without trusting stale, cross-tenant, or tampered build caches",
+      "slug": "container-cache-poisoning-defenses-ai-coding-runners",
+      "title": "Container Cache Poisoning Defenses for AI Coding Runners",
+      "summary": "A practical guide to defending shared container caches for AI coding runners with digest pinning, tenant-scoped keys, provenance attestations, and restore-time verification so faster builds do not quietly become a supply-chain blind spot."
+    },
+    {
       "date": "2026-06-29",
       "skill": "Secret scanning gates for AI-generated patches",
       "topic": "Using staged secret detectors, diff-only scans, entropy allowlists, push protection mirrors, and evidence bundles so AI coding agents do not leak tokens, private keys, or customer credentials while moving fast through automated patch workflows",
