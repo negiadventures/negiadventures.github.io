@@ -1,6 +1,14 @@
 {
   "topics": [
     {
+      "date": "2026-07-01",
+      "skill": "Schema drift alerts for MCP tools",
+      "topic": "Using normalized schema snapshots, compatibility lanes, fixture validation, and CI diff gates so MCP tool changes stop surfacing as mysterious agent retries or validation errors after deployment",
+      "slug": "schema-drift-alerts-mcp-tools",
+      "title": "Schema Drift Alerts for MCP Tools Before Agents Start Failing Weirdly",
+      "summary": "A practical guide to catching MCP schema drift with fixture snapshots, contract hashes, compatibility lanes, and CI alerts before tool changes turn into silent agent regressions."
+    },
+    {
       "date": "2026-06-30",
       "skill": "Container cache poisoning defenses for AI coding runners",
       "topic": "Using immutable base digests, namespace-scoped cache keys, provenance attestations, and restore-time verification so AI coding runners can reuse container layers without trusting stale, cross-tenant, or tampered build caches",

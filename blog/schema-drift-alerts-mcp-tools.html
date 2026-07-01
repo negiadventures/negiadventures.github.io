@@ -1,0 +1,324 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="A practical guide to catching MCP schema drift with fixture snapshots, contract hashes, compatibility lanes, and CI alerts before tool changes turn into silent agent regressions.">
+    <meta name="author" content="Anirudh Negi">
+    <title>Schema Drift Alerts for MCP Tools Before Agents Start Failing Weirdly | Anirudh Negi</title>
+    <link rel="icon" type="image/svg+xml" href="../images/favicon.svg">
+    <link rel="canonical" href="https://negiadventures.github.io/blog/schema-drift-alerts-mcp-tools.html">
+    <meta property="og:type" content="article">
+    <meta property="og:url" content="https://negiadventures.github.io/blog/schema-drift-alerts-mcp-tools.html">
+    <meta property="og:title" content="Schema Drift Alerts for MCP Tools Before Agents Start Failing Weirdly | Anirudh Negi">
+    <meta property="og:description" content="A practical guide to catching MCP schema drift with fixture snapshots, contract hashes, compatibility lanes, and CI alerts before tool changes turn into silent agent regressions.">
+    <meta property="og:image" content="data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A//www.w3.org/2000/svg%27%20viewBox%3D%270%200%201200%20630%27%3E%3Cdefs%3E%3ClinearGradient%20id%3D%27bg%27%20x1%3D%270%27%20x2%3D%271%27%20y1%3D%270%27%20y2%3D%271%27%3E%3Cstop%20offset%3D%270%25%27%20stop-color%3D%27%2307111d%27/%3E%3Cstop%20offset%3D%27100%25%27%20stop-color%3D%27%23164c73%27/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect%20width%3D%271200%27%20height%3D%27630%27%20fill%3D%27url%28%23bg%29%27/%3E%3Ccircle%20cx%3D%271010%27%20cy%3D%27110%27%20r%3D%27178%27%20fill%3D%27%2322d3ee%27%20fill-opacity%3D%270.14%27/%3E%3Ccircle%20cx%3D%27188%27%20cy%3D%27518%27%20r%3D%27218%27%20fill%3D%27%238b5cf6%27%20fill-opacity%3D%270.16%27/%3E%3Crect%20x%3D%2778%27%20y%3D%2786%27%20width%3D%271044%27%20height%3D%27458%27%20rx%3D%2730%27%20fill%3D%27%230b1220%27%20stroke%3D%27%2338bdf8%27%20stroke-opacity%3D%270.35%27/%3E%3Ctext%20x%3D%27126%27%20y%3D%27164%27%20fill%3D%27white%27%20font-family%3D%27Arial,%20sans-serif%27%20font-size%3D%2738%27%20font-weight%3D%27700%27%3ESchema%20Drift%20Alerts%20for%20MCP%20Tools%3C/text%3E%3Ctext%20x%3D%27126%27%20y%3D%27224%27%20fill%3D%27%2393c5fd%27%20font-family%3D%27Arial,%20sans-serif%27%20font-size%3D%2738%27%20font-weight%3D%27700%27%3EBefore%20Agents%20Start%20Failing%20Weirdly%3C/text%3E%3Ctext%20x%3D%27126%27%20y%3D%27298%27%20fill%3D%27%23cbd5e1%27%20font-family%3D%27Arial,%20sans-serif%27%20font-size%3D%2728%27%3ESnapshot%20tool%20contracts,%20diff%20them%20in%20CI,%20and%20treat%20schema%20changes%3C/text%3E%3Ctext%20x%3D%27126%27%20y%3D%27334%27%20fill%3D%27%23cbd5e1%27%20font-family%3D%27Arial,%20sans-serif%27%20font-size%3D%2728%27%3Elike%20real%20breaking%20API%20changes,%20not%20harmless%20JSON%20noise.%3C/text%3E%3Crect%20x%3D%27126%27%20y%3D%27388%27%20width%3D%27382%27%20height%3D%2754%27%20rx%3D%2714%27%20fill%3D%27%23111c2d%27%20stroke%3D%27%2367e8f9%27%20stroke-opacity%3D%270.45%27/%3E%3Ctext%20x%3D%27152%27%20y%3D%27423%27%20fill%3D%27%2367e8f9%27%20font-family%3D%27Arial,%20sans-serif%27%20font-size%3D%2724%27%3Etool%20contracts%20rot%20quietly%20until%20one%20agent%20run%20takes%20the%20hit%3C/text%3E%3Crect%20x%3D%27776%27%20y%3D%27166%27%20width%3D%27258%27%20height%3D%2758%27%20rx%3D%2714%27%20fill%3D%27%230d1728%27%20stroke%3D%27%2322d3ee%27%20stroke-opacity%3D%270.45%27/%3E%3Ctext%20x%3D%27828%27%20y%3D%27204%27%20fill%3D%27%23bae6fd%27%20font-family%3D%27Arial,%20sans-serif%27%20font-size%3D%2723%27%3Eschema%20hash%3C/text%3E%3Crect%20x%3D%27776%27%20y%3D%27266%27%20width%3D%27258%27%20height%3D%2758%27%20rx%3D%2714%27%20fill%3D%27%230d1728%27%20stroke%3D%27%2322d3ee%27%20stroke-opacity%3D%270.45%27/%3E%3Ctext%20x%3D%27816%27%20y%3D%27304%27%20fill%3D%27%23bae6fd%27%20font-family%3D%27Arial,%20sans-serif%27%20font-size%3D%2723%27%3Efixture%20diff%3C/text%3E%3Crect%20x%3D%27776%27%20y%3D%27366%27%20width%3D%27258%27%20height%3D%2758%27%20rx%3D%2714%27%20fill%3D%27%230d1728%27%20stroke%3D%27%23a78bfa%27%20stroke-opacity%3D%270.45%27/%3E%3Ctext%20x%3D%27808%27%20y%3D%27404%27%20fill%3D%27%23ddd6fe%27%20font-family%3D%27Arial,%20sans-serif%27%20font-size%3D%2723%27%3Ecompat%20lane%3C/text%3E%3C/svg%3E">
+    <meta property="article:published_time" content="2026-07-01T12:01:00Z">
+    <meta property="article:author" content="Anirudh Negi">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:url" content="https://negiadventures.github.io/blog/schema-drift-alerts-mcp-tools.html">
+    <meta name="twitter:title" content="Schema Drift Alerts for MCP Tools Before Agents Start Failing Weirdly | Anirudh Negi">
+    <meta name="twitter:description" content="A practical guide to catching MCP schema drift with fixture snapshots, contract hashes, compatibility lanes, and CI alerts before tool changes turn into silent agent regressions.">
+    <meta name="twitter:image" content="data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A//www.w3.org/2000/svg%27%20viewBox%3D%270%200%201200%20630%27%3E%3Cdefs%3E%3ClinearGradient%20id%3D%27bg%27%20x1%3D%270%27%20x2%3D%271%27%20y1%3D%270%27%20y2%3D%271%27%3E%3Cstop%20offset%3D%270%25%27%20stop-color%3D%27%2307111d%27/%3E%3Cstop%20offset%3D%27100%25%27%20stop-color%3D%27%23164c73%27/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect%20width%3D%271200%27%20height%3D%27630%27%20fill%3D%27url%28%23bg%29%27/%3E%3Ccircle%20cx%3D%271010%27%20cy%3D%27110%27%20r%3D%27178%27%20fill%3D%27%2322d3ee%27%20fill-opacity%3D%270.14%27/%3E%3Ccircle%20cx%3D%27188%27%20cy%3D%27518%27%20r%3D%27218%27%20fill%3D%27%238b5cf6%27%20fill-opacity%3D%270.16%27/%3E%3Crect%20x%3D%2778%27%20y%3D%2786%27%20width%3D%271044%27%20height%3D%27458%27%20rx%3D%2730%27%20fill%3D%27%230b1220%27%20stroke%3D%27%2338bdf8%27%20stroke-opacity%3D%270.35%27/%3E%3Ctext%20x%3D%27126%27%20y%3D%27164%27%20fill%3D%27white%27%20font-family%3D%27Arial,%20sans-serif%27%20font-size%3D%2738%27%20font-weight%3D%27700%27%3ESchema%20Drift%20Alerts%20for%20MCP%20Tools%3C/text%3E%3Ctext%20x%3D%27126%27%20y%3D%27224%27%20fill%3D%27%2393c5fd%27%20font-family%3D%27Arial,%20sans-serif%27%20font-size%3D%2738%27%20font-weight%3D%27700%27%3EBefore%20Agents%20Start%20Failing%20Weirdly%3C/text%3E%3Ctext%20x%3D%27126%27%20y%3D%27298%27%20fill%3D%27%23cbd5e1%27%20font-family%3D%27Arial,%20sans-serif%27%20font-size%3D%2728%27%3ESnapshot%20tool%20contracts,%20diff%20them%20in%20CI,%20and%20treat%20schema%20changes%3C/text%3E%3Ctext%20x%3D%27126%27%20y%3D%27334%27%20fill%3D%27%23cbd5e1%27%20font-family%3D%27Arial,%20sans-serif%27%20font-size%3D%2728%27%3Elike%20real%20breaking%20API%20changes,%20not%20harmless%20JSON%20noise.%3C/text%3E%3Crect%20x%3D%27126%27%20y%3D%27388%27%20width%3D%27382%27%20height%3D%2754%27%20rx%3D%2714%27%20fill%3D%27%23111c2d%27%20stroke%3D%27%2367e8f9%27%20stroke-opacity%3D%270.45%27/%3E%3Ctext%20x%3D%27152%27%20y%3D%27423%27%20fill%3D%27%2367e8f9%27%20font-family%3D%27Arial,%20sans-serif%27%20font-size%3D%2724%27%3Etool%20contracts%20rot%20quietly%20until%20one%20agent%20run%20takes%20the%20hit%3C/text%3E%3Crect%20x%3D%27776%27%20y%3D%27166%27%20width%3D%27258%27%20height%3D%2758%27%20rx%3D%2714%27%20fill%3D%27%230d1728%27%20stroke%3D%27%2322d3ee%27%20stroke-opacity%3D%270.45%27/%3E%3Ctext%20x%3D%27828%27%20y%3D%27204%27%20fill%3D%27%23bae6fd%27%20font-family%3D%27Arial,%20sans-serif%27%20font-size%3D%2723%27%3Eschema%20hash%3C/text%3E%3Crect%20x%3D%27776%27%20y%3D%27266%27%20width%3D%27258%27%20height%3D%2758%27%20rx%3D%2714%27%20fill%3D%27%230d1728%27%20stroke%3D%27%2322d3ee%27%20stroke-opacity%3D%270.45%27/%3E%3Ctext%20x%3D%27816%27%20y%3D%27304%27%20fill%3D%27%23bae6fd%27%20font-family%3D%27Arial,%20sans-serif%27%20font-size%3D%2723%27%3Efixture%20diff%3C/text%3E%3Crect%20x%3D%27776%27%20y%3D%27366%27%20width%3D%27258%27%20height%3D%2758%27%20rx%3D%2714%27%20fill%3D%27%230d1728%27%20stroke%3D%27%23a78bfa%27%20stroke-opacity%3D%270.45%27/%3E%3Ctext%20x%3D%27808%27%20y%3D%27404%27%20fill%3D%27%23ddd6fe%27%20font-family%3D%27Arial,%20sans-serif%27%20font-size%3D%2723%27%3Ecompat%20lane%3C/text%3E%3C/svg%3E">
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "BlogPosting",
+      "headline": "Schema Drift Alerts for MCP Tools Before Agents Start Failing Weirdly",
+      "description": "A practical guide to catching MCP schema drift with fixture snapshots, contract hashes, compatibility lanes, and CI alerts before tool changes turn into silent agent regressions.",
+      "image": "data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A//www.w3.org/2000/svg%27%20viewBox%3D%270%200%201200%20630%27%3E%3Cdefs%3E%3ClinearGradient%20id%3D%27bg%27%20x1%3D%270%27%20x2%3D%271%27%20y1%3D%270%27%20y2%3D%271%27%3E%3Cstop%20offset%3D%270%25%27%20stop-color%3D%27%2307111d%27/%3E%3Cstop%20offset%3D%27100%25%27%20stop-color%3D%27%23164c73%27/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect%20width%3D%271200%27%20height%3D%27630%27%20fill%3D%27url%28%23bg%29%27/%3E%3Ccircle%20cx%3D%271010%27%20cy%3D%27110%27%20r%3D%27178%27%20fill%3D%27%2322d3ee%27%20fill-opacity%3D%270.14%27/%3E%3Ccircle%20cx%3D%27188%27%20cy%3D%27518%27%20r%3D%27218%27%20fill%3D%27%238b5cf6%27%20fill-opacity%3D%270.16%27/%3E%3Crect%20x%3D%2778%27%20y%3D%2786%27%20width%3D%271044%27%20height%3D%27458%27%20rx%3D%2730%27%20fill%3D%27%230b1220%27%20stroke%3D%27%2338bdf8%27%20stroke-opacity%3D%270.35%27/%3E%3Ctext%20x%3D%27126%27%20y%3D%27164%27%20fill%3D%27white%27%20font-family%3D%27Arial,%20sans-serif%27%20font-size%3D%2738%27%20font-weight%3D%27700%27%3ESchema%20Drift%20Alerts%20for%20MCP%20Tools%3C/text%3E%3Ctext%20x%3D%27126%27%20y%3D%27224%27%20fill%3D%27%2393c5fd%27%20font-family%3D%27Arial,%20sans-serif%27%20font-size%3D%2738%27%20font-weight%3D%27700%27%3EBefore%20Agents%20Start%20Failing%20Weirdly%3C/text%3E%3Ctext%20x%3D%27126%27%20y%3D%27298%27%20fill%3D%27%23cbd5e1%27%20font-family%3D%27Arial,%20sans-serif%27%20font-size%3D%2728%27%3ESnapshot%20tool%20contracts,%20diff%20them%20in%20CI,%20and%20treat%20schema%20changes%3C/text%3E%3Ctext%20x%3D%27126%27%20y%3D%27334%27%20fill%3D%27%23cbd5e1%27%20font-family%3D%27Arial,%20sans-serif%27%20font-size%3D%2728%27%3Elike%20real%20breaking%20API%20changes,%20not%20harmless%20JSON%20noise.%3C/text%3E%3Crect%20x%3D%27126%27%20y%3D%27388%27%20width%3D%27382%27%20height%3D%2754%27%20rx%3D%2714%27%20fill%3D%27%23111c2d%27%20stroke%3D%27%2367e8f9%27%20stroke-opacity%3D%270.45%27/%3E%3Ctext%20x%3D%27152%27%20y%3D%27423%27%20fill%3D%27%2367e8f9%27%20font-family%3D%27Arial,%20sans-serif%27%20font-size%3D%2724%27%3Etool%20contracts%20rot%20quietly%20until%20one%20agent%20run%20takes%20the%20hit%3C/text%3E%3Crect%20x%3D%27776%27%20y%3D%27166%27%20width%3D%27258%27%20height%3D%2758%27%20rx%3D%2714%27%20fill%3D%27%230d1728%27%20stroke%3D%27%2322d3ee%27%20stroke-opacity%3D%270.45%27/%3E%3Ctext%20x%3D%27828%27%20y%3D%27204%27%20fill%3D%27%23bae6fd%27%20font-family%3D%27Arial,%20sans-serif%27%20font-size%3D%2723%27%3Eschema%20hash%3C/text%3E%3Crect%20x%3D%27776%27%20y%3D%27266%27%20width%3D%27258%27%20height%3D%2758%27%20rx%3D%2714%27%20fill%3D%27%230d1728%27%20stroke%3D%27%2322d3ee%27%20stroke-opacity%3D%270.45%27/%3E%3Ctext%20x%3D%27816%27%20y%3D%27304%27%20fill%3D%27%23bae6fd%27%20font-family%3D%27Arial,%20sans-serif%27%20font-size%3D%2723%27%3Efixture%20diff%3C/text%3E%3Crect%20x%3D%27776%27%20y%3D%27366%27%20width%3D%27258%27%20height%3D%2758%27%20rx%3D%2714%27%20fill%3D%27%230d1728%27%20stroke%3D%27%23a78bfa%27%20stroke-opacity%3D%270.45%27/%3E%3Ctext%20x%3D%27808%27%20y%3D%27404%27%20fill%3D%27%23ddd6fe%27%20font-family%3D%27Arial,%20sans-serif%27%20font-size%3D%2723%27%3Ecompat%20lane%3C/text%3E%3C/svg%3E",
+      "url": "https://negiadventures.github.io/blog/schema-drift-alerts-mcp-tools.html",
+      "datePublished": "2026-07-01",
+      "author": {
+        "@type": "Person",
+        "name": "Anirudh Negi",
+        "url": "https://negiadventures.github.io"
+      },
+      "publisher": {
+        "@type": "Person",
+        "name": "Anirudh Negi",
+        "url": "https://negiadventures.github.io"
+      },
+      "keywords": ["MCP", "Tooling", "Reliability", "Contract Testing", "AI Agents"]
+    }
+    </script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../stylesheets/stylesheet.css?v=5" media="screen">
+    <style>
+      .blog-post {
+        max-width: 860px;
+        margin: 0 auto;
+        padding: 60px 20px;
+      }
+      .blog-post-nav { margin-bottom: 30px; }
+      .blog-post-nav a, .blog-footer a { color: var(--accent-strong); }
+      .blog-post-nav a:hover, .blog-footer a:hover { color: var(--accent); }
+      .blog-post-title { font-size: 2.5rem; margin-bottom: 16px; }
+      .blog-post-meta {
+        display: flex;
+        gap: 16px;
+        flex-wrap: wrap;
+        color: var(--text-muted);
+        font-size: 0.95rem;
+        margin-bottom: 28px;
+      }
+      .hero-banner {
+        width: 100%;
+        border-radius: 18px;
+        border: 1px solid var(--border);
+        margin-bottom: 32px;
+        box-shadow: 0 20px 40px rgba(34, 211, 238, 0.08);
+      }
+      .blog-post-content h2 { font-size: 1.7rem; margin: 42px 0 16px; }
+      .blog-post-content h3 { font-size: 1.25rem; margin: 28px 0 12px; }
+      .blog-post-content p, .blog-post-content li { line-height: 1.8; color: var(--text-muted); }
+      .blog-post-content ul, .blog-post-content ol { margin-bottom: 20px; padding-left: 24px; }
+      .code-block, .terminal-block, .callout, .diagram-block, .table-wrap {
+        background: var(--bg-alt);
+        border: 1px solid var(--border);
+        border-radius: 14px;
+        padding: 20px;
+        margin: 22px 0;
+      }
+      .code-block pre, .terminal-block pre {
+        margin: 0;
+        overflow-x: auto;
+        font-family: var(--mono);
+        font-size: 0.9rem;
+        line-height: 1.65;
+        color: var(--text-light);
+      }
+      .callout strong { color: var(--text-light); }
+      .callout.best { border-color: rgba(34, 211, 238, 0.35); }
+      .callout.pitfall { border-color: rgba(248, 113, 113, 0.35); }
+      .table-wrap table { width: 100%; border-collapse: collapse; }
+      .table-wrap th, .table-wrap td {
+        border-bottom: 1px solid var(--border);
+        text-align: left;
+        padding: 12px 10px;
+        vertical-align: top;
+      }
+      .table-wrap th { color: var(--text-light); }
+      .mermaid { overflow-x: auto; }
+      .blog-post-tags {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        margin-top: 40px;
+        padding-top: 28px;
+        border-top: 1px solid var(--border);
+      }
+      .blog-post-tag {
+        background: var(--accent-soft);
+        color: var(--accent-strong);
+        border-radius: 999px;
+        padding: 6px 14px;
+        font-size: 0.85rem;
+        font-family: var(--mono);
+      }
+      .blog-footer {
+        margin-top: 60px;
+        padding-top: 30px;
+        border-top: 1px solid var(--border);
+        text-align: center;
+      }
+      @media (max-width: 768px) {
+        .blog-post { padding: 40px 16px; }
+        .blog-post-title { font-size: 2rem; }
+      }
+    </style>
+  </head>
+  <body>
+    <a href="../index.html#main" class="skip-link">Skip to main content</a>
+    <header class="site-header">
+      <div class="container blog-post">
+        <div class="blog-post-nav"><a href="index.html">&larr; Back to All Posts</a></div>
+        <div class="blog-post-header">
+          <h1 class="blog-post-title">Schema Drift Alerts for MCP Tools Before Agents Start Failing Weirdly</h1>
+          <div class="blog-post-meta">
+            <span>July 1, 2026</span>
+            <span>&bull;</span>
+            <span>10 min read</span>
+            <span>&bull;</span>
+            <span>MCP Reliability</span>
+          </div>
+          <img class="hero-banner" alt="Schema Drift Alerts for MCP Tools" src="data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A//www.w3.org/2000/svg%27%20viewBox%3D%270%200%201200%20630%27%3E%3Cdefs%3E%3ClinearGradient%20id%3D%27bg%27%20x1%3D%270%27%20x2%3D%271%27%20y1%3D%270%27%20y2%3D%271%27%3E%3Cstop%20offset%3D%270%25%27%20stop-color%3D%27%2307111d%27/%3E%3Cstop%20offset%3D%27100%25%27%20stop-color%3D%27%23164c73%27/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect%20width%3D%271200%27%20height%3D%27630%27%20fill%3D%27url%28%23bg%29%27/%3E%3Ccircle%20cx%3D%271010%27%20cy%3D%27110%27%20r%3D%27178%27%20fill%3D%27%2322d3ee%27%20fill-opacity%3D%270.14%27/%3E%3Ccircle%20cx%3D%27188%27%20cy%3D%27518%27%20r%3D%27218%27%20fill%3D%27%238b5cf6%27%20fill-opacity%3D%270.16%27/%3E%3Crect%20x%3D%2778%27%20y%3D%2786%27%20width%3D%271044%27%20height%3D%27458%27%20rx%3D%2730%27%20fill%3D%27%230b1220%27%20stroke%3D%27%2338bdf8%27%20stroke-opacity%3D%270.35%27/%3E%3Ctext%20x%3D%27126%27%20y%3D%27164%27%20fill%3D%27white%27%20font-family%3D%27Arial,%20sans-serif%27%20font-size%3D%2738%27%20font-weight%3D%27700%27%3ESchema%20Drift%20Alerts%20for%20MCP%20Tools%3C/text%3E%3Ctext%20x%3D%27126%27%20y%3D%27224%27%20fill%3D%27%2393c5fd%27%20font-family%3D%27Arial,%20sans-serif%27%20font-size%3D%2738%27%20font-weight%3D%27700%27%3EBefore%20Agents%20Start%20Failing%20Weirdly%3C/text%3E%3Ctext%20x%3D%27126%27%20y%3D%27298%27%20fill%3D%27%23cbd5e1%27%20font-family%3D%27Arial,%20sans-serif%27%20font-size%3D%2728%27%3ESnapshot%20tool%20contracts,%20diff%20them%20in%20CI,%20and%20treat%20schema%20changes%3C/text%3E%3Ctext%20x%3D%27126%27%20y%3D%27334%27%20fill%3D%27%23cbd5e1%27%20font-family%3D%27Arial,%20sans-serif%27%20font-size%3D%2728%27%3Elike%20real%20breaking%20API%20changes,%20not%20harmless%20JSON%20noise.%3C/text%3E%3Crect%20x%3D%27126%27%20y%3D%27388%27%20width%3D%27382%27%20height%3D%2754%27%20rx%3D%2714%27%20fill%3D%27%23111c2d%27%20stroke%3D%27%2367e8f9%27%20stroke-opacity%3D%270.45%27/%3E%3Ctext%20x%3D%27152%27%20y%3D%27423%27%20fill%3D%27%2367e8f9%27%20font-family%3D%27Arial,%20sans-serif%27%20font-size%3D%2724%27%3Etool%20contracts%20rot%20quietly%20until%20one%20agent%20run%20takes%20the%20hit%3C/text%3E%3Crect%20x%3D%27776%27%20y%3D%27166%27%20width%3D%27258%27%20height%3D%2758%27%20rx%3D%2714%27%20fill%3D%27%230d1728%27%20stroke%3D%27%2322d3ee%27%20stroke-opacity%3D%270.45%27/%3E%3Ctext%20x%3D%27828%27%20y%3D%27204%27%20fill%3D%27%23bae6fd%27%20font-family%3D%27Arial,%20sans-serif%27%20font-size%3D%2723%27%3Eschema%20hash%3C/text%3E%3Crect%20x%3D%27776%27%20y%3D%27266%27%20width%3D%27258%27%20height%3D%2758%27%20rx%3D%2714%27%20fill%3D%27%230d1728%27%20stroke%3D%27%2322d3ee%27%20stroke-opacity%3D%270.45%27/%3E%3Ctext%20x%3D%27816%27%20y%3D%27304%27%20fill%3D%27%23bae6fd%27%20font-family%3D%27Arial,%20sans-serif%27%20font-size%3D%2723%27%3Efixture%20diff%3C/text%3E%3Crect%20x%3D%27776%27%20y%3D%27366%27%20width%3D%27258%27%20height%3D%2758%27%20rx%3D%2714%27%20fill%3D%27%230d1728%27%20stroke%3D%27%23a78bfa%27%20stroke-opacity%3D%270.45%27/%3E%3Ctext%20x%3D%27808%27%20y%3D%27404%27%20fill%3D%27%23ddd6fe%27%20font-family%3D%27Arial,%20sans-serif%27%20font-size%3D%2723%27%3Ecompat%20lane%3C/text%3E%3C/svg%3E">
+        </div>
+        <div class="blog-post-content">
+          <p>MCP tools rarely break in dramatic ways first. More often, a field becomes required, an enum tightens, a nested object moves, and the agent starts producing confusing repair loops or low-confidence retries. Everything still looks like JSON, but the contract has already changed.</p>
+          <p>If you run shared tool adapters, this is one of the most annoying failure classes in production. It looks like a reasoning problem until you inspect the tool schema history.</p>
+          <p>This post shows how to catch schema drift early with snapshot fixtures, contract hashes, compatibility lanes, and CI alerts. The goal is simple: treat MCP tool schemas like real APIs before agents pay the price.</p>
+
+          <h2>Why this matters</h2>
+          <p>In an MCP setup, the schema is not documentation. It is execution policy. The model plans against it, the adapter validates against it, and your reviewers assume it still means what it meant yesterday.</p>
+          <p>A small schema change can cause the planner to call stale fields, turn retries into noise, and weaken approval previews. I would not wait for runtime failures alone because by then the drift has already escaped into real work.</p>
+
+          <h2>Architecture or workflow overview</h2>
+          <div class="diagram-block">
+            <div class="mermaid">
+flowchart LR
+    A[Tool server repo] --> B[Export tool schemas]
+    B --> C[Normalize and hash contracts]
+    C --> D[Store golden snapshots]
+    D --> E[CI diff check]
+    E --> F{Compatible change?}
+    F -->|yes| G[Update fixtures and release notes]
+    F -->|no| H[Fail build and require review]
+    G --> I[Planner and adapter consume new schema]
+    H --> I
+            </div>
+          </div>
+          <ol>
+            <li>Export every tool schema from the MCP server.</li>
+            <li>Normalize unstable noise like key order and generated descriptions.</li>
+            <li>Hash the normalized contract and diff it against the checked-in snapshot.</li>
+            <li>Route the change into additive, risky, or breaking lanes.</li>
+            <li>Block merges for breaking changes unless adapters and fixtures are updated together.</li>
+          </ol>
+
+          <div class="callout best"><strong>Visual plan:</strong> Hero uses a contract dashboard motif, the diagram shows schema export to CI gate flow, terminal output shows one breaking diff, tags are MCP, Tooling, Reliability, Contract Testing, and AI Agents, and code sections cover normalization, classification, and CI checks.</div>
+
+          <h2>Implementation details</h2>
+          <h3>1) Snapshot the schemas you actually serve</h3>
+          <p>Do not diff hand-written examples. Diff the exported schema payload that the agent really sees.</p>
+          <div class="code-block"><pre><code>node scripts/export-mcp-schemas.mjs &gt; .contracts/mcp-tools.raw.json
+jq 'walk(if type == "object" then with_entries(sort_by(.key)) else . end)' \
+  .contracts/mcp-tools.raw.json &gt; .contracts/mcp-tools.normalized.json
+shasum -a 256 .contracts/mcp-tools.normalized.json</code></pre></div>
+          <p>The important bit is consistency. You want stable ordering and minimal noise so every diff means something.</p>
+          <div class="code-block"><pre><code>import fs from "node:fs";
+
+const input = JSON.parse(fs.readFileSync(".contracts/mcp-tools.raw.json", "utf8"));
+
+function normalize(node) {
+  if (Array.isArray(node)) return node.map(normalize);
+  if (!node || typeof node !== "object") return node;
+
+  const allowed = {};
+  for (const key of Object.keys(node).sort()) {
+    if (["title", "examples", "$comment"].includes(key)) continue;
+    allowed[key] = normalize(node[key]);
+  }
+  return allowed;
+}
+
+fs.writeFileSync(
+  ".contracts/mcp-tools.normalized.json",
+  JSON.stringify(normalize(input), null, 2) + "\n"
+);</code></pre></div>
+          <p>I would not strip descriptions if your planner relies on them for tool selection. In some teams, descriptions are behaviorally significant even when validation is not.</p>
+
+          <h3>2) Classify schema diffs instead of treating every change the same</h3>
+          <p>A new optional field is not the same as adding a new required one. Use a compatibility classifier so CI knows when to warn versus fail.</p>
+          <div class="code-block"><pre><code>type DriftLane = "additive" | "risky" | "breaking";
+
+export function classifyChange(before: any, after: any): DriftLane {
+  if (JSON.stringify(before) === JSON.stringify(after)) return "additive";
+
+  const beforeRequired = new Set(before.required ?? []);
+  const afterRequired = new Set(after.required ?? []);
+
+  for (const key of afterRequired) {
+    if (!beforeRequired.has(key)) return "breaking";
+  }
+
+  if ((before.type &amp;&amp; after.type) &amp;&amp; before.type !== after.type) {
+    return "breaking";
+  }
+
+  if (before.enum &amp;&amp; after.enum) {
+    const narrowed = before.enum.some((value: string) =&gt; !after.enum.includes(value));
+    if (narrowed) return "breaking";
+  }
+
+  return "risky";
+}</code></pre></div>
+
+          <h3>3) Keep fixture calls next to schema snapshots</h3>
+          <p>Golden transcripts catch behavioral drift, but fixture calls are faster and easier to review for contract drift.</p>
+          <div class="code-block"><pre><code>{
+  "tool": "workspace.read",
+  "input": {
+    "path": "src/index.ts",
+    "offset": 1,
+    "limit": 50
+  },
+  "expectedValidation": "pass"
+}</code></pre></div>
+          <div class="code-block"><pre><code>pnpm tsx scripts/check-mcp-fixtures.ts \
+  --schema .contracts/mcp-tools.normalized.json \
+  --fixtures .contracts/fixtures</code></pre></div>
+          <p>This catches the exact failure mode that annoys operators most: the tool still exists, but routine calls have become invalid.</p>
+
+          <div class="terminal-block"><pre><code>Schema drift detected for tool: workspace.read
+Lane: BREAKING
+Reason:
+  - new required field added: recursive
+Fixtures affected:
+  - read-basic.json: now fails validation
+  - read-code-window.json: now fails validation
+Recommended action:
+  - restore backward compatibility OR
+  - update adapter and fixtures in same PR</code></pre></div>
+
+          <h2>Tradeoffs and what went wrong</h2>
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr><th>Change type</th><th>Example</th><th>Risk to agents</th><th>Suggested CI action</th></tr>
+              </thead>
+              <tbody>
+                <tr><td>Additive</td><td>New optional field</td><td>Low</td><td>Warn, update snapshot</td></tr>
+                <tr><td>Risky</td><td>Description changes that affect planner behavior</td><td>Medium</td><td>Require fixture review</td></tr>
+                <tr><td>Breaking</td><td>New required field, enum narrowing, type change</td><td>High</td><td>Fail build</td></tr>
+                <tr><td>Hidden behavioral drift</td><td>Same schema, different server-side default</td><td>High</td><td>Catch with transcript tests</td></tr>
+              </tbody>
+            </table>
+          </div>
+
+          <div class="callout pitfall"><strong>Pitfalls:</strong> Normalizing away descriptions can hide planner regressions, unchanged schemas can still mask changed defaults or auth rules, and missing schema hashes in logs makes incident response much slower.</div>
+
+          <p>There is also a real security angle here. If a tool starts accepting a broader parameter shape, the approval preview may stop reflecting the real action surface. That is not just reliability drift. It is a safety boundary problem.</p>
+          <p>Cost-wise, schema snapshotting is cheap, fixture validation is moderate, and transcript replay is heavier but better for hidden behavioral changes. I like using all three, in that order.</p>
+
+          <h2>Practical checklist</h2>
+          <ul>
+            <li>Export schemas from the running server code, not docs.</li>
+            <li>Normalize ordering and strip only truly volatile fields.</li>
+            <li>Classify diffs into additive, risky, and breaking lanes.</li>
+            <li>Keep validation fixtures beside the snapshot.</li>
+            <li>Fail CI on breaking drift before runtime incidents happen.</li>
+            <li>Log schema hashes with agent runs and incidents.</li>
+            <li>Pair schema checks with transcript tests for critical tools.</li>
+          </ul>
+
+          <h2>Conclusion</h2>
+          <p>MCP schema drift is boring right up until it burns a day of debugging and makes the model look flaky. Snapshot the contracts, diff them in CI, and make compatibility visible. Agents are much easier to trust when tool changes stop arriving as surprises.</p>
+
+          <h2>References</h2>
+          <ul>
+            <li><a href="https://modelcontextprotocol.io/">Model Context Protocol</a></li>
+            <li><a href="https://json-schema.org/">JSON Schema</a></li>
+            <li><a href="https://ajv.js.org/">AJV</a></li>
+            <li><a href="https://opentelemetry.io/">OpenTelemetry</a></li>
+          </ul>
+
+          <div class="blog-post-tags">
+            <span class="blog-post-tag">MCP</span>
+            <span class="blog-post-tag">Tooling</span>
+            <span class="blog-post-tag">Reliability</span>
+            <span class="blog-post-tag">Contract Testing</span>
+            <span class="blog-post-tag">AI Agents</span>
+          </div>
+        </div>
+        <div class="blog-footer"><a href="index.html">View more posts</a></div>
+      </div>
+    </header>
+    <script type="module">
+      import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.esm.min.mjs';
+      mermaid.initialize({ startOnLoad: true, theme: 'dark' });
+    </script>
+  </body>
+</html>
