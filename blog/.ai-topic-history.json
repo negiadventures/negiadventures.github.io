@@ -1,6 +1,14 @@
 {
   "topics": [
     {
+      "date": "2026-07-02",
+      "skill": "Path-scoped write permissions for AI coding agents",
+      "topic": "Using repo path policies, CODEOWNERS-derived write lanes, pre-apply diff checks, and escalation rules so coding agents can patch the files they were meant to touch without quietly expanding into adjacent services, deployment manifests, or security-sensitive paths",
+      "slug": "path-scoped-write-permissions-ai-coding-agents",
+      "title": "Path-Scoped Write Permissions for AI Coding Agents Without Repo-Wide Trust",
+      "summary": "A practical guide to enforcing path-scoped write permissions for AI coding agents with policy maps, CODEOWNERS alignment, pre-apply checks, and reviewer evidence so one helpful patch cannot quietly edit the whole repository."
+    },
+    {
       "date": "2026-07-01",
       "skill": "Schema drift alerts for MCP tools",
       "topic": "Using normalized schema snapshots, compatibility lanes, fixture validation, and CI diff gates so MCP tool changes stop surfacing as mysterious agent retries or validation errors after deployment",

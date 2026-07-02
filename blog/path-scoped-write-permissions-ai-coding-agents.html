@@ -1,0 +1,282 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="A practical guide to enforcing path-scoped write permissions for AI coding agents with policy maps, CODEOWNERS alignment, pre-apply checks, and reviewer evidence so one helpful patch cannot quietly edit the whole repository.">
+    <meta name="author" content="Anirudh Negi">
+    <title>Path-Scoped Write Permissions for AI Coding Agents Without Repo-Wide Trust | Anirudh Negi</title>
+    <link rel="icon" type="image/svg+xml" href="../images/favicon.svg">
+    <link rel="canonical" href="https://negiadventures.github.io/blog/path-scoped-write-permissions-ai-coding-agents.html">
+    <meta property="og:type" content="article">
+    <meta property="og:url" content="https://negiadventures.github.io/blog/path-scoped-write-permissions-ai-coding-agents.html">
+    <meta property="og:title" content="Path-Scoped Write Permissions for AI Coding Agents Without Repo-Wide Trust | Anirudh Negi">
+    <meta property="og:description" content="A practical guide to enforcing path-scoped write permissions for AI coding agents with policy maps, CODEOWNERS alignment, pre-apply checks, and reviewer evidence so one helpful patch cannot quietly edit the whole repository.">
+    <meta property="og:image" content="data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%27%20viewBox%3D%270%200%201200%20630%27%3E%0A%3Cdefs%3E%3ClinearGradient%20id%3D%27bg%27%20x1%3D%270%27%20x2%3D%271%27%20y1%3D%270%27%20y2%3D%271%27%3E%3Cstop%20offset%3D%270%25%27%20stop-color%3D%27%2307111d%27%2F%3E%3Cstop%20offset%3D%27100%25%27%20stop-color%3D%27%23164c73%27%2F%3E%3C%2FlinearGradient%3E%3C%2Fdefs%3E%0A%3Crect%20width%3D%271200%27%20height%3D%27630%27%20fill%3D%27url%28%23bg%29%27%2F%3E%0A%3Ccircle%20cx%3D%271010%27%20cy%3D%27108%27%20r%3D%27178%27%20fill%3D%27%2322d3ee%27%20fill-opacity%3D%270.14%27%2F%3E%3Ccircle%20cx%3D%27188%27%20cy%3D%27520%27%20r%3D%27218%27%20fill%3D%27%238b5cf6%27%20fill-opacity%3D%270.16%27%2F%3E%0A%3Crect%20x%3D%2778%27%20y%3D%2786%27%20width%3D%271044%27%20height%3D%27458%27%20rx%3D%2730%27%20fill%3D%27%230b1220%27%20stroke%3D%27%2338bdf8%27%20stroke-opacity%3D%270.35%27%2F%3E%0A%3Ctext%20x%3D%27126%27%20y%3D%27164%27%20fill%3D%27white%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2738%27%20font-weight%3D%27700%27%3EPath-Scoped%20Write%20Permissions%20for%20AI%20Coding%20Agents%3C%2Ftext%3E%0A%3Ctext%20x%3D%27126%27%20y%3D%27224%27%20fill%3D%27%2393c5fd%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2738%27%20font-weight%3D%27700%27%3EWithout%20Repo-Wide%20Trust%3C%2Ftext%3E%0A%3Ctext%20x%3D%27126%27%20y%3D%27298%27%20fill%3D%27%23cbd5e1%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2728%27%3ELet%20agents%20edit%20the%20files%20they%20were%20assigned%2C%20then%20fail%20closed%20when%20a%20patch%3C%2Ftext%3E%0A%3Ctext%20x%3D%27126%27%20y%3D%27334%27%20fill%3D%27%23cbd5e1%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2728%27%3Edrifts%20into%20secrets%2C%20deploy%20configs%2C%20or%20someone%20else%26apos%3Bs%20service%20boundary.%3C%2Ftext%3E%0A%3Crect%20x%3D%27126%27%20y%3D%27388%27%20width%3D%27390%27%20height%3D%2754%27%20rx%3D%2714%27%20fill%3D%27%23111c2d%27%20stroke%3D%27%2367e8f9%27%20stroke-opacity%3D%270.45%27%2F%3E%0A%3Ctext%20x%3D%27152%27%20y%3D%27423%27%20fill%3D%27%2367e8f9%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2724%27%3Ewrite%20access%20should%20follow%20task%20scope%2C%20not%20tool%20existence%3C%2Ftext%3E%0A%3Crect%20x%3D%27776%27%20y%3D%27166%27%20width%3D%27258%27%20height%3D%2758%27%20rx%3D%2714%27%20fill%3D%27%230d1728%27%20stroke%3D%27%2322d3ee%27%20stroke-opacity%3D%270.45%27%2F%3E%3Ctext%20x%3D%27830%27%20y%3D%27204%27%20fill%3D%27%23bae6fd%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2723%27%3Epath%20policy%3C%2Ftext%3E%0A%3Crect%20x%3D%27776%27%20y%3D%27266%27%20width%3D%27258%27%20height%3D%2758%27%20rx%3D%2714%27%20fill%3D%27%230d1728%27%20stroke%3D%27%2322d3ee%27%20stroke-opacity%3D%270.45%27%2F%3E%3Ctext%20x%3D%27816%27%20y%3D%27304%27%20fill%3D%27%23bae6fd%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2723%27%3Epre-apply%20gate%3C%2Ftext%3E%0A%3Crect%20x%3D%27776%27%20y%3D%27366%27%20width%3D%27258%27%20height%3D%2758%27%20rx%3D%2714%27%20fill%3D%27%230d1728%27%20stroke%3D%27%23a78bfa%27%20stroke-opacity%3D%270.45%27%2F%3E%3Ctext%20x%3D%27812%27%20y%3D%27404%27%20fill%3D%27%23ddd6fe%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2723%27%3Ereview%20lane%3C%2Ftext%3E%0A%3C%2Fsvg%3E">
+    <meta property="article:published_time" content="2026-07-02T12:01:00Z">
+    <meta property="article:author" content="Anirudh Negi">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:url" content="https://negiadventures.github.io/blog/path-scoped-write-permissions-ai-coding-agents.html">
+    <meta name="twitter:title" content="Path-Scoped Write Permissions for AI Coding Agents Without Repo-Wide Trust | Anirudh Negi">
+    <meta name="twitter:description" content="A practical guide to enforcing path-scoped write permissions for AI coding agents with policy maps, CODEOWNERS alignment, pre-apply checks, and reviewer evidence so one helpful patch cannot quietly edit the whole repository.">
+    <meta name="twitter:image" content="data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%27%20viewBox%3D%270%200%201200%20630%27%3E%0A%3Cdefs%3E%3ClinearGradient%20id%3D%27bg%27%20x1%3D%270%27%20x2%3D%271%27%20y1%3D%270%27%20y2%3D%271%27%3E%3Cstop%20offset%3D%270%25%27%20stop-color%3D%27%2307111d%27%2F%3E%3Cstop%20offset%3D%27100%25%27%20stop-color%3D%27%23164c73%27%2F%3E%3C%2FlinearGradient%3E%3C%2Fdefs%3E%0A%3Crect%20width%3D%271200%27%20height%3D%27630%27%20fill%3D%27url%28%23bg%29%27%2F%3E%0A%3Ccircle%20cx%3D%271010%27%20cy%3D%27108%27%20r%3D%27178%27%20fill%3D%27%2322d3ee%27%20fill-opacity%3D%270.14%27%2F%3E%3Ccircle%20cx%3D%27188%27%20cy%3D%27520%27%20r%3D%27218%27%20fill%3D%27%238b5cf6%27%20fill-opacity%3D%270.16%27%2F%3E%0A%3Crect%20x%3D%2778%27%20y%3D%2786%27%20width%3D%271044%27%20height%3D%27458%27%20rx%3D%2730%27%20fill%3D%27%230b1220%27%20stroke%3D%27%2338bdf8%27%20stroke-opacity%3D%270.35%27%2F%3E%0A%3Ctext%20x%3D%27126%27%20y%3D%27164%27%20fill%3D%27white%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2738%27%20font-weight%3D%27700%27%3EPath-Scoped%20Write%20Permissions%20for%20AI%20Coding%20Agents%3C%2Ftext%3E%0A%3Ctext%20x%3D%27126%27%20y%3D%27224%27%20fill%3D%27%2393c5fd%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2738%27%20font-weight%3D%27700%27%3EWithout%20Repo-Wide%20Trust%3C%2Ftext%3E%0A%3Ctext%20x%3D%27126%27%20y%3D%27298%27%20fill%3D%27%23cbd5e1%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2728%27%3ELet%20agents%20edit%20the%20files%20they%20were%20assigned%2C%20then%20fail%20closed%20when%20a%20patch%3C%2Ftext%3E%0A%3Ctext%20x%3D%27126%27%20y%3D%27334%27%20fill%3D%27%23cbd5e1%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2728%27%3Edrifts%20into%20secrets%2C%20deploy%20configs%2C%20or%20someone%20else%26apos%3Bs%20service%20boundary.%3C%2Ftext%3E%0A%3Crect%20x%3D%27126%27%20y%3D%27388%27%20width%3D%27390%27%20height%3D%2754%27%20rx%3D%2714%27%20fill%3D%27%23111c2d%27%20stroke%3D%27%2367e8f9%27%20stroke-opacity%3D%270.45%27%2F%3E%0A%3Ctext%20x%3D%27152%27%20y%3D%27423%27%20fill%3D%27%2367e8f9%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2724%27%3Ewrite%20access%20should%20follow%20task%20scope%2C%20not%20tool%20existence%3C%2Ftext%3E%0A%3Crect%20x%3D%27776%27%20y%3D%27166%27%20width%3D%27258%27%20height%3D%2758%27%20rx%3D%2714%27%20fill%3D%27%230d1728%27%20stroke%3D%27%2322d3ee%27%20stroke-opacity%3D%270.45%27%2F%3E%3Ctext%20x%3D%27830%27%20y%3D%27204%27%20fill%3D%27%23bae6fd%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2723%27%3Epath%20policy%3C%2Ftext%3E%0A%3Crect%20x%3D%27776%27%20y%3D%27266%27%20width%3D%27258%27%20height%3D%2758%27%20rx%3D%2714%27%20fill%3D%27%230d1728%27%20stroke%3D%27%2322d3ee%27%20stroke-opacity%3D%270.45%27%2F%3E%3Ctext%20x%3D%27816%27%20y%3D%27304%27%20fill%3D%27%23bae6fd%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2723%27%3Epre-apply%20gate%3C%2Ftext%3E%0A%3Crect%20x%3D%27776%27%20y%3D%27366%27%20width%3D%27258%27%20height%3D%2758%27%20rx%3D%2714%27%20fill%3D%27%230d1728%27%20stroke%3D%27%23a78bfa%27%20stroke-opacity%3D%270.45%27%2F%3E%3Ctext%20x%3D%27812%27%20y%3D%27404%27%20fill%3D%27%23ddd6fe%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2723%27%3Ereview%20lane%3C%2Ftext%3E%0A%3C%2Fsvg%3E">
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "BlogPosting",
+      "headline": "Path-Scoped Write Permissions for AI Coding Agents Without Repo-Wide Trust",
+      "description": "A practical guide to enforcing path-scoped write permissions for AI coding agents with policy maps, CODEOWNERS alignment, pre-apply checks, and reviewer evidence so one helpful patch cannot quietly edit the whole repository.",
+      "image": "data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%27%20viewBox%3D%270%200%201200%20630%27%3E%0A%3Cdefs%3E%3ClinearGradient%20id%3D%27bg%27%20x1%3D%270%27%20x2%3D%271%27%20y1%3D%270%27%20y2%3D%271%27%3E%3Cstop%20offset%3D%270%25%27%20stop-color%3D%27%2307111d%27%2F%3E%3Cstop%20offset%3D%27100%25%27%20stop-color%3D%27%23164c73%27%2F%3E%3C%2FlinearGradient%3E%3C%2Fdefs%3E%0A%3Crect%20width%3D%271200%27%20height%3D%27630%27%20fill%3D%27url%28%23bg%29%27%2F%3E%0A%3Ccircle%20cx%3D%271010%27%20cy%3D%27108%27%20r%3D%27178%27%20fill%3D%27%2322d3ee%27%20fill-opacity%3D%270.14%27%2F%3E%3Ccircle%20cx%3D%27188%27%20cy%3D%27520%27%20r%3D%27218%27%20fill%3D%27%238b5cf6%27%20fill-opacity%3D%270.16%27%2F%3E%0A%3Crect%20x%3D%2778%27%20y%3D%2786%27%20width%3D%271044%27%20height%3D%27458%27%20rx%3D%2730%27%20fill%3D%27%230b1220%27%20stroke%3D%27%2338bdf8%27%20stroke-opacity%3D%270.35%27%2F%3E%0A%3Ctext%20x%3D%27126%27%20y%3D%27164%27%20fill%3D%27white%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2738%27%20font-weight%3D%27700%27%3EPath-Scoped%20Write%20Permissions%20for%20AI%20Coding%20Agents%3C%2Ftext%3E%0A%3Ctext%20x%3D%27126%27%20y%3D%27224%27%20fill%3D%27%2393c5fd%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2738%27%20font-weight%3D%27700%27%3EWithout%20Repo-Wide%20Trust%3C%2Ftext%3E%0A%3Ctext%20x%3D%27126%27%20y%3D%27298%27%20fill%3D%27%23cbd5e1%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2728%27%3ELet%20agents%20edit%20the%20files%20they%20were%20assigned%2C%20then%20fail%20closed%20when%20a%20patch%3C%2Ftext%3E%0A%3Ctext%20x%3D%27126%27%20y%3D%27334%27%20fill%3D%27%23cbd5e1%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2728%27%3Edrifts%20into%20secrets%2C%20deploy%20configs%2C%20or%20someone%20else%26apos%3Bs%20service%20boundary.%3C%2Ftext%3E%0A%3Crect%20x%3D%27126%27%20y%3D%27388%27%20width%3D%27390%27%20height%3D%2754%27%20rx%3D%2714%27%20fill%3D%27%23111c2d%27%20stroke%3D%27%2367e8f9%27%20stroke-opacity%3D%270.45%27%2F%3E%0A%3Ctext%20x%3D%27152%27%20y%3D%27423%27%20fill%3D%27%2367e8f9%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2724%27%3Ewrite%20access%20should%20follow%20task%20scope%2C%20not%20tool%20existence%3C%2Ftext%3E%0A%3Crect%20x%3D%27776%27%20y%3D%27166%27%20width%3D%27258%27%20height%3D%2758%27%20rx%3D%2714%27%20fill%3D%27%230d1728%27%20stroke%3D%27%2322d3ee%27%20stroke-opacity%3D%270.45%27%2F%3E%3Ctext%20x%3D%27830%27%20y%3D%27204%27%20fill%3D%27%23bae6fd%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2723%27%3Epath%20policy%3C%2Ftext%3E%0A%3Crect%20x%3D%27776%27%20y%3D%27266%27%20width%3D%27258%27%20height%3D%2758%27%20rx%3D%2714%27%20fill%3D%27%230d1728%27%20stroke%3D%27%2322d3ee%27%20stroke-opacity%3D%270.45%27%2F%3E%3Ctext%20x%3D%27816%27%20y%3D%27304%27%20fill%3D%27%23bae6fd%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2723%27%3Epre-apply%20gate%3C%2Ftext%3E%0A%3Crect%20x%3D%27776%27%20y%3D%27366%27%20width%3D%27258%27%20height%3D%2758%27%20rx%3D%2714%27%20fill%3D%27%230d1728%27%20stroke%3D%27%23a78bfa%27%20stroke-opacity%3D%270.45%27%2F%3E%3Ctext%20x%3D%27812%27%20y%3D%27404%27%20fill%3D%27%23ddd6fe%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2723%27%3Ereview%20lane%3C%2Ftext%3E%0A%3C%2Fsvg%3E",
+      "url": "https://negiadventures.github.io/blog/path-scoped-write-permissions-ai-coding-agents.html",
+      "datePublished": "2026-07-02",
+      "author": {
+        "@type": "Person",
+        "name": "Anirudh Negi",
+        "url": "https://negiadventures.github.io"
+      },
+      "publisher": {
+        "@type": "Person",
+        "name": "Anirudh Negi",
+        "url": "https://negiadventures.github.io"
+      },
+      "keywords": ["AI Agents", "Repository Security", "CODEOWNERS", "Policy Enforcement", "Developer Workflow"]
+    }
+    </script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../stylesheets/stylesheet.css?v=5" media="screen">
+    <style>
+      .blog-post { max-width: 860px; margin: 0 auto; padding: 60px 20px; }
+      .blog-post-nav { margin-bottom: 30px; }
+      .blog-post-nav a, .blog-footer a { color: var(--accent-strong); }
+      .blog-post-nav a:hover, .blog-footer a:hover { color: var(--accent); }
+      .blog-post-title { font-size: 2.5rem; margin-bottom: 16px; }
+      .blog-post-meta { display: flex; gap: 16px; flex-wrap: wrap; color: var(--text-muted); font-size: 0.95rem; margin-bottom: 28px; }
+      .hero-banner { width: 100%; border-radius: 18px; border: 1px solid var(--border); margin-bottom: 32px; box-shadow: 0 20px 40px rgba(34, 211, 238, 0.08); }
+      .blog-post-content h2 { font-size: 1.7rem; margin: 42px 0 16px; }
+      .blog-post-content h3 { font-size: 1.25rem; margin: 28px 0 12px; }
+      .blog-post-content p, .blog-post-content li { line-height: 1.8; color: var(--text-muted); }
+      .blog-post-content ul, .blog-post-content ol { margin-bottom: 20px; padding-left: 24px; }
+      .code-block, .terminal-block, .callout, .diagram-block, .table-wrap { background: var(--bg-alt); border: 1px solid var(--border); border-radius: 14px; padding: 20px; margin: 22px 0; }
+      .code-block pre, .terminal-block pre { margin: 0; overflow-x: auto; font-family: var(--mono); font-size: 0.9rem; line-height: 1.65; color: var(--text-light); }
+      .diagram-block svg { width: 100%; height: auto; }
+      .callout strong { color: var(--text-light); }
+      .callout.best { border-color: rgba(34, 211, 238, 0.35); }
+      .callout.pitfall { border-color: rgba(248, 113, 113, 0.35); }
+      .table-wrap table { width: 100%; border-collapse: collapse; }
+      .table-wrap th, .table-wrap td { border-bottom: 1px solid var(--border); text-align: left; padding: 12px 10px; vertical-align: top; }
+      .table-wrap th { color: var(--text-light); }
+      .blog-post-tags { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 40px; padding-top: 28px; border-top: 1px solid var(--border); }
+      .blog-post-tag { background: var(--accent-soft); color: var(--accent-strong); border-radius: 999px; padding: 6px 14px; font-size: 0.85rem; font-family: var(--mono); }
+      .blog-footer { margin-top: 60px; padding-top: 30px; border-top: 1px solid var(--border); text-align: center; }
+      @media (max-width: 768px) { .blog-post { padding: 40px 16px; } .blog-post-title { font-size: 2rem; } }
+    </style>
+  </head>
+  <body>
+    <a href="../index.html#main" class="skip-link">Skip to main content</a>
+    <header class="site-header">
+      <div class="container blog-post">
+        <div class="blog-post-nav"><a href="index.html">&larr; Back to All Posts</a></div>
+        <div class="blog-post-header">
+          <h1 class="blog-post-title">Path-Scoped Write Permissions for AI Coding Agents Without Repo-Wide Trust</h1>
+          <div class="blog-post-meta">
+            <span>July 2, 2026</span>
+            <span>&bull;</span>
+            <span>11 min read</span>
+            <span>&bull;</span>
+            <span>Repository Safety</span>
+          </div>
+          <img class="hero-banner" alt="Path-Scoped Write Permissions for AI Coding Agents Without Repo-Wide Trust" src="data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%27%20viewBox%3D%270%200%201200%20630%27%3E%0A%3Cdefs%3E%3ClinearGradient%20id%3D%27bg%27%20x1%3D%270%27%20x2%3D%271%27%20y1%3D%270%27%20y2%3D%271%27%3E%3Cstop%20offset%3D%270%25%27%20stop-color%3D%27%2307111d%27%2F%3E%3Cstop%20offset%3D%27100%25%27%20stop-color%3D%27%23164c73%27%2F%3E%3C%2FlinearGradient%3E%3C%2Fdefs%3E%0A%3Crect%20width%3D%271200%27%20height%3D%27630%27%20fill%3D%27url%28%23bg%29%27%2F%3E%0A%3Ccircle%20cx%3D%271010%27%20cy%3D%27108%27%20r%3D%27178%27%20fill%3D%27%2322d3ee%27%20fill-opacity%3D%270.14%27%2F%3E%3Ccircle%20cx%3D%27188%27%20cy%3D%27520%27%20r%3D%27218%27%20fill%3D%27%238b5cf6%27%20fill-opacity%3D%270.16%27%2F%3E%0A%3Crect%20x%3D%2778%27%20y%3D%2786%27%20width%3D%271044%27%20height%3D%27458%27%20rx%3D%2730%27%20fill%3D%27%230b1220%27%20stroke%3D%27%2338bdf8%27%20stroke-opacity%3D%270.35%27%2F%3E%0A%3Ctext%20x%3D%27126%27%20y%3D%27164%27%20fill%3D%27white%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2738%27%20font-weight%3D%27700%27%3EPath-Scoped%20Write%20Permissions%20for%20AI%20Coding%20Agents%3C%2Ftext%3E%0A%3Ctext%20x%3D%27126%27%20y%3D%27224%27%20fill%3D%27%2393c5fd%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2738%27%20font-weight%3D%27700%27%3EWithout%20Repo-Wide%20Trust%3C%2Ftext%3E%0A%3Ctext%20x%3D%27126%27%20y%3D%27298%27%20fill%3D%27%23cbd5e1%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2728%27%3ELet%20agents%20edit%20the%20files%20they%20were%20assigned%2C%20then%20fail%20closed%20when%20a%20patch%3C%2Ftext%3E%0A%3Ctext%20x%3D%27126%27%20y%3D%27334%27%20fill%3D%27%23cbd5e1%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2728%27%3Edrifts%20into%20secrets%2C%20deploy%20configs%2C%20or%20someone%20else%26apos%3Bs%20service%20boundary.%3C%2Ftext%3E%0A%3Crect%20x%3D%27126%27%20y%3D%27388%27%20width%3D%27390%27%20height%3D%2754%27%20rx%3D%2714%27%20fill%3D%27%23111c2d%27%20stroke%3D%27%2367e8f9%27%20stroke-opacity%3D%270.45%27%2F%3E%0A%3Ctext%20x%3D%27152%27%20y%3D%27423%27%20fill%3D%27%2367e8f9%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2724%27%3Ewrite%20access%20should%20follow%20task%20scope%2C%20not%20tool%20existence%3C%2Ftext%3E%0A%3Crect%20x%3D%27776%27%20y%3D%27166%27%20width%3D%27258%27%20height%3D%2758%27%20rx%3D%2714%27%20fill%3D%27%230d1728%27%20stroke%3D%27%2322d3ee%27%20stroke-opacity%3D%270.45%27%2F%3E%3Ctext%20x%3D%27830%27%20y%3D%27204%27%20fill%3D%27%23bae6fd%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2723%27%3Epath%20policy%3C%2Ftext%3E%0A%3Crect%20x%3D%27776%27%20y%3D%27266%27%20width%3D%27258%27%20height%3D%2758%27%20rx%3D%2714%27%20fill%3D%27%230d1728%27%20stroke%3D%27%2322d3ee%27%20stroke-opacity%3D%270.45%27%2F%3E%3Ctext%20x%3D%27816%27%20y%3D%27304%27%20fill%3D%27%23bae6fd%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2723%27%3Epre-apply%20gate%3C%2Ftext%3E%0A%3Crect%20x%3D%27776%27%20y%3D%27366%27%20width%3D%27258%27%20height%3D%2758%27%20rx%3D%2714%27%20fill%3D%27%230d1728%27%20stroke%3D%27%23a78bfa%27%20stroke-opacity%3D%270.45%27%2F%3E%3Ctext%20x%3D%27812%27%20y%3D%27404%27%20fill%3D%27%23ddd6fe%27%20font-family%3D%27Arial%2C%20sans-serif%27%20font-size%3D%2723%27%3Ereview%20lane%3C%2Ftext%3E%0A%3C%2Fsvg%3E">
+        </div>
+        <div class="blog-post-content">
+          <p>Most AI coding agents do not need blanket write access to an entire repository. They need to touch a bounded set of files for one task, then stop. The problem is that many tool stacks still treat “can edit files” as a repo-wide capability.</p>
+          <p>That feels convenient until a bug fix drifts into deployment YAML, a refactor updates generated code nobody meant to review, or an agent decides the best place to “help” is a secrets-related config nearby.</p>
+          <p>This post walks through a cleaner model: path-scoped write permissions. The idea is simple. Let the agent read broadly if you want, but only allow writes inside approved paths, with a hard pre-apply gate and a review lane for escalations.</p>
+
+          <h2>Why this matters</h2>
+          <p>Permission boundaries for AI coding agents usually focus on shell access, network access, or whether the agent can push a branch. Those matter, but repository boundaries matter too. In real repos, the dangerous failures are often local and plausible: a config file that should not have changed, a migration script pulled into scope by pattern matching, or a docs update that quietly edits product policy text.</p>
+          <p>I like path scoping because it matches how engineering teams already think. Ownership is already encoded in repo structure, CODEOWNERS, deployment directories, and generated-output conventions. You do not need magical policy. You need enforcement that reflects the repository you already have.</p>
+
+          <h2>Architecture or workflow overview</h2>
+          <div class="diagram-block">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 360" role="img" aria-label="Path-scoped write policy flow">
+              <rect width="900" height="360" rx="24" fill="#0b1220" stroke="#274155"/>
+              <rect x="36" y="72" width="170" height="72" rx="16" fill="#111c2d" stroke="#38bdf8"/>
+              <text x="121" y="106" fill="#e2e8f0" font-size="21" text-anchor="middle">Task manifest</text>
+              <text x="121" y="130" fill="#93c5fd" font-size="16" text-anchor="middle">allowed paths + intent</text>
+              <rect x="252" y="72" width="170" height="72" rx="16" fill="#111c2d" stroke="#38bdf8"/>
+              <text x="337" y="106" fill="#e2e8f0" font-size="21" text-anchor="middle">Policy resolver</text>
+              <text x="337" y="130" fill="#93c5fd" font-size="16" text-anchor="middle">repo rules + CODEOWNERS</text>
+              <rect x="468" y="72" width="170" height="72" rx="16" fill="#111c2d" stroke="#38bdf8"/>
+              <text x="553" y="106" fill="#e2e8f0" font-size="21" text-anchor="middle">Edit sandbox</text>
+              <text x="553" y="130" fill="#93c5fd" font-size="16" text-anchor="middle">agent drafts patch</text>
+              <rect x="684" y="72" width="180" height="72" rx="16" fill="#111c2d" stroke="#a78bfa"/>
+              <text x="774" y="106" fill="#e2e8f0" font-size="21" text-anchor="middle">Pre-apply gate</text>
+              <text x="774" y="130" fill="#c4b5fd" font-size="16" text-anchor="middle">block or escalate</text>
+              <rect x="252" y="224" width="170" height="72" rx="16" fill="#111c2d" stroke="#22d3ee"/>
+              <text x="337" y="258" fill="#e2e8f0" font-size="21" text-anchor="middle">Apply patch</text>
+              <text x="337" y="282" fill="#67e8f9" font-size="16" text-anchor="middle">inside approved scope</text>
+              <rect x="558" y="224" width="250" height="72" rx="16" fill="#111c2d" stroke="#f87171"/>
+              <text x="683" y="258" fill="#e2e8f0" font-size="21" text-anchor="middle">Escalation evidence bundle</text>
+              <text x="683" y="282" fill="#fca5a5" font-size="16" text-anchor="middle">out-of-scope paths + rationale</text>
+              <path d="M206 108h46M422 108h46M638 108h46M774 144v34c0 14-12 26-26 26H422" fill="none" stroke="#4b6b80" stroke-width="3" stroke-linecap="round"/>
+              <path d="M774 144v44c0 14-12 26-26 26h-22" fill="none" stroke="#7c3aed" stroke-width="3" stroke-linecap="round"/>
+            </svg>
+          </div>
+          <ol>
+            <li>Start each run with a task manifest that names the write scope, not just the goal.</li>
+            <li>Resolve that scope against repo policy, CODEOWNERS, and no-go directories.</li>
+            <li>Let the agent draft changes normally, but treat every patch as provisional.</li>
+            <li>Before applying or committing, compare changed files against the approved path set.</li>
+            <li>If the patch crosses the boundary, fail closed and produce an escalation packet.</li>
+          </ol>
+
+          <div class="callout best"><strong>Visual plan:</strong> Hero shows scoped write gates inside a repo, the architecture visual shows task manifest to pre-apply gate flow, the terminal block shows an out-of-scope denial, tags are AI Agents, Repository Security, CODEOWNERS, Policy Enforcement, and Developer Workflow, and the code sections cover policy definition, diff checking, and reviewer evidence.</div>
+
+          <h2>Implementation details</h2>
+          <h3>1) Define write lanes as explicit policy, not vibes</h3>
+          <p>The task runner should resolve paths from a policy file that lives with the repo. This can be hand-written, generated from CODEOWNERS, or merged from both. The key is that the runner can answer one question quickly: “Is this file writable for this task?”</p>
+          <div class="code-block"><pre><code>version: 1
+lanes:
+  ui-copy-fix:
+    allow:
+      - web/src/**
+      - web/public/**
+    deny:
+      - web/src/generated/**
+      - infra/**
+      - .github/workflows/**
+  docs-update:
+    allow:
+      - docs/**
+      - README.md
+    deny:
+      - docs/policies/**</code></pre></div>
+          <p>I prefer deny rules even when allow rules look sufficient. They make sharp edges visible, and they help when broad path globs would otherwise catch generated code, deploy configs, or legal text.</p>
+
+          <h3>2) Resolve task scope against CODEOWNERS and sensitive paths</h3>
+          <p>Static allowlists age badly on their own. Pulling in CODEOWNERS lets the system catch edits that cross ownership boundaries even when the path technically matches a broad lane.</p>
+          <div class="code-block"><pre><code>import picomatch from "picomatch";
+import { parseCodeowners } from "./codeowners.js";
+
+export function resolveWritablePaths(taskLane, policy, repoFiles) {
+  const allow = policy.lanes[taskLane].allow.map(picomatch);
+  const deny = policy.lanes[taskLane].deny.map(picomatch);
+  const codeowners = parseCodeowners('.github/CODEOWNERS');
+
+  return repoFiles.filter((file) =&gt; {
+    const allowed = allow.some((match) =&gt; match(file));
+    const blocked = deny.some((match) =&gt; match(file));
+    const ownerLane = codeowners.ownerGroupFor(file);
+    return allowed &amp;&amp; !blocked &amp;&amp; ownerLane !== 'security-admins';
+  });
+}</code></pre></div>
+          <p>That last condition is opinionated on purpose. There should be directories an autonomous patch cannot touch without escalation, even if the prompt sounds harmless.</p>
+
+          <h3>3) Fail closed at patch time, not after commit time</h3>
+          <p>The strongest control is the one closest to mutation. Check the diff right before apply, commit, or push. If a patch includes a path outside the resolved write set, reject it and show the agent or reviewer exactly what happened.</p>
+          <div class="code-block"><pre><code>#!/usr/bin/env bash
+set -euo pipefail
+
+ALLOWED_FILE=.run/allowed-paths.txt
+PATCH_FILE=.run/candidate.patch
+
+violations=$(git apply --numstat "$PATCH_FILE"   | awk '{print $3}'   | grep -v -x -f "$ALLOWED_FILE" || true)
+
+if [[ -n "$violations" ]]; then
+  echo "OUT_OF_SCOPE_WRITE"
+  echo "$violations"
+  exit 42
+fi
+
+git apply "$PATCH_FILE"</code></pre></div>
+          <div class="terminal-block"><pre><code>$ ./scripts/apply-scoped-patch.sh
+OUT_OF_SCOPE_WRITE
+infra/prod/deploy.yaml
+.github/workflows/release.yml
+
+Patch blocked. Escalation bundle written to .run/escalations/2026-07-02T120100Z.json</code></pre></div>
+          <p>This is the exact behavior I want. No partial apply, no “mostly fine” merge, no hidden second-order file changes.</p>
+
+          <h3>4) Produce reviewer evidence instead of a vague denial</h3>
+          <p>If you only say “permission denied,” the human has to reconstruct intent manually. Better is a small evidence bundle: task, requested files, blocked files, nearest matching lane, and the agent rationale that led to the expansion.</p>
+          <div class="code-block"><pre><code>{
+  "taskId": "run_01jz8v9m0n",
+  "lane": "ui-copy-fix",
+  "allowedPaths": ["web/src/**", "web/public/**"],
+  "blockedFiles": ["infra/prod/deploy.yaml"],
+  "reason": "Agent attempted to edit deployment config while fixing frontend asset path",
+  "suggestedAction": "Require explicit approval or split into separate task"
+}</code></pre></div>
+          <p>That keeps review fast. Humans should decide whether the scope was genuinely too narrow or whether the agent wandered.</p>
+
+          <h2>What went wrong and tradeoffs</h2>
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>Choice</th>
+                  <th>What it helps</th>
+                  <th>What it costs</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>Broad allow globs</td>
+                  <td>Higher task completion rate on first try</td>
+                  <td>More accidental cross-service edits</td>
+                </tr>
+                <tr>
+                  <td>Strict deny lists</td>
+                  <td>Protects dangerous paths reliably</td>
+                  <td>Needs maintenance when repos move</td>
+                </tr>
+                <tr>
+                  <td>CODEOWNERS alignment</td>
+                  <td>Matches human ownership models</td>
+                  <td>Breaks if CODEOWNERS is stale theater</td>
+                </tr>
+                <tr>
+                  <td>Hard pre-apply gate</td>
+                  <td>Fail-closed mutation control</td>
+                  <td>More escalations for multi-file fixes</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+          <p>The main failure mode is stale policy. If lanes do not evolve with the repo, you create busywork and people start bypassing the guardrail. I would rather tolerate a few honest escalations than quietly normalize repo-wide trust, but the maintenance burden is real.</p>
+          <div class="callout pitfall"><strong>Pitfall:</strong> Do not confuse read scope with write scope. Letting an agent inspect neighboring files for context is often fine. Letting it mutate them because they looked relevant is a different privilege boundary entirely.</div>
+          <p>Another tradeoff is task fragmentation. A real fix sometimes spans app code, tests, fixtures, and CI. Path scoping should not make those impossible. The better pattern is to define multi-lane tasks explicitly or let the runner request expansion with evidence instead of silently taking it.</p>
+          <p>What I would not do is infer write scope entirely from the prompt. Prompts are too soft, and models are too willing to reinterpret them when a nearby config file seems useful.</p>
+
+          <h2>Practical checklist</h2>
+          <ul>
+            <li>Define per-task or per-lane write scopes in repo-local policy.</li>
+            <li>Keep hard deny zones for secrets, infra, workflows, generated code, and policy text.</li>
+            <li>Resolve scope against CODEOWNERS or another ownership map.</li>
+            <li>Check changed files immediately before apply, commit, or push.</li>
+            <li>Fail closed on out-of-scope files, with no partial mutation.</li>
+            <li>Emit an escalation bundle with blocked paths and rationale.</li>
+            <li>Review lane churn monthly so the policy does not rot into friction.</li>
+          </ul>
+
+          <h2>Conclusion</h2>
+          <p>Path-scoped write permissions are one of the simplest ways to make AI coding agents safer without making them useless. The model can still reason broadly. It just cannot mutate broadly by default.</p>
+          <p>If a task truly needs more reach, make that visible and deliberate. Repo trust should expand by evidence, not by accident.</p>
+
+          <div class="blog-post-tags">
+            <span class="blog-post-tag">AI Agents</span>
+            <span class="blog-post-tag">Repository Security</span>
+            <span class="blog-post-tag">CODEOWNERS</span>
+            <span class="blog-post-tag">Policy Enforcement</span>
+            <span class="blog-post-tag">Developer Workflow</span>
+          </div>
+        </div>
+        <div class="blog-footer">
+          <p><a href="index.html">Read more posts</a> or <a href="../index.html">return to the portfolio</a>.</p>
+        </div>
+      </div>
+    </header>
+  </body>
+</html>
