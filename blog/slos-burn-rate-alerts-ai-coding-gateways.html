@@ -1,0 +1,274 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="A practical guide to defining SLOs and burn-rate alerts for AI coding gateways with first-token latency, tool success budgets, lane-aware error budgets, and fallback policy so operators catch drift before slow turns become broken automation.">
+    <meta name="author" content="Anirudh Negi">
+    <title>SLOs and Burn-Rate Alerts for AI Coding Gateways Before Slow Turns Become Failed Runs | Anirudh Negi</title>
+    <link rel="icon" type="image/svg+xml" href="../images/favicon.svg">
+    <link rel="canonical" href="https://negiadventures.github.io/blog/slos-burn-rate-alerts-ai-coding-gateways.html">
+    <meta property="og:type" content="article">
+    <meta property="og:url" content="https://negiadventures.github.io/blog/slos-burn-rate-alerts-ai-coding-gateways.html">
+    <meta property="og:title" content="SLOs and Burn-Rate Alerts for AI Coding Gateways Before Slow Turns Become Failed Runs | Anirudh Negi">
+    <meta property="og:description" content="A practical guide to defining SLOs and burn-rate alerts for AI coding gateways with first-token latency, tool success budgets, lane-aware error budgets, and fallback policy so operators catch drift before slow turns become broken automation.">
+    <meta property="og:image" content="data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%201200%20630%22%3E%0A%3Cdefs%3E%0A%20%20%3ClinearGradient%20id%3D%22bg%22%20x1%3D%220%22%20x2%3D%221%22%20y1%3D%220%22%20y2%3D%221%22%3E%0A%20%20%20%20%3Cstop%20offset%3D%220%25%22%20stop-color%3D%22%2307111d%22%2F%3E%0A%20%20%20%20%3Cstop%20offset%3D%22100%25%22%20stop-color%3D%22%231b4f75%22%2F%3E%0A%20%20%3C%2FlinearGradient%3E%0A%3C%2Fdefs%3E%0A%3Crect%20width%3D%221200%22%20height%3D%22630%22%20fill%3D%22url%28%23bg%29%22%2F%3E%0A%3Ccircle%20cx%3D%221012%22%20cy%3D%22106%22%20r%3D%22178%22%20fill%3D%22%2322d3ee%22%20fill-opacity%3D%220.14%22%2F%3E%0A%3Ccircle%20cx%3D%22192%22%20cy%3D%22520%22%20r%3D%22220%22%20fill%3D%22%238b5cf6%22%20fill-opacity%3D%220.16%22%2F%3E%0A%3Crect%20x%3D%2278%22%20y%3D%2286%22%20width%3D%221044%22%20height%3D%22458%22%20rx%3D%2230%22%20fill%3D%22%230b1220%22%20stroke%3D%22%2338bdf8%22%20stroke-opacity%3D%220.35%22%2F%3E%0A%3Ctext%20x%3D%22126%22%20y%3D%22164%22%20fill%3D%22white%22%20font-family%3D%22Arial%2C%20sans-serif%22%20font-size%3D%2238%22%20font-weight%3D%22700%22%3ESLOs%20and%20Burn-Rate%20Alerts%20for%20AI%20Coding%20Gateways%3C%2Ftext%3E%0A%3Ctext%20x%3D%22126%22%20y%3D%22224%22%20fill%3D%22%2393c5fd%22%20font-family%3D%22Arial%2C%20sans-serif%22%20font-size%3D%2238%22%20font-weight%3D%22700%22%3EBefore%20Slow%20Turns%20Become%20Failed%20Runs%3C%2Ftext%3E%0A%3Ctext%20x%3D%22126%22%20y%3D%22298%22%20fill%3D%22%23cbd5e1%22%20font-family%3D%22Arial%2C%20sans-serif%22%20font-size%3D%2228%22%3EMeasure%20first-token%20latency%2C%20fallback%20health%2C%20and%20tool-success%20budgets%20before%3C%2Ftext%3E%0A%3Ctext%20x%3D%22126%22%20y%3D%22334%22%20fill%3D%22%23cbd5e1%22%20font-family%3D%22Arial%2C%20sans-serif%22%20font-size%3D%2228%22%3Edevelopers%20experience%20%E2%80%9Cthe%20agent%20feels%20weird%20today%E2%80%9D%20as%20a%20full%20reliability%20incident.%3C%2Ftext%3E%0A%3Crect%20x%3D%22126%22%20y%3D%22388%22%20width%3D%22410%22%20height%3D%2254%22%20rx%3D%2214%22%20fill%3D%22%23111c2d%22%20stroke%3D%22%2367e8f9%22%20stroke-opacity%3D%220.45%22%2F%3E%0A%3Ctext%20x%3D%22152%22%20y%3D%22423%22%20fill%3D%22%2367e8f9%22%20font-family%3D%22Arial%2C%20sans-serif%22%20font-size%3D%2224%22%3Eslow%20LLM%20turns%20are%20an%20SRE%20problem%20once%20they%20hit%20real%20workflows%3C%2Ftext%3E%0A%3Crect%20x%3D%22782%22%20y%3D%22166%22%20width%3D%22244%22%20height%3D%2258%22%20rx%3D%2214%22%20fill%3D%22%230d1728%22%20stroke%3D%22%2322d3ee%22%20stroke-opacity%3D%220.45%22%2F%3E%0A%3Ctext%20x%3D%22842%22%20y%3D%22204%22%20fill%3D%22%23bae6fd%22%20font-family%3D%22Arial%2C%20sans-serif%22%20font-size%3D%2223%22%3Elatency%20SLO%3C%2Ftext%3E%0A%3Crect%20x%3D%22782%22%20y%3D%22266%22%20width%3D%22244%22%20height%3D%2258%22%20rx%3D%2214%22%20fill%3D%22%230d1728%22%20stroke%3D%22%2322d3ee%22%20stroke-opacity%3D%220.45%22%2F%3E%0A%3Ctext%20x%3D%22830%22%20y%3D%22304%22%20fill%3D%22%23bae6fd%22%20font-family%3D%22Arial%2C%20sans-serif%22%20font-size%3D%2223%22%3Eburn%20alert%3C%2Ftext%3E%0A%3Crect%20x%3D%22782%22%20y%3D%22366%22%20width%3D%22244%22%20height%3D%2258%22%20rx%3D%2214%22%20fill%3D%22%230d1728%22%20stroke%3D%22%23a78bfa%22%20stroke-opacity%3D%220.45%22%2F%3E%0A%3Ctext%20x%3D%22814%22%20y%3D%22404%22%20fill%3D%22%23ddd6fe%22%20font-family%3D%22Arial%2C%20sans-serif%22%20font-size%3D%2223%22%3Efallback%20lane%3C%2Ftext%3E%0A%3C%2Fsvg%3E">
+    <meta property="article:published_time" content="2026-07-03T12:04:00Z">
+    <meta property="article:author" content="Anirudh Negi">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:url" content="https://negiadventures.github.io/blog/slos-burn-rate-alerts-ai-coding-gateways.html">
+    <meta name="twitter:title" content="SLOs and Burn-Rate Alerts for AI Coding Gateways Before Slow Turns Become Failed Runs | Anirudh Negi">
+    <meta name="twitter:description" content="A practical guide to defining SLOs and burn-rate alerts for AI coding gateways with first-token latency, tool success budgets, lane-aware error budgets, and fallback policy so operators catch drift before slow turns become broken automation.">
+    <meta name="twitter:image" content="data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%201200%20630%22%3E%0A%3Cdefs%3E%0A%20%20%3ClinearGradient%20id%3D%22bg%22%20x1%3D%220%22%20x2%3D%221%22%20y1%3D%220%22%20y2%3D%221%22%3E%0A%20%20%20%20%3Cstop%20offset%3D%220%25%22%20stop-color%3D%22%2307111d%22%2F%3E%0A%20%20%20%20%3Cstop%20offset%3D%22100%25%22%20stop-color%3D%22%231b4f75%22%2F%3E%0A%20%20%3C%2FlinearGradient%3E%0A%3C%2Fdefs%3E%0A%3Crect%20width%3D%221200%22%20height%3D%22630%22%20fill%3D%22url%28%23bg%29%22%2F%3E%0A%3Ccircle%20cx%3D%221012%22%20cy%3D%22106%22%20r%3D%22178%22%20fill%3D%22%2322d3ee%22%20fill-opacity%3D%220.14%22%2F%3E%0A%3Ccircle%20cx%3D%22192%22%20cy%3D%22520%22%20r%3D%22220%22%20fill%3D%22%238b5cf6%22%20fill-opacity%3D%220.16%22%2F%3E%0A%3Crect%20x%3D%2278%22%20y%3D%2286%22%20width%3D%221044%22%20height%3D%22458%22%20rx%3D%2230%22%20fill%3D%22%230b1220%22%20stroke%3D%22%2338bdf8%22%20stroke-opacity%3D%220.35%22%2F%3E%0A%3Ctext%20x%3D%22126%22%20y%3D%22164%22%20fill%3D%22white%22%20font-family%3D%22Arial%2C%20sans-serif%22%20font-size%3D%2238%22%20font-weight%3D%22700%22%3ESLOs%20and%20Burn-Rate%20Alerts%20for%20AI%20Coding%20Gateways%3C%2Ftext%3E%0A%3Ctext%20x%3D%22126%22%20y%3D%22224%22%20fill%3D%22%2393c5fd%22%20font-family%3D%22Arial%2C%20sans-serif%22%20font-size%3D%2238%22%20font-weight%3D%22700%22%3EBefore%20Slow%20Turns%20Become%20Failed%20Runs%3C%2Ftext%3E%0A%3Ctext%20x%3D%22126%22%20y%3D%22298%22%20fill%3D%22%23cbd5e1%22%20font-family%3D%22Arial%2C%20sans-serif%22%20font-size%3D%2228%22%3EMeasure%20first-token%20latency%2C%20fallback%20health%2C%20and%20tool-success%20budgets%20before%3C%2Ftext%3E%0A%3Ctext%20x%3D%22126%22%20y%3D%22334%22%20fill%3D%22%23cbd5e1%22%20font-family%3D%22Arial%2C%20sans-serif%22%20font-size%3D%2228%22%3Edevelopers%20experience%20%E2%80%9Cthe%20agent%20feels%20weird%20today%E2%80%9D%20as%20a%20full%20reliability%20incident.%3C%2Ftext%3E%0A%3Crect%20x%3D%22126%22%20y%3D%22388%22%20width%3D%22410%22%20height%3D%2254%22%20rx%3D%2214%22%20fill%3D%22%23111c2d%22%20stroke%3D%22%2367e8f9%22%20stroke-opacity%3D%220.45%22%2F%3E%0A%3Ctext%20x%3D%22152%22%20y%3D%22423%22%20fill%3D%22%2367e8f9%22%20font-family%3D%22Arial%2C%20sans-serif%22%20font-size%3D%2224%22%3Eslow%20LLM%20turns%20are%20an%20SRE%20problem%20once%20they%20hit%20real%20workflows%3C%2Ftext%3E%0A%3Crect%20x%3D%22782%22%20y%3D%22166%22%20width%3D%22244%22%20height%3D%2258%22%20rx%3D%2214%22%20fill%3D%22%230d1728%22%20stroke%3D%22%2322d3ee%22%20stroke-opacity%3D%220.45%22%2F%3E%0A%3Ctext%20x%3D%22842%22%20y%3D%22204%22%20fill%3D%22%23bae6fd%22%20font-family%3D%22Arial%2C%20sans-serif%22%20font-size%3D%2223%22%3Elatency%20SLO%3C%2Ftext%3E%0A%3Crect%20x%3D%22782%22%20y%3D%22266%22%20width%3D%22244%22%20height%3D%2258%22%20rx%3D%2214%22%20fill%3D%22%230d1728%22%20stroke%3D%22%2322d3ee%22%20stroke-opacity%3D%220.45%22%2F%3E%0A%3Ctext%20x%3D%22830%22%20y%3D%22304%22%20fill%3D%22%23bae6fd%22%20font-family%3D%22Arial%2C%20sans-serif%22%20font-size%3D%2223%22%3Eburn%20alert%3C%2Ftext%3E%0A%3Crect%20x%3D%22782%22%20y%3D%22366%22%20width%3D%22244%22%20height%3D%2258%22%20rx%3D%2214%22%20fill%3D%22%230d1728%22%20stroke%3D%22%23a78bfa%22%20stroke-opacity%3D%220.45%22%2F%3E%0A%3Ctext%20x%3D%22814%22%20y%3D%22404%22%20fill%3D%22%23ddd6fe%22%20font-family%3D%22Arial%2C%20sans-serif%22%20font-size%3D%2223%22%3Efallback%20lane%3C%2Ftext%3E%0A%3C%2Fsvg%3E">
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "BlogPosting",
+      "headline": "SLOs and Burn-Rate Alerts for AI Coding Gateways Before Slow Turns Become Failed Runs",
+      "description": "A practical guide to defining SLOs and burn-rate alerts for AI coding gateways with first-token latency, tool success budgets, lane-aware error budgets, and fallback policy so operators catch drift before slow turns become broken automation.",
+      "image": "data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%201200%20630%22%3E%0A%3Cdefs%3E%0A%20%20%3ClinearGradient%20id%3D%22bg%22%20x1%3D%220%22%20x2%3D%221%22%20y1%3D%220%22%20y2%3D%221%22%3E%0A%20%20%20%20%3Cstop%20offset%3D%220%25%22%20stop-color%3D%22%2307111d%22%2F%3E%0A%20%20%20%20%3Cstop%20offset%3D%22100%25%22%20stop-color%3D%22%231b4f75%22%2F%3E%0A%20%20%3C%2FlinearGradient%3E%0A%3C%2Fdefs%3E%0A%3Crect%20width%3D%221200%22%20height%3D%22630%22%20fill%3D%22url%28%23bg%29%22%2F%3E%0A%3Ccircle%20cx%3D%221012%22%20cy%3D%22106%22%20r%3D%22178%22%20fill%3D%22%2322d3ee%22%20fill-opacity%3D%220.14%22%2F%3E%0A%3Ccircle%20cx%3D%22192%22%20cy%3D%22520%22%20r%3D%22220%22%20fill%3D%22%238b5cf6%22%20fill-opacity%3D%220.16%22%2F%3E%0A%3Crect%20x%3D%2278%22%20y%3D%2286%22%20width%3D%221044%22%20height%3D%22458%22%20rx%3D%2230%22%20fill%3D%22%230b1220%22%20stroke%3D%22%2338bdf8%22%20stroke-opacity%3D%220.35%22%2F%3E%0A%3Ctext%20x%3D%22126%22%20y%3D%22164%22%20fill%3D%22white%22%20font-family%3D%22Arial%2C%20sans-serif%22%20font-size%3D%2238%22%20font-weight%3D%22700%22%3ESLOs%20and%20Burn-Rate%20Alerts%20for%20AI%20Coding%20Gateways%3C%2Ftext%3E%0A%3Ctext%20x%3D%22126%22%20y%3D%22224%22%20fill%3D%22%2393c5fd%22%20font-family%3D%22Arial%2C%20sans-serif%22%20font-size%3D%2238%22%20font-weight%3D%22700%22%3EBefore%20Slow%20Turns%20Become%20Failed%20Runs%3C%2Ftext%3E%0A%3Ctext%20x%3D%22126%22%20y%3D%22298%22%20fill%3D%22%23cbd5e1%22%20font-family%3D%22Arial%2C%20sans-serif%22%20font-size%3D%2228%22%3EMeasure%20first-token%20latency%2C%20fallback%20health%2C%20and%20tool-success%20budgets%20before%3C%2Ftext%3E%0A%3Ctext%20x%3D%22126%22%20y%3D%22334%22%20fill%3D%22%23cbd5e1%22%20font-family%3D%22Arial%2C%20sans-serif%22%20font-size%3D%2228%22%3Edevelopers%20experience%20%E2%80%9Cthe%20agent%20feels%20weird%20today%E2%80%9D%20as%20a%20full%20reliability%20incident.%3C%2Ftext%3E%0A%3Crect%20x%3D%22126%22%20y%3D%22388%22%20width%3D%22410%22%20height%3D%2254%22%20rx%3D%2214%22%20fill%3D%22%23111c2d%22%20stroke%3D%22%2367e8f9%22%20stroke-opacity%3D%220.45%22%2F%3E%0A%3Ctext%20x%3D%22152%22%20y%3D%22423%22%20fill%3D%22%2367e8f9%22%20font-family%3D%22Arial%2C%20sans-serif%22%20font-size%3D%2224%22%3Eslow%20LLM%20turns%20are%20an%20SRE%20problem%20once%20they%20hit%20real%20workflows%3C%2Ftext%3E%0A%3Crect%20x%3D%22782%22%20y%3D%22166%22%20width%3D%22244%22%20height%3D%2258%22%20rx%3D%2214%22%20fill%3D%22%230d1728%22%20stroke%3D%22%2322d3ee%22%20stroke-opacity%3D%220.45%22%2F%3E%0A%3Ctext%20x%3D%22842%22%20y%3D%22204%22%20fill%3D%22%23bae6fd%22%20font-family%3D%22Arial%2C%20sans-serif%22%20font-size%3D%2223%22%3Elatency%20SLO%3C%2Ftext%3E%0A%3Crect%20x%3D%22782%22%20y%3D%22266%22%20width%3D%22244%22%20height%3D%2258%22%20rx%3D%2214%22%20fill%3D%22%230d1728%22%20stroke%3D%22%2322d3ee%22%20stroke-opacity%3D%220.45%22%2F%3E%0A%3Ctext%20x%3D%22830%22%20y%3D%22304%22%20fill%3D%22%23bae6fd%22%20font-family%3D%22Arial%2C%20sans-serif%22%20font-size%3D%2223%22%3Eburn%20alert%3C%2Ftext%3E%0A%3Crect%20x%3D%22782%22%20y%3D%22366%22%20width%3D%22244%22%20height%3D%2258%22%20rx%3D%2214%22%20fill%3D%22%230d1728%22%20stroke%3D%22%23a78bfa%22%20stroke-opacity%3D%220.45%22%2F%3E%0A%3Ctext%20x%3D%22814%22%20y%3D%22404%22%20fill%3D%22%23ddd6fe%22%20font-family%3D%22Arial%2C%20sans-serif%22%20font-size%3D%2223%22%3Efallback%20lane%3C%2Ftext%3E%0A%3C%2Fsvg%3E",
+      "url": "https://negiadventures.github.io/blog/slos-burn-rate-alerts-ai-coding-gateways.html",
+      "datePublished": "2026-07-03",
+      "author": {
+        "@type": "Person",
+        "name": "Anirudh Negi",
+        "url": "https://negiadventures.github.io"
+      },
+      "publisher": {
+        "@type": "Person",
+        "name": "Anirudh Negi",
+        "url": "https://negiadventures.github.io"
+      },
+      "keywords": ["AI Coding", "SLOs", "Gateway Ops", "Reliability", "Observability"]
+    }
+    </script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../stylesheets/stylesheet.css?v=5" media="screen">
+    <style>
+      .blog-post { max-width: 860px; margin: 0 auto; padding: 60px 20px; }
+      .blog-post-nav { margin-bottom: 30px; }
+      .blog-post-nav a, .blog-footer a { color: var(--accent-strong); }
+      .blog-post-nav a:hover, .blog-footer a:hover { color: var(--accent); }
+      .blog-post-title { font-size: 2.5rem; margin-bottom: 16px; }
+      .blog-post-meta { display: flex; gap: 16px; flex-wrap: wrap; color: var(--text-muted); font-size: 0.95rem; margin-bottom: 28px; }
+      .hero-banner { width: 100%; border-radius: 18px; border: 1px solid var(--border); margin-bottom: 32px; box-shadow: 0 20px 40px rgba(34, 211, 238, 0.08); }
+      .blog-post-content h2 { font-size: 1.7rem; margin: 42px 0 16px; }
+      .blog-post-content h3 { font-size: 1.25rem; margin: 28px 0 12px; }
+      .blog-post-content p, .blog-post-content li { line-height: 1.8; color: var(--text-muted); }
+      .blog-post-content ul, .blog-post-content ol { margin-bottom: 20px; padding-left: 24px; }
+      .code-block, .terminal-block, .callout, .diagram-block, .table-wrap { background: var(--bg-alt); border: 1px solid var(--border); border-radius: 14px; padding: 20px; margin: 22px 0; }
+      .code-block pre, .terminal-block pre { margin: 0; overflow-x: auto; font-family: var(--mono); font-size: 0.9rem; line-height: 1.65; color: var(--text-light); }
+      .code-block code, .terminal-block code { color: var(--accent-strong); }
+      .diagram-block svg { width: 100%; height: auto; }
+      .callout strong { color: var(--text-light); }
+      .callout.best { border-color: rgba(34, 211, 238, 0.35); }
+      .callout.pitfall { border-color: rgba(248, 113, 113, 0.35); }
+      .table-wrap table { width: 100%; border-collapse: collapse; }
+      .table-wrap th, .table-wrap td { border-bottom: 1px solid var(--border); text-align: left; padding: 12px 10px; vertical-align: top; }
+      .table-wrap th { color: var(--text-light); }
+      .checklist { margin: 0; padding-left: 22px; }
+      .blog-post-tags { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 40px; padding-top: 28px; border-top: 1px solid var(--border); }
+      .blog-post-tag { background: var(--accent-soft); color: var(--accent-strong); border-radius: 999px; padding: 6px 14px; font-size: 0.85rem; font-family: var(--mono); }
+      .blog-footer { margin-top: 60px; padding-top: 30px; border-top: 1px solid var(--border); text-align: center; }
+      @media (max-width: 768px) { .blog-post { padding: 40px 16px; } .blog-post-title { font-size: 2rem; } }
+    </style>
+  </head>
+  <body>
+    <a href="../index.html#main" class="skip-link">Skip to main content</a>
+    <header class="site-header">
+      <div class="container blog-post">
+        <div class="blog-post-nav"><a href="index.html">&larr; Back to All Posts</a></div>
+        <div class="blog-post-header">
+          <h1 class="blog-post-title">SLOs and Burn-Rate Alerts for AI Coding Gateways Before Slow Turns Become Failed Runs</h1>
+          <div class="blog-post-meta">
+            <span>July 3, 2026</span>
+            <span>&bull;</span>
+            <span>10 min read</span>
+            <span>&bull;</span>
+            <span>Gateway Operations</span>
+          </div>
+          <img class="hero-banner" alt="SLOs and Burn-Rate Alerts for AI Coding Gateways Before Slow Turns Become Failed Runs" src="data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%201200%20630%22%3E%0A%3Cdefs%3E%0A%20%20%3ClinearGradient%20id%3D%22bg%22%20x1%3D%220%22%20x2%3D%221%22%20y1%3D%220%22%20y2%3D%221%22%3E%0A%20%20%20%20%3Cstop%20offset%3D%220%25%22%20stop-color%3D%22%2307111d%22%2F%3E%0A%20%20%20%20%3Cstop%20offset%3D%22100%25%22%20stop-color%3D%22%231b4f75%22%2F%3E%0A%20%20%3C%2FlinearGradient%3E%0A%3C%2Fdefs%3E%0A%3Crect%20width%3D%221200%22%20height%3D%22630%22%20fill%3D%22url%28%23bg%29%22%2F%3E%0A%3Ccircle%20cx%3D%221012%22%20cy%3D%22106%22%20r%3D%22178%22%20fill%3D%22%2322d3ee%22%20fill-opacity%3D%220.14%22%2F%3E%0A%3Ccircle%20cx%3D%22192%22%20cy%3D%22520%22%20r%3D%22220%22%20fill%3D%22%238b5cf6%22%20fill-opacity%3D%220.16%22%2F%3E%0A%3Crect%20x%3D%2278%22%20y%3D%2286%22%20width%3D%221044%22%20height%3D%22458%22%20rx%3D%2230%22%20fill%3D%22%230b1220%22%20stroke%3D%22%2338bdf8%22%20stroke-opacity%3D%220.35%22%2F%3E%0A%3Ctext%20x%3D%22126%22%20y%3D%22164%22%20fill%3D%22white%22%20font-family%3D%22Arial%2C%20sans-serif%22%20font-size%3D%2238%22%20font-weight%3D%22700%22%3ESLOs%20and%20Burn-Rate%20Alerts%20for%20AI%20Coding%20Gateways%3C%2Ftext%3E%0A%3Ctext%20x%3D%22126%22%20y%3D%22224%22%20fill%3D%22%2393c5fd%22%20font-family%3D%22Arial%2C%20sans-serif%22%20font-size%3D%2238%22%20font-weight%3D%22700%22%3EBefore%20Slow%20Turns%20Become%20Failed%20Runs%3C%2Ftext%3E%0A%3Ctext%20x%3D%22126%22%20y%3D%22298%22%20fill%3D%22%23cbd5e1%22%20font-family%3D%22Arial%2C%20sans-serif%22%20font-size%3D%2228%22%3EMeasure%20first-token%20latency%2C%20fallback%20health%2C%20and%20tool-success%20budgets%20before%3C%2Ftext%3E%0A%3Ctext%20x%3D%22126%22%20y%3D%22334%22%20fill%3D%22%23cbd5e1%22%20font-family%3D%22Arial%2C%20sans-serif%22%20font-size%3D%2228%22%3Edevelopers%20experience%20%E2%80%9Cthe%20agent%20feels%20weird%20today%E2%80%9D%20as%20a%20full%20reliability%20incident.%3C%2Ftext%3E%0A%3Crect%20x%3D%22126%22%20y%3D%22388%22%20width%3D%22410%22%20height%3D%2254%22%20rx%3D%2214%22%20fill%3D%22%23111c2d%22%20stroke%3D%22%2367e8f9%22%20stroke-opacity%3D%220.45%22%2F%3E%0A%3Ctext%20x%3D%22152%22%20y%3D%22423%22%20fill%3D%22%2367e8f9%22%20font-family%3D%22Arial%2C%20sans-serif%22%20font-size%3D%2224%22%3Eslow%20LLM%20turns%20are%20an%20SRE%20problem%20once%20they%20hit%20real%20workflows%3C%2Ftext%3E%0A%3Crect%20x%3D%22782%22%20y%3D%22166%22%20width%3D%22244%22%20height%3D%2258%22%20rx%3D%2214%22%20fill%3D%22%230d1728%22%20stroke%3D%22%2322d3ee%22%20stroke-opacity%3D%220.45%22%2F%3E%0A%3Ctext%20x%3D%22842%22%20y%3D%22204%22%20fill%3D%22%23bae6fd%22%20font-family%3D%22Arial%2C%20sans-serif%22%20font-size%3D%2223%22%3Elatency%20SLO%3C%2Ftext%3E%0A%3Crect%20x%3D%22782%22%20y%3D%22266%22%20width%3D%22244%22%20height%3D%2258%22%20rx%3D%2214%22%20fill%3D%22%230d1728%22%20stroke%3D%22%2322d3ee%22%20stroke-opacity%3D%220.45%22%2F%3E%0A%3Ctext%20x%3D%22830%22%20y%3D%22304%22%20fill%3D%22%23bae6fd%22%20font-family%3D%22Arial%2C%20sans-serif%22%20font-size%3D%2223%22%3Eburn%20alert%3C%2Ftext%3E%0A%3Crect%20x%3D%22782%22%20y%3D%22366%22%20width%3D%22244%22%20height%3D%2258%22%20rx%3D%2214%22%20fill%3D%22%230d1728%22%20stroke%3D%22%23a78bfa%22%20stroke-opacity%3D%220.45%22%2F%3E%0A%3Ctext%20x%3D%22814%22%20y%3D%22404%22%20fill%3D%22%23ddd6fe%22%20font-family%3D%22Arial%2C%20sans-serif%22%20font-size%3D%2223%22%3Efallback%20lane%3C%2Ftext%3E%0A%3C%2Fsvg%3E">
+        </div>
+        <div class="blog-post-content">
+          <p>AI coding gateways rarely fail in one dramatic step. More often, they get strange first. First token latency doubles, tool calls start timing out, fallback traffic spikes, and developers report that the agent feels off before anything is fully down.</p>
+          <p>That gray area is where a lot of teams lose trust. If the gateway serves repo automation, terminal coding sessions, and scheduled jobs, “a little slower than usual” can easily become half-finished patches, missed cron windows, and people retrying runs that were already in trouble.</p>
+          <p>This post walks through a practical SLO model for AI coding gateways, what to measure, how to split budgets by lane, and how to alert on burn rate before developers experience reliability drift as random workflow pain.</p>
+
+          <h2>Why this matters</h2>
+          <p>Coding gateways are not just chat endpoints. They sit in front of model pools, tool routers, fallback policy, prompt caches, and approval-sensitive automation. That means classic uptime is not enough.</p>
+          <p>A gateway can be technically up while still being functionally bad at its job. If interactive sessions take 18 seconds to first token, or patch-verification runs fall back to a cheaper lane with worse tool reliability, your system is serving requests but failing users.</p>
+          <p>That is why I prefer SLOs that track the shape of useful work, not just request success. For coding workflows, the key questions are whether the model responded fast enough, whether the run finished inside deadline, and whether fallback masked an outage without quietly degrading quality.</p>
+
+          <h2>Architecture or workflow overview</h2>
+          <div class="diagram-block">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 920 370" role="img" aria-label="SLO feedback loop for an AI coding gateway">
+              <rect width="920" height="370" rx="24" fill="#0b1220" stroke="#274155"/>
+              <rect x="36" y="74" width="164" height="74" rx="16" fill="#111c2d" stroke="#38bdf8"/>
+              <text x="118" y="106" fill="#e2e8f0" font-size="22" text-anchor="middle">Client lanes</text>
+              <text x="118" y="132" fill="#93c5fd" font-size="16" text-anchor="middle">interactive, cron, CI</text>
+              <rect x="240" y="74" width="164" height="74" rx="16" fill="#111c2d" stroke="#38bdf8"/>
+              <text x="322" y="106" fill="#e2e8f0" font-size="22" text-anchor="middle">Gateway router</text>
+              <text x="322" y="132" fill="#93c5fd" font-size="16" text-anchor="middle">policy + lane tags</text>
+              <rect x="446" y="42" width="176" height="64" rx="16" fill="#111c2d" stroke="#22d3ee"/>
+              <text x="534" y="80" fill="#e2e8f0" font-size="21" text-anchor="middle">Primary pool</text>
+              <rect x="446" y="126" width="176" height="64" rx="16" fill="#111c2d" stroke="#a78bfa"/>
+              <text x="534" y="164" fill="#e2e8f0" font-size="21" text-anchor="middle">Fallback pool</text>
+              <rect x="446" y="210" width="176" height="64" rx="16" fill="#111c2d" stroke="#38bdf8"/>
+              <text x="534" y="248" fill="#e2e8f0" font-size="21" text-anchor="middle">Tool lane</text>
+              <rect x="670" y="74" width="190" height="74" rx="16" fill="#111c2d" stroke="#38bdf8"/>
+              <text x="765" y="106" fill="#e2e8f0" font-size="22" text-anchor="middle">Metrics pipeline</text>
+              <text x="765" y="132" fill="#93c5fd" font-size="16" text-anchor="middle">latency, fallback, deadlines</text>
+              <rect x="670" y="214" width="190" height="96" rx="16" fill="#111c2d" stroke="#f87171"/>
+              <text x="765" y="248" fill="#e2e8f0" font-size="22" text-anchor="middle">Burn-rate actions</text>
+              <text x="765" y="274" fill="#fca5a5" font-size="16" text-anchor="middle">reroute, shed, pause</text>
+              <text x="765" y="296" fill="#fca5a5" font-size="16" text-anchor="middle">degrade on purpose</text>
+              <path d="M200 111h40M404 111h42M622 74h48M622 158h48M622 242h48" fill="none" stroke="#4b6b80" stroke-width="3" stroke-linecap="round"/>
+              <path d="M765 148v52" fill="none" stroke="#7c3aed" stroke-width="3" stroke-linecap="round"/>
+            </svg>
+          </div>
+          <ol>
+            <li>Tag every request by lane before it reaches the model pool.</li>
+            <li>Measure first-token latency, run deadlines, tool-step success, and fallback rate.</li>
+            <li>Evaluate SLOs separately so healthy low-risk traffic does not hide degraded coding traffic.</li>
+            <li>Turn burn into action, not just notification, by attaching routing and load-shedding playbooks.</li>
+          </ol>
+
+          <div class="callout best"><strong>Visual plan:</strong> Hero shows a gateway reliability control panel, the diagram maps client lanes to router, pools, metrics, and burn actions, the comparison table pairs alert conditions with operator responses, tags are AI Coding, SLOs, Gateway Ops, Reliability, and Observability, and the code sections cover SLO config, metric labels, and Prometheus burn alerts.</div>
+
+          <h2>Implementation details</h2>
+          <h3>1) Define SLOs around user-visible work</h3>
+          <p>I would not start with raw request success. For coding systems, the better units are first-token latency, turn completion latency, and workflow success before deadline.</p>
+          <div class="code-block"><pre><code>slos:
+  interactive_first_token:
+    objective: 0.95
+    window: 30d
+    sli: first_token_latency_ms &lt;= 2500
+    filters:
+      lane: interactive
+  scheduled_run_deadline:
+    objective: 0.99
+    window: 30d
+    sli: run_completed_before_deadline == true
+    filters:
+      lane: scheduled
+  tool_step_success:
+    objective: 0.985
+    window: 30d
+    sli: tool_step_success == true
+    filters:
+      lane: tool_heavy</code></pre></div>
+          <p>These SLOs are concrete enough that an operator and a developer can argue about them productively. That matters more than chasing theoretically perfect metrics.</p>
+
+          <h3>2) Emit lane-aware metrics from the gateway itself</h3>
+          <p>The gateway should label every request with enough context to explain drift later. I usually want lane, model pool, fallback status, tool count, cache hit state, and whether the run finished or was operator-aborted.</p>
+          <div class="code-block"><pre><code>metrics.observe('gateway_first_token_ms', firstTokenMs, {
+  lane: request.lane,
+  model_pool: response.pool,
+  fallback: String(response.usedFallback),
+  cache_prefix_hit: String(response.cachePrefixHit),
+  tool_count_bucket: bucketize(request.toolCalls.length)
+});
+
+metrics.increment('gateway_run_outcome_total', 1, {
+  lane: request.lane,
+  outcome: run.completedBeforeDeadline ? 'success' : 'deadline_miss',
+  model_pool: response.pool
+});</code></pre></div>
+          <p>Without these labels, burn alerts tell you something is wrong but not whether the issue is one overloaded model pool, a cache miss storm, or a single flaky tool adapter poisoning the whole workflow.</p>
+
+          <h3>3) Burn-rate alerts should reflect how fast you are spending trust</h3>
+          <p>A lot of teams alert on absolute error rate only. That is too slow for agent infrastructure. If your interactive lane burns through a week of budget in 45 minutes, you want to know immediately.</p>
+          <div class="code-block"><pre><code># Fast-burn alert for first-token SLO
+(
+  1 - (
+    sum(rate(gateway_first_token_sli_good_total{lane="interactive"}[5m])) /
+    sum(rate(gateway_first_token_sli_total{lane="interactive"}[5m]))
+  )
+) &gt; (1 - 0.95) * 14.4</code></pre></div>
+          <div class="code-block"><pre><code># Slow-burn alert for scheduled automation lane
+(
+  1 - (
+    sum(rate(gateway_run_deadline_good_total{lane="scheduled"}[1h])) /
+    sum(rate(gateway_run_deadline_total{lane="scheduled"}[1h]))
+  )
+) &gt; (1 - 0.99) * 3</code></pre></div>
+          <div class="terminal-block"><pre><code>$ burnctl explain interactive_first_token
+window: 5m
+budget_spend_rate: 16.2x
+primary_cause: primary_pool=codex-west overloaded
+fallback_usage: 38%
+recommended_action: reroute interactive short-context traffic to backup pool</code></pre></div>
+          <p>Fast-burn catches sharp incidents. Slow-burn catches the softer degradation that users describe as the gateway feeling weird today.</p>
+
+          <h2>What went wrong and tradeoffs</h2>
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>Alert condition</th>
+                  <th>What it usually means</th>
+                  <th>Recommended action</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>Interactive fast-burn on first-token latency</td>
+                  <td>Overloaded primary pool or cache miss storm</td>
+                  <td>Reroute small requests, trim long-context lane, shed non-urgent traffic</td>
+                </tr>
+                <tr>
+                  <td>Scheduled deadline misses rising</td>
+                  <td>Tool queue saturation or slow model tier</td>
+                  <td>Pause low-priority cron runs, shift traffic, protect critical automation</td>
+                </tr>
+                <tr>
+                  <td>Tool-step SLO burn</td>
+                  <td>Flaky MCP adapter or shell runner</td>
+                  <td>Isolate broken tool class and preserve chat-only traffic</td>
+                </tr>
+                <tr>
+                  <td>Fallback spike with normal volume</td>
+                  <td>Primary pool instability</td>
+                  <td>Drain unhealthy pool and verify fallback quality before leaving it in place</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+          <p>One common mistake is blending all requests into a single availability number. That hides the real problem. A gateway can look healthy because cheap chat requests are fine while long coding turns are quietly degrading.</p>
+          <div class="callout pitfall"><strong>Pitfall:</strong> Do not count policy denials as gateway failures. Approval rejections, tool allowlist blocks, and scope denials are real events, but they belong in a separate safety dashboard. Mixing them into uptime metrics makes outages and guardrails harder to distinguish.</div>
+          <p>Another failure mode is alerting on model errors while ignoring fallback overuse. A fallback that keeps requests technically successful can still be a bad user experience if it is slower, worse at tool use, or more expensive than the normal lane.</p>
+          <p>There is also a cost tradeoff. More granular SLOs mean more labels, more dashboards, and more arguments about which lane deserves premium capacity. I still think that is better than pretending one average latency number captures AI coding reliability.</p>
+          <p>What I would not do is page on every model hiccup. Page on burned user trust instead. If a brief blip stays inside budget and the fallback lane masked it cleanly, a dashboard note is enough.</p>
+
+          <h2>Practical checklist</h2>
+          <ul class="checklist">
+            <li>Define separate SLOs for interactive, scheduled, and tool-heavy lanes.</li>
+            <li>Measure first-token latency, run deadline success, and fallback rate.</li>
+            <li>Label metrics with lane, pool, fallback status, and tool-count bucket.</li>
+            <li>Use fast-burn and slow-burn alerts instead of one static threshold.</li>
+            <li>Keep policy denials separate from reliability failures.</li>
+            <li>Attach every alert to an operator playbook action.</li>
+            <li>Review whether fallback preserved quality, not just availability.</li>
+          </ul>
+
+          <h2>Conclusion</h2>
+          <p>AI coding gateways need the same discipline as other production systems, but the useful signals are slightly different. Developers notice responsiveness, deadline misses, and degraded tool behavior long before a generic uptime graph looks scary.</p>
+          <p>If you measure the right things and alert on error-budget burn instead of vague averages, you can catch reliability drift early, protect good workflows, and keep one slow model pool from turning into a trust problem across the whole gateway.</p>
+
+          <div class="blog-post-tags">
+            <span class="blog-post-tag">AI Coding</span>
+            <span class="blog-post-tag">SLOs</span>
+            <span class="blog-post-tag">Gateway Ops</span>
+            <span class="blog-post-tag">Reliability</span>
+            <span class="blog-post-tag">Observability</span>
+          </div>
+        </div>
+        <div class="blog-footer">
+          <p><a href="index.html">Read more posts</a> or <a href="../index.html">return to the portfolio</a>.</p>
+        </div>
+      </div>
+    </header>
+  </body>
+</html>

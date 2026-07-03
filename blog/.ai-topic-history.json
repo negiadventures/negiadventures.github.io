@@ -1,6 +1,14 @@
 {
   "topics": [
     {
+      "date": "2026-07-03",
+      "skill": "SLOs and burn-rate alerts for AI coding gateways",
+      "topic": "Using first-token latency targets, lane-specific error budgets, budget-aware fallbacks, and burn-rate alerting so AI coding gateways reveal quality and availability drift before developers feel it as random slow turns, flaky tool calls, or failed automated runs",
+      "slug": "slos-burn-rate-alerts-ai-coding-gateways",
+      "title": "SLOs and Burn-Rate Alerts for AI Coding Gateways Before Slow Turns Become Failed Runs",
+      "summary": "A practical guide to defining SLOs and burn-rate alerts for AI coding gateways with first-token latency, tool success budgets, lane-aware error budgets, and fallback policy so operators catch drift before slow turns become broken automation."
+    },
+    {
       "date": "2026-07-02",
       "skill": "Path-scoped write permissions for AI coding agents",
       "topic": "Using repo path policies, CODEOWNERS-derived write lanes, pre-apply diff checks, and escalation rules so coding agents can patch the files they were meant to touch without quietly expanding into adjacent services, deployment manifests, or security-sensitive paths",
