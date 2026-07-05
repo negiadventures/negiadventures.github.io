@@ -1,6 +1,14 @@
 {
   "topics": [
     {
+      "date": "2026-07-05",
+      "skill": "Network egress policies for AI coding runners",
+      "topic": "Using deny-by-default outbound policy, staged bootstrap access, destination-class allowlists, and audit logging so AI coding runners can fetch dependencies and talk to required services without quietly retaining arbitrary internet access during code execution",
+      "slug": "network-egress-policies-ai-coding-runners",
+      "title": "Network Egress Policies for AI Coding Runners Without Breaking Package Installs",
+      "summary": "A practical guide to enforcing network egress policies for AI coding runners with allowlisted registries, DNS-aware controls, staged bootstrap lanes, and audit logs so agents cannot quietly exfiltrate data while still completing real builds and tests."
+    },
+    {
       "date": "2026-07-03",
       "skill": "SLOs and burn-rate alerts for AI coding gateways",
       "topic": "Using first-token latency targets, lane-specific error budgets, budget-aware fallbacks, and burn-rate alerting so AI coding gateways reveal quality and availability drift before developers feel it as random slow turns, flaky tool calls, or failed automated runs",
