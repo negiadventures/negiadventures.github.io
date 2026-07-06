@@ -1,0 +1,268 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="A practical guide to SBOM diff gates for AI coding runners using lockfile-linked SBOM snapshots, severity-aware policy checks, provenance verification, and reviewer evidence so dependency-changing agent patches stay fast without turning into supply-chain blind spots.">
+    <meta name="author" content="Anirudh Negi">
+    <title>SBOM Diff Gates for AI Coding Runners Before Dependency Drift Ships | Anirudh Negi</title>
+    <link rel="icon" type="image/svg+xml" href="../images/favicon.svg">
+    <link rel="canonical" href="https://negiadventures.github.io/blog/sbom-diff-gates-ai-coding-runners.html">
+    <meta property="og:type" content="article">
+    <meta property="og:url" content="https://negiadventures.github.io/blog/sbom-diff-gates-ai-coding-runners.html">
+    <meta property="og:title" content="SBOM Diff Gates for AI Coding Runners Before Dependency Drift Ships | Anirudh Negi">
+    <meta property="og:description" content="A practical guide to SBOM diff gates for AI coding runners using lockfile-linked SBOM snapshots, severity-aware policy checks, provenance verification, and reviewer evidence so dependency-changing agent patches stay fast without turning into supply-chain blind spots.">
+    <meta property="og:image" content="data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20viewBox%3D%220%200%201200%20630%22%3E%3Cdefs%3E%3ClinearGradient%20id%3D%22bg%22%20x1%3D%220%22%20x2%3D%221%22%20y1%3D%220%22%20y2%3D%221%22%3E%3Cstop%20offset%3D%220%25%22%20stop-color%3D%22%2307111d%22/%3E%3Cstop%20offset%3D%22100%25%22%20stop-color%3D%22%2314506f%22/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect%20width%3D%221200%22%20height%3D%22630%22%20fill%3D%22url(%23bg)%22/%3E%3Ccircle%20cx%3D%221010%22%20cy%3D%22112%22%20r%3D%22178%22%20fill%3D%22%2322d3ee%22%20fill-opacity%3D%220.14%22/%3E%3Ccircle%20cx%3D%22190%22%20cy%3D%22520%22%20r%3D%22220%22%20fill%3D%22%238b5cf6%22%20fill-opacity%3D%220.16%22/%3E%3Crect%20x%3D%2278%22%20y%3D%2286%22%20width%3D%221044%22%20height%3D%22458%22%20rx%3D%2230%22%20fill%3D%22%230b1220%22%20stroke%3D%22%2338bdf8%22%20stroke-opacity%3D%220.35%22/%3E%3Ctext%20x%3D%22126%22%20y%3D%22164%22%20fill%3D%22white%22%20font-family%3D%22Arial,%20sans-serif%22%20font-size%3D%2238%22%20font-weight%3D%22700%22%3ESBOM%20Diff%20Gates%20for%20AI%20Coding%20Runners%3C/text%3E%3Ctext%20x%3D%22126%22%20y%3D%22224%22%20fill%3D%22%2393c5fd%22%20font-family%3D%22Arial,%20sans-serif%22%20font-size%3D%2238%22%20font-weight%3D%22700%22%3EBefore%20Dependency%20Drift%20Ships%3C/text%3E%3Ctext%20x%3D%22126%22%20y%3D%22298%22%20fill%3D%22%23cbd5e1%22%20font-family%3D%22Arial,%20sans-serif%22%20font-size%3D%2228%22%3ETreat%20dependency%20changes%20like%20real%20supply-chain%20events%20with%20SBOM%20snapshots,%3C/text%3E%3Ctext%20x%3D%22126%22%20y%3D%22334%22%20fill%3D%22%23cbd5e1%22%20font-family%3D%22Arial,%20sans-serif%22%20font-size%3D%2228%22%3Eprovenance%20checks,%20and%20reviewer%20evidence%20instead%20of%20trusting%20a%20green%20install.%3C/text%3E%3Crect%20x%3D%22126%22%20y%3D%22388%22%20width%3D%22404%22%20height%3D%2254%22%20rx%3D%2214%22%20fill%3D%22%23111c2d%22%20stroke%3D%22%2367e8f9%22%20stroke-opacity%3D%220.45%22/%3E%3Ctext%20x%3D%22152%22%20y%3D%22423%22%20fill%3D%22%2367e8f9%22%20font-family%3D%22Arial,%20sans-serif%22%20font-size%3D%2224%22%3Enew%20package%20edges%20should%20be%20visible%20before%20the%20patch%20merges%3C/text%3E%3Crect%20x%3D%22776%22%20y%3D%22166%22%20width%3D%22258%22%20height%3D%2258%22%20rx%3D%2214%22%20fill%3D%22%230d1728%22%20stroke%3D%22%2322d3ee%22%20stroke-opacity%3D%220.45%22/%3E%3Ctext%20x%3D%22844%22%20y%3D%22204%22%20fill%3D%22%23bae6fd%22%20font-family%3D%22Arial,%20sans-serif%22%20font-size%3D%2223%22%3ESBOM%20diff%3C/text%3E%3Crect%20x%3D%22776%22%20y%3D%22266%22%20width%3D%22258%22%20height%3D%2258%22%20rx%3D%2214%22%20fill%3D%22%230d1728%22%20stroke%3D%22%2322d3ee%22%20stroke-opacity%3D%220.45%22/%3E%3Ctext%20x%3D%22822%22%20y%3D%22304%22%20fill%3D%22%23bae6fd%22%20font-family%3D%22Arial,%20sans-serif%22%20font-size%3D%2223%22%3Eprovenance%3C/text%3E%3Crect%20x%3D%22776%22%20y%3D%22366%22%20width%3D%22258%22%20height%3D%2258%22%20rx%3D%2214%22%20fill%3D%22%230d1728%22%20stroke%3D%22%23a78bfa%22%20stroke-opacity%3D%220.45%22/%3E%3Ctext%20x%3D%22832%22%20y%3D%22404%22%20fill%3D%22%23ddd6fe%22%20font-family%3D%22Arial,%20sans-serif%22%20font-size%3D%2223%22%3Ereview%20gate%3C/text%3E%3C/svg%3E">
+    <meta property="article:published_time" content="2026-07-06">
+    <meta property="article:author" content="Anirudh Negi">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:url" content="https://negiadventures.github.io/blog/sbom-diff-gates-ai-coding-runners.html">
+    <meta name="twitter:title" content="SBOM Diff Gates for AI Coding Runners Before Dependency Drift Ships | Anirudh Negi">
+    <meta name="twitter:description" content="A practical guide to SBOM diff gates for AI coding runners using lockfile-linked SBOM snapshots, severity-aware policy checks, provenance verification, and reviewer evidence so dependency-changing agent patches stay fast without turning into supply-chain blind spots.">
+    <meta name="twitter:image" content="data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20viewBox%3D%220%200%201200%20630%22%3E%3Cdefs%3E%3ClinearGradient%20id%3D%22bg%22%20x1%3D%220%22%20x2%3D%221%22%20y1%3D%220%22%20y2%3D%221%22%3E%3Cstop%20offset%3D%220%25%22%20stop-color%3D%22%2307111d%22/%3E%3Cstop%20offset%3D%22100%25%22%20stop-color%3D%22%2314506f%22/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect%20width%3D%221200%22%20height%3D%22630%22%20fill%3D%22url(%23bg)%22/%3E%3Ccircle%20cx%3D%221010%22%20cy%3D%22112%22%20r%3D%22178%22%20fill%3D%22%2322d3ee%22%20fill-opacity%3D%220.14%22/%3E%3Ccircle%20cx%3D%22190%22%20cy%3D%22520%22%20r%3D%22220%22%20fill%3D%22%238b5cf6%22%20fill-opacity%3D%220.16%22/%3E%3Crect%20x%3D%2278%22%20y%3D%2286%22%20width%3D%221044%22%20height%3D%22458%22%20rx%3D%2230%22%20fill%3D%22%230b1220%22%20stroke%3D%22%2338bdf8%22%20stroke-opacity%3D%220.35%22/%3E%3Ctext%20x%3D%22126%22%20y%3D%22164%22%20fill%3D%22white%22%20font-family%3D%22Arial,%20sans-serif%22%20font-size%3D%2238%22%20font-weight%3D%22700%22%3ESBOM%20Diff%20Gates%20for%20AI%20Coding%20Runners%3C/text%3E%3Ctext%20x%3D%22126%22%20y%3D%22224%22%20fill%3D%22%2393c5fd%22%20font-family%3D%22Arial,%20sans-serif%22%20font-size%3D%2238%22%20font-weight%3D%22700%22%3EBefore%20Dependency%20Drift%20Ships%3C/text%3E%3Ctext%20x%3D%22126%22%20y%3D%22298%22%20fill%3D%22%23cbd5e1%22%20font-family%3D%22Arial,%20sans-serif%22%20font-size%3D%2228%22%3ETreat%20dependency%20changes%20like%20real%20supply-chain%20events%20with%20SBOM%20snapshots,%3C/text%3E%3Ctext%20x%3D%22126%22%20y%3D%22334%22%20fill%3D%22%23cbd5e1%22%20font-family%3D%22Arial,%20sans-serif%22%20font-size%3D%2228%22%3Eprovenance%20checks,%20and%20reviewer%20evidence%20instead%20of%20trusting%20a%20green%20install.%3C/text%3E%3Crect%20x%3D%22126%22%20y%3D%22388%22%20width%3D%22404%22%20height%3D%2254%22%20rx%3D%2214%22%20fill%3D%22%23111c2d%22%20stroke%3D%22%2367e8f9%22%20stroke-opacity%3D%220.45%22/%3E%3Ctext%20x%3D%22152%22%20y%3D%22423%22%20fill%3D%22%2367e8f9%22%20font-family%3D%22Arial,%20sans-serif%22%20font-size%3D%2224%22%3Enew%20package%20edges%20should%20be%20visible%20before%20the%20patch%20merges%3C/text%3E%3Crect%20x%3D%22776%22%20y%3D%22166%22%20width%3D%22258%22%20height%3D%2258%22%20rx%3D%2214%22%20fill%3D%22%230d1728%22%20stroke%3D%22%2322d3ee%22%20stroke-opacity%3D%220.45%22/%3E%3Ctext%20x%3D%22844%22%20y%3D%22204%22%20fill%3D%22%23bae6fd%22%20font-family%3D%22Arial,%20sans-serif%22%20font-size%3D%2223%22%3ESBOM%20diff%3C/text%3E%3Crect%20x%3D%22776%22%20y%3D%22266%22%20width%3D%22258%22%20height%3D%2258%22%20rx%3D%2214%22%20fill%3D%22%230d1728%22%20stroke%3D%22%2322d3ee%22%20stroke-opacity%3D%220.45%22/%3E%3Ctext%20x%3D%22822%22%20y%3D%22304%22%20fill%3D%22%23bae6fd%22%20font-family%3D%22Arial,%20sans-serif%22%20font-size%3D%2223%22%3Eprovenance%3C/text%3E%3Crect%20x%3D%22776%22%20y%3D%22366%22%20width%3D%22258%22%20height%3D%2258%22%20rx%3D%2214%22%20fill%3D%22%230d1728%22%20stroke%3D%22%23a78bfa%22%20stroke-opacity%3D%220.45%22/%3E%3Ctext%20x%3D%22832%22%20y%3D%22404%22%20fill%3D%22%23ddd6fe%22%20font-family%3D%22Arial,%20sans-serif%22%20font-size%3D%2223%22%3Ereview%20gate%3C/text%3E%3C/svg%3E">
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "BlogPosting",
+      "headline": "SBOM Diff Gates for AI Coding Runners Before Dependency Drift Ships",
+      "description": "A practical guide to SBOM diff gates for AI coding runners using lockfile-linked SBOM snapshots, severity-aware policy checks, provenance verification, and reviewer evidence so dependency-changing agent patches stay fast without turning into supply-chain blind spots.",
+      "image": "data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20viewBox%3D%220%200%201200%20630%22%3E%3Cdefs%3E%3ClinearGradient%20id%3D%22bg%22%20x1%3D%220%22%20x2%3D%221%22%20y1%3D%220%22%20y2%3D%221%22%3E%3Cstop%20offset%3D%220%25%22%20stop-color%3D%22%2307111d%22/%3E%3Cstop%20offset%3D%22100%25%22%20stop-color%3D%22%2314506f%22/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect%20width%3D%221200%22%20height%3D%22630%22%20fill%3D%22url(%23bg)%22/%3E%3Ccircle%20cx%3D%221010%22%20cy%3D%22112%22%20r%3D%22178%22%20fill%3D%22%2322d3ee%22%20fill-opacity%3D%220.14%22/%3E%3Ccircle%20cx%3D%22190%22%20cy%3D%22520%22%20r%3D%22220%22%20fill%3D%22%238b5cf6%22%20fill-opacity%3D%220.16%22/%3E%3Crect%20x%3D%2278%22%20y%3D%2286%22%20width%3D%221044%22%20height%3D%22458%22%20rx%3D%2230%22%20fill%3D%22%230b1220%22%20stroke%3D%22%2338bdf8%22%20stroke-opacity%3D%220.35%22/%3E%3Ctext%20x%3D%22126%22%20y%3D%22164%22%20fill%3D%22white%22%20font-family%3D%22Arial,%20sans-serif%22%20font-size%3D%2238%22%20font-weight%3D%22700%22%3ESBOM%20Diff%20Gates%20for%20AI%20Coding%20Runners%3C/text%3E%3Ctext%20x%3D%22126%22%20y%3D%22224%22%20fill%3D%22%2393c5fd%22%20font-family%3D%22Arial,%20sans-serif%22%20font-size%3D%2238%22%20font-weight%3D%22700%22%3EBefore%20Dependency%20Drift%20Ships%3C/text%3E%3Ctext%20x%3D%22126%22%20y%3D%22298%22%20fill%3D%22%23cbd5e1%22%20font-family%3D%22Arial,%20sans-serif%22%20font-size%3D%2228%22%3ETreat%20dependency%20changes%20like%20real%20supply-chain%20events%20with%20SBOM%20snapshots,%3C/text%3E%3Ctext%20x%3D%22126%22%20y%3D%22334%22%20fill%3D%22%23cbd5e1%22%20font-family%3D%22Arial,%20sans-serif%22%20font-size%3D%2228%22%3Eprovenance%20checks,%20and%20reviewer%20evidence%20instead%20of%20trusting%20a%20green%20install.%3C/text%3E%3Crect%20x%3D%22126%22%20y%3D%22388%22%20width%3D%22404%22%20height%3D%2254%22%20rx%3D%2214%22%20fill%3D%22%23111c2d%22%20stroke%3D%22%2367e8f9%22%20stroke-opacity%3D%220.45%22/%3E%3Ctext%20x%3D%22152%22%20y%3D%22423%22%20fill%3D%22%2367e8f9%22%20font-family%3D%22Arial,%20sans-serif%22%20font-size%3D%2224%22%3Enew%20package%20edges%20should%20be%20visible%20before%20the%20patch%20merges%3C/text%3E%3Crect%20x%3D%22776%22%20y%3D%22166%22%20width%3D%22258%22%20height%3D%2258%22%20rx%3D%2214%22%20fill%3D%22%230d1728%22%20stroke%3D%22%2322d3ee%22%20stroke-opacity%3D%220.45%22/%3E%3Ctext%20x%3D%22844%22%20y%3D%22204%22%20fill%3D%22%23bae6fd%22%20font-family%3D%22Arial,%20sans-serif%22%20font-size%3D%2223%22%3ESBOM%20diff%3C/text%3E%3Crect%20x%3D%22776%22%20y%3D%22266%22%20width%3D%22258%22%20height%3D%2258%22%20rx%3D%2214%22%20fill%3D%22%230d1728%22%20stroke%3D%22%2322d3ee%22%20stroke-opacity%3D%220.45%22/%3E%3Ctext%20x%3D%22822%22%20y%3D%22304%22%20fill%3D%22%23bae6fd%22%20font-family%3D%22Arial,%20sans-serif%22%20font-size%3D%2223%22%3Eprovenance%3C/text%3E%3Crect%20x%3D%22776%22%20y%3D%22366%22%20width%3D%22258%22%20height%3D%2258%22%20rx%3D%2214%22%20fill%3D%22%230d1728%22%20stroke%3D%22%23a78bfa%22%20stroke-opacity%3D%220.45%22/%3E%3Ctext%20x%3D%22832%22%20y%3D%22404%22%20fill%3D%22%23ddd6fe%22%20font-family%3D%22Arial,%20sans-serif%22%20font-size%3D%2223%22%3Ereview%20gate%3C/text%3E%3C/svg%3E",
+      "url": "https://negiadventures.github.io/blog/sbom-diff-gates-ai-coding-runners.html",
+      "datePublished": "2026-07-06",
+      "author": {"@type": "Person", "name": "Anirudh Negi", "url": "https://negiadventures.github.io"},
+      "publisher": {"@type": "Person", "name": "Anirudh Negi", "url": "https://negiadventures.github.io"},
+      "keywords": ["AI Coding", "Supply Chain", "SBOM", "Dependency Security", "CI Guardrails"]
+    }
+    </script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../stylesheets/stylesheet.css?v=5" media="screen">
+    <style>
+      .blog-post { max-width: 800px; margin: 0 auto; padding: 60px 20px; }
+      .blog-post-header { margin-bottom: 40px; }
+      .blog-post-nav { margin-bottom: 30px; }
+      .blog-post-nav a { color: var(--accent-strong); font-size: 0.95rem; }
+      .blog-post-nav a:hover, .blog-footer a:hover { color: var(--accent); }
+      .blog-post-title { font-size: 2.5rem; margin-bottom: 16px; }
+      .blog-post-meta { display: flex; gap: 20px; color: var(--text-muted); font-size: 0.95rem; margin-bottom: 30px; flex-wrap: wrap; }
+      .blog-post-image { width: 100%; height: 300px; object-fit: cover; border-radius: 16px; margin-bottom: 30px; border: 1px solid var(--border); background: linear-gradient(135deg, rgba(9, 19, 31, 1), rgba(24, 45, 73, 1)); }
+      .blog-post-content h2 { font-size: 1.6rem; margin-top: 40px; margin-bottom: 16px; color: var(--text-light); }
+      .blog-post-content h3 { font-size: 1.3rem; margin-top: 30px; margin-bottom: 12px; color: var(--text-light); }
+      .blog-post-content p { line-height: 1.8; margin-bottom: 16px; color: var(--text-muted); }
+      .blog-post-content ul { line-height: 1.8; margin-bottom: 20px; color: var(--text-muted); padding-left: 24px; }
+      .blog-post-content li { margin-bottom: 8px; }
+      .code-block, .diagram, .callout, .terminal-block { background: var(--bg-alt); border: 1px solid var(--border); border-radius: 12px; padding: 20px; margin: 20px 0; overflow-x: auto; }
+      .code-block pre, .diagram pre, .terminal-block pre { margin: 0; font-family: var(--mono); font-size: 0.9rem; line-height: 1.6; color: var(--text-light); }
+      .diagram-label, .terminal-label { font-size: 0.75rem; font-family: var(--mono); color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 14px; }
+      .callout { border-left: 4px solid var(--accent); color: var(--text-muted); }
+      table { width: 100%; border-collapse: collapse; margin: 24px 0; font-size: 0.95rem; }
+      th, td { border: 1px solid var(--border); padding: 12px; text-align: left; vertical-align: top; }
+      th { color: var(--text-light); background: rgba(99, 102, 241, 0.08); }
+      td { color: var(--text-muted); }
+      .blog-post-tags { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 40px; padding-top: 30px; border-top: 1px solid var(--border); }
+      .blog-post-tag { background: var(--accent-soft); color: var(--accent-strong); border-radius: 999px; padding: 6px 14px; font-size: 0.85rem; font-family: var(--mono); border: 1px solid transparent; }
+      .blog-footer { margin-top: 60px; padding-top: 30px; border-top: 1px solid var(--border); text-align: center; }
+    </style>
+  </head>
+  <body>
+    <a href="../index.html#main" class="skip-link">Skip to main content</a>
+    <main class="blog-post">
+      <header class="blog-post-header">
+        <nav class="blog-post-nav"><a href="index.html">&larr; Back to Blog</a></nav>
+        <h1 class="blog-post-title">SBOM Diff Gates for AI Coding Runners Before Dependency Drift Ships</h1>
+        <div class="blog-post-meta">
+          <span>July 6, 2026</span>
+          <span>Supply Chain Safety</span>
+          <span>10 min read</span>
+        </div>
+        <img src="data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20viewBox%3D%220%200%201200%20630%22%3E%3Cdefs%3E%3ClinearGradient%20id%3D%22bg%22%20x1%3D%220%22%20x2%3D%221%22%20y1%3D%220%22%20y2%3D%221%22%3E%3Cstop%20offset%3D%220%25%22%20stop-color%3D%22%2307111d%22/%3E%3Cstop%20offset%3D%22100%25%22%20stop-color%3D%22%2314506f%22/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect%20width%3D%221200%22%20height%3D%22630%22%20fill%3D%22url(%23bg)%22/%3E%3Ccircle%20cx%3D%221010%22%20cy%3D%22112%22%20r%3D%22178%22%20fill%3D%22%2322d3ee%22%20fill-opacity%3D%220.14%22/%3E%3Ccircle%20cx%3D%22190%22%20cy%3D%22520%22%20r%3D%22220%22%20fill%3D%22%238b5cf6%22%20fill-opacity%3D%220.16%22/%3E%3Crect%20x%3D%2278%22%20y%3D%2286%22%20width%3D%221044%22%20height%3D%22458%22%20rx%3D%2230%22%20fill%3D%22%230b1220%22%20stroke%3D%22%2338bdf8%22%20stroke-opacity%3D%220.35%22/%3E%3Ctext%20x%3D%22126%22%20y%3D%22164%22%20fill%3D%22white%22%20font-family%3D%22Arial,%20sans-serif%22%20font-size%3D%2238%22%20font-weight%3D%22700%22%3ESBOM%20Diff%20Gates%20for%20AI%20Coding%20Runners%3C/text%3E%3Ctext%20x%3D%22126%22%20y%3D%22224%22%20fill%3D%22%2393c5fd%22%20font-family%3D%22Arial,%20sans-serif%22%20font-size%3D%2238%22%20font-weight%3D%22700%22%3EBefore%20Dependency%20Drift%20Ships%3C/text%3E%3Ctext%20x%3D%22126%22%20y%3D%22298%22%20fill%3D%22%23cbd5e1%22%20font-family%3D%22Arial,%20sans-serif%22%20font-size%3D%2228%22%3ETreat%20dependency%20changes%20like%20real%20supply-chain%20events%20with%20SBOM%20snapshots,%3C/text%3E%3Ctext%20x%3D%22126%22%20y%3D%22334%22%20fill%3D%22%23cbd5e1%22%20font-family%3D%22Arial,%20sans-serif%22%20font-size%3D%2228%22%3Eprovenance%20checks,%20and%20reviewer%20evidence%20instead%20of%20trusting%20a%20green%20install.%3C/text%3E%3Crect%20x%3D%22126%22%20y%3D%22388%22%20width%3D%22404%22%20height%3D%2254%22%20rx%3D%2214%22%20fill%3D%22%23111c2d%22%20stroke%3D%22%2367e8f9%22%20stroke-opacity%3D%220.45%22/%3E%3Ctext%20x%3D%22152%22%20y%3D%22423%22%20fill%3D%22%2367e8f9%22%20font-family%3D%22Arial,%20sans-serif%22%20font-size%3D%2224%22%3Enew%20package%20edges%20should%20be%20visible%20before%20the%20patch%20merges%3C/text%3E%3Crect%20x%3D%22776%22%20y%3D%22166%22%20width%3D%22258%22%20height%3D%2258%22%20rx%3D%2214%22%20fill%3D%22%230d1728%22%20stroke%3D%22%2322d3ee%22%20stroke-opacity%3D%220.45%22/%3E%3Ctext%20x%3D%22844%22%20y%3D%22204%22%20fill%3D%22%23bae6fd%22%20font-family%3D%22Arial,%20sans-serif%22%20font-size%3D%2223%22%3ESBOM%20diff%3C/text%3E%3Crect%20x%3D%22776%22%20y%3D%22266%22%20width%3D%22258%22%20height%3D%2258%22%20rx%3D%2214%22%20fill%3D%22%230d1728%22%20stroke%3D%22%2322d3ee%22%20stroke-opacity%3D%220.45%22/%3E%3Ctext%20x%3D%22822%22%20y%3D%22304%22%20fill%3D%22%23bae6fd%22%20font-family%3D%22Arial,%20sans-serif%22%20font-size%3D%2223%22%3Eprovenance%3C/text%3E%3Crect%20x%3D%22776%22%20y%3D%22366%22%20width%3D%22258%22%20height%3D%2258%22%20rx%3D%2214%22%20fill%3D%22%230d1728%22%20stroke%3D%22%23a78bfa%22%20stroke-opacity%3D%220.45%22/%3E%3Ctext%20x%3D%22832%22%20y%3D%22404%22%20fill%3D%22%23ddd6fe%22%20font-family%3D%22Arial,%20sans-serif%22%20font-size%3D%2223%22%3Ereview%20gate%3C/text%3E%3C/svg%3E" alt="SBOM Diff Gates for AI Coding Runners Before Dependency Drift Ships" class="blog-post-image">
+      </header>
+      <section class="blog-post-content">
+        <p>A dependency-changing AI patch can look harmless in review. Maybe it updates one lockfile, maybe it adds one package, maybe the tests pass. But supply-chain risk rarely announces itself in the diff. It shows up as a new transitive edge, an unverifiable artifact, or a registry fetch you did not expect.</p>
+        <p>That is why I like SBOM diff gates for AI coding runners. Instead of treating dependency changes as "just build output," the runner produces a before-and-after inventory, checks provenance where possible, and gives reviewers a short evidence packet instead of a vague green CI badge.</p>
+        <p>This post walks through the workflow I would actually use: generate SBOMs from the pre-change and post-change workspace, diff them in CI, fail on the risky classes, and keep the policy narrow enough that routine upgrades do not become a weekly firefight.</p>
+        <h2>Why this matters</h2>
+        <p>AI coding runners are unusually good at making package changes that look locally reasonable. They see an error, install a missing library, bump a client SDK, or regenerate a lockfile to make tests pass. All of those can be correct, and all of them can quietly widen the dependency graph.</p>
+        <p>The production problem is not only CVEs. It is also license drift, provenance gaps, surprise native binaries, package source changes, and dependency sprawl that nobody notices because the code diff looks small.</p>
+        <p>A plain install log is not enough. If you want safe automation, the review surface needs to answer a few very boring questions fast.</p>
+        <ul>
+          <li>What packages were added, removed, or upgraded?</li>
+          <li>Did the patch introduce a new registry or download path?</li>
+          <li>Are any new artifacts missing provenance or signature evidence?</li>
+          <li>Did risk increase enough to require a human stop instead of auto-merge?</li>
+        </ul>
+        <h2>Architecture or workflow overview</h2>
+        <div class="diagram">
+          <div class="diagram-label">Runner flow</div>
+          <pre>clean master snapshot
+  -&gt; generate baseline SBOM
+  -&gt; AI runner edits code and lockfiles
+  -&gt; generate candidate SBOM
+  -&gt; diff packages, versions, licenses, sources
+  -&gt; policy gate
+  -&gt; evidence artifact + reviewer summary</pre>
+        </div>
+        <div class="code-block"><pre>flowchart LR
+  A[Clean master snapshot] --&gt; B[Generate baseline SBOM]
+  B --&gt; C[AI runner edits code and lockfiles]
+  C --&gt; D[Generate candidate SBOM]
+  D --&gt; E[Diff packages, versions, licenses, sources]
+  E --&gt; F{Policy gate}
+  F --&gt;|safe| G[Attach evidence to CI and PR]
+  F --&gt;|risky| H[Fail run and require review]
+  G --&gt; I[Merge or promote]
+  H --&gt; I</pre></div>
+        <div class="callout"><strong>Visual plan.</strong> Hero banner with SBOM diff, provenance, and review gate blocks. Diagram showing baseline and candidate inventories. Terminal summary for reviewers. Comparison table for no gate vs vuln-only vs full SBOM diff. Tags: AI Coding, Supply Chain, SBOM, Dependency Security, CI Guardrails.</div>
+        <p>The important part is that the baseline comes from a known-good state, not from whatever the runner already mutated. Otherwise the evidence starts after the damage.</p>
+        <h2>Implementation details</h2>
+        <h3>1) Generate baseline and candidate SBOMs from the same task lane</h3>
+        <p>I prefer a runner wrapper that captures the repository state before the agent touches dependencies, then regenerates inventory after the patch. Syft works well here because it is simple to automate and outputs usable JSON.</p>
+        <div class="code-block"><pre>#!/usr/bin/env bash
+set -euo pipefail
+
+repo_root="${PWD}"
+out_dir=".ai-evidence/sbom"
+mkdir -p "$out_dir"
+
+syft dir:"$repo_root" -o cyclonedx-json &gt; "$out_dir/baseline.cdx.json"
+
+# agent run happens here
+./scripts/run-agent-task.sh
+
+syft dir:"$repo_root" -o cyclonedx-json &gt; "$out_dir/candidate.cdx.json"</pre></div>
+        <p>The trick is not the tool, it is the timing. If you generate only one SBOM after the patch, you lose the ability to say what changed.</p>
+        <h3>2) Diff on package identity, version, source, and license, not only vulnerability count</h3>
+        <p>A lot of teams stop at "scan the new image for CVEs." That helps, but it misses the reviewer question: what new thing entered the build graph at all?</p>
+        <div class="code-block"><pre>import fs from 'node:fs';
+
+const before = JSON.parse(fs.readFileSync('.ai-evidence/sbom/baseline.cdx.json', 'utf8'));
+const after = JSON.parse(fs.readFileSync('.ai-evidence/sbom/candidate.cdx.json', 'utf8'));
+
+function indexComponents(doc) {
+  return new Map((doc.components || []).map(c =&gt; {
+    const key = `${c.purl || c.name}@@${c.version || 'unknown'}`;
+    return [key, {
+      name: c.name,
+      version: c.version,
+      purl: c.purl,
+      licenses: (c.licenses || []).map(x =&gt; x.license?.id || x.license?.name).filter(Boolean),
+      publisher: c.publisher || null,
+      scope: c.scope || 'required'
+    }];
+  }));
+}
+
+const prev = indexComponents(before);
+const next = indexComponents(after);
+const added = [...next.keys()].filter(k =&gt; !prev.has(k)).map(k =&gt; next.get(k));
+const removed = [...prev.keys()].filter(k =&gt; !next.has(k)).map(k =&gt; prev.get(k));
+
+console.log(JSON.stringify({ added, removed }, null, 2));</pre></div>
+        <p>This is the point where I would also enrich with lockfile path, package manager, and registry host if that data is available. Reviewers care about package edges and origins more than giant raw JSON blobs.</p>
+        <h3>3) Gate on policy classes that matter in practice</h3>
+        <table>
+          <thead><tr><th>Policy class</th><th>Example trigger</th><th>Default action</th><th>Why it matters</th></tr></thead>
+          <tbody>
+            <tr><td>New direct dependency</td><td>package added to package.json or pyproject</td><td>Require human review</td><td>Changes runtime surface area</td></tr>
+            <tr><td>New package source</td><td>package fetched from unfamiliar registry</td><td>Fail</td><td>This is how supply-chain surprises sneak in</td></tr>
+            <tr><td>High severity introduced</td><td>new unresolved critical advisory</td><td>Fail</td><td>Obvious stop sign</td></tr>
+            <tr><td>Provenance missing</td><td>no attestation for a high-trust package lane</td><td>Require human review</td><td>Green builds can still be unverifiable</td></tr>
+            <tr><td>License drift</td><td>copyleft or unknown license newly introduced</td><td>Require human review</td><td>Often caught too late otherwise</td></tr>
+            <tr><td>Large transitive jump</td><td>huge component count increase</td><td>Fail or review</td><td>Good smell test for broken lockfile updates</td></tr>
+          </tbody>
+        </table>
+        <div class="code-block"><pre>import fs from 'node:fs';
+
+const diff = JSON.parse(fs.readFileSync('.ai-evidence/sbom/diff-summary.json', 'utf8'));
+const registryAllow = new Set(['registry.npmjs.org', 'pypi.org', 'files.pythonhosted.org']);
+
+const findings = [];
+for (const pkg of diff.added) {
+  if (pkg.direct === true) findings.push({ level: 'review', reason: 'new_direct_dependency', pkg });
+  if (pkg.registryHost && !registryAllow.has(pkg.registryHost)) {
+    findings.push({ level: 'fail', reason: 'new_registry_host', pkg });
+  }
+  if ((pkg.licenses || []).includes('UNKNOWN')) {
+    findings.push({ level: 'review', reason: 'unknown_license', pkg });
+  }
+  if (pkg.provenanceVerified === false) {
+    findings.push({ level: 'review', reason: 'missing_provenance', pkg });
+  }
+}
+
+const failed = findings.some(f =&gt; f.level === 'fail');
+console.log(JSON.stringify({ status: failed ? 'fail' : 'review_or_pass', findings }, null, 2));
+if (failed) process.exit(1);</pre></div>
+        <p>The useful design choice here is severity by class, not one giant score. Reviewers should see why a run stopped.</p>
+        <h3>4) Publish evidence into CI, not only logs</h3>
+        <div class="code-block"><pre>name: sbom-diff-gate
+
+on:
+  pull_request:
+  push:
+    branches: [master]
+
+jobs:
+  diff-gate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: anchore/sbom-action/download-syft@v0
+      - run: ./scripts/generate-sbom-pair.sh
+      - run: node scripts/sbom-diff.mjs &gt; .ai-evidence/sbom/diff-summary.json
+      - run: node scripts/sbom-policy-check.mjs &gt; .ai-evidence/sbom/policy-result.json
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: sbom-evidence
+          path: .ai-evidence/sbom/</pre></div>
+        <div class="terminal-block">
+          <div class="terminal-label">Reviewer summary</div>
+          <pre>SBOM diff gate: REVIEW REQUIRED
+
+Added packages: 4
+Removed packages: 1
+New direct dependencies: 1
+New registry hosts: 0
+Unknown licenses: 1
+Missing provenance evidence: 2
+
+Top findings:
+- review: new_direct_dependency -&gt; @opentelemetry/exporter-trace-otlp-http@0.54.0
+- review: unknown_license -&gt; tiny-helper-lib@1.2.1
+- review: missing_provenance -&gt; tiny-helper-lib@1.2.1</pre>
+        </div>
+        <h2>What went wrong / tradeoffs</h2>
+        <p>Vulnerability-only gates miss the real change surface. Registry host detection is messier than it looks because mirrors and CDNs introduce noise. Provenance coverage is still uneven across ecosystems. SBOM generation adds runtime cost, so I would scope this gate to dependency-related changes instead of every tiny docs edit.</p>
+        <div class="callout"><strong>What I would not do.</strong> I would not let an AI runner auto-merge a dependency-changing patch based only on passing tests. Tests prove behavior on sampled paths, not supply-chain trust.</div>
+        <h2>Practical checklist or decision framework</h2>
+        <ul>
+          <li>Generate a baseline SBOM before the runner mutates manifests or lockfiles.</li>
+          <li>Regenerate a candidate SBOM after the patch.</li>
+          <li>Produce a reduced diff summary, not just raw scan output.</li>
+          <li>Fail on new registry hosts and newly introduced critical advisories.</li>
+          <li>Require review on new direct dependencies, license drift, and missing provenance.</li>
+          <li>Scope the gate to dependency-related file changes so routine docs edits stay fast.</li>
+          <li>Upload evidence artifacts so reviewers can inspect without rerunning CI.</li>
+          <li>Keep an allowlist ledger for accepted exceptions instead of one-off suppressions.</li>
+        </ul>
+        <table>
+          <thead><tr><th>Approach</th><th>Operational cost</th><th>Reviewer clarity</th><th>Supply-chain coverage</th><th>My take</th></tr></thead>
+          <tbody>
+            <tr><td>No dependency gate</td><td>Low</td><td>Low</td><td>Low</td><td>Too trusting for agent-written patches</td></tr>
+            <tr><td>Vulnerability-only gate</td><td>Medium</td><td>Medium</td><td>Medium</td><td>Better than nothing, still blind to provenance and graph expansion</td></tr>
+            <tr><td>Full SBOM diff gate</td><td>Medium-high</td><td>High</td><td>High</td><td>The best default once your evidence format is trimmed</td></tr>
+          </tbody>
+        </table>
+        <h2>Conclusion</h2>
+        <p>If AI coding runners are allowed to change dependencies, they need a reviewer surface that shows more than "install succeeded." SBOM diff gates are not glamorous, but they make package changes legible, auditable, and much harder to sneak through under the cover of a small code diff.</p>
+        <p>That is the standard I would want before letting automated patches touch the dependency graph at scale.</p>
+        <div class="blog-post-tags">
+          <span class="blog-post-tag">AI Coding</span><span class="blog-post-tag">Supply Chain</span><span class="blog-post-tag">SBOM</span><span class="blog-post-tag">Dependency Security</span><span class="blog-post-tag">CI Guardrails</span>
+        </div>
+      </section>
+      <footer class="blog-footer"><p><a href="index.html">← Back to all posts</a></p></footer>
+    </main>
+  </body>
+</html>
