@@ -1,6 +1,7 @@
 "use client";
 
 import { BlurFade } from "@/components/ui/blur-fade";
+import { TextAnimate } from "@/components/ui/text-animate";
 import { BorderBeam } from "@/components/ui/border-beam";
 import { Lens } from "@/components/ui/lens";
 import { MagicCard } from "@/components/ui/magic-card";
@@ -13,9 +14,16 @@ export default function Work() {
     <section id="work" className="mx-auto max-w-5xl scroll-mt-20 px-6 py-24">
       <BlurFade inView>
         <p className="eyebrow text-center">Selected work</p>
-        <h2 className="display mt-4 text-center text-[2.2rem] sm:text-[2.9rem]">
+        <TextAnimate
+          as="h2"
+          by="word"
+          animation="blurInUp"
+          once
+          accessible={false}
+          className="display mt-4 text-center text-[2.2rem] sm:text-[2.9rem]"
+        >
           Things I built and run
-        </h2>
+        </TextAnimate>
       </BlurFade>
 
       <div className="mt-14 space-y-8">

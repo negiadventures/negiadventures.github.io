@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { AnimatedGridPattern } from "@/components/ui/animated-grid-pattern";
 import { BlurFade } from "@/components/ui/blur-fade";
+import { TextAnimate } from "@/components/ui/text-animate";
 import { cn } from "@/lib/utils";
 import { formatDate, getPosts } from "@/lib/blog";
 
@@ -22,9 +23,16 @@ export default function Writing() {
       <div className="relative mx-auto max-w-5xl scroll-mt-20 px-6 py-20">
         <BlurFade inView>
           <p className="eyebrow text-center">From the desk</p>
-          <h2 className="display mt-4 text-center text-[2.2rem] sm:text-[2.9rem]">
+          <TextAnimate
+            as="h2"
+            by="word"
+            animation="blurInUp"
+            once
+            accessible={false}
+            className="display mt-4 text-center text-[2.2rem] sm:text-[2.9rem]"
+          >
             Thoughts &amp;
-          </h2>
+          </TextAnimate>
           <p className="mx-auto mt-4 max-w-[52ch] text-center text-[15px] leading-relaxed text-muted">
             {posts.length} posts on running AI coding agents in production. Guardrails,
             evaluation, MCP, and the things that break at 3am.
