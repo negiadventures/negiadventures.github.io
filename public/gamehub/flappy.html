@@ -1,0 +1,373 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Flappy Bird - Game Hub</title>
+  <link rel="stylesheet" href="styles.css" />
+  <style>
+    :root {
+      --game-accent: #ff8844;
+      --game-accent-rgb: 255, 136, 68;
+    }
+    #gameCanvas { cursor: pointer; }
+  </style>
+</head>
+<body>
+  <h1 class="game-title">Flappy Bird</h1>
+  <div class="game-info-bar">
+    <div><span class="info-label">Score</span><span class="info-value" id="score">0</span></div>
+    <div><span class="info-label">High Score</span><span class="info-value" id="highScore">0</span></div>
+  </div>
+  <div id="raceScorePanel" class="hidden" style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:10px;justify-content:center;"></div>
+  <canvas id="gameCanvas" class="game-canvas-border" width="400" height="600"></canvas>
+  <div class="controls-hint">
+    <p><kbd>Click</kbd> or <kbd>Space</kbd> to flap | Avoid the pipes!</p>
+  </div>
+  <div class="btn-row">
+    <button class="btn btn-primary" id="startBtn">Start Game</button>
+    <button class="btn btn-back btn-sm" id="backBtn">← Hub</button>
+  </div>
+  <div class="gh-modal-backdrop hidden" id="gameOver">
+    <div class="gh-modal">
+      <h2 id="winnerText">Game Over!</h2>
+      <p class="score-label">Score: <span id="finalScore">0</span></p>
+      <div id="raceResults" class="hidden" style="margin-bottom:14px;font-size:.95rem;line-height:1.8;"></div>
+      <div id="nameInputContainer" class="name-input-wrap">
+        <input type="text" id="playerName" placeholder="Enter your name" maxlength="15" />
+      </div>
+      <div id="leaderboardContainer" class="leaderboard-wrap hidden"></div>
+      <div class="btn-row" style="justify-content:center;">
+        <button class="btn btn-primary" id="submitScoreBtn" disabled>Submit Score</button>
+        <button class="btn btn-secondary" id="restartBtn">Play Again</button>
+      </div>
+    </div>
+  </div>
+  <script src="leaderboard.js"></script>
+  <script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"></script>
+  <script src="multiplayer.js"></script>
+  <script>
+    const canvas = document.getElementById('gameCanvas');
+    const ctx = canvas.getContext('2d');
+    const scoreEl = document.getElementById('score');
+    const highScoreEl = document.getElementById('highScore');
+    const finalScoreEl = document.getElementById('finalScore');
+    const gameOverDiv = document.getElementById('gameOver');
+    const startBtn = document.getElementById('startBtn');
+    const restartBtn = document.getElementById('restartBtn');
+    const backBtn = document.getElementById('backBtn');
+    const playerNameInput = document.getElementById('playerName');
+    const submitScoreBtn = document.getElementById('submitScoreBtn');
+    const nameInputContainer = document.getElementById('nameInputContainer');
+    const leaderboardContainer = document.getElementById('leaderboardContainer');
+    const GAME_NAME = 'flappy';
+
+    const gravity = 0.25, flapStrength = -5.5, pipeSpeed = 3, pipeGap = 150, pipeSpawnRate = 100;
+
+    let score = 0, highScore = localStorage.getItem('flappyHighScore') || 0;
+    let gameRunning = false, animationId;
+
+    highScoreEl.textContent = highScore;
+
+    const bird = { x: 80, y: 300, radius: 15, velocity: 0, rotation: 0 };
+    let pipes = [];
+    let frameCount = 0;
+
+    function drawRect(x, y, w, h, color) {
+      ctx.fillStyle = color;
+      ctx.fillRect(x, y, w, h);
+    }
+
+    function drawCircle(x, y, r, color) {
+      ctx.fillStyle = color;
+      ctx.beginPath();
+      ctx.arc(x, y, r, 0, Math.PI*2);
+      ctx.fill();
+    }
+
+    function draw() {
+      ctx.fillStyle = '#70c5ce';
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+      ctx.fillStyle = '#e8f4f8';
+      for (let i = 0; i < 5; i++) {
+        const x = ((i * 100) - frameCount * 0.2) % (canvas.width + 200);
+        const adjustedX = x < -100 ? x + canvas.width + 200 : x;
+        drawCircle(adjustedX, 100 + i * 50, 30 + i * 5, ctx.fillStyle);
+      }
+
+      pipes.forEach(pipe => {
+        ctx.fillStyle = '#4CAF50';
+        drawRect(pipe.x, 0, pipe.width, pipe.top, '#5D9C59');
+        drawRect(pipe.x, canvas.height - pipe.bottom, pipe.width, pipe.bottom, '#5D9C59');
+
+        ctx.fillStyle = '#3D8B40';
+        drawRect(pipe.x + pipe.width - 5, 0, 5, pipe.top, '#3D8B40');
+        drawRect(pipe.x + pipe.width - 5, canvas.height - pipe.bottom, 5, pipe.bottom, '#3D8B40');
+      });
+
+      ctx.save();
+      ctx.translate(bird.x, bird.y);
+      bird.rotation = Math.min(Math.max(bird.velocity * 0.1, -0.5), 0.5);
+      ctx.rotate(bird.rotation);
+      drawCircle(0, 0, bird.radius, '#FFD700');
+      drawCircle(5, -5, 8, '#fff');
+      drawCircle(7, -5, 3, '#000');
+      drawCircle(5, 5, 6, '#FF6B35');
+      ctx.restore();
+
+      ctx.fillStyle = '#fff';
+      ctx.font = 'bold 48px Arial';
+      ctx.textAlign = 'center';
+      ctx.fillText(score, canvas.width/2, 80);
+    }
+
+    function update() {
+      frameCount++;
+
+      bird.velocity += gravity;
+      bird.y += bird.velocity;
+
+      if (frameCount % pipeSpawnRate === 0) {
+        const minHeight = 50;
+        const maxHeight = canvas.height - pipeGap - minHeight;
+        const topHeight = Math.floor(Math.random() * (maxHeight - minHeight + 1)) + minHeight;
+        pipes.push({ x: canvas.width, width: 60, top: topHeight, bottom: canvas.height - pipeGap - topHeight, passed: false });
+      }
+
+      pipes.forEach(pipe => {
+        pipe.x -= pipeSpeed;
+
+        if (bird.x + bird.radius > pipe.x && bird.x - bird.radius < pipe.x + pipe.width) {
+          if (bird.y - bird.radius < pipe.top || bird.y + bird.radius > canvas.height - pipe.bottom) {
+            endGame();
+          }
+        }
+
+        if (!pipe.passed && bird.x > pipe.x + pipe.width) {
+          pipe.passed = true;
+          score++;
+          scoreEl.textContent = score;
+        }
+      });
+
+      pipes = pipes.filter(pipe => pipe.x + pipe.width > -10);
+
+      if (bird.y + bird.radius > canvas.height || bird.y - bird.radius < 0) {
+        endGame();
+      }
+    }
+
+    function gameLoop() {
+      if (!gameRunning) return;
+      update();
+      draw();
+      animationId = requestAnimationFrame(gameLoop);
+    }
+
+    function endGame() {
+      gameRunning = false;
+      cancelAnimationFrame(animationId);
+      broadcastFinalScore();
+      if (score > highScore) {
+        highScore = score;
+        localStorage.setItem('flappyHighScore', highScore);
+        highScoreEl.textContent = highScore;
+      }
+      finalScoreEl.textContent = score;
+      if (onlineMode) {
+        gameOverDiv.classList.remove('hidden');
+        nameInputContainer.style.display = 'none';
+        return;
+      }
+      gameOverDiv.classList.remove('hidden');
+
+      playerNameInput.value = '';
+      nameInputContainer.style.display = 'block';
+      submitScoreBtn.disabled = true;
+      submitScoreBtn.style.opacity = '0.5';
+      // Show leaderboard if there are existing scores
+      const existingLeaderboard = Leaderboard.get(GAME_NAME);
+      if (existingLeaderboard && existingLeaderboard.length > 0) {
+        leaderboardContainer.classList.remove('hidden');
+        leaderboardContainer.innerHTML = '<h3 style="color: #ff8844; margin-bottom: 10px;">Top 10 Players</h3>' + Leaderboard.render(GAME_NAME);
+        submitScoreBtn.textContent = 'View Leaderboard';
+        submitScoreBtn.onclick = showLeaderboard;
+      } else {
+        leaderboardContainer.classList.add('hidden');
+        submitScoreBtn.textContent = 'Submit Score';
+        submitScoreBtn.onclick = submitScore;
+      }
+    }
+
+    function showLeaderboard() {
+      leaderboardContainer.classList.remove('hidden');
+      submitScoreBtn.textContent = 'View Leaderboard';
+      submitScoreBtn.onclick = showLeaderboard;
+    }
+
+    function flap() {
+      if (gameRunning) bird.velocity = flapStrength;
+    }
+
+    function startGame() {
+      score = 0;
+      pipes = [];
+      frameCount = 0;
+      bird.y = 300;
+      bird.velocity = 0;
+      scoreEl.textContent = '0';
+      gameOverDiv.classList.add('hidden');
+      gameRunning = true;
+      gameLoop();
+    }
+
+    canvas.addEventListener('click', () => { if (gameRunning) flap(); else if (gameOverDiv.classList.contains('hidden')) startGame(); });
+    document.addEventListener('keydown', e => {
+      if (e.code === 'Space') {
+        e.preventDefault();
+        if (!gameRunning && gameOverDiv.classList.contains('hidden')) startGame();
+        else if (gameRunning) flap();
+      }
+    });
+    startBtn.addEventListener('click', startGame);
+    restartBtn.addEventListener('click', startGame);
+    backBtn.addEventListener('click', () => window.location.href = 'index.html');
+    submitScoreBtn.addEventListener('click', submitScore);
+    playerNameInput.addEventListener('keypress', (e) => {
+      if (e.key === 'Enter' && playerNameInput.value.trim()) submitScore();
+    });
+    playerNameInput.addEventListener('input', () => {
+      submitScoreBtn.disabled = !playerNameInput.value.trim();
+      submitScoreBtn.style.opacity = playerNameInput.value.trim() ? '1' : '0.5';
+    });
+
+    function submitScore() {
+      const name = playerNameInput.value.trim();
+      if (!name) return;
+      const leaderboard = Leaderboard.addScore(GAME_NAME, name, score);
+      nameInputContainer.style.display = 'none';
+      leaderboardContainer.classList.remove('hidden');
+      leaderboardContainer.innerHTML = '<h3 style="color: #ff8844; margin-bottom: 10px;">Top 10 Players</h3>' + Leaderboard.render(GAME_NAME);
+      submitScoreBtn.textContent = 'View Leaderboard';
+      submitScoreBtn.onclick = showLeaderboard;
+    }
+
+    function showLeaderboard() {
+      leaderboardContainer.classList.remove('hidden');
+      submitScoreBtn.textContent = 'View Leaderboard';
+      submitScoreBtn.onclick = showLeaderboard;
+    }
+
+    draw();
+
+    // ── Online / Score-Race Mode ──────────────────────────────────────────────
+    function checkOnlineMode() {
+      const s = sessionStorage.getItem('gh_room');
+      if (!s) return false;
+      try { const d = JSON.parse(s); return d.gameType === GAME_NAME ? d : false; }
+      catch(e) { return false; }
+    }
+    const sessionData = checkOnlineMode();
+    let onlineMode = false;
+    let ghRoom = null;
+    let onlinePlayers = [];
+    let raceScores = {};
+
+    if (sessionData) {
+      onlineMode = true;
+      onlinePlayers = sessionData.players || [];
+      onlinePlayers.forEach(p => { raceScores[p.id] = { name: p.name || 'Player', avatar: p.avatar || '🎮', score: 0, done: false }; });
+      ghRoom = new GameRoom();
+      if (sessionData.role === 'host') {
+        ghRoom.create(GAME_NAME, sessionData.settings || {}, onRoomEvent, sessionData.code);
+      } else {
+        ghRoom.join(sessionData.code, sessionData.player, onRoomEvent);
+      }
+      document.getElementById('raceScorePanel').classList.remove('hidden');
+    }
+
+    function onRoomEvent(event, data) {
+      if (event === 'room-update') {
+        onlinePlayers = data.players || onlinePlayers;
+        onlinePlayers.forEach(p => {
+          if (!raceScores[p.id]) raceScores[p.id] = { name: p.name || 'Player', avatar: p.avatar || '🎮', score: 0, done: false };
+        });
+        renderRaceScores();
+      }
+      if (event === 'game-move') {
+        const d = data.data;
+        if (d.type === 'score-update') {
+          if (raceScores[d.playerId]) raceScores[d.playerId].score = d.score;
+          renderRaceScores();
+        }
+        if (d.type === 'final-score') {
+          if (raceScores[d.playerId]) { raceScores[d.playerId].score = d.score; raceScores[d.playerId].done = true; }
+          renderRaceScores();
+          checkAllDone();
+        }
+      }
+      if (event === 'player-left') {
+        if (raceScores[data.playerId]) raceScores[data.playerId].done = true;
+        checkAllDone();
+      }
+    }
+
+    function broadcastScore() {
+      if (!onlineMode || !ghRoom) return;
+      ghRoom.sendMove({ type: 'score-update', playerId: ghRoom.myPlayer.id, score: score });
+    }
+
+    function broadcastFinalScore() {
+      if (!onlineMode || !ghRoom) return;
+      const myId = ghRoom.myPlayer.id;
+      ghRoom.sendMove({ type: 'final-score', playerId: myId, score: score });
+      if (raceScores[myId]) { raceScores[myId].score = score; raceScores[myId].done = true; }
+      renderRaceScores();
+      checkAllDone();
+    }
+
+    function checkAllDone() {
+      if (!onlineMode) return;
+      const allDone = Object.values(raceScores).every(p => p.done);
+      if (allDone) showRaceResults();
+    }
+
+    function showRaceResults() {
+      const sorted = Object.entries(raceScores).sort((a, b) => b[1].score - a[1].score);
+      const myId = ghRoom && ghRoom.myPlayer ? ghRoom.myPlayer.id : null;
+      const winner = sorted[0];
+      const isWinner = myId && winner[0] === myId;
+      const raceResultsEl = document.getElementById('raceResults');
+      if (raceResultsEl) {
+        raceResultsEl.innerHTML = '<strong>Race Results:</strong><br>' + sorted.map(([id, p], i) =>
+          `${['🥇','🥈','🥉'][i]||((i+1)+'.')} ${p.avatar} ${esc(p.name)}: ${p.score}${id===myId?' (you)':''}`
+        ).join('<br>');
+        raceResultsEl.classList.remove('hidden');
+      }
+      const winnerTextEl = document.getElementById('winnerText');
+      if (winnerTextEl) winnerTextEl.textContent = isWinner ? '🏆 You Win!' : `${winner[1].avatar} ${winner[1].name} Wins!`;
+      const gameOverEl = document.getElementById('gameOver');
+      if (gameOverEl) gameOverEl.classList.remove('hidden');
+    }
+
+    function renderRaceScores() {
+      if (!onlineMode) return;
+      const container = document.getElementById('raceScorePanel');
+      if (!container) return;
+      const myId = ghRoom && ghRoom.myPlayer ? ghRoom.myPlayer.id : null;
+      container.innerHTML = Object.entries(raceScores)
+        .sort((a,b) => b[1].score - a[1].score)
+        .map(([id, p]) => `
+        <div class="player-pill${id === myId ? '" style="border-color:var(--game-accent)' : ''}">
+          <span class="avatar">${p.avatar}</span>
+          <span class="player-name">${esc(p.name)}</span>
+          <span class="player-score">${p.score}${p.done ? ' ✓' : ''}</span>
+        </div>
+      `).join('');
+    }
+
+    function esc(s) { return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+  </script>
+</body>
+</html>

@@ -1,0 +1,389 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Pong – Game Hub</title>
+  <link rel="stylesheet" href="styles.css" />
+  <style>
+    :root {
+      --game-accent:     #e94560;
+      --game-accent-rgb: 233, 69, 96;
+    }
+    #gameCanvas {
+      border: 3px solid var(--game-accent);
+      border-radius: 10px;
+      box-shadow: 0 0 20px rgba(var(--game-accent-rgb), 0.32);
+      cursor: none;
+      max-width: 100%;
+    }
+    .mode-select {
+      padding: 10px 16px; font-size: 1rem; border-radius: var(--radius-lg);
+      border: 2px solid #333; background: #1e1e36; color: var(--text-primary);
+      cursor: pointer; outline: none; transition: border-color .2s; margin-top: 10px;
+    }
+    .mode-select:focus { border-color: var(--game-accent); }
+    /* score bar */
+    .score-bar {
+      display: flex; gap: 30px; margin-bottom: 10px;
+      font-size: 1.1rem; color: var(--text-primary); flex-wrap: wrap; justify-content: center;
+    }
+    .score-bar span { color: var(--game-accent); font-weight: 700; }
+    /* online player names */
+    .online-player-info {
+      display: flex; gap: 24px; margin-bottom: 8px; flex-wrap: wrap; justify-content: center;
+    }
+    .paddle-name {
+      font-size: .9rem; color: var(--text-muted);
+    }
+    .paddle-name .name { font-weight: 700; color: var(--text-primary); }
+    /* game-over modal */
+    #nameInputContainer { margin-bottom: 16px; }
+    #nameInputContainer input {
+      padding: 10px 16px; font-size: 1rem; border-radius: var(--radius-lg);
+      border: 2px solid #444; background: #1a1a2e; color: var(--text-primary);
+      text-align: center; width: 220px; outline: none; transition: border-color .2s;
+    }
+    #nameInputContainer input:focus { border-color: var(--game-accent); }
+  </style>
+</head>
+<body>
+  <h1 class="game-title">Pong</h1>
+
+  <div class="score-bar">
+    <div><span id="p1Name">Player 1</span>: <span id="p1Score">0</span></div>
+    <div><span id="p2Name">Player 2</span>: <span id="p2Score">0</span></div>
+  </div>
+
+  <div class="online-player-info hidden" id="onlinePlayerInfo"></div>
+
+  <canvas id="gameCanvas" width="700" height="450"></canvas>
+
+  <div class="controls-hint">
+    <kbd>W</kbd>/<kbd>S</kbd> – Left paddle &nbsp;|&nbsp;
+    <kbd>↑</kbd>/<kbd>↓</kbd> – Right paddle &nbsp;|&nbsp;
+    First to 5 wins!
+  </div>
+
+  <select class="mode-select" id="gameMode">
+    <option value="ai">1 Player (vs Computer)</option>
+    <option value="2p">2 Players (local)</option>
+  </select>
+
+  <div class="btn-row">
+    <button class="btn btn-primary" id="startBtn">Start Game</button>
+    <button class="btn btn-back" id="backBtn">Back to Hub</button>
+  </div>
+
+  <!-- Game-over modal -->
+  <div class="gh-modal-backdrop hidden" id="gameOver">
+    <div class="gh-modal">
+      <h2 id="winnerText">Player 1 Wins!</h2>
+      <div id="nameInputContainer">
+        <input type="text" id="playerName" placeholder="Enter your name" maxlength="15" />
+      </div>
+      <div id="leaderboardContainer" class="leaderboard-wrap hidden"></div>
+      <div class="btn-row" style="justify-content:center;">
+        <button class="btn btn-primary" id="submitScoreBtn" disabled>Submit Score</button>
+        <button class="btn btn-secondary" id="restartBtn">Play Again</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="leaderboard.js"></script>
+  <script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"></script>
+  <script src="multiplayer.js"></script>
+  <script>
+  /* ═══════════════════════════════════════════════
+     Pong — AI / local 2P / online multiplayer
+     ═══════════════════════════════════════════════ */
+  const GAME_NAME  = 'pong';
+  const WIN_SCORE  = 5;
+  const PADDLE_W   = 10, PADDLE_H = 80, BALL_R = 10;
+
+  const canvas  = document.getElementById('gameCanvas');
+  const ctx     = canvas.getContext('2d');
+  const p1ScoreEl  = document.getElementById('p1Score');
+  const p2ScoreEl  = document.getElementById('p2Score');
+  const p1NameEl   = document.getElementById('p1Name');
+  const p2NameEl   = document.getElementById('p2Name');
+  const gameOverDiv= document.getElementById('gameOver');
+  const winnerText = document.getElementById('winnerText');
+  const startBtn   = document.getElementById('startBtn');
+  const restartBtn = document.getElementById('restartBtn');
+  const backBtn    = document.getElementById('backBtn');
+  const gameModeSelect = document.getElementById('gameMode');
+  const playerNameIn   = document.getElementById('playerName');
+  const submitScoreBtn = document.getElementById('submitScoreBtn');
+  const nameInputCont  = document.getElementById('nameInputContainer');
+  const leaderboardCont= document.getElementById('leaderboardContainer');
+  const onlinePlayerInfoEl = document.getElementById('onlinePlayerInfo');
+
+  let gameRunning = false;
+  let animId;
+  let isAI = true;
+
+  let p1 = { x: 20,               y: canvas.height/2-PADDLE_H/2, score:0, dy:0 };
+  let p2 = { x: canvas.width-30,  y: canvas.height/2-PADDLE_H/2, score:0, dy:0 };
+  let ball = resetBallObj();
+
+  /* ── Online ── */
+  let onlineMode  = false;
+  let myPaddle    = 1;   // host = left (p1), guest = right (p2)
+  let ghRoom      = null;
+  let remotePlayers = [];
+  let lastSentPaddleY = -1;
+  let remoteP2Y = p2.y;   // received remote position
+
+  function checkOnlineMode() {
+    const s = sessionStorage.getItem('gh_room');
+    if (!s) return false;
+    try { const d = JSON.parse(s); return d.gameType === GAME_NAME ? d : false; }
+    catch(e) { return false; }
+  }
+
+  const sessionData = checkOnlineMode();
+  if (sessionData) {
+    onlineMode = true;
+    myPaddle   = sessionData.role === 'host' ? 1 : 2;
+    remotePlayers = sessionData.players || [];
+    gameModeSelect.classList.add('hidden');
+    onlinePlayerInfoEl.classList.remove('hidden');
+    renderOnlinePlayers();
+
+    startBtn.classList.add('hidden');   // auto-started via room events
+
+    ghRoom = new GameRoom();
+    if (sessionData.role === 'host') {
+      ghRoom.create(GAME_NAME, sessionData.settings||{}, onRoomEvent, sessionData.code);
+    } else {
+      ghRoom.join(sessionData.code, sessionData.player, onRoomEvent);
+    }
+  }
+
+  function renderOnlinePlayers() {
+    onlinePlayerInfoEl.innerHTML = '';
+    const players = remotePlayers.length ? remotePlayers : [];
+    const p1Info = players[0];
+    const p2Info = players[1];
+    if (p1Info) p1NameEl.textContent = p1Info.name || 'P1';
+    if (p2Info) p2NameEl.textContent = p2Info.name || 'P2';
+    onlinePlayerInfoEl.innerHTML = `
+      <div class="paddle-name">🟢 <span class="name">${p1Info?esc(p1Info.name):'Left Paddle'}</span></div>
+      <div class="paddle-name" style="color:#ff4444">🔴 <span class="name">${p2Info?esc(p2Info.name):'Right Paddle'}</span></div>
+    `;
+  }
+
+  function onRoomEvent(event, data) {
+    if (event === 'connected') {
+      remotePlayers = ghRoom.players;
+      renderOnlinePlayers();
+      if (myPaddle === 2) startGame();   // guest auto-starts when connected to host
+    }
+    if (event === 'room-update') {
+      remotePlayers = data.players||remotePlayers;
+      renderOnlinePlayers();
+      if (myPaddle === 1 && remotePlayers.length >= 2 && !gameRunning) {
+        startGame();   // host auto-starts when guest connects
+      }
+    }
+    if (event === 'game-move') {
+      const d = data.data;
+      if (d.type === 'paddle') {
+        // Opponent's paddle position
+        if (myPaddle === 1) { remoteP2Y = d.y; }
+        else                { p1.y = d.y; }
+      }
+      if (d.type === 'ball' && myPaddle === 2) {
+        // Sync ball from host
+        ball.x = d.x; ball.y = d.y; ball.dx = d.dx; ball.dy = d.dy;
+      }
+      if (d.type === 'score') {
+        p1.score = d.p1; p2.score = d.p2;
+        p1ScoreEl.textContent = p1.score;
+        p2ScoreEl.textContent = p2.score;
+      }
+      if (d.type === 'gameover') {
+        if (myPaddle === 2) endGame(true);
+      }
+    }
+    if (event === 'player-left') { winnerText.textContent = 'Opponent disconnected.'; endGame(false, true); }
+  }
+
+  /* ── Ball ── */
+  function resetBallObj() {
+    return { x:canvas.width/2, y:canvas.height/2, dx:(Math.random()>.5?1:-1)*4, dy:(Math.random()*6-3), speed:5 };
+  }
+  function resetBall() { Object.assign(ball, resetBallObj()); }
+
+  /* ── Draw ── */
+  function draw() {
+    ctx.fillStyle = '#0a0a1a';
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    // net
+    ctx.strokeStyle = '#333'; ctx.setLineDash([10,15]);
+    ctx.beginPath(); ctx.moveTo(canvas.width/2,0); ctx.lineTo(canvas.width/2,canvas.height); ctx.stroke();
+    ctx.setLineDash([]);
+    // paddles
+    ctx.fillStyle = '#00ff88'; ctx.fillRect(p1.x, p1.y, PADDLE_W, PADDLE_H);
+    ctx.fillStyle = '#ff4444'; ctx.fillRect(p2.x, p2.y, PADDLE_W, PADDLE_H);
+    // ball
+    ctx.fillStyle = '#fff'; ctx.beginPath(); ctx.arc(ball.x, ball.y, BALL_R, 0, Math.PI*2); ctx.fill();
+  }
+
+  /* ── Update ── */
+  function update() {
+    p1.y += p1.dy;
+    p1.y = Math.max(0, Math.min(canvas.height - PADDLE_H, p1.y));
+
+    if (onlineMode) {
+      if (myPaddle === 2) {
+        // I control p2, sync p1 from host
+        p2.y += p2.dy;
+        p2.y = Math.max(0, Math.min(canvas.height - PADDLE_H, p2.y));
+      } else {
+        // I control p1 (and drive game), use remote p2 position
+        p2.y = remoteP2Y;
+      }
+    } else {
+      if (isAI) {
+        const target = ball.y - PADDLE_H/2;
+        const err = (Math.random()-.5)*30;
+        if (target+err > p2.y+10)  p2.y += 3.5;
+        else if (target+err < p2.y-10) p2.y -= 3.5;
+        p2.y = Math.max(0, Math.min(canvas.height - PADDLE_H, p2.y));
+      } else {
+        p2.y += p2.dy;
+        p2.y = Math.max(0, Math.min(canvas.height - PADDLE_H, p2.y));
+      }
+    }
+
+    // Ball movement only driven by host (or local)
+    if (!onlineMode || myPaddle === 1) {
+      ball.x += ball.dx; ball.y += ball.dy;
+      if (ball.y <= 0 || ball.y >= canvas.height) ball.dy *= -1;
+      // p1 paddle hit
+      if (ball.x <= p1.x+PADDLE_W && ball.y>=p1.y && ball.y<=p1.y+PADDLE_H && ball.dx<0) {
+        ball.dx *= -1; ball.speed = Math.min(ball.speed+.2,12); ball.dx *= ball.speed/4;
+      }
+      // p2 paddle hit
+      if (ball.x >= p2.x-BALL_R && ball.y>=p2.y && ball.y<=p2.y+PADDLE_H && ball.dx>0) {
+        ball.dx *= -1; ball.speed = Math.min(ball.speed+.2,12); ball.dx *= ball.speed/4;
+      }
+      // Scoring
+      if (ball.x < 0) {
+        p2.score++; p2ScoreEl.textContent = p2.score; resetBall();
+        if (onlineMode && ghRoom) ghRoom.sendMove({ type:'score', p1:p1.score, p2:p2.score });
+      }
+      if (ball.x > canvas.width) {
+        p1.score++; p1ScoreEl.textContent = p1.score; resetBall();
+        if (onlineMode && ghRoom) ghRoom.sendMove({ type:'score', p1:p1.score, p2:p2.score });
+      }
+      // Send ball state to guest ~every frame
+      if (onlineMode && ghRoom) ghRoom.sendMove({ type:'ball', x:ball.x, y:ball.y, dx:ball.dx, dy:ball.dy });
+    }
+
+    // Win check
+    if (p1.score >= WIN_SCORE || p2.score >= WIN_SCORE) {
+      if (onlineMode && ghRoom) ghRoom.sendMove({ type:'gameover' });
+      endGame();
+    }
+  }
+
+  /* ── Input ── */
+  const keys = {};
+  document.addEventListener('keydown', e => {
+    keys[e.key] = true;
+    if(['w','s','W','S','ArrowUp','ArrowDown'].includes(e.key)) e.preventDefault();
+  });
+  document.addEventListener('keyup',  e => { keys[e.key] = false; });
+
+  function handleInput() {
+    if (!gameRunning) return;
+    p1.dy = 0; p2.dy = 0;
+    if (!onlineMode || myPaddle === 1) {
+      if (keys['w']||keys['W']) p1.dy = -6;
+      if (keys['s']||keys['S']) p1.dy = 6;
+    }
+    if (!onlineMode) {
+      if (keys['ArrowUp'])   p2.dy = -6;
+      if (keys['ArrowDown']) p2.dy = 6;
+    } else if (myPaddle === 2) {
+      if (keys['ArrowUp'])   p2.dy = -6;
+      if (keys['ArrowDown']) p2.dy = 6;
+    }
+    // Send my paddle position to peer
+    if (onlineMode && ghRoom) {
+      const myY = myPaddle===1 ? p1.y : p2.y;
+      if (Math.abs(myY - lastSentPaddleY) > 1) {
+        ghRoom.sendMove({ type:'paddle', y: myY });
+        lastSentPaddleY = myY;
+      }
+    }
+  }
+  setInterval(handleInput, 16);
+
+  /* ── Game loop ── */
+  function gameLoop() {
+    if (!gameRunning) return;
+    update(); draw();
+    animId = requestAnimationFrame(gameLoop);
+  }
+
+  /* ── Game flow ── */
+  function startGame() {
+    cancelAnimationFrame(animId);   // cancel any running loop before restarting
+    p1.score=0; p2.score=0; p1.y=canvas.height/2-PADDLE_H/2; p2.y=canvas.height/2-PADDLE_H/2;
+    p1ScoreEl.textContent='0'; p2ScoreEl.textContent='0';
+    gameOverDiv.classList.add('hidden');
+    resetBall();
+    gameRunning = true;
+    gameLoop();
+  }
+
+  function endGame(remoteEnded = false, disconnected = false) {
+    gameRunning = false; cancelAnimationFrame(animId);
+    if (!disconnected) {
+      winnerText.textContent = p1.score >= WIN_SCORE
+        ? (onlineMode ? (myPaddle===1?'You Win! 🎉':'Opponent Wins!') : (isAI?'You Win!':'Player 1 Wins!'))
+        : (onlineMode ? (myPaddle===2?'You Win! 🎉':'Opponent Wins!') : (isAI?'Computer Wins!':'Player 2 Wins!'));
+    }
+    gameOverDiv.classList.remove('hidden');
+    if (!onlineMode && p1.score >= WIN_SCORE) {
+      nameInputCont.classList.remove('hidden');
+      submitScoreBtn.disabled = true;
+      const ex = Leaderboard.get(GAME_NAME);
+      if (ex && ex.length > 0) {
+        leaderboardCont.classList.remove('hidden');
+        leaderboardCont.innerHTML = '<h3 class="text-accent" style="margin-bottom:8px;">Top Players</h3>' + Leaderboard.render(GAME_NAME);
+      }
+    } else {
+      nameInputCont.classList.add('hidden');
+    }
+  }
+
+  function submitScore() {
+    const name = playerNameIn.value.trim(); if (!name) return;
+    Leaderboard.addScore(GAME_NAME, name, p1.score);
+    nameInputCont.classList.add('hidden');
+    leaderboardCont.classList.remove('hidden');
+    leaderboardCont.innerHTML = '<h3 class="text-accent" style="margin-bottom:8px;">Top Players</h3>' + Leaderboard.render(GAME_NAME);
+  }
+
+  startBtn.addEventListener('click', startGame);
+  restartBtn.addEventListener('click', startGame);
+  backBtn.addEventListener('click', () => { if(ghRoom) ghRoom.destroy(); window.location.href='index.html'; });
+  submitScoreBtn.addEventListener('click', submitScore);
+  playerNameIn.addEventListener('input', () => {
+    const ok = !!playerNameIn.value.trim();
+    submitScoreBtn.disabled = !ok;
+  });
+  playerNameIn.addEventListener('keypress', e => { if(e.key==='Enter'&&playerNameIn.value.trim()) submitScore(); });
+  gameModeSelect.addEventListener('change', () => { isAI = gameModeSelect.value==='ai'; });
+
+  function esc(s) { return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+
+  draw();
+  </script>
+</body>
+</html>

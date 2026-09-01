@@ -1,0 +1,449 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Game Hub</title>
+  <link rel="stylesheet" href="styles.css" />
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+      min-height: 100vh;
+      padding: 40px 20px;
+      display: block; /* override styles.css flex */
+      justify-content: unset;
+      align-items: unset;
+    }
+
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+
+    header {
+      text-align: center;
+      margin-bottom: 60px;
+    }
+
+    h1 {
+      color: #e94560;
+      font-size: 3rem;
+      margin-bottom: 10px;
+      text-shadow: 0 0 20px rgba(233, 69, 96, 0.5);
+    }
+
+    .subtitle {
+      color: #aaa;
+      font-size: 1.2rem;
+    }
+
+    .games-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 30px;
+      padding: 20px 0;
+    }
+
+    .game-card {
+      background: rgba(255, 255, 255, 0.05);
+      border-radius: 20px;
+      overflow: hidden;
+      transition: transform 0.3s, box-shadow 0.3s;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .game-card:hover {
+      transform: translateY(-10px);
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
+    }
+
+    .game-preview {
+      height: 180px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .game-preview.snake       { background: linear-gradient(135deg, #1a1a2e 0%, #0d4d3d 100%); }
+    .game-preview.copter      { background: linear-gradient(135deg, #1a1a2e 0%, #0d3d4d 100%); }
+    .game-preview.pong        { background: linear-gradient(135deg, #1a1a2e 0%, #3d0d1a 100%); }
+    .game-preview.breakout    { background: linear-gradient(135deg, #1a1a2e 0%, #0d3d3d 100%); }
+    .game-preview.flappy      { background: linear-gradient(135deg, #1a1a2e 0%, #3d3d0d 100%); }
+    .game-preview.spaceinvaders { background: linear-gradient(135deg, #1a1a2e 0%, #2d0d3d 100%); }
+    .game-preview.tictactoe   { background: linear-gradient(135deg, #1a1a2e 0%, #0d3d2a 100%); }
+    .game-preview.memory      { background: linear-gradient(135deg, #1a1a2e 0%, #3d1a2e 100%); }
+    .game-preview.sudoku      { background: linear-gradient(135deg, #1a1a2e 0%, #0d5a5a 100%); }
+    .game-preview.twenty48    { background: linear-gradient(135deg, #1a1a2e 0%, #5a4d0d 100%); }
+    .game-preview.pacman      { background: linear-gradient(135deg, #1a1a2e 0%, #3d3d0d 100%); }
+    .game-preview.tetris      { background: linear-gradient(135deg, #1a1a2e 0%, #2e0d3d 100%); }
+    .game-preview.minesweeper { background: linear-gradient(135deg, #1a1a2e 0%, #3d1a0d 100%); }
+    .game-preview.connect4    { background: linear-gradient(135deg, #1a1a2e 0%, #3d0d1a 100%); }
+
+    .game-icon { font-size: 4rem; margin-bottom: 15px; }
+
+    .game-preview.snake .game-icon         { color: #00ff88;  text-shadow: 0 0 20px rgba(0,255,136,0.5); }
+    .game-preview.copter .game-icon        { color: #00d4ff;  text-shadow: 0 0 20px rgba(0,212,255,0.5); }
+    .game-preview.pong .game-icon          { color: #e94560;  text-shadow: 0 0 20px rgba(233,69,96,0.5); }
+    .game-preview.breakout .game-icon      { color: #00d4ff;  text-shadow: 0 0 20px rgba(0,212,255,0.5); }
+    .game-preview.flappy .game-icon        { color: #ff8844;  text-shadow: 0 0 20px rgba(255,136,68,0.5); }
+    .game-preview.spaceinvaders .game-icon { color: #aa44ff;  text-shadow: 0 0 20px rgba(170,68,255,0.5); }
+    .game-preview.tictactoe .game-icon     { color: #00ff88;  text-shadow: 0 0 20px rgba(0,255,136,0.5); }
+    .game-preview.memory .game-icon        { color: #ff6b6b;  text-shadow: 0 0 20px rgba(255,107,107,0.5); }
+    .game-preview.sudoku .game-icon        { color: #00ff88;  text-shadow: 0 0 20px rgba(0,255,136,0.5); }
+    .game-preview.twenty48 .game-icon      { color: #ff8844;  text-shadow: 0 0 20px rgba(255,136,68,0.5); }
+    .game-preview.pacman .game-icon        { color: #ffff00;  text-shadow: 0 0 20px rgba(255,255,0,0.5); }
+    .game-preview.tetris .game-icon        { color: #ff00ff;  text-shadow: 0 0 20px rgba(255,0,255,0.5); }
+    .game-preview.minesweeper .game-icon   { color: #ff6600;  text-shadow: 0 0 20px rgba(255,102,0,0.5); }
+    .game-preview.connect4 .game-icon      { color: #ff0066;  text-shadow: 0 0 20px rgba(255,0,102,0.5); }
+
+    .game-preview::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(to bottom, transparent 0%, rgba(0,0,0,0.7) 100%);
+    }
+
+    .game-info {
+      padding: 25px;
+      text-align: center;
+    }
+
+    .game-info h2 {
+      color: #fff;
+      font-size: 1.5rem;
+      margin-bottom: 10px;
+    }
+
+    .game-info p {
+      color: #888;
+      font-size: 0.95rem;
+      margin-bottom: 16px;
+      line-height: 1.5;
+    }
+
+    /* Online multiplayer badge on cards */
+    .online-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      background: rgba(0,255,136,0.1);
+      border: 1px solid rgba(0,255,136,0.35);
+      color: #00ff88;
+      border-radius: 50px;
+      padding: 2px 10px;
+      font-size: 0.72rem;
+      font-weight: 700;
+      letter-spacing: 0.4px;
+      text-transform: uppercase;
+      margin-bottom: 14px;
+      cursor: default;
+    }
+    .online-badge::before { content: '●'; font-size: 0.5rem; }
+
+    /* Button row inside cards */
+    .card-btn-row {
+      display: flex;
+      gap: 8px;
+      justify-content: center;
+      flex-wrap: wrap;
+    }
+
+    /* Primary play button (per-game colours) */
+    .play-btn {
+      display: inline-flex;
+      align-items: center;
+      padding: 11px 30px;
+      background: linear-gradient(135deg, #e94560 0%, #c73e54 100%);
+      color: white;
+      text-decoration: none;
+      border-radius: 30px;
+      font-weight: 700;
+      transition: transform 0.2s, box-shadow 0.2s;
+      border: none;
+      cursor: pointer;
+      font-size: 0.95rem;
+    }
+    .play-btn:hover { transform: scale(1.05); box-shadow: 0 10px 25px rgba(233,69,96,0.4); }
+
+    /* Online play button */
+    .online-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      padding: 11px 20px;
+      background: transparent;
+      color: #00ff88;
+      text-decoration: none;
+      border-radius: 30px;
+      font-weight: 700;
+      transition: transform 0.2s, background 0.2s;
+      border: 2px solid #00ff88;
+      cursor: pointer;
+      font-size: 0.95rem;
+    }
+    .online-btn:hover { background: rgba(0,255,136,0.1); transform: scale(1.04); }
+
+    /* Per-game play-btn colours */
+    .game-card.snake .play-btn         { background: linear-gradient(135deg, #00ff88 0%, #00cc6a 100%); }
+    .game-card.snake .play-btn:hover   { box-shadow: 0 10px 25px rgba(0,255,136,0.4); }
+    .game-card.copter .play-btn        { background: linear-gradient(135deg, #00d4ff 0%, #0099cc 100%); }
+    .game-card.copter .play-btn:hover  { box-shadow: 0 10px 25px rgba(0,212,255,0.4); }
+    .game-card.pong .play-btn          { background: linear-gradient(135deg, #e94560 0%, #c73e54 100%); }
+    .game-card.pong .play-btn:hover    { box-shadow: 0 10px 25px rgba(233,69,96,0.4); }
+    .game-card.breakout .play-btn      { background: linear-gradient(135deg, #00d4ff 0%, #0099cc 100%); }
+    .game-card.breakout .play-btn:hover { box-shadow: 0 10px 25px rgba(0,212,255,0.4); }
+    .game-card.flappy .play-btn        { background: linear-gradient(135deg, #ff8844 0%, #cc6a33 100%); }
+    .game-card.flappy .play-btn:hover  { box-shadow: 0 10px 25px rgba(255,136,68,0.4); }
+    .game-card.spaceinvaders .play-btn { background: linear-gradient(135deg, #aa44ff 0%, #8833cc 100%); }
+    .game-card.spaceinvaders .play-btn:hover { box-shadow: 0 10px 25px rgba(170,68,255,0.4); }
+    .game-card.tictactoe .play-btn     { background: linear-gradient(135deg, #00ff88 0%, #00cc6a 100%); }
+    .game-card.tictactoe .play-btn:hover { box-shadow: 0 10px 25px rgba(0,255,136,0.4); }
+    .game-card.memory .play-btn        { background: linear-gradient(135deg, #ff6b6b 0%, #cc5555 100%); }
+    .game-card.memory .play-btn:hover  { box-shadow: 0 10px 25px rgba(255,107,107,0.4); }
+    .game-card.sudoku .play-btn        { background: linear-gradient(135deg, #00ff88 0%, #00cc6a 100%); }
+    .game-card.sudoku .play-btn:hover  { box-shadow: 0 10px 25px rgba(0,255,136,0.4); }
+    .game-card.twenty48 .play-btn      { background: linear-gradient(135deg, #ff8844 0%, #cc6a33 100%); }
+    .game-card.twenty48 .play-btn:hover { box-shadow: 0 10px 25px rgba(255,136,68,0.4); }
+    .game-card.pacman .play-btn        { background: linear-gradient(135deg, #ffff00 0%, #cccc00 100%); color: #111; }
+    .game-card.pacman .play-btn:hover  { box-shadow: 0 10px 25px rgba(255,255,0,0.4); }
+    .game-card.tetris .play-btn        { background: linear-gradient(135deg, #ff00ff 0%, #aa00ff 100%); }
+    .game-card.tetris .play-btn:hover  { box-shadow: 0 10px 25px rgba(255,0,255,0.4); }
+    .game-card.minesweeper .play-btn   { background: linear-gradient(135deg, #ff6600 0%, #cc5200 100%); }
+    .game-card.minesweeper .play-btn:hover { box-shadow: 0 10px 25px rgba(255,102,0,0.4); }
+    .game-card.connect4 .play-btn      { background: linear-gradient(135deg, #ff0066 0%, #cc0052 100%); }
+    .game-card.connect4 .play-btn:hover { box-shadow: 0 10px 25px rgba(255,0,102,0.4); }
+
+    .features {
+      display: flex;
+      justify-content: center;
+      gap: 40px;
+      margin-top: 40px;
+      flex-wrap: wrap;
+    }
+
+    .feature {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      color: #888;
+    }
+
+    .feature span { font-size: 1.2rem; }
+
+    footer {
+      text-align: center;
+      margin-top: 60px;
+      padding-top: 30px;
+      border-top: 1px solid rgba(255, 255, 255, 0.1);
+      color: #666;
+    }
+
+    @media (max-width: 600px) {
+      h1 { font-size: 2rem; }
+      .games-grid { grid-template-columns: 1fr; }
+      .features { gap: 20px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h1>🎮 Game Hub</h1>
+      <p class="subtitle">14 games — play solo or challenge friends online!</p>
+    </header>
+
+    <div class="games-grid">
+      <div class="game-card twenty48">
+        <div class="game-preview twenty48">
+          <div class="game-icon">2048</div>
+        </div>
+        <div class="game-info">
+          <h2>2048</h2>
+          <p>Join the tiles to get the 2048 tile! Use arrow keys or swipe to move tiles and combine matching numbers.</p>
+          <a href="game2048.html" class="play-btn">Play Now</a>
+        </div>
+      </div>
+
+      <div class="game-card snake">
+        <div class="game-preview snake">
+          <div class="game-icon">蛇</div>
+        </div>
+        <div class="game-info">
+          <h2>Snake Game</h2>
+          <p>Classic snake game! Use arrow keys or WASD to guide the snake and eat food. Don't hit the walls or yourself!</p>
+          <a href="snake.html" class="play-btn">Play Now</a>
+        </div>
+      </div>
+
+      <div class="game-card copter">
+        <div class="game-preview copter">
+          <div class="game-icon"></div>
+        </div>
+        <div class="game-info">
+          <h2>Copter Game</h2>
+          <p>Click and hold to fly up, release to fall! Navigate through the obstacles and score as high as you can!</p>
+          <a href="copter.html" class="play-btn">Play Now</a>
+        </div>
+      </div>
+
+      <div class="game-card pong">
+        <div class="game-preview pong">
+          <div class="game-icon">🏓</div>
+        </div>
+        <div class="game-info">
+          <h2>Pong</h2>
+          <p>Classic table tennis! Play vs AI locally or challenge a friend online!</p>
+          <div class="online-badge">Online Multiplayer</div>
+          <div class="card-btn-row">
+            <a href="pong.html" class="play-btn">vs AI</a>
+            <a href="lobby.html?game=pong" class="online-btn">🌐 Online</a>
+          </div>
+        </div>
+      </div>
+
+      <div class="game-card breakout">
+        <div class="game-preview breakout">
+          <div class="game-icon">🧱</div>
+        </div>
+        <div class="game-info">
+          <h2>Breakout</h2>
+          <p>Break all the bricks! Use mouse or arrow keys to move the paddle. Bounce the ball and score!</p>
+          <a href="breakout.html" class="play-btn">Play Now</a>
+        </div>
+      </div>
+
+      <div class="game-card flappy">
+        <div class="game-preview flappy">
+          <div class="game-icon">🐦</div>
+        </div>
+        <div class="game-info">
+          <h2>Flappy Bird</h2>
+          <p>Tap to flap and fly! Navigate through the pipes and see how far you can go!</p>
+          <a href="flappy.html" class="play-btn">Play Now</a>
+        </div>
+      </div>
+
+      <div class="game-card spaceinvaders">
+        <div class="game-preview spaceinvaders">
+          <div class="game-icon">👾</div>
+        </div>
+        <div class="game-info">
+          <h2>Space Invaders</h2>
+          <p>Defend Earth from alien invaders! Use arrow keys to move and space to shoot!</p>
+          <a href="spaceinvaders.html" class="play-btn">Play Now</a>
+        </div>
+      </div>
+
+      <div class="game-card tictactoe">
+        <div class="game-preview tictactoe">
+          <div class="game-icon">❌⭕</div>
+        </div>
+        <div class="game-info">
+          <h2>Tic-Tac-Toe</h2>
+          <p>Classic X and O game! Play against AI or challenge a friend online!</p>
+          <div class="online-badge">Online Multiplayer</div>
+          <div class="card-btn-row">
+            <a href="tictactoe.html" class="play-btn">vs AI</a>
+            <a href="lobby.html?game=tictactoe" class="online-btn">🌐 Online</a>
+          </div>
+        </div>
+      </div>
+
+      <div class="game-card memory">
+        <div class="game-preview memory">
+          <div class="game-icon">🎴</div>
+        </div>
+        <div class="game-info">
+          <h2>Memory Game</h2>
+          <p>Test your memory! Flip cards to find matching pairs. Race a friend online!</p>
+          <div class="online-badge">Online Multiplayer</div>
+          <div class="card-btn-row">
+            <a href="memory.html" class="play-btn">Solo</a>
+            <a href="lobby.html?game=memory" class="online-btn">🌐 Online</a>
+          </div>
+        </div>
+      </div>
+
+    <div class="game-card sudoku">
+        <div class="game-preview sudoku">
+          <div class="game-icon">🔢</div>
+        </div>
+        <div class="game-info">
+          <h2>Sudoku</h2>
+          <p>Classic number puzzle! Fill the grid so each row, column, and 3x3 box contains digits 1-9.</p>
+          <a href="gamesudoku.html" class="play-btn">Play Now</a>
+        </div>
+      </div>
+
+      <div class="game-card pacman">
+        <div class="game-preview pacman">
+          <div class="game-icon">😋</div>
+        </div>
+        <div class="game-info">
+          <h2>Pac-Man</h2>
+          <p>Eat all the dots while avoiding the ghosts! Use arrow keys to navigate. Good luck!</p>
+          <a href="pacman.html" class="play-btn">Play Now</a>
+        </div>
+      </div>
+
+      <div class="game-card tetris">
+        <div class="game-preview tetris">
+          <div class="game-icon">🧱</div>
+        </div>
+        <div class="game-info">
+          <h2>Tetris</h2>
+          <p>Stack the blocks and clear lines! Use arrow keys to move and rotate. How high can you go?</p>
+          <a href="tetris.html" class="play-btn">Play Now</a>
+        </div>
+      </div>
+
+      <div class="game-card minesweeper">
+        <div class="game-preview minesweeper">
+          <div class="game-icon">💣</div>
+        </div>
+        <div class="game-info">
+          <h2>Minesweeper</h2>
+          <p>Find all the safe cells! Left-click to reveal, right-click to flag mines. Can you beat the clock?</p>
+          <a href="minesweeper.html" class="play-btn">Play Now</a>
+        </div>
+      </div>
+
+      <div class="game-card connect4">
+        <div class="game-preview connect4">
+          <div class="game-icon">🔴</div>
+        </div>
+        <div class="game-info">
+          <h2>Connect 4</h2>
+          <p>Drop pieces and connect 4 in a row! Play vs AI or challenge a friend online!</p>
+          <div class="online-badge">Online Multiplayer</div>
+          <div class="card-btn-row">
+            <a href="connect4.html" class="play-btn">vs AI</a>
+            <a href="lobby.html?game=connect4" class="online-btn">🌐 Online</a>
+          </div>
+        </div>
+      </div>
+    </div>
+
+        <div class="features">
+        <div class="feature"><span>🎮</span> 14 Games</div>
+        <div class="feature"><span>🌐</span> Online Multiplayer</div>
+        <div class="feature"><span>🏆</span> High Score Tracking</div>
+        <div class="feature"><span>✨</span> Smooth Animations</div>
+        <div class="feature"><span>📱</span> Desktop &amp; Mobile</div>
+      </div>
+
+    <footer>
+      <p>Enjoy the games!</p>
+    </footer>
+  </div>
+</body>
+</html>

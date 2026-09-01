@@ -1,0 +1,536 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Pac-Man - Game Hub</title>
+  <link rel="stylesheet" href="styles.css" />
+  <style>
+    :root {
+      --game-accent: #ffff00;
+      --game-accent-rgb: 255, 255, 0;
+    }
+  </style>
+</head>
+<body>
+  <h1 class="game-title">Pac-Man</h1>
+
+  <div class="game-info-bar">
+    <div><span class="info-label">Score</span><span class="info-value" id="score">0</span></div>
+    <div><span class="info-label">High Score</span><span class="info-value" id="highScore">0</span></div>
+  </div>
+
+  <canvas id="gameCanvas" class="game-canvas-border" width="420" height="420"></canvas>
+
+  <div class="controls-hint">
+    <p>Use <kbd>Arrow Keys</kbd> or <kbd>W</kbd><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd> to move</p>
+    <p>Eat all dots to win! Avoid the ghosts!</p>
+  </div>
+
+  <div class="btn-row">
+    <button class="btn btn-primary" id="startBtn">Start Game</button>
+    <button class="btn btn-back btn-sm" id="backBtn">← Hub</button>
+  </div>
+
+  <div class="gh-modal-backdrop hidden" id="gameOver">
+    <div class="gh-modal">
+      <h2 id="gameOverText">Game Over!</h2>
+      <p class="score-label">Final Score: <span id="finalScore">0</span></p>
+      <div id="nameInputContainer" class="name-input-wrap">
+        <input type="text" id="playerName" placeholder="Enter your name" maxlength="15" />
+      </div>
+      <div id="leaderboardContainer" class="leaderboard-wrap hidden"></div>
+      <div class="btn-row" style="justify-content:center;">
+        <button class="btn btn-primary" id="submitScoreBtn" disabled>Submit Score</button>
+        <button class="btn btn-secondary" id="restartBtn">Play Again</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="leaderboard.js"></script>
+  <script>
+    const canvas = document.getElementById('gameCanvas');
+    const ctx = canvas.getContext('2d');
+    const scoreElement = document.getElementById('score');
+    const highScoreElement = document.getElementById('highScore');
+    const finalScoreElement = document.getElementById('finalScore');
+    const gameOverDiv = document.getElementById('gameOver');
+    const gameOverText = document.getElementById('gameOverText');
+    const startBtn = document.getElementById('startBtn');
+    const restartBtn = document.getElementById('restartBtn');
+    const backBtn = document.getElementById('backBtn');
+    const playerNameInput = document.getElementById('playerName');
+    const submitScoreBtn = document.getElementById('submitScoreBtn');
+    const nameInputContainer = document.getElementById('nameInputContainer');
+    const leaderboardContainer = document.getElementById('leaderboardContainer');
+    const GAME_NAME = 'pacman';
+
+    const tileSize = 21;
+    const rows = 20;
+    const cols = 20;
+
+    // 0 = dot, 1 = wall, 2 = empty, 3 = power pellet, 4 = pacman
+    const initialMap = [
+      [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],
+      [1,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,1],
+      [1,0,1,1,0,1,1,1,0,1,0,1,1,1,0,1,1,1,0,1],
+      [1,3,1,1,0,1,1,1,0,1,0,1,1,1,0,1,1,1,3,1],
+      [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
+      [1,0,1,1,0,1,0,1,1,1,1,1,1,0,1,0,1,1,0,1],
+      [1,0,0,0,0,1,0,0,0,1,0,0,0,0,1,0,0,0,0,1],
+      [1,1,1,1,0,1,1,1,2,1,2,1,1,1,1,0,1,1,1,1],
+      [2,2,2,1,0,1,2,2,2,2,2,2,2,1,0,1,2,2,2,2],
+      [1,1,1,1,0,1,2,1,1,2,1,1,2,1,0,1,1,1,1,1],
+      [2,2,2,2,0,2,2,1,2,2,2,1,2,2,0,2,2,2,2,2],
+      [1,1,1,1,0,1,2,1,1,1,1,1,2,1,0,1,1,1,1,1],
+      [2,2,2,1,0,1,2,2,2,2,2,2,2,1,0,1,2,2,2,2],
+      [1,1,1,1,0,1,0,1,1,4,1,1,0,1,0,1,1,1,1,1],
+      [1,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,1],
+      [1,0,1,1,0,1,1,1,0,1,0,1,1,1,0,1,1,1,0,1],
+      [1,3,0,1,0,0,0,0,0,0,0,0,0,0,0,1,0,0,3,1],
+      [1,1,0,1,0,1,0,1,1,1,1,1,1,0,1,0,1,0,1,1],
+      [1,0,0,0,0,1,0,0,0,1,0,0,0,0,1,0,0,0,0,1],
+      [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1]
+    ];
+
+    let map = [];
+    let pacman = {};
+    let ghosts = [];
+    let score = 0;
+    let highScore = localStorage.getItem('pacmanHighScore') || 0;
+    let gameLoop = null;
+    let isPaused = false;
+    let isGameRunning = false;
+    let totalDots = 0;
+    let dotsRemaining = 0;
+    let ghostSpeed = 150;
+    let ghostInterval = null;
+    let frightenedMode = false;
+    let frightenedTimer = null;
+
+    highScoreElement.textContent = highScore;
+
+    function initGame() {
+      // Deep copy map
+      map = initialMap.map(row => [...row]);
+
+      // Find pacman start position
+      for (let y = 0; y < rows; y++) {
+        for (let x = 0; x < cols; x++) {
+          if (map[y][x] === 4) {
+            pacman = { x: x, y: y, dir: { x: 0, y: 0 }, nextDir: { x: 0, y: 0 }, mouthOpen: true, mouthAngle: 0.2 };
+          }
+        }
+      }
+
+      // Set up ghosts - spawn them in the ghost house area (center of the map)
+      ghosts = [
+        { x: 9, y: 9, color: '#ff0000', dir: { x: 0, y: 0 }, speed: 150 },
+        { x: 10, y: 9, color: '#ffb8ff', dir: { x: 0, y: 0 }, speed: 150 },
+        { x: 9, y: 10, color: '#00ffff', dir: { x: 0, y: 0 }, speed: 150 },
+        { x: 10, y: 10, color: '#ffb852', dir: { x: 0, y: 0 }, speed: 150 }
+      ];
+
+      // Count dots
+      totalDots = 0;
+      dotsRemaining = 0;
+      for (let y = 0; y < rows; y++) {
+        for (let x = 0; x < cols; x++) {
+          if (map[y][x] === 0 || map[y][x] === 3) {
+            totalDots++;
+            dotsRemaining++;
+          }
+        }
+      }
+
+      score = 0;
+      scoreElement.textContent = score;
+      isPaused = false;
+      gameOverDiv.classList.add('hidden');
+    }
+
+    function canMove(x, y) {
+      if (x < 0 || x >= cols || y < 0 || y >= rows) return false;
+      return map[y][x] !== 1;
+    }
+
+    function drawMap() {
+      ctx.fillStyle = '#000000';
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+      for (let y = 0; y < rows; y++) {
+        for (let x = 0; x < cols; x++) {
+          const tile = map[y][x];
+          const px = x * tileSize;
+          const py = y * tileSize;
+
+          if (tile === 1) {
+            // Wall
+            ctx.fillStyle = '#0000ff';
+            ctx.fillRect(px, py, tileSize, tileSize);
+            ctx.fillStyle = '#000088';
+            ctx.fillRect(px + 2, py + 2, tileSize - 4, tileSize - 4);
+          } else if (tile === 0) {
+            // Dot
+            ctx.fillStyle = '#ffb897';
+            ctx.beginPath();
+            ctx.arc(px + tileSize / 2, py + tileSize / 2, 3, 0, Math.PI * 2);
+            ctx.fill();
+          } else if (tile === 3) {
+            // Power pellet
+            ctx.fillStyle = '#ffb897';
+            ctx.beginPath();
+            ctx.arc(px + tileSize / 2, py + tileSize / 2, 7, 0, Math.PI * 2);
+            ctx.fill();
+          }
+        }
+      }
+    }
+
+    function drawPacman() {
+      const px = pacman.x * tileSize + tileSize / 2;
+      const py = pacman.y * tileSize + tileSize / 2;
+
+      // Animate mouth
+      pacman.mouthAngle += 0.15;
+      const mouth = Math.abs(Math.sin(pacman.mouthAngle)) * 0.25;
+
+      ctx.fillStyle = '#ffff00';
+      ctx.beginPath();
+
+      let startAngle = mouth;
+      let endAngle = Math.PI * 2 - mouth;
+
+      if (pacman.dir.x === 1) {
+        startAngle = mouth - Math.PI / 2;
+        endAngle = Math.PI * 1.5 - mouth;
+      } else if (pacman.dir.x === -1) {
+        startAngle = Math.PI + mouth - Math.PI / 2;
+        endAngle = Math.PI * 1.5 + mouth;
+      } else if (pacman.dir.y === 1) {
+        startAngle = Math.PI + mouth;
+        endAngle = mouth;
+      } else if (pacman.dir.y === -1) {
+        startAngle = -mouth;
+        endAngle = Math.PI * 2 + mouth;
+      }
+
+      ctx.arc(px, py, tileSize / 2 - 2, startAngle, endAngle);
+      ctx.lineTo(px, py);
+      ctx.fill();
+    }
+
+    function drawGhosts() {
+      ghosts.forEach(ghost => {
+        const px = ghost.x * tileSize + tileSize / 2;
+        const py = ghost.y * tileSize + tileSize / 2;
+        const r = tileSize / 2 - 2;
+
+        // Change color if frightened
+        ctx.fillStyle = ghost.frightened ? '#0000ff' : ghost.color;
+        ctx.beginPath();
+        ctx.arc(px, py - 2, r, Math.PI, 0);
+        ctx.lineTo(px + r, py + r);
+        // Wavy bottom
+        for (let i = 1; i <= 3; i++) {
+          ctx.lineTo(px + r - (2 * r / 3) * i, py + r - (i % 2 === 0 ? 0 : 3));
+        }
+        ctx.lineTo(px - r, py + r);
+        ctx.fill();
+
+        // Eyes
+        ctx.fillStyle = '#fff';
+        ctx.beginPath();
+        ctx.arc(px - 4, py - 4, 3, 0, Math.PI * 2);
+        ctx.arc(px + 4, py - 4, 3, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.fillStyle = '#000';
+        ctx.beginPath();
+        ctx.arc(px - 4, py - 4, 1.5, 0, Math.PI * 2);
+        ctx.arc(px + 4, py - 4, 1.5, 0, Math.PI * 2);
+        ctx.fill();
+
+        // If frightened, show scared eyes (pupils looking away)
+        if (ghost.frightened) {
+          ctx.fillStyle = '#ffb897';
+          ctx.beginPath();
+          ctx.arc(px - 2, py - 4, 1, 0, Math.PI * 2);
+          ctx.arc(px + 2, py - 4, 1, 0, Math.PI * 2);
+          ctx.fill();
+        }
+      });
+    }
+
+    function movePacman() {
+      // Try to change to next direction
+      if (pacman.nextDir.x !== 0 || pacman.nextDir.y !== 0) {
+        if (canMove(pacman.x + pacman.nextDir.x, pacman.y + pacman.nextDir.y)) {
+          pacman.dir = { ...pacman.nextDir };
+        }
+      }
+
+      // Move in current direction
+      if (pacman.dir.x !== 0 || pacman.dir.y !== 0) {
+        if (canMove(pacman.x + pacman.dir.x, pacman.y + pacman.dir.y)) {
+          pacman.x += pacman.dir.x;
+          pacman.y += pacman.dir.y;
+
+          // Eat dot
+          if (map[pacman.y][pacman.x] === 0) {
+            map[pacman.y][pacman.x] = 2;
+            score += 10;
+            dotsRemaining--;
+            scoreElement.textContent = score;
+          } else if (map[pacman.y][pacman.x] === 3) {
+            // Power pellet - make ghosts frightened (eatable)
+            map[pacman.y][pacman.x] = 2;
+            score += 50;
+            dotsRemaining--;
+            scoreElement.textContent = score;
+
+            // Make ghosts frightened but DON'T teleport them - they stay where they are
+            ghosts.forEach(g => {
+              g.frightened = true;
+            });
+
+            // Set frightened mode timer
+            if (frightenedTimer) clearTimeout(frightenedTimer);
+            frightenedMode = true;
+            frightenedTimer = setTimeout(() => {
+              frightenedMode = false;
+              ghosts.forEach(g => g.frightened = false);
+            }, 7000);
+          }
+
+          // Check win
+          if (dotsRemaining === 0) {
+            gameWin();
+          }
+        }
+      }
+    }
+
+    function moveGhosts() {
+      ghosts.forEach(ghost => {
+        const directions = [
+          { x: 0, y: -1 },
+          { x: 0, y: 1 },
+          { x: -1, y: 0 },
+          { x: 1, y: 0 }
+        ];
+
+        // Get valid moves
+        let validMoves = directions.filter(d => canMove(ghost.x + d.x, ghost.y + d.y));
+
+        if (validMoves.length === 0) return;
+
+        if (validMoves.length > 0) {
+          // Simple AI: try to move towards pacman, but add some randomness
+          if (ghost.frightened) {
+            // When frightened, move randomly (not always away)
+            // This allows Pac-Man to catch them
+            ghost.dir = validMoves[Math.floor(Math.random() * validMoves.length)];
+          } else {
+            // Normal behavior: move towards Pac-Man most of the time
+            if (Math.random() < 0.7) {
+              // Move towards pacman
+              validMoves.sort((a, b) => {
+                const distA = Math.abs((ghost.x + a.x) - pacman.x) + Math.abs((ghost.y + a.y) - pacman.y);
+                const distB = Math.abs((ghost.x + b.x) - pacman.x) + Math.abs((ghost.y + b.y) - pacman.y);
+                return distA - distB;
+              });
+              ghost.dir = validMoves[0];
+            } else {
+              // Random move
+              ghost.dir = validMoves[Math.floor(Math.random() * validMoves.length)];
+            }
+          }
+        }
+
+        // Move ghost
+        if (ghost.dir.x !== 0 || ghost.dir.y !== 0) {
+          ghost.x += ghost.dir.x;
+          ghost.y += ghost.dir.y;
+        }
+      });
+    }
+
+    function checkGhostCollision() {
+      ghosts.forEach(ghost => {
+        if (ghost.x === pacman.x && ghost.y === pacman.y) {
+          if (ghost.frightened) {
+            // Eat the ghost - send it back to ghost house (center)
+            ghost.x = 9 + (ghost.x === 9 ? 1 : 0);
+            ghost.y = 9 + (ghost.y === 9 ? 1 : 0);
+            ghost.frightened = false;
+            score += 200;
+            scoreElement.textContent = score;
+          } else {
+            gameOver();
+          }
+        }
+      });
+    }
+
+    function update() {
+      if (isPaused) return;
+
+      movePacman();
+      moveGhosts();
+      checkGhostCollision();
+      drawMap();
+      drawPacman();
+      drawGhosts();
+    }
+
+    function gameLoopPacman() {
+      update();
+    }
+
+    function ghostLoop() {
+      moveGhosts();
+      drawMap();
+      drawPacman();
+      drawGhosts();
+    }
+
+    function gameOver() {
+      isGameRunning = false;
+      clearInterval(gameLoop);
+
+      if (score > highScore) {
+        highScore = score;
+        localStorage.setItem('pacmanHighScore', highScore);
+        highScoreElement.textContent = highScore;
+      }
+
+      finalScoreElement.textContent = score;
+      gameOverText.textContent = 'Game Over!';
+      gameOverDiv.classList.remove('hidden');
+      startBtn.textContent = 'Start Game';
+
+      playerNameInput.value = '';
+      nameInputContainer.classList.remove('hidden');
+      submitScoreBtn.disabled = true;
+
+      const existingLeaderboard = Leaderboard.get(GAME_NAME);
+      if (existingLeaderboard && existingLeaderboard.length > 0) {
+        leaderboardContainer.classList.remove('hidden');
+        leaderboardContainer.innerHTML = '<h3 class="text-accent" style="margin-bottom:10px;">Top 10 Players</h3>' + Leaderboard.render(GAME_NAME);
+        submitScoreBtn.textContent = 'View Leaderboard';
+        submitScoreBtn.onclick = showLeaderboard;
+      } else {
+        leaderboardContainer.classList.add('hidden');
+        submitScoreBtn.textContent = 'Submit Score';
+        submitScoreBtn.onclick = submitScore;
+      }
+    }
+
+    function gameWin() {
+      isGameRunning = false;
+      clearInterval(gameLoop);
+
+      if (score > highScore) {
+        highScore = score;
+        localStorage.setItem('pacmanHighScore', highScore);
+        highScoreElement.textContent = highScore;
+      }
+
+      finalScoreElement.textContent = score;
+      gameOverText.textContent = 'You Win!';
+      gameOverDiv.classList.remove('hidden');
+      startBtn.textContent = 'Start Game';
+
+      playerNameInput.value = '';
+      nameInputContainer.classList.remove('hidden');
+      submitScoreBtn.disabled = true;
+
+      const existingLeaderboard = Leaderboard.get(GAME_NAME);
+      if (existingLeaderboard && existingLeaderboard.length > 0) {
+        leaderboardContainer.classList.remove('hidden');
+        leaderboardContainer.innerHTML = '<h3 class="text-accent" style="margin-bottom:10px;">Top 10 Players</h3>' + Leaderboard.render(GAME_NAME);
+        submitScoreBtn.textContent = 'View Leaderboard';
+        submitScoreBtn.onclick = showLeaderboard;
+      } else {
+        leaderboardContainer.classList.add('hidden');
+        submitScoreBtn.textContent = 'Submit Score';
+        submitScoreBtn.onclick = submitScore;
+      }
+    }
+
+    function startGame() {
+      if (isGameRunning) return;
+
+      initGame();
+      isGameRunning = true;
+      startBtn.textContent = 'Restart Game';
+
+      gameLoop = setInterval(update, 100);
+    }
+
+    function showLeaderboard() {
+      leaderboardContainer.classList.remove('hidden');
+      submitScoreBtn.textContent = 'View Leaderboard';
+      submitScoreBtn.onclick = showLeaderboard;
+    }
+
+    function restartGame() {
+      startGame();
+    }
+
+    function submitScore() {
+      const name = playerNameInput.value.trim();
+      if (!name) return;
+      const leaderboard = Leaderboard.addScore(GAME_NAME, name, score);
+      nameInputContainer.classList.add('hidden');
+      leaderboardContainer.classList.remove('hidden');
+      leaderboardContainer.innerHTML = '<h3 class="text-accent" style="margin-bottom:10px;">Top 10 Players</h3>' + Leaderboard.render(GAME_NAME);
+      submitScoreBtn.textContent = 'View Leaderboard';
+      submitScoreBtn.onclick = showLeaderboard;
+    }
+
+    // Keyboard controls
+    document.addEventListener('keydown', (e) => {
+      if (!isGameRunning) return;
+
+      switch (e.code) {
+        case 'ArrowUp':
+        case 'KeyW':
+          e.preventDefault();
+          pacman.nextDir = { x: 0, y: -1 };
+          break;
+        case 'ArrowDown':
+        case 'KeyS':
+          e.preventDefault();
+          pacman.nextDir = { x: 0, y: 1 };
+          break;
+        case 'ArrowLeft':
+        case 'KeyA':
+          e.preventDefault();
+          pacman.nextDir = { x: -1, y: 0 };
+          break;
+        case 'ArrowRight':
+        case 'KeyD':
+          e.preventDefault();
+          pacman.nextDir = { x: 1, y: 0 };
+          break;
+      }
+    });
+
+    startBtn.addEventListener('click', startGame);
+    restartBtn.addEventListener('click', restartGame);
+    backBtn.addEventListener('click', () => window.location.href = 'index.html');
+    submitScoreBtn.addEventListener('click', submitScore);
+    playerNameInput.addEventListener('keypress', (e) => {
+      if (e.key === 'Enter' && playerNameInput.value.trim()) submitScore();
+    });
+    playerNameInput.addEventListener('input', () => {
+      submitScoreBtn.disabled = !playerNameInput.value.trim();
+    });
+
+    // Initial draw
+    initGame();
+    drawMap();
+  </script>
+</body>
+</html>

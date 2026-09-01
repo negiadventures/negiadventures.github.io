@@ -1,0 +1,45 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 675" role="img" aria-label="market-summary-ai cover">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#0b1220" />
+      <stop offset="1" stop-color="#115e59" />
+    </linearGradient>
+    <radialGradient id="glow" cx="0.8" cy="0.4" r="0.8">
+      <stop offset="0" stop-color="#fbbf24" stop-opacity="0.5" />
+      <stop offset="1" stop-color="#fbbf24" stop-opacity="0" />
+    </radialGradient>
+    <pattern id="grid" width="30" height="30" patternUnits="userSpaceOnUse">
+      <path d="M30 0 H0 V30" fill="none" stroke="#134e4a" stroke-width="1" />
+    </pattern>
+  </defs>
+  <rect width="1200" height="675" fill="url(#bg)" />
+  <rect width="1200" height="675" fill="url(#glow)" />
+  <rect width="1200" height="675" fill="url(#grid)" opacity="0.3" />
+
+  <g stroke="#34d399" stroke-width="2" fill="none">
+    <path d="M140 470 L280 420 L420 480 L560 360 L700 400 L840 320 L1020 360" />
+  </g>
+  <g fill="#fbbf24" opacity="0.7">
+    <rect x="220" y="450" width="16" height="60" />
+    <rect x="260" y="430" width="16" height="80" />
+    <rect x="300" y="460" width="16" height="50" />
+    <rect x="340" y="420" width="16" height="90" />
+  </g>
+  <g stroke="#a7f3d0" stroke-width="1" opacity="0.6">
+    <path d="M140 540 H1060" />
+    <path d="M140 380 H1060" />
+  </g>
+
+  <rect x="90" y="60" width="380" height="92" rx="20" fill="rgba(15, 23, 42, 0.85)" stroke="#34d399" stroke-width="2" />
+  <text x="120" y="112" fill="#ecfdf5" font-family="JetBrains Mono, Menlo, monospace" font-size="32" font-weight="600">
+    market-summary-ai
+  </text>
+  <text x="120" y="148" fill="#bbf7d0" font-family="JetBrains Mono, Menlo, monospace" font-size="18">
+    AI-written market briefing
+  </text>
+
+  <rect x="860" y="520" width="260" height="56" rx="16" fill="rgba(251, 191, 36, 0.18)" stroke="#fbbf24" />
+  <text x="884" y="555" fill="#fff7ed" font-family="JetBrains Mono, Menlo, monospace" font-size="16">
+    signals / summaries / alerts
+  </text>
+</svg>

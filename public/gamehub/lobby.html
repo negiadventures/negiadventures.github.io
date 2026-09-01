@@ -1,0 +1,947 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>GameHub – Online Lobby</title>
+  <link rel="stylesheet" href="styles.css" />
+  <style>
+    /* Lobby-specific overrides / additions */
+    :root {
+      --game-accent:     #e94560;
+      --game-accent-rgb: 233, 69, 96;
+    }
+
+    body {
+      justify-content: flex-start;
+      padding: 30px 16px 60px;
+      overflow-y: auto;
+    }
+
+    /* ── Top bar ───────────────────────────── */
+    .lobby-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      width: 100%;
+      max-width: 900px;
+      margin-bottom: 30px;
+    }
+    .lobby-header .logo {
+      font-size: 1.5rem;
+      font-weight: 700;
+      color: var(--game-accent);
+      text-decoration: none;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .game-label {
+      font-size: 1rem;
+      color: var(--text-muted);
+      background: var(--bg-card);
+      border: 1px solid var(--bg-card-border);
+      border-radius: var(--radius-pill);
+      padding: 4px 14px;
+      text-transform: capitalize;
+    }
+
+    /* ── Main card ─────────────────────────── */
+    .lobby-card {
+      background: rgba(255,255,255,0.04);
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 20px;
+      padding: 36px 40px;
+      width: 100%;
+      max-width: 900px;
+    }
+
+    /* ── Step screens ─────────────────────── */
+    .screen { display: none; }
+    .screen.active { display: block; }
+
+    /* ── Centered two-button entry ────────── */
+    .entry-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px;
+      margin-top: 24px;
+    }
+    @media (max-width: 500px) { .entry-row { grid-template-columns: 1fr; } }
+
+    .entry-card {
+      background: var(--bg-card);
+      border: 2px solid transparent;
+      border-radius: 16px;
+      padding: 28px 24px;
+      text-align: center;
+      cursor: pointer;
+      transition: var(--transition);
+    }
+    .entry-card:hover,
+    .entry-card.active {
+      border-color: var(--game-accent);
+      background: rgba(var(--game-accent-rgb), 0.08);
+    }
+    .entry-card .icon { font-size: 2.4rem; margin-bottom: 10px; }
+    .entry-card h3 { font-size: 1.15rem; margin-bottom: 6px; }
+    .entry-card p { color: var(--text-muted); font-size: 0.88rem; }
+
+    /* ── Player setup form ────────────────── */
+    .setup-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 24px;
+      margin-top: 20px;
+    }
+    @media (max-width: 600px) { .setup-grid { grid-template-columns: 1fr; } }
+
+    .form-group { display: flex; flex-direction: column; gap: 8px; }
+    .form-group label { font-size: 0.85rem; color: var(--text-muted); font-weight: 600; letter-spacing: 0.5px; text-transform: uppercase; }
+    .form-control {
+      padding: 10px 14px;
+      font-size: 0.98rem;
+      border-radius: var(--radius-md);
+      border: 2px solid #333;
+      background: #1a1a2e;
+      color: var(--text-primary);
+      font-family: inherit;
+      outline: none;
+      transition: border-color 0.2s;
+      width: 100%;
+    }
+    .form-control:focus { border-color: var(--game-accent); }
+
+    /* Avatar picker */
+    .avatar-grid {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+    .avatar-btn {
+      width: 42px; height: 42px;
+      font-size: 1.4rem;
+      border-radius: 10px;
+      border: 2px solid transparent;
+      background: var(--bg-card);
+      cursor: pointer;
+      transition: var(--transition);
+      display: flex; align-items: center; justify-content: center;
+    }
+    .avatar-btn:hover, .avatar-btn.selected {
+      border-color: var(--game-accent);
+      background: rgba(var(--game-accent-rgb), 0.12);
+    }
+
+    /* Color picker */
+    .color-grid { display: flex; flex-wrap: wrap; gap: 8px; }
+    .color-btn {
+      width: 30px; height: 30px;
+      border-radius: 50%;
+      border: 3px solid transparent;
+      cursor: pointer;
+      transition: var(--transition);
+    }
+    .color-btn:hover, .color-btn.selected {
+      border-color: #fff;
+      transform: scale(1.18);
+    }
+
+    /* ── Room code / join form ────────────── */
+    .code-display {
+      background: var(--bg-card);
+      border: 2px dashed rgba(var(--game-accent-rgb), 0.5);
+      border-radius: 16px;
+      padding: 28px;
+      text-align: center;
+      margin: 20px 0;
+    }
+    .code-display .code {
+      font-size: 3rem;
+      font-weight: 700;
+      letter-spacing: 0.35em;
+      color: var(--game-accent);
+      font-family: 'Courier New', monospace;
+      margin-bottom: 10px;
+    }
+    .code-display .hint { color: var(--text-muted); font-size: 0.88rem; }
+    .copy-btn { margin-top: 10px; }
+
+    .join-input-wrap {
+      display: flex;
+      gap: 10px;
+      margin: 20px 0;
+      flex-wrap: wrap;
+    }
+    .join-input-wrap input {
+      flex: 1;
+      min-width: 180px;
+      padding: 12px 18px;
+      font-size: 1.5rem;
+      font-weight: 700;
+      letter-spacing: 0.3em;
+      text-transform: uppercase;
+      border-radius: var(--radius-md);
+      border: 2px solid #444;
+      background: #1a1a2e;
+      color: var(--game-accent);
+      font-family: 'Courier New', monospace;
+      text-align: center;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+    .join-input-wrap input:focus { border-color: var(--game-accent); }
+
+    /* ── Lobby waiting room ───────────────── */
+    .lobby-layout {
+      display: grid;
+      grid-template-columns: 1fr 320px;
+      gap: 20px;
+      margin-top: 16px;
+    }
+    @media (max-width: 700px) {
+      .lobby-layout { grid-template-columns: 1fr; }
+    }
+
+    .players-panel h3 {
+      font-size: 0.82rem;
+      text-transform: uppercase;
+      letter-spacing: 0.8px;
+      color: var(--text-muted);
+      margin-bottom: 12px;
+    }
+
+    .player-entry {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 12px 16px;
+      background: var(--bg-card);
+      border: 1px solid var(--bg-card-border);
+      border-radius: var(--radius-md);
+      margin-bottom: 8px;
+      transition: var(--transition);
+    }
+    .player-entry .slot-num {
+      width: 26px; height: 26px;
+      border-radius: 50%;
+      background: rgba(var(--game-accent-rgb), 0.18);
+      color: var(--game-accent);
+      font-size: 0.78rem;
+      font-weight: 700;
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0;
+    }
+    .player-entry .p-avatar { font-size: 1.5rem; line-height: 1; }
+    .player-entry .p-name { font-weight: 600; flex: 1; }
+    .player-entry .p-badge {
+      font-size: 0.72rem;
+      padding: 2px 8px;
+      border-radius: var(--radius-pill);
+      background: rgba(var(--game-accent-rgb), 0.18);
+      color: var(--game-accent);
+      font-weight: 700;
+    }
+    .player-entry.empty .p-name { color: var(--text-muted); font-style: italic; font-weight: 400; }
+    .player-entry.empty .slot-num { background: #2a2a40; color: #555; }
+
+    .waiting-spinner {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      color: var(--text-muted);
+      font-size: 0.9rem;
+      margin: 6px 0 16px;
+    }
+    .dot-anim {
+      display: inline-flex; gap: 4px;
+    }
+    .dot-anim span {
+      width: 6px; height: 6px;
+      border-radius: 50%;
+      background: var(--game-accent);
+      animation: dotBounce 1.4s infinite ease-in-out;
+    }
+    .dot-anim span:nth-child(2) { animation-delay: 0.2s; }
+    .dot-anim span:nth-child(3) { animation-delay: 0.4s; }
+    @keyframes dotBounce {
+      0%,80%,100% { transform: scale(0); opacity: 0.4; }
+      40% { transform: scale(1); opacity: 1; }
+    }
+
+    /* ── Settings panel (host) ────────────── */
+    .settings-panel {
+      background: var(--bg-card);
+      border: 1px solid var(--bg-card-border);
+      border-radius: var(--radius-md);
+      padding: 18px 20px;
+    }
+    .settings-panel h3 {
+      font-size: 0.82rem;
+      text-transform: uppercase;
+      letter-spacing: 0.8px;
+      color: var(--text-muted);
+      margin-bottom: 14px;
+    }
+    .setting-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 14px;
+      gap: 10px;
+    }
+    .setting-row label {
+      font-size: 0.9rem;
+      color: var(--text-primary);
+    }
+    .setting-row input[type="number"] {
+      width: 60px;
+      padding: 6px 10px;
+      background: #1a1a2e;
+      border: 1px solid #444;
+      border-radius: var(--radius-sm);
+      color: var(--text-primary);
+      font-size: 0.9rem;
+      text-align: center;
+    }
+    /* Toggle switch */
+    .toggle {
+      position: relative;
+      width: 44px; height: 24px;
+      flex-shrink: 0;
+    }
+    .toggle input { opacity: 0; width: 0; height: 0; }
+    .toggle-slider {
+      position: absolute; inset: 0;
+      background: #444;
+      border-radius: 24px;
+      cursor: pointer;
+      transition: 0.3s;
+    }
+    .toggle-slider::before {
+      content: '';
+      position: absolute;
+      width: 18px; height: 18px;
+      left: 3px; bottom: 3px;
+      background: #fff;
+      border-radius: 50%;
+      transition: 0.3s;
+    }
+    .toggle input:checked + .toggle-slider { background: var(--game-accent); }
+    .toggle input:checked + .toggle-slider::before { transform: translateX(20px); }
+
+    /* ── Start bar ────────────────────────── */
+    .start-bar {
+      margin-top: 20px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+    .need-more {
+      color: var(--text-muted);
+      font-size: 0.9rem;
+    }
+    .need-more strong { color: var(--game-accent); }
+
+    /* ── Chat ─────────────────────────────── */
+    .chat-panel {
+      margin-top: 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    .chat-panel h3 {
+      font-size: 0.82rem;
+      text-transform: uppercase;
+      letter-spacing: 0.8px;
+      color: var(--text-muted);
+    }
+    .chat-log {
+      background: rgba(0,0,0,0.25);
+      border: 1px solid #2a2a40;
+      border-radius: var(--radius-md);
+      height: 130px;
+      overflow-y: auto;
+      padding: 10px 12px;
+      font-size: 0.85rem;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+    .chat-msg { color: var(--text-muted); line-height: 1.4; }
+    .chat-msg .sender { color: var(--text-primary); font-weight: 600; }
+    .chat-input-row {
+      display: flex;
+      gap: 8px;
+    }
+    .chat-input-row input {
+      flex: 1;
+      padding: 8px 12px;
+      font-size: 0.9rem;
+      border-radius: var(--radius-pill);
+      border: 1px solid #444;
+      background: #1a1a2e;
+      color: var(--text-primary);
+      font-family: inherit;
+      outline: none;
+    }
+    .chat-input-row input:focus { border-color: var(--game-accent); }
+
+    /* ── Error toast ──────────────────────── */
+    .toast {
+      position: fixed;
+      bottom: 24px;
+      left: 50%;
+      transform: translateX(-50%) translateY(80px);
+      background: #c0392b;
+      color: #fff;
+      padding: 12px 24px;
+      border-radius: var(--radius-pill);
+      font-size: 0.92rem;
+      font-weight: 600;
+      z-index: 9999;
+      transition: transform 0.3s ease;
+      max-width: 90vw;
+      text-align: center;
+    }
+    .toast.show { transform: translateX(-50%) translateY(0); }
+    .toast.info { background: #2980b9; }
+  </style>
+</head>
+<body>
+
+<!-- ── Header ───────────────────────────────────────── -->
+<div class="lobby-header">
+  <a href="index.html" class="logo">🎮 GameHub</a>
+  <span class="game-label" id="gameLabelEl">Loading…</span>
+</div>
+
+<!-- ── Main card ────────────────────────────────────── -->
+<div class="lobby-card">
+
+  <!-- SCREEN 0 – player setup -->
+  <div id="screenSetup" class="screen active">
+    <h2 style="font-size:1.6rem;margin-bottom:4px;">Your Profile</h2>
+    <p class="text-muted" style="margin-bottom:20px;">Customise how other players will see you.</p>
+
+    <div class="setup-grid">
+      <div>
+        <div class="form-group" style="margin-bottom:18px;">
+          <label>Display name</label>
+          <input class="form-control" id="setupName" type="text" maxlength="20" placeholder="Enter your name…" />
+        </div>
+        <div class="form-group">
+          <label>Your colour</label>
+          <div class="color-grid" id="colorGrid"></div>
+        </div>
+      </div>
+      <div>
+        <div class="form-group">
+          <label>Avatar</label>
+          <div class="avatar-grid" id="avatarGrid"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="btn-row" style="margin-top:28px;">
+      <button class="btn btn-primary" id="setupNextBtn">Continue →</button>
+      <a href="index.html" class="btn btn-back">Back to Hub</a>
+    </div>
+  </div>
+
+  <!-- SCREEN 1 – create or join -->
+  <div id="screenChoice" class="screen">
+    <h2 style="font-size:1.6rem;margin-bottom:4px;">How do you want to play?</h2>
+    <p class="text-muted">Create a new game room or join a friend's room.</p>
+
+    <div class="entry-row">
+      <div class="entry-card" id="choiceCreate">
+        <div class="icon">🏠</div>
+        <h3>Create Game</h3>
+        <p>Start a new room and invite friends with a unique code.</p>
+      </div>
+      <div class="entry-card" id="choiceJoin">
+        <div class="icon">🔗</div>
+        <h3>Join Game</h3>
+        <p>Enter a room code shared by the game host.</p>
+      </div>
+    </div>
+
+    <div class="btn-row" style="margin-top:24px;">
+      <button class="btn btn-back" id="choiceBack">← Back</button>
+    </div>
+  </div>
+
+  <!-- SCREEN 2 – waiting room / lobby -->
+  <div id="screenLobby" class="screen">
+    <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;">
+      <h2 style="font-size:1.4rem;" id="lobbyTitle">Waiting for players…</h2>
+      <span class="mp-badge" id="lobbyStatusBadge">Lobby</span>
+    </div>
+
+    <!-- Room code display (host) -->
+    <div id="hostCodeWrap" class="code-display hidden">
+      <p style="color:var(--text-muted);font-size:.85rem;margin-bottom:6px;">Share this code with your friends</p>
+      <div class="code" id="roomCodeEl">–</div>
+      <p class="hint">They go to <strong>GameHub → Play Online</strong> and enter the code above.</p>
+      <button class="btn btn-outline btn-sm copy-btn" id="copyCodeBtn">📋 Copy code</button>
+    </div>
+
+    <!-- Join input (joiner before submitting) -->
+    <div id="joinCodeWrap" class="hidden" style="margin:16px 0;">
+      <p class="text-muted" style="margin-bottom:8px;">Enter the 6-character room code:</p>
+      <div class="join-input-wrap">
+        <input id="joinCodeInput" type="text" maxlength="6" placeholder="ABC123" autocomplete="off" />
+        <button class="btn btn-primary" id="joinConnectBtn">Join →</button>
+      </div>
+    </div>
+
+    <div class="lobby-layout">
+      <!-- Left: players + start bar + chat -->
+      <div>
+        <div class="players-panel">
+          <h3>Players <span id="playerCountEl" style="color:var(--game-accent)"></span></h3>
+          <div id="playerListEl"></div>
+          <div class="waiting-spinner" id="waitingSpinner">
+            <div class="dot-anim"><span></span><span></span><span></span></div>
+            <span id="waitingText">Waiting for players to join…</span>
+          </div>
+        </div>
+
+        <div class="start-bar" id="startBar">
+          <span class="need-more" id="startHint"></span>
+          <button class="btn btn-primary" id="startGameBtn" disabled>Start Game ▶</button>
+        </div>
+
+        <!-- Chat -->
+        <div class="chat-panel" style="margin-top:20px;">
+          <h3>💬 Chat</h3>
+          <div class="chat-log" id="chatLog"></div>
+          <div class="chat-input-row">
+            <input id="chatInput" type="text" placeholder="Say something…" maxlength="120" />
+            <button class="btn btn-secondary btn-sm" id="chatSendBtn">Send</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Right: settings (host only) -->
+      <div id="settingsPanelWrap">
+        <div class="settings-panel">
+          <h3>⚙️ Game Settings</h3>
+          <div id="settingsList"></div>
+          <p class="text-muted" style="font-size:.8rem;margin-top:4px;" id="settingsGuestNote"></p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div><!-- /.lobby-card -->
+
+<!-- Toast -->
+<div class="toast" id="toast"></div>
+
+<!-- PeerJS + Multiplayer lib -->
+<script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"></script>
+<script src="multiplayer.js"></script>
+<script>
+/* ====================================================
+   Lobby Page Controller
+   ==================================================== */
+
+/* ── Game metadata ──────────────────────────────────── */
+const GAME_META = {
+  tictactoe:     { label: 'Tic-Tac-Toe',    file: 'tictactoe.html',    min: 2, max: 2,  settings: ['botsEnabled'] },
+  connect4:      { label: 'Connect 4',       file: 'connect4.html',     min: 2, max: 2,  settings: ['botsEnabled'] },
+  pong:          { label: 'Pong',            file: 'pong.html',         min: 2, max: 2,  settings: [] },
+  memory:        { label: 'Memory',          file: 'memory.html',       min: 2, max: 4,  settings: ['maxPlayers'] },
+  snake:         { label: 'Snake',           file: 'snake.html',        min: 2, max: 4,  settings: ['maxPlayers'] },
+  minesweeper:   { label: 'Minesweeper',     file: 'minesweeper.html',  min: 2, max: 4,  settings: ['maxPlayers'] },
+  default:       { label: 'Game',            file: 'index.html',        min: 2, max: 4,  settings: [] },
+};
+
+/* ── URL params ────────────────────────────────────── */
+const params   = new URLSearchParams(location.search);
+const gameType = params.get('game') || 'default';
+const meta     = GAME_META[gameType] || GAME_META.default;
+const forceJoin = params.get('join') || '';  // pre-fill join code
+
+/* ── DOM refs ──────────────────────────────────────── */
+const $ = id => document.getElementById(id);
+const gameLabelEl     = $('gameLabelEl');
+const screenSetup     = $('screenSetup');
+const screenChoice    = $('screenChoice');
+const screenLobby     = $('screenLobby');
+const setupName       = $('setupName');
+const setupNextBtn    = $('setupNextBtn');
+const choiceCreate    = $('choiceCreate');
+const choiceJoin      = $('choiceJoin');
+const choiceBack      = $('choiceBack');
+const hostCodeWrap    = $('hostCodeWrap');
+const joinCodeWrap    = $('joinCodeWrap');
+const joinCodeInput   = $('joinCodeInput');
+const joinConnectBtn  = $('joinConnectBtn');
+const roomCodeEl      = $('roomCodeEl');
+const copyCodeBtn     = $('copyCodeBtn');
+const playerListEl    = $('playerListEl');
+const playerCountEl   = $('playerCountEl');
+const waitingSpinner  = $('waitingSpinner');
+const waitingText     = $('waitingText');
+const startBar        = $('startBar');
+const startGameBtn    = $('startGameBtn');
+const startHint       = $('startHint');
+const lobbyTitle      = $('lobbyTitle');
+const lobbyStatusBadge = $('lobbyStatusBadge');
+const settingsList    = $('settingsList');
+const settingsGuestNote = $('settingsGuestNote');
+const avatarGrid      = $('avatarGrid');
+const colorGrid       = $('colorGrid');
+const chatLog         = $('chatLog');
+const chatInput       = $('chatInput');
+const chatSendBtn     = $('chatSendBtn');
+const toast           = $('toast');
+
+gameLabelEl.textContent = meta.label;
+
+/* ── Room instance ─────────────────────────────────── */
+let room = null;
+let isHost = false;
+let currentScreen = 'setup';
+
+/* ── Player defaults ───────────────────────────────── */
+let chosenAvatar = AVATARS[0];
+let chosenColor  = COLORS[0];
+
+function initSetupForm() {
+  const saved = (() => { try { return JSON.parse(localStorage.getItem('gh_player') || '{}'); } catch(e){ return {}; } })();
+  setupName.value  = saved.name   || '';
+  chosenAvatar     = saved.avatar || AVATARS[0];
+  chosenColor      = saved.color  || COLORS[0];
+
+  // Avatar picker
+  avatarGrid.innerHTML = '';
+  AVATARS.forEach(av => {
+    const b = document.createElement('button');
+    b.className = 'avatar-btn' + (av === chosenAvatar ? ' selected' : '');
+    b.textContent = av;
+    b.addEventListener('click', () => {
+      chosenAvatar = av;
+      avatarGrid.querySelectorAll('.avatar-btn').forEach(x => x.classList.remove('selected'));
+      b.classList.add('selected');
+    });
+    avatarGrid.appendChild(b);
+  });
+
+  // Color picker
+  colorGrid.innerHTML = '';
+  COLORS.forEach(col => {
+    const b = document.createElement('button');
+    b.className = 'color-btn' + (col === chosenColor ? ' selected' : '');
+    b.style.background = col;
+    b.title = col;
+    b.addEventListener('click', () => {
+      chosenColor = col;
+      colorGrid.querySelectorAll('.color-btn').forEach(x => x.classList.remove('selected'));
+      b.classList.add('selected');
+    });
+    colorGrid.appendChild(b);
+  });
+}
+initSetupForm();
+
+/* ── Screen transitions ─────────────────────────────── */
+function showScreen(name) {
+  screenSetup.classList.remove('active');
+  screenChoice.classList.remove('active');
+  screenLobby.classList.remove('active');
+  currentScreen = name;
+  if (name === 'setup')   screenSetup.classList.add('active');
+  if (name === 'choice')  screenChoice.classList.add('active');
+  if (name === 'lobby')   screenLobby.classList.add('active');
+}
+
+/* ── Setup → Choice ─────────────────────────────────── */
+setupNextBtn.addEventListener('click', () => {
+  const name = setupName.value.trim() || 'Player';
+  savePlayerPrefs({ name, avatar: chosenAvatar, color: chosenColor });
+  // Pre-fill join if URL param provided
+  if (forceJoin) {
+    joinCodeInput.value = forceJoin.toUpperCase();
+    startJoin();
+    return;
+  }
+  showScreen('choice');
+});
+
+choiceBack.addEventListener('click', () => showScreen('setup'));
+
+/* ── Choice → Create ────────────────────────────────── */
+choiceCreate.addEventListener('click', startCreate);
+choiceJoin.addEventListener('click', () => {
+  showScreen('lobby');
+  isHost = false;
+  hostCodeWrap.classList.add('hidden');
+  joinCodeWrap.classList.remove('hidden');
+  lobbyTitle.textContent = 'Join a game';
+  waitingSpinner.classList.add('hidden');
+  startBar.classList.add('hidden');
+  renderPlayerList([]);
+});
+
+function startCreate() {
+  isHost = true;
+  showScreen('lobby');
+  lobbyTitle.textContent = 'Game Room';
+  hostCodeWrap.classList.remove('hidden');
+  joinCodeWrap.classList.add('hidden');
+
+  const player = currentPlayer();
+  room = new GameRoom();
+  room.create(gameType, {
+    maxPlayers: meta.max,
+    minPlayers: meta.min,
+    botsEnabled: false,
+  }, onRoomEvent);
+}
+
+function startJoin() {
+  const code = joinCodeInput.value.trim().toUpperCase();
+  if (code.length !== 6) { showToast('Please enter a valid 6-character code.'); return; }
+
+  isHost = false;
+  joinConnectBtn.disabled = true;
+  joinConnectBtn.textContent = 'Connecting…';
+  waitingSpinner.classList.remove('hidden');
+  waitingText.textContent = 'Connecting to room…';
+
+  const player = currentPlayer();
+  room = new GameRoom();
+  room.join(code, player, onRoomEvent);
+}
+
+joinConnectBtn.addEventListener('click', startJoin);
+joinCodeInput.addEventListener('keydown', e => { if (e.key === 'Enter') startJoin(); });
+
+function currentPlayer() {
+  const name = setupName.value.trim() || localStorage.getItem('gh_player') ? JSON.parse(localStorage.getItem('gh_player') || '{}').name || 'Player' : 'Player';
+  return { name: setupName.value.trim() || name, avatar: chosenAvatar, color: chosenColor };
+}
+
+/* ── Room events ────────────────────────────────────── */
+function onRoomEvent(event, data) {
+  switch (event) {
+    case 'connected':
+      onConnected(data);
+      break;
+    case 'room-update':
+      updateLobbyUI(data.players, data.settings);
+      break;
+    case 'game-start':
+      onGameStart(data);
+      break;
+    case 'player-left':
+      showToast(`A player left the room.`, 'info');
+      break;
+    case 'chat':
+      appendChat(data.player, data.text);
+      break;
+    case 'error':
+      showToast(data.message || 'Connection error. Please try again.');
+      joinConnectBtn.disabled = false;
+      joinConnectBtn.textContent = 'Join →';
+      break;
+  }
+}
+
+function onConnected(data) {
+  roomCodeEl.textContent = data.code;
+  waitingSpinner.classList.remove('hidden');
+  waitingText.textContent = isHost ? 'Waiting for players to join…' : 'Connected! Waiting for host to start…';
+
+  if (isHost) {
+    lobbyTitle.textContent = `Room: ${data.code}`;
+    startBar.classList.remove('hidden');
+    renderSettings(room.settings, true);
+  } else {
+    joinCodeWrap.classList.add('hidden');
+    lobbyTitle.textContent = `Room: ${data.code}`;
+    startBar.classList.add('hidden');
+    renderSettings(room.settings, false);
+  }
+
+  updateLobbyUI(room.players, room.settings);
+}
+
+function onGameStart(data) {
+  // Save session then navigate to game
+  RoomSession.save(data.settings._code || room.code, isHost ? 'host' : 'guest', gameType, room.myPlayer, data.settings);
+  sessionStorage.setItem('gh_room', JSON.stringify({
+    code: room.code,
+    role: isHost ? 'host' : 'guest',
+    gameType,
+    player: room.myPlayer,
+    players: data.players,
+    settings: data.settings,
+  }));
+  window.location.href = meta.file + '?online=1';
+}
+
+/* ── Render helpers ─────────────────────────────────── */
+function updateLobbyUI(players, settings) {
+  renderPlayerList(players);
+  if (settings) {
+    const minP = settings.minPlayers || meta.min;
+    const maxP = settings.maxPlayers || meta.max;
+    playerCountEl.textContent = `${players.length} / ${maxP}`;
+
+    if (isHost) {
+      const canStart = players.length >= minP;
+      startGameBtn.disabled = !canStart;
+      startHint.innerHTML = canStart
+        ? `<span style="color:var(--game-accent)">✓ Ready to start!</span>`
+        : `Need at least <strong>${minP}</strong> player${minP > 1 ? 's' : ''} to start.`;
+    }
+  }
+}
+
+function renderPlayerList(players) {
+  playerListEl.innerHTML = '';
+  const max = room ? (room.settings.maxPlayers || meta.max) : meta.max;
+
+  for (let i = 0; i < max; i++) {
+    const p = players[i];
+    const el = document.createElement('div');
+    if (p) {
+      el.className = 'player-entry';
+      el.innerHTML = `
+        <div class="slot-num">${i + 1}</div>
+        <span class="p-avatar">${p.avatar || '🎮'}</span>
+        <span class="p-name" style="color:${p.color || '#fff'}">${escHtml(p.name || 'Player')}</span>
+        ${p.slot === 0 ? '<span class="p-badge">Host</span>' : ''}
+        ${room && p.id === room.myPlayer.id ? '<span class="p-badge" style="background:rgba(0,255,136,.15);color:#00ff88">You</span>' : ''}
+      `;
+    } else {
+      el.className = 'player-entry empty';
+      el.innerHTML = `
+        <div class="slot-num">${i + 1}</div>
+        <span class="p-avatar" style="opacity:.3">👤</span>
+        <span class="p-name">Waiting…</span>
+      `;
+    }
+    playerListEl.appendChild(el);
+  }
+}
+
+function renderSettings(settings, editable) {
+  settingsList.innerHTML = '';
+  if (!settings) return;
+
+  // Max players
+  if (meta.settings.includes('maxPlayers') || true) {
+    const row = document.createElement('div');
+    row.className = 'setting-row';
+    row.innerHTML = `<label>Max players</label>`;
+    if (editable) {
+      const inp = document.createElement('input');
+      inp.type = 'number';
+      inp.min = meta.min; inp.max = meta.max;
+      inp.value = settings.maxPlayers || meta.max;
+      inp.addEventListener('change', () => {
+        room.updateSettings({ maxPlayers: parseInt(inp.value) });
+      });
+      row.appendChild(inp);
+    } else {
+      const span = document.createElement('span');
+      span.textContent = settings.maxPlayers || meta.max;
+      span.style.color = 'var(--game-accent)';
+      row.appendChild(span);
+    }
+    settingsList.appendChild(row);
+  }
+
+  // Bots
+  if (meta.settings.includes('botsEnabled') || true) {
+    const row = document.createElement('div');
+    row.className = 'setting-row';
+    row.innerHTML = `<label>Enable bots</label>`;
+    if (editable) {
+      const label = document.createElement('label');
+      label.className = 'toggle';
+      const chk = document.createElement('input');
+      chk.type = 'checkbox';
+      chk.checked = !!settings.botsEnabled;
+      chk.addEventListener('change', () => room.updateSettings({ botsEnabled: chk.checked }));
+      const slider = document.createElement('span');
+      slider.className = 'toggle-slider';
+      label.appendChild(chk);
+      label.appendChild(slider);
+      row.appendChild(label);
+    } else {
+      const span = document.createElement('span');
+      span.textContent = settings.botsEnabled ? 'Yes' : 'No';
+      span.style.color = 'var(--game-accent)';
+      row.appendChild(span);
+    }
+    settingsList.appendChild(row);
+  }
+
+  settingsGuestNote.textContent = editable ? '' : 'Only the host can change settings.';
+}
+
+/* ── Start game button ────────────────────────────────── */
+startGameBtn.addEventListener('click', () => {
+  if (room && room.isHost) room.startGame();
+});
+
+/* ── Copy code ────────────────────────────────────────── */
+copyCodeBtn.addEventListener('click', () => {
+  const code = roomCodeEl.textContent;
+  if (navigator.clipboard) {
+    navigator.clipboard.writeText(code).then(() => showToast('Room code copied!', 'info'));
+  } else {
+    showToast('Code: ' + code, 'info');
+  }
+});
+
+/* ── Chat ────────────────────────────────────────────── */
+function appendChat(player, text) {
+  const el = document.createElement('div');
+  el.className = 'chat-msg';
+  el.innerHTML = `<span class="sender" style="color:${player.color||'#fff'}">${escHtml(player.name)}</span>: ${escHtml(text)}`;
+  chatLog.appendChild(el);
+  chatLog.scrollTop = chatLog.scrollHeight;
+}
+
+function sendChat() {
+  const text = chatInput.value.trim();
+  if (!text || !room) return;
+  room.sendChat(text);
+  appendChat(room.myPlayer, text);
+  chatInput.value = '';
+}
+
+chatSendBtn.addEventListener('click', sendChat);
+chatInput.addEventListener('keydown', e => { if (e.key === 'Enter') sendChat(); });
+
+/* ── Toast ───────────────────────────────────────────── */
+let toastTimer;
+function showToast(msg, type = 'error') {
+  toast.textContent = msg;
+  toast.className = `toast ${type} show`;
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => { toast.classList.remove('show'); }, 3500);
+}
+
+/* ── Helpers ─────────────────────────────────────────── */
+function escHtml(str) {
+  return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+/* ── Pre-fill join code from URL ─────────────────────── */
+if (forceJoin) {
+  joinCodeInput.value = forceJoin.toUpperCase();
+}
+</script>
+</body>
+</html>

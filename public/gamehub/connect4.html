@@ -1,0 +1,455 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Connect 4 – Game Hub</title>
+  <link rel="stylesheet" href="styles.css" />
+  <style>
+    :root {
+      --game-accent:     #ff0066;
+      --game-accent-rgb: 255, 0, 102;
+    }
+    body { padding: 20px; }
+
+    .game-wrapper {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 16px;
+      width: 100%;
+    }
+
+    .status-bar {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      background: var(--bg-card);
+      padding: 14px 26px;
+      border-radius: var(--radius-md);
+      border: 1px solid var(--bg-card-border);
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+    .status-bar h3 { color: var(--game-accent); font-size: .95rem; }
+    .current-player { display: flex; align-items: center; gap: 10px; }
+    .player-indicator {
+      width: 28px; height: 28px;
+      border-radius: 50%;
+      border: 2px solid #fff;
+      flex-shrink: 0;
+    }
+    .player-indicator.p1 { background: radial-gradient(circle at 30% 30%, #ff6666, #cc0000); box-shadow: 0 0 10px rgba(255,68,68,.5); }
+    .player-indicator.p2 { background: radial-gradient(circle at 30% 30%, #6699ff, #0033cc); box-shadow: 0 0 10px rgba(0,102,255,.5); }
+
+    #gameCanvas {
+      border: 4px solid #333;
+      border-radius: 10px;
+      box-shadow: 0 0 30px rgba(0,0,0,.5);
+      cursor: pointer;
+      background: #222;
+      max-width: 100%;
+    }
+
+    .controls-hint {
+      color: var(--text-muted);
+      font-size: .88rem;
+    }
+
+    /* Online player info */
+    .online-players-row {
+      display: flex; gap: 12px; justify-content: center; flex-wrap: wrap;
+    }
+    .online-player-badge {
+      display: flex; align-items: center; gap: 8px;
+      padding: 6px 14px;
+      background: var(--bg-card);
+      border: 1px solid var(--bg-card-border);
+      border-radius: var(--radius-pill);
+      font-size: .88rem;
+    }
+    .online-player-badge .swatch {
+      width: 14px; height: 14px; border-radius: 50%; border: 2px solid #fff;
+    }
+
+    /* Game-over modal */
+
+    @media (max-width: 540px) {
+      #gameCanvas { width: 100% !important; height: auto !important; }
+    }
+  </style>
+</head>
+<body>
+  <h1 class="game-title">Connect 4</h1>
+
+  <div class="game-wrapper">
+    <!-- Online players row -->
+    <div class="online-players-row hidden" id="onlinePlayers"></div>
+
+    <div class="status-bar">
+      <h3 id="statusLabel">Your Turn:</h3>
+      <div class="current-player">
+        <div class="player-indicator p1" id="playerIndicator"></div>
+        <span id="statusText">Player 1 (You)</span>
+      </div>
+    </div>
+
+    <canvas id="gameCanvas" width="490" height="420"></canvas>
+
+    <div class="btn-row">
+      <button class="btn btn-primary" id="newGameBtn">New Game</button>
+      <button class="btn btn-back" id="backBtn">Back to Hub</button>
+    </div>
+
+    <div class="controls-hint">
+      <kbd>Click</kbd> on a column to drop your piece · Connect 4 in a row to win!
+    </div>
+  </div>
+
+  <!-- Game-over modal -->
+  <div class="gh-modal-backdrop hidden" id="gameOver">
+    <div class="gh-modal">
+      <h2 id="gameOverText">You Win!</h2>
+      <p class="score-label">Time: <span id="finalTime">0</span> seconds</p>
+      <div id="nameInputContainer" class="name-input-wrap">
+        <input type="text" id="playerName" placeholder="Enter your name" maxlength="15" />
+      </div>
+      <div id="leaderboardContainer" class="leaderboard-wrap hidden"></div>
+      <div class="btn-row" style="justify-content:center;">
+        <button class="btn btn-primary" id="submitScoreBtn" disabled>Submit Score</button>
+        <button class="btn btn-secondary" id="playAgainBtn">Play Again</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="leaderboard.js"></script>
+  <script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"></script>
+  <script src="multiplayer.js"></script>
+  <script>
+  /* ══════════════════════════════════════════════════
+     Connect 4 — AI + local 2P + online multiplayer
+     ══════════════════════════════════════════════════ */
+
+  const GAME_NAME = 'connect4';
+  const COLS = 7, ROWS = 6, CELL = 70;
+
+  const canvas          = document.getElementById('gameCanvas');
+  const ctx             = canvas.getContext('2d');
+  const playerIndicator = document.getElementById('playerIndicator');
+  const statusLabel     = document.getElementById('statusLabel');
+  const statusText      = document.getElementById('statusText');
+  const finalTimeEl     = document.getElementById('finalTime');
+  const gameOverDiv     = document.getElementById('gameOver');
+  const gameOverText    = document.getElementById('gameOverText');
+  const newGameBtn      = document.getElementById('newGameBtn');
+  const backBtn         = document.getElementById('backBtn');
+  const playerNameInput = document.getElementById('playerName');
+  const submitScoreBtn  = document.getElementById('submitScoreBtn');
+  const nameInputCont   = document.getElementById('nameInputContainer');
+  const leaderboardCont = document.getElementById('leaderboardContainer');
+  const playAgainBtn    = document.getElementById('playAgainBtn');
+  const onlinePlayers   = document.getElementById('onlinePlayers');
+
+  canvas.width  = COLS * CELL;
+  canvas.height = ROWS * CELL;
+
+  let boardState = [];
+  let currentPlayer = 1;
+  let gameRunning   = false;
+  let timerInterval = null;
+  let timeElapsed   = 0;
+  let isGameOver    = false;
+  let aiThinking    = false;
+
+  /* ── Online ── */
+  let onlineMode = false;
+  let myPlayer   = 1;   // host = 1 (red), guest = 2 (blue)
+  let ghRoom     = null;
+  let remotePlayers = [];
+
+  function checkOnlineMode() {
+    const s = sessionStorage.getItem('gh_room');
+    if (!s) return false;
+    try { const d = JSON.parse(s); return d.gameType === GAME_NAME ? d : false; }
+    catch(e) { return false; }
+  }
+
+  const sessionData = checkOnlineMode();
+  if (sessionData) {
+    onlineMode = true;
+    myPlayer   = sessionData.role === 'host' ? 1 : 2;
+    remotePlayers = sessionData.players || [];
+    onlinePlayers.classList.remove('hidden');
+    renderOnlinePlayers();
+
+    ghRoom = new GameRoom();
+    if (sessionData.role === 'host') {
+      ghRoom.create(GAME_NAME, sessionData.settings || {}, onRoomEvent, sessionData.code);
+    } else {
+      ghRoom.join(sessionData.code, sessionData.player, onRoomEvent);
+    }
+  }
+
+  function renderOnlinePlayers() {
+    onlinePlayers.innerHTML = '';
+    remotePlayers.forEach((p, i) => {
+      const num = i + 1;
+      const col = num === 1 ? '#ff4444' : '#4477ff';
+      const b = document.createElement('div');
+      b.className = 'online-player-badge';
+      b.innerHTML = `<div class="swatch" style="background:${col}"></div>
+        <span>${p.avatar||'🎮'}</span>
+        <span style="color:${p.color||'#fff'};font-weight:600;">${esc(p.name)}</span>
+        <span style="color:var(--text-muted);font-size:.78rem;">P${num}</span>
+        ${p.id===(ghRoom&&ghRoom.myPlayer&&ghRoom.myPlayer.id)?'<span style="color:var(--game-accent);font-size:.72rem;">(you)</span>':''}`;
+      onlinePlayers.appendChild(b);
+    });
+  }
+
+  function onRoomEvent(event, data) {
+    if (event === 'connected') {
+      remotePlayers = ghRoom.players;
+      renderOnlinePlayers();
+    }
+    if (event === 'room-update') {
+      remotePlayers = data.players || remotePlayers;
+      renderOnlinePlayers();
+    }
+    if (event === 'game-move') {
+      const col = data.data.col;
+      applyDrop(col);
+    }
+    if (event === 'player-left') {
+      statusText.textContent = 'Opponent disconnected.';
+      gameRunning = false;
+    }
+  }
+
+  /* ── Board ── */
+  function initBoard() {
+    boardState = Array(ROWS).fill(null).map(() => Array(COLS).fill(0));
+  }
+
+  function drawBoard(hoverCol = -1) {
+    ctx.fillStyle = '#222';
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+    for (let y = 0; y < ROWS; y++) {
+      for (let x = 0; x < COLS; x++) {
+        const cx = x * CELL + CELL / 2;
+        const cy = y * CELL + CELL / 2;
+        const r  = CELL / 2 - 5;
+        ctx.beginPath(); ctx.arc(cx, cy, r, 0, Math.PI * 2);
+        ctx.fillStyle = '#111'; ctx.fill();
+        ctx.beginPath(); ctx.arc(cx, cy, r - 2, 0, Math.PI * 2);
+        ctx.fillStyle = '#333'; ctx.fill();
+      }
+    }
+
+    for (let y = 0; y < ROWS; y++) {
+      for (let x = 0; x < COLS; x++) {
+        if (boardState[y][x]) drawPiece(x, y, boardState[y][x]);
+      }
+    }
+
+    if (hoverCol >= 0 && gameRunning && !isGameOver && !aiThinking) {
+      const cx = hoverCol * CELL + CELL / 2;
+      const cy = CELL / 2;
+      ctx.beginPath(); ctx.arc(cx, cy, CELL/2-5, 0, Math.PI*2);
+      ctx.fillStyle = myPlayer===1||!onlineMode ? 'rgba(255,68,68,.35)' : 'rgba(68,119,255,.35)';
+      ctx.fill();
+      ctx.strokeStyle = myPlayer===1||!onlineMode ? '#ff4444' : '#4477ff';
+      ctx.lineWidth = 3; ctx.stroke();
+    }
+  }
+
+  function drawPiece(x, y, player) {
+    const cx = x * CELL + CELL / 2;
+    const cy = y * CELL + CELL / 2;
+    const r  = CELL / 2 - 8;
+    const g  = ctx.createRadialGradient(cx-r/3, cy-r/3, 0, cx, cy, r);
+    if (player === 1) { g.addColorStop(0,'#ff6666'); g.addColorStop(1,'#cc0000'); }
+    else              { g.addColorStop(0,'#6699ff'); g.addColorStop(1,'#0033cc'); }
+    ctx.beginPath(); ctx.arc(cx, cy, r, 0, Math.PI*2);
+    ctx.fillStyle = g; ctx.fill();
+    ctx.strokeStyle = '#000'; ctx.lineWidth = 2; ctx.stroke();
+  }
+
+  /* ── Drop logic ── */
+  function applyDrop(col) {
+    if (!gameRunning || isGameOver) return;
+    for (let y = ROWS-1; y >= 0; y--) {
+      if (boardState[y][col] === 0) {
+        boardState[y][col] = currentPlayer;
+        drawBoard();
+        if (checkWin(col, y)) { endGame(currentPlayer); return; }
+        if (checkDraw())       { endGame(0); return; }
+        currentPlayer = currentPlayer === 1 ? 2 : 1;
+        updateStatus();
+        if (!onlineMode && currentPlayer === 2) {
+          aiThinking = true;
+          setTimeout(makeAIMove, 500);
+        }
+        return;
+      }
+    }
+  }
+
+  function dropPiece(col) {
+    if (!gameRunning || isGameOver || aiThinking) return;
+    if (onlineMode && currentPlayer !== myPlayer) return;  // not my turn
+    applyDrop(col);
+    if (onlineMode && ghRoom) ghRoom.sendMove({ col });
+  }
+
+  /* ── AI ── */
+  function makeAIMove() {
+    if (!gameRunning || isGameOver) { aiThinking = false; return; }
+    const col = getBestMove();
+    if (col !== -1) applyDrop(col);
+    aiThinking = false;
+  }
+
+  function getBestMove() {
+    // Win
+    for (let c = 0; c < COLS; c++) {
+      if (canPlay(c)) {
+        const r = getLowest(c); boardState[r][c] = 2;
+        const w = checkWinForPlayer(c, r, 2); boardState[r][c] = 0;
+        if (w) return c;
+      }
+    }
+    // Block
+    for (let c = 0; c < COLS; c++) {
+      if (canPlay(c)) {
+        const r = getLowest(c); boardState[r][c] = 1;
+        const w = checkWinForPlayer(c, r, 1); boardState[r][c] = 0;
+        if (w) return c;
+      }
+    }
+    // Prefer center
+    const avail = Array.from({length:COLS},(_,i)=>i).filter(canPlay);
+    avail.sort((a,b) => Math.abs(a-3)-Math.abs(b-3));
+    return avail.length ? avail[0] : -1;
+  }
+
+  function canPlay(c)  { return boardState[0][c] === 0; }
+  function getLowest(c){ for(let y=ROWS-1;y>=0;y--) if(!boardState[y][c]) return y; return -1; }
+
+  function checkWin(col, row)               { return checkWinForPlayer(col, row, boardState[row][col]); }
+  function checkWinForPlayer(col, row, pl) {
+    const dirs = [[0,1],[1,0],[1,1],[1,-1]];
+    for (const [dr,dc] of dirs) {
+      let cnt = 1;
+      for (let i=1; row+dr*i>=0&&row+dr*i<ROWS&&col+dc*i>=0&&col+dc*i<COLS&&boardState[row+dr*i][col+dc*i]===pl; i++) cnt++;
+      for (let i=1; row-dr*i>=0&&row-dr*i<ROWS&&col-dc*i>=0&&col-dc*i<COLS&&boardState[row-dr*i][col-dc*i]===pl; i++) cnt++;
+      if (cnt >= 4) return true;
+    }
+    return false;
+  }
+  function checkDraw() { return boardState[0].every(c=>c!==0); }
+
+  /* ── Status ── */
+  function updateStatus() {
+    if (onlineMode) {
+      statusLabel.textContent = 'Turn:';
+      if (currentPlayer === myPlayer) {
+        playerIndicator.className = `player-indicator p${myPlayer}`;
+        statusText.textContent = 'Your turn';
+      } else {
+        playerIndicator.className = `player-indicator p${currentPlayer}`;
+        statusText.textContent = "Opponent's turn";
+      }
+    } else {
+      statusLabel.textContent = 'Turn:';
+      playerIndicator.className = `player-indicator p${currentPlayer}`;
+      statusText.textContent = currentPlayer === 1 ? 'Player 1 (You)' : 'AI is thinking…';
+    }
+  }
+
+  /* ── Timer ── */
+  function startTimer()  { timerInterval = setInterval(()=>timeElapsed++, 1000); }
+  function stopTimer()   { if (timerInterval) { clearInterval(timerInterval); timerInterval=null; } }
+
+  /* ── Game over ── */
+  function endGame(winner) {
+    isGameOver = true; gameRunning = false; aiThinking = false;
+    stopTimer();
+    finalTimeEl.textContent = timeElapsed;
+
+    if (winner === 1) {
+      gameOverText.textContent = onlineMode ? (myPlayer===1?'You Win! 🎉':'Opponent Wins!') : 'Player 1 Wins!';
+    } else if (winner === 2) {
+      gameOverText.textContent = onlineMode ? (myPlayer===2?'You Win! 🎉':'Opponent Wins!') : 'AI Wins!';
+    } else {
+      gameOverText.textContent = "It's a Draw!";
+    }
+
+    gameOverDiv.classList.remove('hidden');
+
+    if (winner === 1 && !onlineMode) {
+      nameInputCont.classList.remove('hidden');
+      submitScoreBtn.disabled = true;
+      const existing = Leaderboard.get(GAME_NAME);
+      if (existing && existing.length > 0) {
+        leaderboardCont.classList.remove('hidden');
+        leaderboardCont.innerHTML = '<h3 class="text-accent" style="margin-bottom:8px;">Top Players</h3>' + Leaderboard.render(GAME_NAME);
+      }
+    } else {
+      nameInputCont.classList.add('hidden');
+    }
+  }
+
+  function startNewGame() {
+    stopTimer(); timeElapsed = 0; isGameOver = false; aiThinking = false;
+    gameOverDiv.classList.add('hidden');
+    initBoard();
+    currentPlayer = 1;
+    gameRunning   = true;
+    updateStatus();
+    drawBoard();
+    startTimer();
+  }
+
+  function submitScore() {
+    const name = playerNameInput.value.trim();
+    if (!name) return;
+    Leaderboard.addScore(GAME_NAME, name, timeElapsed);
+    nameInputCont.classList.add('hidden');
+    leaderboardCont.classList.remove('hidden');
+    leaderboardCont.innerHTML = '<h3 class="text-accent" style="margin-bottom:8px;">Top Players</h3>' + Leaderboard.render(GAME_NAME);
+  }
+
+  /* ── Canvas events ── */
+  let hoveredCol = -1;
+  canvas.addEventListener('click', e => {
+    const r   = canvas.getBoundingClientRect();
+    const scaleX = canvas.width  / r.width;
+    const x   = (e.clientX - r.left) * scaleX;
+    const col = Math.floor(x / CELL);
+    if (col >= 0 && col < COLS) dropPiece(col);
+  });
+  canvas.addEventListener('mousemove', e => {
+    if (!gameRunning || isGameOver || aiThinking) return;
+    const r = canvas.getBoundingClientRect();
+    const scaleX = canvas.width / r.width;
+    const x = (e.clientX - r.left) * scaleX;
+    hoveredCol = Math.floor(x / CELL);
+    drawBoard(hoveredCol);
+  });
+  canvas.addEventListener('mouseleave', () => { hoveredCol = -1; drawBoard(); });
+
+  newGameBtn.addEventListener('click',  startNewGame);
+  playAgainBtn.addEventListener('click', startNewGame);
+  backBtn.addEventListener('click', () => { if(ghRoom) ghRoom.destroy(); window.location.href='index.html'; });
+  submitScoreBtn.addEventListener('click', submitScore);
+  playerNameInput.addEventListener('input', () => {
+    submitScoreBtn.disabled = !playerNameInput.value.trim();
+  });
+
+  function esc(s) { return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+
+  startNewGame();
+  </script>
+</body>
+</html>

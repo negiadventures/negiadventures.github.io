@@ -1,0 +1,402 @@
+/* ============================================================
+   GameHub — Shared Stylesheet
+   Provides CSS variables, base reset, and reusable components
+   that every game page can include.
+   Each game sets --game-accent and --game-accent-rgb to keep
+   its own colour identity while sharing button/modal chrome.
+   ============================================================ */
+
+/* --- Default accent (red, used by the hub index) ---------- */
+:root {
+  --game-accent:       #e94560;
+  --game-accent-rgb:   233, 69, 96;
+
+  --bg-primary:        #1a1a2e;
+  --bg-secondary:      #16213e;
+  --bg-card:           rgba(255, 255, 255, 0.07);
+  --bg-card-border:    rgba(255, 255, 255, 0.12);
+
+  --text-primary:      #ffffff;
+  --text-muted:        #aaaaaa;
+  --text-dim:          #888888;
+
+  --radius-sm:         8px;
+  --radius-md:         12px;
+  --radius-lg:         20px;
+  --radius-pill:       50px;
+
+  --transition:        all 0.25s ease;
+
+  /* Shared button sizing */
+  --btn-padding-md:    12px 32px;
+  --btn-padding-sm:    9px 22px;
+  --btn-font:          1rem;
+  --btn-font-sm:       0.9rem;
+  --btn-weight:        700;
+}
+
+/* --- Reset ------------------------------------------------- */
+*, *::before, *::after {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+/* --- Base body -------------------------------------------- */
+body {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  background: linear-gradient(135deg, var(--bg-primary) 0%, var(--bg-secondary) 100%);
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  color: var(--text-primary);
+  overflow-x: hidden;
+}
+
+/* --- Game page title --------------------------------------- */
+.game-title {
+  color: var(--game-accent);
+  font-size: 2rem;
+  font-weight: 700;
+  margin-bottom: 10px;
+  text-shadow: 0 0 12px rgba(var(--game-accent-rgb), 0.55);
+  letter-spacing: 0.5px;
+}
+
+/* --- Inline score / info bar ------------------------------ */
+.game-info-bar {
+  display: flex;
+  gap: 30px;
+  margin-bottom: 12px;
+  font-size: 1.05rem;
+  color: var(--text-primary);
+  flex-wrap: wrap;
+  justify-content: center;
+}
+.game-info-bar span,
+.game-info-bar .info-value {
+  color: var(--game-accent);
+  font-weight: 700;
+}
+.game-info-bar .info-label {
+  color: var(--text-muted);
+  margin-right: 4px;
+}
+
+/* --- Canvas wrapper --------------------------------------- */
+.canvas-wrap {
+  position: relative;
+}
+.game-canvas-border {
+  border: 3px solid var(--game-accent);
+  border-radius: var(--radius-md);
+  box-shadow: 0 0 22px rgba(var(--game-accent-rgb), 0.32);
+  display: block;
+}
+
+/* --- Buttons ---------------------------------------------- */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: var(--btn-padding-md);
+  font-size: var(--btn-font);
+  font-weight: var(--btn-weight);
+  font-family: inherit;
+  border: none;
+  border-radius: var(--radius-pill);
+  cursor: pointer;
+  text-decoration: none;
+  transition: var(--transition);
+  white-space: nowrap;
+  line-height: 1;
+}
+.btn:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+  transform: none !important;
+  box-shadow: none !important;
+}
+
+/* Primary — uses the game's accent colour */
+.btn-primary {
+  background: var(--game-accent);
+  color: #fff;
+}
+.btn-primary:hover:not(:disabled) {
+  transform: scale(1.05);
+  box-shadow: 0 0 22px rgba(var(--game-accent-rgb), 0.55);
+}
+
+/* Secondary / neutral */
+.btn-secondary {
+  background: #3a3a5c;
+  color: #fff;
+}
+.btn-secondary:hover:not(:disabled) {
+  background: #4a4a70;
+  transform: scale(1.04);
+}
+
+/* Back button */
+.btn-back {
+  padding: var(--btn-padding-sm);
+  font-size: var(--btn-font-sm);
+  background: #444;
+  color: var(--text-primary);
+}
+.btn-back:hover:not(:disabled) {
+  background: #555;
+  transform: scale(1.04);
+}
+
+/* Danger */
+.btn-danger {
+  background: #c0392b;
+  color: #fff;
+}
+.btn-danger:hover:not(:disabled) {
+  background: #e74c3c;
+  transform: scale(1.05);
+}
+
+/* Outline variant */
+.btn-outline {
+  background: transparent;
+  border: 2px solid var(--game-accent);
+  color: var(--game-accent);
+}
+.btn-outline:hover:not(:disabled) {
+  background: rgba(var(--game-accent-rgb), 0.12);
+  transform: scale(1.04);
+}
+
+/* Small size modifier */
+.btn-sm {
+  padding: var(--btn-padding-sm);
+  font-size: var(--btn-font-sm);
+}
+
+/* --- Keyboard key badge ------------------------------------ */
+kbd {
+  background: #2e2e4a;
+  padding: 3px 9px;
+  border-radius: var(--radius-sm);
+  border: 1px solid #555;
+  font-family: monospace;
+  font-size: 0.85rem;
+  color: var(--game-accent);
+}
+
+/* --- Controls hint bar ------------------------------------ */
+.controls-hint {
+  margin-top: 14px;
+  color: var(--text-muted);
+  text-align: center;
+  font-size: 0.88rem;
+  line-height: 1.6;
+}
+
+/* --- Button row (below canvas / board) -------------------- */
+.btn-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 16px;
+  justify-content: center;
+}
+
+/* --- Game-over / win overlay modal ------------------------ */
+.gh-modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.80);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 999;
+}
+.gh-modal-backdrop.hidden { display: none; }
+
+.gh-modal {
+  background: #0f1729;
+  padding: 40px 52px;
+  border-radius: var(--radius-md);
+  border: 2px solid var(--game-accent);
+  text-align: center;
+  max-width: 460px;
+  width: 90%;
+  animation: modalIn 0.2s ease;
+}
+@keyframes modalIn {
+  from { transform: scale(0.88); opacity: 0; }
+  to   { transform: scale(1);    opacity: 1; }
+}
+.gh-modal h2 {
+  color: var(--game-accent);
+  font-size: 1.9rem;
+  margin-bottom: 12px;
+}
+.gh-modal p {
+  color: var(--text-primary);
+  font-size: 1.05rem;
+  margin-bottom: 14px;
+}
+.gh-modal .score-label {
+  color: var(--text-muted);
+  font-size: 0.95rem;
+  margin-bottom: 18px;
+}
+
+/* --- Name input for leaderboard --------------------------- */
+.name-input-wrap {
+  margin-bottom: 18px;
+}
+.name-input-wrap input {
+  padding: 10px 16px;
+  font-size: 1rem;
+  border-radius: var(--radius-lg);
+  border: 2px solid #444;
+  background: #1a1a2e;
+  color: var(--text-primary);
+  text-align: center;
+  width: 220px;
+  outline: none;
+  transition: border-color 0.2s;
+}
+.name-input-wrap input:focus {
+  border-color: var(--game-accent);
+}
+
+/* --- Leaderboard panel ------------------------------------ */
+.leaderboard-wrap {
+  width: 100%;
+  max-width: 340px;
+  margin: 0 auto;
+}
+.leaderboard-table {
+  width: 100%;
+  color: var(--text-primary);
+  border-collapse: collapse;
+  font-size: 0.9rem;
+}
+.leaderboard-table th {
+  color: var(--game-accent);
+  padding: 8px 10px;
+  border-bottom: 1px solid #333;
+  text-align: left;
+}
+.leaderboard-table td {
+  padding: 7px 10px;
+  border-bottom: 1px solid #2a2a40;
+}
+.leaderboard-table tr:nth-child(1) td:first-child { color: #FFD700; }
+.leaderboard-table tr:nth-child(2) td:first-child { color: #C0C0C0; }
+.leaderboard-table tr:nth-child(3) td:first-child { color: #CD7F32; }
+
+/* --- Side info panel (used by Tetris, Minesweeper …) ------ */
+.side-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  min-width: 170px;
+}
+.info-box {
+  background: var(--bg-card);
+  border: 1px solid var(--bg-card-border);
+  border-radius: var(--radius-md);
+  padding: 14px 18px;
+}
+.info-box h3 {
+  color: var(--game-accent);
+  font-size: 0.82rem;
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+  margin-bottom: 6px;
+}
+.info-box .info-value {
+  font-size: 1.55rem;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+/* --- Pause overlay ---------------------------------------- */
+.pause-overlay {
+  position: absolute;
+  top: 50%; left: 50%;
+  transform: translate(-50%, -50%);
+  background: rgba(0,0,0,0.82);
+  padding: 28px 50px;
+  border-radius: var(--radius-md);
+  border: 2px solid var(--game-accent);
+  text-align: center;
+}
+.pause-overlay h2 {
+  color: var(--game-accent);
+  font-size: 2rem;
+  margin-bottom: 8px;
+}
+
+/* --- Multiplayer badge ------------------------------------ */
+.mp-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  background: rgba(var(--game-accent-rgb), 0.18);
+  border: 1px solid rgba(var(--game-accent-rgb), 0.45);
+  color: var(--game-accent);
+  border-radius: var(--radius-pill);
+  padding: 3px 12px;
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+}
+.mp-badge::before { content: '●'; font-size: 0.6rem; }
+
+/* --- Player indicator pill -------------------------------- */
+.player-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: var(--bg-card);
+  border: 1px solid var(--bg-card-border);
+  border-radius: var(--radius-pill);
+  padding: 6px 14px;
+  font-size: 0.9rem;
+  transition: var(--transition);
+}
+.player-pill .avatar {
+  font-size: 1.25rem;
+  line-height: 1;
+}
+.player-pill .player-name {
+  font-weight: 600;
+  color: var(--text-primary);
+}
+.player-pill .player-score {
+  color: var(--game-accent);
+  font-weight: 700;
+  margin-left: 6px;
+}
+
+/* --- Utility ---------------------------------------------- */
+.text-accent  { color: var(--game-accent); }
+.text-muted   { color: var(--text-muted); }
+.text-center  { text-align: center; }
+.hidden       { display: none !important; }
+.flex-center  { display: flex; align-items: center; justify-content: center; }
+.gap-sm       { gap: 8px; }
+.gap-md       { gap: 16px; }
+.mt-sm        { margin-top: 8px; }
+.mt-md        { margin-top: 16px; }
+
+/* --- Responsive ------------------------------------------- */
+@media (max-width: 600px) {
+  .game-title  { font-size: 1.6rem; }
+  .gh-modal    { padding: 28px 24px; }
+  .btn         { padding: 10px 22px; font-size: 0.92rem; }
+}

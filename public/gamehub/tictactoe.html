@@ -1,0 +1,407 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Tic-Tac-Toe – Game Hub</title>
+  <link rel="stylesheet" href="styles.css" />
+  <style>
+    :root {
+      --game-accent:     #00ff88;
+      --game-accent-rgb: 0, 255, 136;
+    }
+    .mode-select {
+      padding: 10px 16px;
+      font-size: 1rem;
+      border-radius: var(--radius-lg);
+      border: 2px solid #333;
+      margin-bottom: 16px;
+      background: #1e1e36;
+      color: var(--text-primary);
+      cursor: pointer;
+      outline: none;
+      transition: border-color .2s;
+    }
+    .mode-select:focus { border-color: var(--game-accent); }
+
+    .status-bar {
+      margin-bottom: 18px;
+      font-size: 1.2rem;
+      color: var(--text-primary);
+      text-align: center;
+      min-height: 1.6em;
+    }
+    .status-bar .hl { color: var(--game-accent); font-weight: 700; }
+
+    .board {
+      display: grid;
+      grid-template-columns: repeat(3, 100px);
+      grid-template-rows: repeat(3, 100px);
+      gap: 10px;
+    }
+    .cell {
+      width: 100px; height: 100px;
+      background: rgba(255,255,255,0.08);
+      border: 2px solid rgba(255,255,255,0.18);
+      border-radius: 12px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 3rem; font-weight: 700;
+      cursor: pointer;
+      transition: background .18s, transform .15s;
+      user-select: none;
+    }
+    .cell:hover:not(.taken) { background: rgba(255,255,255,0.18); transform: scale(1.06); }
+    .cell.taken { cursor: default; }
+    .cell.x { color: #00d4ff; text-shadow: 0 0 10px rgba(0,212,255,.5); }
+    .cell.o { color: #ff6b6b; text-shadow: 0 0 10px rgba(255,107,107,.5); }
+    .cell.winner { background: rgba(0,255,136,.28); border-color: var(--game-accent); }
+
+    /* score bar */
+    .score-bar {
+      display: flex; gap: 28px;
+      margin-bottom: 10px;
+      font-size: 1rem; color: var(--text-primary);
+      flex-wrap: wrap; justify-content: center;
+    }
+    .score-bar span { color: var(--game-accent); font-weight: 700; }
+
+    /* Online player info */
+    .online-info {
+      display: flex; gap: 12px; margin-bottom: 14px; flex-wrap: wrap; justify-content: center;
+    }
+
+    /* Game-over modal (uses shared .gh-modal-backdrop + .gh-modal) */
+  </style>
+</head>
+<body>
+  <h1 class="game-title">Tic-Tac-Toe</h1>
+
+  <!-- Mode selector (only visible in local/AI mode) -->
+  <select class="mode-select" id="gameMode">
+    <option value="ai">1 Player (vs Computer)</option>
+    <option value="2p">2 Players (local)</option>
+  </select>
+
+  <!-- Online player pills -->
+  <div class="online-info hidden" id="onlineInfo"></div>
+
+  <div class="score-bar">
+    Wins: <span id="wins">0</span>&nbsp;&nbsp;|&nbsp;&nbsp;Draws: <span id="draws">0</span>
+  </div>
+
+  <div class="status-bar" id="status">Player <span class="hl">X</span>'s turn</div>
+
+  <div class="board" id="board"></div>
+
+  <div class="btn-row">
+    <button class="btn btn-primary" id="restartBtn">New Game</button>
+    <button class="btn btn-back" id="backBtn">Back to Hub</button>
+  </div>
+
+  <!-- Game-over modal -->
+  <div class="gh-modal-backdrop hidden" id="gameOver">
+    <div class="gh-modal">
+      <h2 id="winnerText">X Wins!</h2>
+      <div id="nameInputContainer" class="name-input-wrap">
+        <input type="text" id="playerName" placeholder="Enter your name" maxlength="15" />
+      </div>
+      <div id="leaderboardContainer" class="leaderboard-wrap hidden"></div>
+      <div class="btn-row" style="justify-content:center;">
+        <button class="btn btn-primary" id="submitScoreBtn" disabled>Submit Score</button>
+        <button class="btn btn-secondary" id="playAgainBtn">Play Again</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="leaderboard.js"></script>
+  <script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"></script>
+  <script src="multiplayer.js"></script>
+  <script>
+  /* ══════════════════════════════════════════════════════
+     Tic-Tac-Toe — supports AI, local 2-player, and online
+     ══════════════════════════════════════════════════════ */
+
+  const GAME_NAME = 'tictactoe';
+
+  /* DOM */
+  const boardEl        = document.getElementById('board');
+  const statusEl       = document.getElementById('status');
+  const winsEl         = document.getElementById('wins');
+  const drawsEl        = document.getElementById('draws');
+  const restartBtn     = document.getElementById('restartBtn');
+  const backBtn        = document.getElementById('backBtn');
+  const gameModeSelect = document.getElementById('gameMode');
+  const playerNameIn   = document.getElementById('playerName');
+  const submitScoreBtn = document.getElementById('submitScoreBtn');
+  const playAgainBtn   = document.getElementById('playAgainBtn');
+  const gameOverDiv    = document.getElementById('gameOver');
+  const winnerText     = document.getElementById('winnerText');
+  const nameInputCont  = document.getElementById('nameInputContainer');
+  const leaderboardCont= document.getElementById('leaderboardContainer');
+  const onlineInfo     = document.getElementById('onlineInfo');
+
+  /* State */
+  let board       = Array(9).fill('');
+  let curPlayer   = 'X';
+  let gameActive  = true;
+  let isAI        = true;
+  let wins = 0, draws = 0;
+
+  /* Online */
+  let onlineMode  = false;
+  let mySymbol    = 'X';         // 'X' for host, 'O' for guest
+  let myTurn      = true;
+  let ghRoom      = null;
+  let onlinePlayers = [];
+
+  const WIN_LINES = [
+    [0,1,2],[3,4,5],[6,7,8],
+    [0,3,6],[1,4,7],[2,5,8],
+    [0,4,8],[2,4,6]
+  ];
+
+  /* ── Online setup ─────────────────────────────────── */
+  function checkOnlineMode() {
+    const session = sessionStorage.getItem('gh_room');
+    if (!session) return false;
+    let data;
+    try { data = JSON.parse(session); } catch(e) { return false; }
+    if (data.gameType !== GAME_NAME) return false;
+    return data;
+  }
+
+  const sessionData = checkOnlineMode();
+  if (sessionData) {
+    onlineMode = true;
+    mySymbol   = sessionData.role === 'host' ? 'X' : 'O';
+    myTurn     = mySymbol === 'X';
+    gameModeSelect.classList.add('hidden');
+    onlineInfo.classList.remove('hidden');
+
+    const savedPlayers = sessionData.players || [];
+    onlinePlayers = savedPlayers;
+    renderOnlineInfo();
+
+    // Re-connect to room
+    ghRoom = new GameRoom();
+    if (sessionData.role === 'host') {
+      ghRoom.create(GAME_NAME, sessionData.settings || {}, onRoomEvent, sessionData.code);
+    } else {
+      ghRoom.join(sessionData.code, sessionData.player, onRoomEvent);
+    }
+  }
+
+  function renderOnlineInfo() {
+    onlineInfo.innerHTML = '';
+    onlinePlayers.forEach((p, i) => {
+      const sym = i === 0 ? 'X' : 'O';
+      const pill = document.createElement('div');
+      pill.className = 'player-pill';
+      pill.innerHTML = `<span class="avatar">${p.avatar||'🎮'}</span>
+        <span class="player-name" style="color:${p.color||'#fff'}">${esc(p.name)}</span>
+        <span style="color:${sym==='X'?'#00d4ff':'#ff6b6b'};font-weight:700;margin-left:4px;">${sym}</span>
+        ${p.id === (ghRoom && ghRoom.myPlayer && ghRoom.myPlayer.id) ? '<span style="color:var(--game-accent);font-size:.75rem;">(you)</span>' : ''}`;
+      onlineInfo.appendChild(pill);
+    });
+  }
+
+  function onRoomEvent(event, data) {
+    if (event === 'connected') {
+      renderOnlineInfo();
+      updateStatus();
+    }
+    if (event === 'game-move') {
+      const idx = data.data.index;
+      if (board[idx] === '' && gameActive) {
+        board[idx] = curPlayer;
+        createBoard();
+        checkEndGame();
+        if (gameActive) {
+          curPlayer = curPlayer === 'X' ? 'O' : 'X';
+          myTurn    = (curPlayer === mySymbol);
+          updateStatus();
+        }
+      }
+    }
+    if (event === 'player-left') {
+      statusEl.innerHTML = `<span class="hl">Opponent disconnected.</span>`;
+      gameActive = false;
+    }
+    if (event === 'room-update') {
+      onlinePlayers = data.players || onlinePlayers;
+      renderOnlineInfo();
+    }
+  }
+
+  /* ── Board ────────────────────────────────────────── */
+  function createBoard() {
+    boardEl.innerHTML = '';
+    board.forEach((cell, idx) => {
+      const el = document.createElement('div');
+      let cls = 'cell';
+      if (cell) cls += ' ' + cell.toLowerCase() + ' taken';
+      el.className = cls;
+      el.textContent = cell;
+      el.addEventListener('click', () => handleClick(idx));
+      boardEl.appendChild(el);
+    });
+  }
+
+  function handleClick(idx) {
+    if (!gameActive || board[idx]) return;
+    if (onlineMode && !myTurn)    return;
+
+    board[idx] = curPlayer;
+    createBoard();
+
+    if (onlineMode && ghRoom) {
+      ghRoom.sendMove({ index: idx });
+    }
+
+    checkEndGame();
+    if (!gameActive) return;
+
+    curPlayer = curPlayer === 'X' ? 'O' : 'X';
+    if (onlineMode) {
+      myTurn = (curPlayer === mySymbol);
+    }
+    updateStatus();
+
+    if (isAI && !onlineMode && curPlayer === 'O') {
+      setTimeout(aiMove, 420);
+    }
+  }
+
+  function updateStatus() {
+    if (!gameActive) return;
+    if (onlineMode) {
+      const whose = curPlayer === mySymbol ? 'Your' : "Opponent's";
+      statusEl.innerHTML = `${whose} turn — <span class="hl">${curPlayer}</span>`;
+    } else {
+      statusEl.innerHTML = `Player <span class="hl">${curPlayer}</span>'s turn`;
+    }
+  }
+
+  /* ── AI ───────────────────────────────────────────── */
+  function aiMove() {
+    if (!gameActive) return;
+    let move = findBest('O');
+    if (move === -1) move = findBest('X');
+    if (move === -1 && board[4] === '') move = 4;
+    if (move === -1) {
+      const empty = board.map((v,i) => v===''?i:null).filter(v=>v!==null);
+      if (!empty.length) return;
+      move = empty[Math.floor(Math.random() * empty.length)];
+    }
+    board[move] = 'O';
+    createBoard();
+    checkEndGame();
+    if (gameActive) {
+      curPlayer = 'X';
+      updateStatus();
+    }
+  }
+
+  function findBest(sym) {
+    for (const [a,b,c] of WIN_LINES) {
+      const vals = [board[a],board[b],board[c]];
+      if (vals.filter(v=>v===sym).length===2 && vals.includes(''))
+        return [a,b,c][vals.indexOf('')];
+    }
+    return -1;
+  }
+
+  /* ── Win/draw ─────────────────────────────────────── */
+  function checkEndGame() {
+    const winner = getWinner();
+    if (winner) { endGame(winner); return; }
+    if (!board.includes('')) { endGame('draw'); }
+  }
+
+  function getWinner() {
+    for (const [a,b,c] of WIN_LINES) {
+      if (board[a] && board[a]===board[b] && board[a]===board[c]) return board[a];
+    }
+    return null;
+  }
+
+  function highlightWinner() {
+    const winner = getWinner();
+    if (!winner) return;
+    WIN_LINES.forEach(line => {
+      if (line.every(i => board[i] === winner))
+        line.forEach(i => boardEl.children[i].classList.add('winner'));
+    });
+  }
+
+  function endGame(result) {
+    gameActive = false;
+    if (result === 'draw') {
+      winnerText.textContent = "It's a Draw!";
+      draws++; drawsEl.textContent = draws;
+    } else {
+      winnerText.textContent = result + ' Wins!';
+      wins++; winsEl.textContent = wins;
+      highlightWinner();
+    }
+    gameOverDiv.classList.remove('hidden');
+    onlineMode ? nameInputCont.classList.add('hidden') : nameInputCont.classList.remove('hidden');
+    submitScoreBtn.disabled = true;
+
+    const existing = Leaderboard.get(GAME_NAME);
+    if (existing && existing.length > 0) {
+      leaderboardCont.classList.remove('hidden');
+      leaderboardCont.innerHTML = '<h3 class="text-accent" style="margin-bottom:8px;">Top Players</h3>' + Leaderboard.render(GAME_NAME);
+    }
+  }
+
+  function restartGame() {
+    board = Array(9).fill('');
+    curPlayer = 'X';
+    gameActive = true;
+    if (onlineMode) { myTurn = (mySymbol === 'X'); }
+    gameOverDiv.classList.add('hidden');
+    leaderboardCont.classList.add('hidden');
+    submitScoreBtn.textContent = 'Submit Score';
+    submitScoreBtn.disabled = true;
+    updateStatus();
+    createBoard();
+  }
+
+  function submitScore() {
+    const name = playerNameIn.value.trim();
+    if (!name) return;
+    Leaderboard.addScore(GAME_NAME, name, wins);
+    nameInputCont.classList.add('hidden');
+    leaderboardCont.classList.remove('hidden');
+    leaderboardCont.innerHTML = '<h3 class="text-accent" style="margin-bottom:8px;">Top Players</h3>' + Leaderboard.render(GAME_NAME);
+  }
+
+  /* ── Events ───────────────────────────────────────── */
+  restartBtn.addEventListener('click', restartGame);
+  playAgainBtn.addEventListener('click', restartGame);
+  backBtn.addEventListener('click', () => { if(ghRoom) ghRoom.destroy(); window.location.href='index.html'; });
+  submitScoreBtn.addEventListener('click', submitScore);
+
+  playerNameIn.addEventListener('input', () => {
+    submitScoreBtn.disabled = !playerNameIn.value.trim();
+  });
+  playerNameIn.addEventListener('keypress', e => { if(e.key==='Enter' && playerNameIn.value.trim()) submitScore(); });
+
+  gameModeSelect.addEventListener('change', () => {
+    isAI = gameModeSelect.value === 'ai';
+    wins = 0; draws = 0;
+    winsEl.textContent = 0; drawsEl.textContent = 0;
+    restartGame();
+  });
+
+  function esc(s) { return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+
+  /* ── Init ─────────────────────────────────────────── */
+  winsEl.textContent = wins;
+  drawsEl.textContent = draws;
+  updateStatus();
+  createBoard();
+  </script>
+</body>
+</html>
