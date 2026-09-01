@@ -1,12 +1,22 @@
 import Image from "next/image";
 import { AuroraText } from "@/components/ui/aurora-text";
 import { BlurFade } from "@/components/ui/blur-fade";
+import { Particles } from "@/components/ui/particles";
+import { ShimmerButton } from "@/components/ui/shimmer-button";
 import { ME, PHOTOS } from "@/lib/data";
 
 export default function Hero() {
   return (
     <section className="relative overflow-hidden pt-24 pb-16 sm:pt-28">
       <div aria-hidden className="pointer-events-none absolute inset-0 wash" />
+      <Particles
+        className="pointer-events-none absolute inset-0"
+        quantity={90}
+        staticity={45}
+        ease={60}
+        color="#8b7cf6"
+        size={0.5}
+      />
 
       <div className="relative mx-auto max-w-4xl px-6 text-center">
         <BlurFade inView>
@@ -83,11 +93,18 @@ export default function Hero() {
 
         <BlurFade inView delay={0.4}>
           <div className="mt-10 flex flex-wrap justify-center gap-3">
-            <a
-              href="#contact"
-              className="rounded-full bg-fg px-6 py-3 text-[14px] font-semibold text-bg transition-transform hover:-translate-y-0.5"
-            >
-              Start a conversation
+            <a href="#contact">
+              <ShimmerButton
+                background="rgba(237,236,242,1)"
+                shimmerColor="#8b7cf6"
+                shimmerDuration="2.6s"
+                borderRadius="999px"
+                className="px-6 py-3 shadow-2xl"
+              >
+                <span className="text-[14px] font-semibold text-bg">
+                  Start a conversation
+                </span>
+              </ShimmerButton>
             </a>
             <a
               href="#work"

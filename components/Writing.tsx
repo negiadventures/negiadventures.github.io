@@ -1,5 +1,7 @@
 import Link from "next/link";
+import { AnimatedGridPattern } from "@/components/ui/animated-grid-pattern";
 import { BlurFade } from "@/components/ui/blur-fade";
+import { cn } from "@/lib/utils";
 import { formatDate, getPosts } from "@/lib/blog";
 
 export default function Writing() {
@@ -7,8 +9,17 @@ export default function Writing() {
   const recent = posts.slice(0, 3);
 
   return (
-    <section id="writing" className="border-t border-line">
-      <div className="mx-auto max-w-5xl scroll-mt-20 px-6 py-20">
+    <section id="writing" className="relative overflow-hidden border-t border-line">
+      <AnimatedGridPattern
+        numSquares={26}
+        maxOpacity={0.06}
+        duration={3.2}
+        className={cn(
+          "pointer-events-none absolute inset-0 h-full skew-y-6 fill-violet-400/25 stroke-violet-400/15",
+          "[mask-image:radial-gradient(420px_circle_at_center,white,transparent)]"
+        )}
+      />
+      <div className="relative mx-auto max-w-5xl scroll-mt-20 px-6 py-20">
         <BlurFade inView>
           <p className="eyebrow text-center">From the desk</p>
           <h2 className="display mt-4 text-center text-[2.2rem] sm:text-[2.9rem]">

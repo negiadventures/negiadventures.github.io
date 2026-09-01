@@ -1,4 +1,5 @@
 import { BorderBeam } from "@/components/ui/border-beam";
+import { Meteors } from "@/components/ui/meteors";
 import { BlurFade } from "@/components/ui/blur-fade";
 import { ME } from "@/lib/data";
 
@@ -13,7 +14,8 @@ export default function Contact() {
     <section id="contact" className="mx-auto max-w-5xl scroll-mt-20 px-6 py-20">
       <BlurFade inView>
         <div className="relative overflow-hidden rounded-2xl border border-line bg-surface p-10 text-center sm:p-14">
-          <p className="eyebrow">Get in touch</p>
+          <Meteors number={14} minDelay={0.4} maxDelay={4} className="opacity-60" />
+          <p className="relative eyebrow">Get in touch</p>
           <h2 className="display mt-4 text-[2.2rem] sm:text-[2.9rem]">
             Let&rsquo;s build something that holds
           </h2>

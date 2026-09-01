@@ -34,7 +34,7 @@ export default async function PostPage({
   if (!post) notFound();
 
   return (
-    <main className="mx-auto max-w-2xl px-6 py-20">
+    <main className="mx-auto max-w-3xl px-6 py-20">
       <Link href="/blog" className="eyebrow transition-colors hover:text-fg">
         ← Writing
       </Link>

@@ -26,7 +26,11 @@ export type Project = {
   href: string;
   repo?: string;
   tags: string[];
-  gradient: string;
+  /** Spotlight colours for the MagicCard border, not a flat fill. */
+  accentFrom: string;
+  accentTo: string;
+  /** Shown in the Safari frame's address bar. */
+  url: string;
   shot?: string;
   live: boolean;
 };
@@ -39,7 +43,9 @@ export const PROJECTS: Project[] = [
     href: "https://utilix.tech",
     repo: "https://github.com/utilix-tech",
     tags: ["TypeScript", "Next.js", "MCP", "REST API", "Node SDK", "Python SDK"],
-    gradient: "from-[#1e3a8a] via-[#2563eb] to-[#60a5fa]",
+    accentFrom: "#4c8dff",
+    accentTo: "#22d3ee",
+    url: "utilix.tech",
     shot: "/shots/utilix.webp",
     live: true,
   },
@@ -49,7 +55,9 @@ export const PROJECTS: Project[] = [
     name: "Karyfy",
     href: "https://karyfy.com",
     tags: ["FastAPI", "React", "PostgreSQL", "OpenSearch", "Kubernetes", "Clerk"],
-    gradient: "from-[#4c1d95] via-[#7c3aed] to-[#a78bfa]",
+    accentFrom: "#8b5cf6",
+    accentTo: "#e879f9",
+    url: "karyfy.com",
     shot: "/shots/karyfy.webp",
     live: true,
   },
@@ -59,7 +67,9 @@ export const PROJECTS: Project[] = [
     name: "PaperTrade Arena",
     href: "https://papertrade-arena.vercel.app",
     tags: ["Next.js", "Market data", "Streaming", "Postgres"],
-    gradient: "from-[#065f46] via-[#059669] to-[#34d399]",
+    accentFrom: "#10b981",
+    accentTo: "#34d399",
+    url: "papertrade-arena.vercel.app",
     shot: "/shots/papertrade.webp",
     live: true,
   },
@@ -67,10 +77,13 @@ export const PROJECTS: Project[] = [
     blurb:
       "Grades every OpenAPI change by who it actually breaks, because request and response changes are not symmetric",
     name: "Schema Drift",
-    href: "#",
+    href: "https://schemadrift.negiventures.com",
     tags: ["TypeScript", "OpenAPI", "Vitest", "No backend"],
-    gradient: "from-[#7f1d1d] via-[#dc2626] to-[#fb923c]",
-    live: false,
+    accentFrom: "#f472b6",
+    accentTo: "#fb923c",
+    url: "schemadrift.negiventures.com",
+    shot: "/shots/schemadrift.webp",
+    live: true,
   },
 ];
 
