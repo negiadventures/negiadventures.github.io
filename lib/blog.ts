@@ -35,8 +35,15 @@ export interface Post {
   readingMinutes: number;
 }
 
+export interface Heading {
+  id: string;
+  text: string;
+  level: 2 | 3;
+}
+
 export interface FullPost extends Post {
   html: string;
+  headings: Heading[];
 }
 
 function toTags(v: unknown): string[] {
@@ -103,7 +110,33 @@ export function getPost(slug: string): FullPost | null {
   body = stripAuthoringNotes(body);
 
   marked.setOptions({ gfm: true, breaks: false });
-  return { ...meta, html: marked.parse(body) as string };
+  let html = marked.parse(body) as string;
+
+  // Give every h2/h3 a stable id so the sidebar can link to it, and collect
+  // them for the table of contents.
+  const headings: Heading[] = [];
+  const used = new Set<string>();
+  html = html.replace(
+    /<h([23])>([\s\S]*?)<\/h\1>/g,
+    (_m, lvl: string, inner: string) => {
+      const text = inner.replace(/<[^>]+>/g, "").trim();
+      let id = text
+        .toLowerCase()
+        .replace(/[^a-z0-9\s-]/g, "")
+        .trim()
+        .replace(/\s+/g, "-")
+        .slice(0, 60);
+      if (!id) id = `section-${headings.length + 1}`;
+      let unique = id;
+      let n = 2;
+      while (used.has(unique)) unique = `${id}-${n++}`;
+      used.add(unique);
+      headings.push({ id: unique, text, level: Number(lvl) as 2 | 3 });
+      return `<h${lvl} id="${unique}">${inner}</h${lvl}>`;
+    }
+  );
+
+  return { ...meta, html, headings };
 }
 
 /**
