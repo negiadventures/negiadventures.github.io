@@ -1,0 +1,74 @@
+@import "tailwindcss";
+
+@custom-variant dark (&:is(.dark *));
+
+@theme {
+  --color-bg: #08080b;
+  --color-surface: #101017;
+  --color-surface-2: #16161f;
+  --color-line: #23222e;
+  --color-line-2: #33313f;
+
+  --color-fg: #edecf2;
+  --color-muted: #a09cb0;
+  --color-dim: #6b6880;
+
+  --font-serif: var(--font-display), ui-serif, "Iowan Old Style", Georgia, serif;
+  --font-mono: ui-monospace, "SF Mono", SFMono-Regular, "JetBrains Mono", Menlo, monospace;
+}
+
+html { scroll-behavior: smooth; scroll-padding-top: 5rem; }
+body { background: var(--color-bg); color: var(--color-fg); -webkit-font-smoothing: antialiased; }
+::selection { background: #6d63e6; color: #fff; }
+:focus-visible { outline: 2px solid #8b7cf6; outline-offset: 3px; border-radius: 6px; }
+
+/* Diagonal hatch down the page edges, the texture the reference uses */
+.hatch {
+  background-image: repeating-linear-gradient(
+    45deg, rgba(255,255,255,.035) 0 1px, transparent 1px 7px
+  );
+}
+
+.display { font-family: var(--font-serif); font-weight: 400; letter-spacing: -0.02em; line-height: 1.02; }
+
+.eyebrow {
+  font-family: var(--font-mono); font-size: 11px; letter-spacing: 0.16em;
+  text-transform: uppercase; color: var(--color-dim);
+}
+
+.wash {
+  background:
+    radial-gradient(52rem 26rem at 50% -6%, rgba(109,99,230,.20), transparent 62%),
+    radial-gradient(38rem 20rem at 88% 10%, rgba(255,92,122,.10), transparent 60%);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+  *, *::before, *::after { animation-duration:.01ms !important; transition-duration:.01ms !important; }
+}
+
+@theme inline {
+  --animate-aurora: aurora 8s ease-in-out infinite alternate;
+  @keyframes aurora {
+  0% {
+    background-position: 0% 50%;
+    transform: rotate(-5deg) scale(0.9);
+    }
+  25% {
+    background-position: 50% 100%;
+    transform: rotate(5deg) scale(1.1);
+    }
+  50% {
+    background-position: 100% 50%;
+    transform: rotate(-3deg) scale(0.95);
+    }
+  75% {
+    background-position: 50% 0%;
+    transform: rotate(3deg) scale(1.05);
+    }
+  100% {
+    background-position: 0% 50%;
+    transform: rotate(-5deg) scale(0.9);
+    }
+  }
+}
