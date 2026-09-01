@@ -1,14 +1,14 @@
 export const ME = {
   name: "Anirudh Negi",
-  role: "Backend & Distributed Systems Engineer",
-  location: "Monmouth Junction, NJ",
+  role: "AI Systems & Backend Engineer",
   now: { label: "Now", title: "Backend Engineer", detail: "GoFundMe" },
+  headline: { lead: "Agents that ship.", accent: "Backends that hold." },
   building: { label: "Building", title: "Negi Ventures", detail: "AI · Tech · Finance" },
   github: "https://github.com/negiadventures",
   linkedin: "https://www.linkedin.com/in/negiadventures",
   studio: "https://negiventures.com",
   lede:
-    "I design the parts of a backend that are expensive to get wrong: schema and API contracts, failure semantics, and migration strategy.",
+    "I build the parts of an AI system that are expensive to get wrong: tool contracts, failure semantics, and the guardrails that let agents ship to production safely.",
   sub:
     "Outside of work I architect and operate live products built almost entirely through agentic AI workflows. I own the design and the reliability; the agents write most of the code.",
 };

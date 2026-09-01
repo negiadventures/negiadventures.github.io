@@ -10,20 +10,19 @@ export default function Hero() {
 
       <div className="relative mx-auto max-w-4xl px-6 text-center">
         <BlurFade inView>
-          <p className="eyebrow">
-            {ME.role} · {ME.location}
-          </p>
+          <p className="eyebrow">{ME.role}</p>
         </BlurFade>
 
         <BlurFade inView delay={0.08}>
-          <h1 className="display mt-5 text-[2.9rem] sm:text-[4.2rem] lg:text-[4.8rem]">
-            Backend that{" "}
+          <h1 className="display mt-5 text-[2.6rem] leading-[1.06] sm:text-[3.8rem] lg:text-[4.4rem]">
+            {ME.headline.lead}
+            <br />
             <AuroraText
               className="italic"
               colors={["#8b7cf6", "#e879f9", "#f472b6", "#60a5fa"]}
               speed={0.7}
             >
-              holds
+              {ME.headline.accent}
             </AuroraText>
           </h1>
         </BlurFade>
@@ -54,8 +53,12 @@ export default function Hero() {
           </div>
         </BlurFade>
 
-        <BlurFade inView delay={0.24}>
-          <p className="mx-auto mt-10 max-w-[56ch] text-[16px] leading-relaxed text-muted">
+        <BlurFade inView delay={0.22}>
+          <p className="display mt-10 text-[2.1rem] sm:text-[2.6rem]">{ME.name}</p>
+        </BlurFade>
+
+        <BlurFade inView delay={0.28}>
+          <p className="mx-auto mt-5 max-w-[58ch] text-[16px] leading-relaxed text-muted">
             {ME.lede}
           </p>
         </BlurFade>

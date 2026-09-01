@@ -2,6 +2,7 @@ import About from "@/components/About";
 import Contact from "@/components/Contact";
 import Hero from "@/components/Hero";
 import Work from "@/components/Work";
+import Writing from "@/components/Writing";
 
 export default function Page() {
   return (
@@ -12,6 +13,7 @@ export default function Page() {
       <div className="relative z-10">
         <Hero />
         <Work />
+        <Writing />
         <About />
         <Contact />
       </div>

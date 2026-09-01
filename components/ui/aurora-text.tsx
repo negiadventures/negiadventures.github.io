@@ -26,15 +26,15 @@ export const AuroraText = memo(
     }
 
     return (
-      <span className={`relative inline-block ${className}`}>
-        <span className="sr-only">{children}</span>
-        <span
-          className="animate-aurora relative bg-size-[200%_auto] bg-clip-text text-transparent"
-          style={gradientStyle}
-          aria-hidden="true"
-        >
-          {children}
-        </span>
+      // Single render. The upstream component duplicates children into an
+      // sr-only span plus an aria-hidden visible span, which makes textContent
+      // (and copy-paste) read the word twice. background-clip text is still
+      // real text, so screen readers read it correctly without the duplicate.
+      <span
+        className={`animate-aurora relative inline-block bg-size-[200%_auto] bg-clip-text text-transparent ${className}`}
+        style={gradientStyle}
+      >
+        {children}
       </span>
     )
   }
