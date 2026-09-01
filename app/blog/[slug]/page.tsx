@@ -34,14 +34,14 @@ export default async function PostPage({
   if (!post) notFound();
 
   return (
-    <main className="mx-auto max-w-3xl px-6 py-20">
+    <main className="mx-auto max-w-5xl px-6 py-20">
       <Link href="/blog" className="eyebrow transition-colors hover:text-fg">
         ← Writing
       </Link>
 
       <article className="mt-8">
         <header>
-          <h1 className="display text-[2.1rem] leading-[1.12] sm:text-[2.7rem]">
+          <h1 className="display max-w-[22ch] text-[2.4rem] leading-[1.1] sm:text-[3.1rem]">
             {post.title}
           </h1>
           <p className="mt-5 font-mono text-[11px] tracking-wide text-dim uppercase">
@@ -60,7 +60,7 @@ export default async function PostPage({
         </header>
 
         <div
-          className="prose prose-invert mt-12 max-w-none prose-headings:font-semibold prose-headings:tracking-tight prose-a:text-violet-300 prose-code:before:content-none prose-code:after:content-none"
+          className="prose prose-invert mt-12 max-w-none prose-p:max-w-[78ch] prose-li:max-w-[78ch] prose-headings:font-semibold prose-headings:tracking-tight prose-a:text-violet-300 prose-code:before:content-none prose-code:after:content-none"
           dangerouslySetInnerHTML={{ __html: post.html }}
         />
       </article>

@@ -15,7 +15,7 @@ export default function BlogIndex() {
   const tags = getAllTags().slice(0, 14);
 
   return (
-    <main className="mx-auto max-w-4xl px-6 py-20">
+    <main className="mx-auto max-w-5xl px-6 py-20">
       <BlurFade inView>
         <Link href="/" className="eyebrow transition-colors hover:text-fg">
           ← {ME.name}

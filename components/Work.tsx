@@ -2,6 +2,7 @@
 
 import { BlurFade } from "@/components/ui/blur-fade";
 import { BorderBeam } from "@/components/ui/border-beam";
+import { Lens } from "@/components/ui/lens";
 import { MagicCard } from "@/components/ui/magic-card";
 import { Marquee } from "@/components/ui/marquee";
 import { Safari } from "@/components/ui/safari";
@@ -51,11 +52,13 @@ export default function Work() {
                   </div>
 
                   {p.shot ? (
-                    // Plain Safari frame. Lens magnification was tried here and
-                    // removed: it overflowed the card and made the screenshot
-                    // harder to read at a glance, not easier.
-                    <div className="mt-8 overflow-hidden rounded-lg">
-                      <Safari url={p.url} imageSrc={p.shot} className="w-full" />
+                    // Hover magnifies the screenshot so dense product UI is
+                    // actually readable. Needs min-w-0 on the grid parents or
+                    // the frame blows the card out and the zoom looks broken.
+                    <div className="mt-8 w-full min-w-0 overflow-hidden rounded-lg">
+                      <Lens zoomFactor={1.8} lensSize={170}>
+                        <Safari url={p.url} imageSrc={p.shot} className="w-full" />
+                      </Lens>
                     </div>
                   ) : (
                     <div className="relative mt-8 overflow-hidden rounded-xl border border-line bg-surface px-5 py-8 text-center">
