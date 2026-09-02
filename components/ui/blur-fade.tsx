@@ -9,6 +9,7 @@ import {
   type UseInViewOptions,
   type Variants,
 } from "motion/react"
+import { cn } from "@/lib/utils"
 
 type MarginType = UseInViewOptions["margin"]
 
@@ -84,7 +85,11 @@ export function BlurFade({
           ease: "easeOut",
           ...(shouldTransitionFilter ? { filter: { duration } } : {}),
         }}
-        className={className}
+        // This wrapper is usually a grid/flex item, where the default
+        // min-width:auto lets wide content (a marquee, a max-w-[64ch] paragraph)
+        // push the track past the viewport. It has no business setting its own
+        // intrinsic floor, so clamp it here rather than at every call site.
+        className={cn("min-w-0", className)}
         {...props}
       >
         {children}

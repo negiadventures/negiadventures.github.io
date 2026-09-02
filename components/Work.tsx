@@ -26,9 +26,9 @@ export default function Work() {
         </TextAnimate>
       </BlurFade>
 
-      <div className="mt-14 grid gap-6 lg:grid-cols-2">
+      <div className="mt-14 grid gap-6 [&>*]:min-w-0 lg:grid-cols-2">
         {PROJECTS.map((p, i) => (
-          <BlurFade key={p.name} inView delay={0.06 * i}>
+          <BlurFade key={p.name} inView delay={0.06 * i} className="min-w-0">
             <MagicCard
               gradientSize={280}
               gradientColor="#16161f"

@@ -41,7 +41,7 @@ export default function Writing() {
 
         <div className="mt-12 grid gap-5 md:grid-cols-3">
           {recent.map((p, i) => (
-            <BlurFade key={p.slug} inView delay={0.07 * i}>
+            <BlurFade key={p.slug} inView delay={0.07 * i} className="min-w-0">
               <Link
                 href={`/blog/${p.slug}`}
                 className="group flex h-full flex-col rounded-2xl border border-line bg-surface p-5 transition-all duration-300 hover:-translate-y-1 hover:border-line-2"

@@ -85,6 +85,18 @@ export const PROJECTS: Project[] = [
     shot: "/shots/schemadrift.webp",
     live: true,
   },
+  {
+    blurb:
+      "Replays agent runs as traces so you can see where the tokens, the retries and the human approvals actually went",
+    name: "Agent Ops",
+    href: "https://agentops.negiventures.com",
+    tags: ["TypeScript", "Observability", "Vitest", "No backend"],
+    accentFrom: "#7c9eff",
+    accentTo: "#3ddc97",
+    url: "agentops.negiventures.com",
+    shot: "/shots/agentops.webp",
+    live: true,
+  },
 ];
 
 export const EXPLORING = [
