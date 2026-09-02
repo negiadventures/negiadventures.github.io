@@ -40,7 +40,7 @@ export default function Work() {
               <div className="flex h-full min-w-0 flex-col p-5 sm:p-6">
                   {/* Title row, then blurb, at every width. Side by side the
                       blurb competed with the name for the card's width and, as
-                      a flex item with min-w-0, lost — a long name like
+                      a flex item with min-w-0, lost. A long name like
                       "PaperTrade Arena" squeezed it to a 180px one-word-per-line
                       column. Worst in the lg two-column grid, where cards are
                       narrowest, so the layout only held for short names. */}
