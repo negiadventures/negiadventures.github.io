@@ -33,6 +33,11 @@ export type Project = {
   url: string;
   shot?: string;
   live: boolean;
+  /**
+   * Maturity, alongside the live pill. Utilix and Karyfy carry nothing: they
+   * are finished products. The rest are honest about being early.
+   */
+  stage?: "Beta" | "Labs";
 };
 
 export const PROJECTS: Project[] = [
@@ -72,6 +77,7 @@ export const PROJECTS: Project[] = [
     url: "papertrade-arena.vercel.app",
     shot: "/shots/papertrade.webp",
     live: true,
+    stage: "Beta",
   },
   {
     blurb:
@@ -84,6 +90,7 @@ export const PROJECTS: Project[] = [
     url: "schemadrift.negiventures.com",
     shot: "/shots/schemadrift.webp",
     live: true,
+    stage: "Labs",
   },
   {
     blurb:
@@ -96,6 +103,7 @@ export const PROJECTS: Project[] = [
     url: "agentops.negiventures.com",
     shot: "/shots/agentops.webp",
     live: true,
+    stage: "Labs",
   },
 ];
 

@@ -45,11 +45,25 @@ export default function Work() {
                       column. Worst in the lg two-column grid, where cards are
                       narrowest, so the layout only held for short names. */}
                   <div className="flex items-center justify-between gap-3">
-                    <h3 className="flex min-w-0 items-center gap-2 text-[16px] font-semibold tracking-tight">
-                      <span className="truncate">{p.name}</span>
+                    {/* Wraps rather than truncating: at 320px two pills beside a
+                        long name clipped the name itself, which is the one thing
+                        in the card that must stay readable. */}
+                    <h3 className="flex min-w-0 flex-wrap items-center gap-x-2 gap-y-1.5 text-[16px] font-semibold tracking-tight">
+                      <span>{p.name}</span>
                       {p.live && (
                         <span className="shrink-0 rounded-full bg-emerald-400/15 px-2 py-0.5 font-mono text-[10px] tracking-wide text-emerald-300 uppercase">
                           Live
+                        </span>
+                      )}
+                      {p.stage && (
+                        <span
+                          className={`shrink-0 rounded-full px-2 py-0.5 font-mono text-[10px] tracking-wide uppercase ${
+                            p.stage === "Beta"
+                              ? "bg-amber-400/15 text-amber-300"
+                              : "bg-violet-400/15 text-violet-300"
+                          }`}
+                        >
+                          {p.stage}
                         </span>
                       )}
                     </h3>
