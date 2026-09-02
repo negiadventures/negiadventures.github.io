@@ -31,7 +31,7 @@ export default function Writing() {
             accessible={false}
             className="display mt-4 text-center text-[2.2rem] sm:text-[2.9rem]"
           >
-            Thoughts &amp;
+            Thoughts &amp; field notes
           </TextAnimate>
           <p className="mx-auto mt-4 max-w-[52ch] text-center text-[15px] leading-relaxed text-muted">
             {posts.length} posts on running AI coding agents in production. Guardrails,

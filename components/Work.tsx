@@ -38,15 +38,17 @@ export default function Work() {
               className="h-full rounded-2xl border border-line p-0"
             >
               <div className="flex h-full min-w-0 flex-col p-5 sm:p-6">
-                  <div className="flex flex-wrap items-start justify-between gap-x-5 gap-y-3">
-                    <p className="min-w-0 flex-1 text-[15px] leading-snug font-medium text-fg">
-                      {p.blurb}
-                    </p>
-                    <div className="flex shrink-0 items-center gap-3">
-                    <h3 className="flex items-center gap-2 text-[16px] font-semibold tracking-tight">
-                      {p.name}
+                  {/* Title row, then blurb, at every width. Side by side the
+                      blurb competed with the name for the card's width and, as
+                      a flex item with min-w-0, lost — a long name like
+                      "PaperTrade Arena" squeezed it to a 180px one-word-per-line
+                      column. Worst in the lg two-column grid, where cards are
+                      narrowest, so the layout only held for short names. */}
+                  <div className="flex items-center justify-between gap-3">
+                    <h3 className="flex min-w-0 items-center gap-2 text-[16px] font-semibold tracking-tight">
+                      <span className="truncate">{p.name}</span>
                       {p.live && (
-                        <span className="rounded-full bg-emerald-400/15 px-2 py-0.5 font-mono text-[10px] tracking-wide text-emerald-300 uppercase">
+                        <span className="shrink-0 rounded-full bg-emerald-400/15 px-2 py-0.5 font-mono text-[10px] tracking-wide text-emerald-300 uppercase">
                           Live
                         </span>
                       )}
@@ -56,7 +58,7 @@ export default function Work() {
                       target={p.href.startsWith("http") ? "_blank" : undefined}
                       rel="noopener noreferrer"
                       aria-label={`Open ${p.name}`}
-                      className="group/arrow mt-1 grid h-8 w-8 shrink-0 place-items-center rounded-full border border-line-2 text-muted transition-colors hover:border-transparent hover:bg-fg hover:text-bg"
+                      className="group/arrow grid h-8 w-8 shrink-0 place-items-center rounded-full border border-line-2 text-muted transition-colors hover:border-transparent hover:bg-fg hover:text-bg"
                     >
                       <span
                         aria-hidden
@@ -65,8 +67,10 @@ export default function Work() {
                         →
                       </span>
                     </a>
-                    </div>
                   </div>
+                  <p className="mt-3 text-[15px] leading-snug font-medium text-fg">
+                    {p.blurb}
+                  </p>
 
                   {p.shot ? (
                     // Hover magnifies the screenshot so dense product UI is
