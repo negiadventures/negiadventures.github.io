@@ -105,6 +105,45 @@ export const PROJECTS: Project[] = [
     live: true,
     stage: "Labs",
   },
+  {
+    blurb:
+      "Checks any small-business site for the handful of things that decide whether customers can find it and contact it",
+    name: "Local SEO Audit",
+    href: "https://localseo.negiventures.com",
+    tags: ["Next.js", "SEO", "Vitest", "Live fetch"],
+    accentFrom: "#f59e0b",
+    accentTo: "#fbbf24",
+    url: "localseo.negiventures.com",
+    shot: "/shots/localseo.webp",
+    live: true,
+    stage: "Labs",
+  },
+  {
+    blurb:
+      "Compares a 30 and a 15 year loan on what most calculators leave out: the deposit as money spent, PMI ending at 80% LTV, and costs that grow",
+    name: "Mortgage Atlas",
+    href: "https://mortgage.negiventures.com",
+    tags: ["React", "Amortisation", "Vitest", "No backend"],
+    accentFrom: "#0ea5e9",
+    accentTo: "#22d3ee",
+    url: "mortgage.negiventures.com",
+    shot: "/shots/mortgage.webp",
+    live: true,
+    stage: "Labs",
+  },
+  {
+    blurb:
+      "Twenty-seven instruments synthesised in the browser and locked to one key, recorded into loops and arranged into a song you can download",
+    name: "Thrum",
+    href: "https://thrum.negiventures.com",
+    tags: ["Web Audio", "DSP", "Vitest", "No backend"],
+    accentFrom: "#e0a33d",
+    accentTo: "#f5d491",
+    url: "thrum.negiventures.com",
+    shot: "/shots/thrum.webp",
+    live: true,
+    stage: "Labs",
+  },
 ];
 
 export const EXPLORING = [
